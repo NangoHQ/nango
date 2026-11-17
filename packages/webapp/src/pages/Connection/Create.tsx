@@ -104,7 +104,7 @@ export const ConnectionCreate: React.FC = () => {
         return (
             <DashboardLayout width="wide">
                 <Helmet>
-                    <title>Create Test Connection - Nango</title>
+                    <title>Add test connection - Nango</title>
                 </Helmet>
                 <div className="grid grid-cols-2 text-text-strong">
                     <div className="pr-10 flex flex-col gap-10">
@@ -122,7 +122,7 @@ export const ConnectionCreate: React.FC = () => {
     return (
         <DashboardLayout width="wide">
             <Helmet>
-                <title>Create Test Connection - Nango</title>
+                <title>Add test connection - Nango</title>
             </Helmet>
             <div className="grid grid-cols-[2fr_1fr] text-text-strong">
                 <div className="pr-5">

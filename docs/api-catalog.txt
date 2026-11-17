@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1323
+Provider count: 1349
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -481,30 +481,55 @@ URL patterns:
 | `facebook-system-user` | Facebook (System User Token) | API_KEY | [docs](https://nango.dev/docs/api-integrations/facebook-system-user.md) | [connect](https://nango.dev/docs/api-integrations/facebook-system-user/connect.md) |  | marketing, social |
 | `factorial` | Factorial (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/factorial.md) |  |  | hr |
 | `factorial-api-key` | Factorial (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/factorial-api-key.md) | [connect](https://nango.dev/docs/api-integrations/factorial-api-key/connect.md) |  | hr |
+| `facturadirecta` | FacturaDirecta | API_KEY | [docs](https://nango.dev/docs/api-integrations/facturadirecta.md) | [connect](https://nango.dev/docs/api-integrations/facturadirecta/connect.md) |  | invoicing, accounting |
 | `fairing` | Fairing | API_KEY | [docs](https://nango.dev/docs/integrations/all/fairing.md) | [connect](https://nango.dev/docs/integrations/all/fairing/connect.md) |  | marketing, analytics |
+| `faktoora` | faktoora | API_KEY | [docs](https://nango.dev/docs/api-integrations/faktoora.md) | [connect](https://nango.dev/docs/api-integrations/faktoora/connect.md) |  | invoicing |
 | `falai` | fal.ai | API_KEY | [docs](https://nango.dev/docs/integrations/all/falai.md) |  |  | productivity, dev-tools |
 | `fanvue` | Fanvue | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/fanvue.md) |  | [setup](https://nango.dev/docs/api-integrations/fanvue/how-to-register-your-own-fanvue-oauth-app.md) | other |
 | `fathom` | Fathom | API_KEY | [docs](https://nango.dev/docs/api-integrations/fathom.md) | [connect](https://nango.dev/docs/api-integrations/fathom/connect.md) |  | communication, video |
 | `fathom-oauth` | Fathom (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/fathom-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/fathom-oauth/how-to-register-your-own-fathom-oauth-app.md) | communication, video |
+| `favro` | Favro | BASIC | [docs](https://nango.dev/docs/api-integrations/favro.md) | [connect](https://nango.dev/docs/api-integrations/favro/connect.md) |  | productivity |
+| `featherless` | Featherless | API_KEY | [docs](https://nango.dev/docs/api-integrations/featherless.md) | [connect](https://nango.dev/docs/api-integrations/featherless/connect.md) |  | dev-tools |
+| `feedbin` | Feedbin | BASIC | [docs](https://nango.dev/docs/api-integrations/feedbin.md) | [connect](https://nango.dev/docs/api-integrations/feedbin/connect.md) |  | productivity |
+| `feedblitz` | FeedBlitz | API_KEY | [docs](https://nango.dev/docs/api-integrations/feedblitz.md) | [connect](https://nango.dev/docs/api-integrations/feedblitz/connect.md) |  | marketing |
+| `feedier` | Feedier | API_KEY | [docs](https://nango.dev/docs/api-integrations/feedier.md) | [connect](https://nango.dev/docs/api-integrations/feedier/connect.md) |  | surveys, analytics |
 | `fellow` | Fellow | API_KEY | [docs](https://nango.dev/docs/api-integrations/fellow.md) | [connect](https://nango.dev/docs/api-integrations/fellow/connect.md) |  | productivity |
+| `felt` | Felt | API_KEY | [docs](https://nango.dev/docs/api-integrations/felt.md) | [connect](https://nango.dev/docs/api-integrations/felt/connect.md) |  | other |
 | `fern` | Fern (Public API) | API_KEY | [docs](https://nango.dev/docs/api-integrations/fern.md) | [connect](https://nango.dev/docs/api-integrations/fern/connect.md) |  | dev-tools |
 | `fiber-ai` | Fiber AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/fiber-ai.md) | [connect](https://nango.dev/docs/api-integrations/fiber-ai/connect.md) |  | analytics |
+| `fidel-api` | Fidel API | API_KEY | [docs](https://nango.dev/docs/api-integrations/fidel-api.md) | [connect](https://nango.dev/docs/api-integrations/fidel-api/connect.md) |  | payment |
 | `figjam` | FigJam | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/figjam.md) |  |  | design, productivity |
 | `figma` | Figma | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/figma.md) |  |  | design, productivity |
 | `figma-scim` | Figma (SCIM) | API_KEY | [docs](https://nango.dev/docs/integrations/all/figma-scim.md) | [connect](https://nango.dev/docs/integrations/all/figma-scim/connect.md) |  | design, productivity |
 | `fiix` | Fiix | BASIC | [docs](https://nango.dev/docs/api-integrations/fiix.md) | [connect](https://nango.dev/docs/api-integrations/fiix/connect.md) |  | erp |
+| `filepost` | FilePost | API_KEY | [docs](https://nango.dev/docs/api-integrations/filepost.md) | [connect](https://nango.dev/docs/api-integrations/filepost/connect.md) |  | storage |
+| `files-com` | Files.com | API_KEY | [docs](https://nango.dev/docs/api-integrations/files-com.md) | [connect](https://nango.dev/docs/api-integrations/files-com/connect.md) |  | storage |
+| `filetopdf-dev` | FileToPDF.dev | API_KEY | [docs](https://nango.dev/docs/api-integrations/filetopdf-dev.md) | [connect](https://nango.dev/docs/api-integrations/filetopdf-dev/connect.md) |  | dev-tools |
 | `fillout` | Fillout (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fillout.md) |  |  | surveys |
 | `fillout-api-key` | Fillout (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/fillout-api-key.md) | [connect](https://nango.dev/docs/integrations/all/fillout-api-key/connect.md) |  | surveys |
+| `finage` | Finage | API_KEY | [docs](https://nango.dev/docs/api-integrations/finage.md) | [connect](https://nango.dev/docs/api-integrations/finage/connect.md) |  | other |
+| `finalscout` | FinalScout | API_KEY | [docs](https://nango.dev/docs/api-integrations/finalscout.md) | [connect](https://nango.dev/docs/api-integrations/finalscout/connect.md) |  | marketing, crm |
+| `financial-modeling-prep` | Financial Modeling Prep | API_KEY | [docs](https://nango.dev/docs/api-integrations/financial-modeling-prep.md) | [connect](https://nango.dev/docs/api-integrations/financial-modeling-prep/connect.md) |  | analytics |
 | `findymail` | FindyMail | API_KEY | [docs](https://nango.dev/docs/integrations/all/findymail.md) | [connect](https://nango.dev/docs/integrations/all/findymail/connect.md) |  | marketing, crm |
+| `finlight` | Finlight | API_KEY | [docs](https://nango.dev/docs/api-integrations/finlight.md) | [connect](https://nango.dev/docs/api-integrations/finlight/connect.md) |  | analytics |
+| `finmei` | Finmei | API_KEY | [docs](https://nango.dev/docs/api-integrations/finmei.md) | [connect](https://nango.dev/docs/api-integrations/finmei/connect.md) |  | invoicing |
+| `finmo` | Finmo | BASIC | [docs](https://nango.dev/docs/api-integrations/finmo.md) | [connect](https://nango.dev/docs/api-integrations/finmo/connect.md) |  | payment |
 | `finnhub` | Finnhub | API_KEY | [docs](https://nango.dev/docs/api-integrations/finnhub.md) | [connect](https://nango.dev/docs/api-integrations/finnhub/connect.md) |  | analytics |
 | `finta` | Finta | API_KEY | [docs](https://nango.dev/docs/api-integrations/finta.md) | [connect](https://nango.dev/docs/api-integrations/finta/connect.md) |  | banking |
+| `fireberry` | Fireberry | API_KEY | [docs](https://nango.dev/docs/api-integrations/fireberry.md) | [connect](https://nango.dev/docs/api-integrations/fireberry/connect.md) |  | crm |
 | `firecrawl` | Firecrawl | API_KEY | [docs](https://nango.dev/docs/api-integrations/firecrawl.md) | [connect](https://nango.dev/docs/api-integrations/firecrawl/connect.md) |  | dev-tools, analytics |
 | `firefish` | Firefish | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/firefish.md) |  |  | crm |
 | `fireflies` | Fireflies | API_KEY | [docs](https://nango.dev/docs/integrations/all/fireflies.md) |  |  | analytics, communication, productivity |
+| `fireworks-ai` | Fireworks AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/fireworks-ai.md) | [connect](https://nango.dev/docs/api-integrations/fireworks-ai/connect.md) |  | dev-tools |
 | `firstbase` | Firstbase | API_KEY | [docs](https://nango.dev/docs/api-integrations/firstbase.md) | [connect](https://nango.dev/docs/api-integrations/firstbase/connect.md) |  | hr |
 | `fiserv` | Fiserv (OAuth) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/fiserv.md) |  |  | banking, payment |
 | `fiserv-api-key` | Fiserv (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/fiserv-api-key.md) |  |  | banking, payment |
+| `fish-audio` | Fish Audio | API_KEY | [docs](https://nango.dev/docs/api-integrations/fish-audio.md) | [connect](https://nango.dev/docs/api-integrations/fish-audio/connect.md) |  | other |
 | `fitbit` | Fitbit | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fitbit.md) |  |  | sports |
+| `fivetran` | Fivetran | BASIC | [docs](https://nango.dev/docs/api-integrations/fivetran.md) | [connect](https://nango.dev/docs/api-integrations/fivetran/connect.md) |  | analytics, dev-tools |
+| `flatfile` | Flatfile | API_KEY | [docs](https://nango.dev/docs/api-integrations/flatfile.md) | [connect](https://nango.dev/docs/api-integrations/flatfile/connect.md) |  | dev-tools |
+| `fleetbase` | Fleetbase | API_KEY | [docs](https://nango.dev/docs/api-integrations/fleetbase.md) | [connect](https://nango.dev/docs/api-integrations/fleetbase/connect.md) |  | other |
+| `flippingbook` | FlippingBook | API_KEY | [docs](https://nango.dev/docs/api-integrations/flippingbook.md) | [connect](https://nango.dev/docs/api-integrations/flippingbook/connect.md) |  | marketing |
 | `float` | Float | API_KEY | [docs](https://nango.dev/docs/integrations/all/float.md) | [connect](https://nango.dev/docs/integrations/all/float/connect.md) |  | productivity |
 | `fluxguard` | Fluxguard | API_KEY | [docs](https://nango.dev/docs/api-integrations/fluxguard.md) | [connect](https://nango.dev/docs/api-integrations/fluxguard/connect.md) |  | analytics |
 | `flyte` | Flyte | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/flyte.md) | [connect](https://nango.dev/docs/api-integrations/flyte/connect.md) |  | dev-tools |
@@ -772,6 +797,7 @@ URL patterns:
 | `mezmo` | Mezmo | API_KEY | [docs](https://nango.dev/docs/api-integrations/mezmo.md) | [connect](https://nango.dev/docs/api-integrations/mezmo/connect.md) |  | dev-tools, analytics |
 | `microsoft` | Microsoft | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | communication, dev-tools, productivity |
 | `microsoft-admin` | Microsoft (Admin) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-admin.md) | [connect](https://nango.dev/docs/integrations/all/microsoft-admin/connect.md) |  | communication, dev-tools, productivity, iam |
+| `microsoft-admin-cert` | Microsoft (Admin - Certificate) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft-admin-cert.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-admin-cert/connect.md) | [setup](https://nango.dev/docs/api-integrations/microsoft-admin-cert/how-to-register-your-own-microsoft-admin-certificate-app.md) | communication, dev-tools, productivity, iam |
 | `microsoft-ads` | Microsoft Ads | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-ads.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | marketing |
 | `microsoft-business-central` | Microsoft Business Central | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/microsoft-business-central.md) | [connect](https://nango.dev/docs/integrations/all/microsoft-business-central/connect.md) |  | erp |
 | `microsoft-clarity` | Microsoft Clarity | API_KEY | [docs](https://nango.dev/docs/api-integrations/microsoft-clarity.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-clarity/connect.md) |  | analytics |

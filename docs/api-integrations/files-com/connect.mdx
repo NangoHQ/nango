@@ -1,0 +1,50 @@
+---
+title: 'Files.com - How do I link my account?'
+sidebarTitle: 'Files.com'
+---
+
+## Overview
+
+To authenticate with Files.com, you need:
+
+1. **Site Subdomain** — the part of your Files.com site URL before `.files.com`.
+2. **API Key** — a user or site-wide API key created in your Files.com site.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Files.com site. New sites start with a 7-day free trial, no credit card needed.
+
+### Step 1: Find your site subdomain
+
+Your Files.com site URL looks like `https://SUBDOMAIN.files.com`. Your subdomain is the part before `.files.com`. For example, for `https://mycompany.files.com` it is `mycompany`.
+
+### Step 2: Create an API key
+
+1. Sign in to your Files.com site as a Site Administrator.
+2. In the left menu, expand **Clients & Protocols** and click **SDKs and API**.
+
+<img src="/api-integrations/files-com/open_sdks_and_api.png" alt="Files.com left menu with Clients & Protocols expanded and SDKs and API highlighted" />
+
+3. Open the **API Keys** tab and click **New API Key**.
+
+<img src="/api-integrations/files-com/api_keys_tab.png" alt="Files.com SDKs and API page on the API Keys tab with the New API Key button highlighted" />
+
+4. Enter a **Name** and choose a **Permission Set** (**Full Access** or **Files Only**). Leave **User** blank to create a site-wide key, or pick a user to create a user key. Both kinds of key work with Nango. Re-enter your password under **Re-Authenticate**, then click **Save**.
+
+<img src="/api-integrations/files-com/create_api_key_form.png" alt="Files.com new API key form with Name, Permission Set, User and Re-Authenticate fields and the Save button" />
+
+5. Copy the key from the **Your API Key** dialog. Files.com shows it only once.
+
+<img src="/api-integrations/files-com/api_key_created.png" alt="Files.com Your API Key dialog with the copy button highlighted" />
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Files.com.
+2. Enter your subdomain in the **Site Subdomain** field and your key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/files-com/form.png" alt="Files.com Connect UI form with the Site Subdomain and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Files.com.

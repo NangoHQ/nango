@@ -18,8 +18,8 @@ import type { LogContext, LogContextGetter, LogContextStateless } from '@nangohq
 import type {
     ConnectionConfig,
     DBConnectionDecrypted,
-    DBEnvironment,
     DBTeam,
+    EnvironmentWithoutSecrets,
     IntegrationConfig,
     Provider,
     RefreshableCredentials,
@@ -31,14 +31,14 @@ import type { Result } from '@nangohq/utils';
 
 interface RefreshProps {
     account: DBTeam;
-    environment: DBEnvironment;
+    environment: EnvironmentWithoutSecrets;
     connection: DBConnectionDecrypted;
     integration: IntegrationConfig;
     logContextGetter: LogContextGetter;
     instantRefresh: boolean;
     onRefreshSuccess: (args: {
         connection: DBConnectionDecrypted;
-        environment: DBEnvironment;
+        environment: EnvironmentWithoutSecrets;
         config: ProviderConfig;
         account: DBTeam;
         provider: Provider;
@@ -47,7 +47,7 @@ interface RefreshProps {
         connection: DBConnectionDecrypted;
         logCtx: LogContext;
         authError: { type: string; description: string };
-        environment: DBEnvironment;
+        environment: EnvironmentWithoutSecrets;
         provider: Provider;
         config: ProviderConfig;
         account: DBTeam;
@@ -684,12 +684,16 @@ export async function shouldRefreshCredentials({
     // -- At this stage credentials need a refresh whether it's forced or because they are expired
 
     if (credentials.type === 'OAUTH2') {
-        // normally we refresh using a refresh_token for OAUTH2 providers, but microsoft-admin uses the client_credentials flow and shopline-oauth
+        // normally we refresh using a refresh_token for OAUTH2 providers, but microsoft-admin(-cert) uses the client_credentials flow and shopline-oauth
         // re-signs a fresh request with the app's credentials instead — neither returns a refresh_token, so we allow refresh for them regardless.
         if (credentials.refresh_token) {
             return { should: true, reason: 'expired_oauth2_with_refresh_token' };
         }
-        if (providerConfig.provider === 'microsoft-admin' || providerConfig.provider === 'shopline-oauth') {
+        if (
+            providerConfig.provider === 'microsoft-admin' ||
+            providerConfig.provider === 'microsoft-admin-cert' ||
+            providerConfig.provider === 'shopline-oauth'
+        ) {
             return { should: true, reason: 'expired_oauth2_reauth_no_refresh_token' };
         }
         // We can't refresh since we don't have a refresh token even if we force it

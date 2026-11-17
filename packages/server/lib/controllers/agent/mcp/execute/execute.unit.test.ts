@@ -251,6 +251,19 @@ describe('executeSessionTool', () => {
         expect(executeAction).not.toHaveBeenCalled();
     });
 
+    it('tells the agent a new session is needed when the connection was deleted', async () => {
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(new ActionExecutionError({ code: 'unknown_connection', message: 'Failed to find connection' }))
+        });
+
+        const result = await execute('read_doc');
+
+        expect(codeOf(result)).toBe('connection_deleted');
+        expect(integrationOf(result)).toBe('notion');
+        expect(errorOf(result).message).toContain('a new session is needed');
+    });
+
     it('tells the agent which tool failed and why', async () => {
         executeAction.mockResolvedValue({
             logCtx: undefined,
@@ -498,7 +511,7 @@ describe('executeSessionTool', () => {
     });
 
     it.each<{ code: FunctionInvocationErrorCode; cause?: unknown; expected: string | undefined }>([
-        { code: 'connection_not_found', expected: 'integration_not_connected' },
+        { code: 'connection_not_found', expected: 'connection_deleted' },
         { code: 'function_not_found', expected: 'tool_not_in_session' },
         { code: 'function_disabled', expected: 'tool_not_in_session' },
         { code: 'invalid_invocation', expected: 'tool_not_in_session' },
