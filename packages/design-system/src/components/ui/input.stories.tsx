@@ -10,8 +10,7 @@ const meta: Meta<typeof Input> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// A bare Input shares InputGroup's tokens and states. Hover is frozen with data-story-state; focus is driven by
-// real browser focus — click into a field. Prefer InputGroup when the field needs an addon.
+// Hover is frozen with data-story-state (see .storybook/preview.css)
 export const States: Story = {
     render: () => (
         <div className="grid grid-cols-[96px_repeat(2,260px)] items-center gap-x-4 gap-y-3">

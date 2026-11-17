@@ -12,17 +12,13 @@ import type { VariantProps } from 'class-variance-authority';
 export const fieldVariants = cva('group/field w-full', {
     variants: {
         orientation: {
-            // Label, control, description and error stacked, 6px apart (Figma Field 2587:367, space/1.5).
             vertical: 'flex flex-col gap-1.5',
-            // Settings row: a 220px label column (label + description) beside the control, 32px apart (space/8).
-            // The label column spans both rows so the error lands under the control, not under the label.
+            // The label column spans both rows so the error lands under the control
             horizontal: [
                 'grid grid-cols-[220px_minmax(0,1fr)] grid-rows-[auto_1fr] items-start gap-x-8 gap-y-1.5',
                 '[&>:first-child]:row-span-2 [&>:first-child]:pt-1.5',
                 '[&>:not(:first-child)]:col-start-2'
             ],
-            // Label beside a small control (switch, checkbox), vertically centred. This was `horizontal` before the
-            // Dharma settings-row layout took that name; existing switch/checkbox rows should use `inline`.
             inline: 'flex flex-row items-center gap-2'
         }
     },
@@ -32,17 +28,10 @@ export const fieldVariants = cva('group/field w-full', {
 });
 
 export interface FieldProps extends React.ComponentProps<'div'>, VariantProps<typeof fieldVariants> {
-    /** Drives the control's Error state and wires `aria-invalid` on the control. */
     'data-invalid'?: boolean | 'true' | 'false' | undefined;
     'data-disabled'?: boolean | 'true' | 'false' | undefined;
 }
 
-/**
- * Composition container for a label + control + description + error (Figma "Field").
- *
- * Field generates the ids: FieldLabel gets `htmlFor`, the first Input / InputGroupInput inside gets `id`,
- * `aria-describedby` (description + error) and `aria-invalid` (from `data-invalid`). Explicit props always win.
- */
 function Field({ className, orientation, children, ...props }: FieldProps) {
     const baseId = React.useId();
     const [renderedDescriptionId, registerDescription] = React.useState<string | null>(null);
@@ -75,7 +64,7 @@ function Field({ className, orientation, children, ...props }: FieldProps) {
             registerControl,
             setControlId,
             primaryControlKey: primary?.key ?? null,
-            labelTarget: primary?.id ?? controlId,
+            labelTarget: primary ? (primary.id ?? controlId) : undefined,
             renderedDescriptionId,
             renderedErrorId
         }),
@@ -97,7 +86,7 @@ function Field({ className, orientation, children, ...props }: FieldProps) {
     );
 }
 
-/** Groups a label with its description, e.g. the label column of a horizontal Field. */
+/** In a horizontal Field, wrap the label and description in this: only the first child fills the label column. */
 function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
     return <div data-slot="field-content" className={cn('flex min-w-0 flex-col gap-0.5', className)} {...props} />;
 }
@@ -138,7 +127,6 @@ function FieldLegend({ className, variant = 'legend', description, children, ...
 }
 
 export interface FieldLabelProps extends React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> {
-    /** Appends a muted "Optional" tag. Required fields aren't marked — mark the optional ones instead. */
     optional?: boolean;
 }
 
@@ -152,11 +140,8 @@ const FieldLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>
                 data-slot="field-label"
                 htmlFor={htmlFor ?? field?.labelTarget}
                 className={cn(
-                    // Layout — inline so the label can sit beside an icon, tooltip, or the optional tag
                     'flex min-w-0 flex-wrap items-baseline gap-1.5 wrap-break-word select-none',
-                    // Typography (Figma label/md: Geist Medium 13, text/default)
                     'font-sans text-ds-sm font-ds-medium leading-ds-snug tracking-ds-tight text-text-default',
-                    // Disabled affordances driven by an ancestor Field[data-disabled] or a peer :disabled control
                     'group-data-[disabled=true]/field:text-text-disabled group-data-[disabled=true]/field:pointer-events-none peer-disabled:cursor-not-allowed',
                     className
                 )}
@@ -186,7 +171,6 @@ function FieldDescription({ className, id, ...props }: React.ComponentProps<'p'>
         <p
             data-slot="field-description"
             id={resolvedId}
-            // Figma text/regular/xs + text/secondary
             className={cn('font-sans text-ds-xs font-ds-regular leading-ds-normal text-text-secondary', className)}
             {...props}
         />
@@ -198,7 +182,6 @@ export interface FieldErrorProps extends React.ComponentProps<'div'> {
     errors?: (({ message?: string } | undefined) | null)[];
 }
 
-/** Danger validation message with a CircleAlert icon. Renders nothing when empty (matches the old FormMessage). */
 function FieldError({ className, children, errors, id, ...props }: FieldErrorProps) {
     const field = useFieldContext();
     let body: React.ReactNode = children;
@@ -237,7 +220,6 @@ function FieldError({ className, children, errors, id, ...props }: FieldErrorPro
             role="alert"
             id={resolvedId}
             data-slot="field-error"
-            // Figma: CircleAlert 12px icon/danger + text/regular/xs text/danger
             className={cn('font-sans text-ds-xs font-ds-regular leading-ds-normal text-text-danger flex items-start gap-1', className)}
             {...props}
         >
