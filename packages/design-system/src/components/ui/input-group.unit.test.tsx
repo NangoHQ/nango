@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { Slot } from '@radix-ui/react-slot';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -162,6 +163,19 @@ describe('Field wiring', () => {
         expect($('label').textContent).toBe('Secondary URLOptional');
         expect(container.querySelector('[data-slot=field-error]')).toBeNull();
         expect($('input').hasAttribute('aria-describedby')).toBe(false);
+    });
+});
+
+describe('InputGroupInput under a Slot', () => {
+    it('keeps its data-slot when a wrapper passes another one', () => {
+        render(
+            <InputGroup>
+                <Slot data-slot="form-control" aria-invalid>
+                    <InputGroupInput />
+                </Slot>
+            </InputGroup>
+        );
+        expect($('input').getAttribute('data-slot')).toBe('input-group-control');
     });
 });
 
