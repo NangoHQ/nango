@@ -215,7 +215,9 @@ export type PostFunctionDeployment = ApiEndpoint<{
     Method: 'POST';
     Path: '/functions/deployments';
     Body: FunctionDeploymentBody;
-    Error: ApiError<FunctionErrorCode> | ApiError<'template_not_found' | 'ambiguous_function' | 'plan_limit' | 'template_already_deployed'>;
+    Error:
+        | ApiError<FunctionErrorCode>
+        | ApiError<'template_not_found' | 'ambiguous_function' | 'plan_limit' | 'template_already_deployed' | 'legacy_actions_deprecated'>;
     // Both variants return the same shape. `function` deploys are async (status waiting/running, poll for the result);
     // `template` deploys run synchronously, so the response already carries a terminal status (success/failed).
     Success: FunctionDeploymentCreateSuccess;

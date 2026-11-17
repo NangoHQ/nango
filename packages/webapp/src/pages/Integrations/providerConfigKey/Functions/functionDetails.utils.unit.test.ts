@@ -75,11 +75,11 @@ describe('toFunctionDetails', () => {
         expect(legacy.typeLabel).toBe('tool');
     });
 
-    it('keeps native execution and source loading separate from unsupported legacy management operations', () => {
+    it('supports pulling native tools while keeping execution, source loading, and deletion type-specific', () => {
         expect(toFunctionDetails(tool, context)).toMatchObject({
             runType: 'tool',
             code: { kind: 'deployed', type: 'tool' },
-            pullCommand: null,
+            pullCommand: 'nango pull github create-issue --env dev',
             delete: undefined
         });
         expect(toFunctionDetails(action, context)).toMatchObject({
@@ -91,6 +91,12 @@ describe('toFunctionDetails', () => {
         expect(toFunctionDetails(action, context).delete?.description).toContain('delete the tool "create-issue"');
         expect(toFunctionDetails({ ...tool, enabled: false }, context).runType).toBeNull();
         expect(toFunctionDetails({ ...action, enabled: false }, context).runType).toBeNull();
+    });
+
+    it('pulls a native tool by public name from the selected integration and environment', () => {
+        expect(toFunctionDetails({ ...tool, name: 'get_issue' }, { ...context, integration: 'my-github', env: 'prod' }).pullCommand).toBe(
+            'nango pull my-github get_issue --env prod'
+        );
     });
 
     it.each([

@@ -35,6 +35,10 @@ export function resolveProjectPath({ projectRoot, filePath }: { projectRoot: str
     return { absolute, relative };
 }
 
+export function tsToJsPath(filePath: string) {
+    return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace(/\.js$/, '.cjs');
+}
+
 export function isPath(value: string): boolean {
     return /\.[jt]s$/.test(value) || /[/\\]/.test(value);
 }

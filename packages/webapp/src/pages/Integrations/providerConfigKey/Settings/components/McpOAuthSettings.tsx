@@ -1,8 +1,7 @@
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { CopyButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { ScopesInput } from '@/components/patterns/ScopesInput';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
@@ -65,7 +64,7 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
                 <InputGroup>
                     <InputGroupInput disabled value={callbackUrl} />
                     <InputGroupAddon align="inline-end">
-                        <CopyButton text={callbackUrl} />
+                        <CopyButton size="2xs" value={callbackUrl} />
                     </InputGroupAddon>
                 </InputGroup>
             </SettingsField>
@@ -105,7 +104,7 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
                     <InputGroup>
                         <InputGroupInput disabled readOnly type="password" value={integration.oauth_client_secret} />
                         <InputGroupAddon align="inline-end">
-                            <CopyButton text={integration.oauth_client_secret} />
+                            <CopyButton size="2xs" value={integration.oauth_client_secret} />
                         </InputGroupAddon>
                     </InputGroup>
                 </SettingsField>

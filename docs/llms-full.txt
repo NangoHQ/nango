@@ -2819,6 +2819,14 @@ A tool called directly by its name takes its input under `input`, next to the ta
 }
 ```
 
+### Tool changes
+
+Tools are not a stable contract. The tools available in a session, their inputs and their output schemas [may change at any time](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#capabilities). This includes Nango's meta tools.
+
+Your agent is expected to adjust to changes dynamically:
+- Use the tool definitions the session's MCP server returns, and [re-fetch them](https://modelcontextprotocol.io/specification/2026-07-28/server/utilities/caching#time-to-live-ttl-field) when an error indicates that the tool is unavailable or its input no longer matches the schema. Don't hard-code them.
+- Pass tool errors back to the model, so it can [self-correct](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#error-handling) and retry with the updated definition.
+
 ### Terminating a session
 
 Sessions are immutable and cannot be extended. They expire on their own once `expires_in` is up, and you can end one early with `DELETE /sessions/{session_id}`:
@@ -9971,10 +9979,6 @@ The **Default - Full access** key that comes with each environment already has a
 
 #### Agent Sessions
 
-<Note>
-    Agent sessions are experimental. The endpoints and this scope are likely to change, including in breaking ways, until the feature is generally available. See the [agent sessions guide](/guides/agent-sessions).
-</Note>
-
 | Scope | Description |
 |-------|-------------|
 | `environment:agent_sessions:write` | Create agent sessions |
@@ -14006,6 +14010,21 @@ Get details about a specific command by running:
 ```bash
 nango [command] --help
 ```
+
+## Pull
+
+Pull a function's TypeScript source into your local functions project. Use `--env` to pull the version served by an environment, or `--catalog` to pull the public catalog version:
+
+```bash
+nango pull github list-repos --env dev
+nango pull github list-repos --catalog
+```
+
+With `--catalog`, add `--target <integration-id>` if your integration ID differs from the provider name.
+
+The CLI writes the function file and adds its import to `index.ts`. Review and customize the source, then test with `nango dryrun` and deploy with `nango deploy`.
+
+See [Take ownership of a function](/guides/functions/functions-guide#take-ownership-of-a-deployed-function) for more details.
 
 ## Deploy
 

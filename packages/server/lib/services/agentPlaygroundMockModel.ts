@@ -11,8 +11,17 @@ export function createMockModel(): MockLanguageModelV4 {
 
     return new MockLanguageModelV4({
         modelId: 'mock',
-        doGenerate: ({ prompt }) => {
+        doGenerate: ({ prompt, responseFormat }) => {
             const last = prompt.at(-1);
+
+            if (responseFormat?.type === 'json') {
+                return Promise.resolve({
+                    content: [{ type: 'text', text: JSON.stringify({ intent: 'try the playground', apps: [] }) }],
+                    finishReason: { unified: 'stop', raw: undefined },
+                    usage,
+                    warnings: []
+                });
+            }
 
             if (last?.role === 'tool') {
                 const output = last.content.find((part) => part.type === 'tool-result')?.output;
