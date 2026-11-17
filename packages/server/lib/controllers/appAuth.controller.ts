@@ -17,7 +17,7 @@ import { noteConnectionUpsert, oauthAuthType } from '../hooks/auditConnection.js
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
-import { resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../utils/auth.js';
+import { getReconnectedConnection, resolveConnectionConfig, resolveOutboundWebhookUrlOverride, withStoredConnectionConfig } from '../utils/auth.js';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
@@ -175,12 +175,13 @@ class AppAuthController {
             resolvedConnectionConfig = resolveConnectionConfig({ params: undefined, connectSession: connectSession?.connectSession, providerConfigKey });
             resolvedWebhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession: connectSession?.connectSession });
             Object.assign(connectionConfig, resolvedConnectionConfig);
+            const reconnectedConnection = await getReconnectedConnection(connectSession?.connectSession);
 
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
                 parsedRawCredentials,
-                connectionConfig,
+                connectionConfig: withStoredConnectionConfig(reconnectedConnection?.connection_config, connectionConfig),
                 webhookUrlOverride: resolvedWebhookUrlOverride,
                 environmentId: environment.id,
                 tags

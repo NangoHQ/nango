@@ -9,7 +9,13 @@ import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema,
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
+import {
+    errorRestrictConnectionId,
+    isIntegrationAllowed,
+    resolveConnectionConfig,
+    resolveOutboundWebhookUrlOverride,
+    withStoredConnectionConfig
+} from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -51,7 +57,7 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
     const { account, environment, connectSession } = res.locals;
     const queryString: PostPublicUnauthenticatedAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicUnauthenticatedAuthorization['Params'] = paramVal.data;
-    const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
     const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
@@ -121,7 +127,8 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
                 res.status(400).send({ error: { code: 'invalid_connection' } });
                 return;
             }
-            connectionId = connection?.connection_id;
+            connectionId = connection.connection_id;
+            connectionConfig = withStoredConnectionConfig(connection.connection_config, connectionConfig);
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });

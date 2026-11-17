@@ -52,7 +52,13 @@ import {
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import { requireEnvironment } from '../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveOutboundWebhookUrlOverride } from '../utils/auth.js';
+import {
+    errorRestrictConnectionId,
+    getReconnectedConnection,
+    isIntegrationAllowed,
+    resolveOutboundWebhookUrlOverride,
+    withStoredConnectionConfig
+} from '../utils/auth.js';
 import { hmacCheck } from '../utils/hmac.js';
 import { authHtml } from '../utils/html.js';
 import {
@@ -226,7 +232,7 @@ class OAuthController {
                         res.status(400).send({ error: { code: 'invalid_connection' } });
                         return;
                     }
-                    connectionId = connection?.connection_id;
+                    connectionId = connection.connection_id;
                 }
                 if (defaults?.authorization_params) {
                     authorizationParams = defaults.authorization_params;
@@ -495,7 +501,8 @@ class OAuthController {
                         res.status(400).send({ error: { code: 'invalid_connection' } });
                         return;
                     }
-                    connectionId = connection?.connection_id;
+                    connectionId = connection.connection_id;
+                    connectionConfig = withStoredConnectionConfig(connection.connection_config, connectionConfig);
                 }
 
                 if (defaults?.authorization_params) {
@@ -1481,6 +1488,7 @@ class OAuthController {
         }
 
         const tags = connectSession?.connectSession.tags;
+        const reconnectedConnection = await getReconnectedConnection(connectSession?.connectSession);
 
         const connCreatedHook = (upsertResult: ConnectionUpsertResponse) => {
             noteConnectionUpsert(res.req, {
@@ -1513,7 +1521,7 @@ class OAuthController {
             connectionId,
             config,
             provider as unknown as ProviderGithubApp,
-            connectionConfig,
+            withStoredConnectionConfig(reconnectedConnection?.connection_config, connectionConfig),
             logCtx,
             connCreatedHook,
             tags,
@@ -1995,6 +2003,9 @@ class OAuthController {
 
             const tags = connectSession?.connectSession.tags;
 
+            const reconnectedConnection = await getReconnectedConnection(connectSession?.connectSession);
+            connectionConfig = withStoredConnectionConfig(reconnectedConnection?.connection_config, connectionConfig);
+
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
@@ -2255,11 +2266,28 @@ class OAuthController {
             return;
         }
 
+        let connectSession: ConnectSessionAndEndUser | undefined;
+        if (session.connectSessionId) {
+            const connectSessionRes = await getConnectSession(db.knex, {
+                id: session.connectSessionId,
+                accountId: account.id,
+                environmentId: environment.id
+            });
+            if (connectSessionRes.isErr()) {
+                void logCtx.error('Failed to get session');
+                await logCtx.failed();
+                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
+                return;
+            }
+            connectSession = connectSessionRes.value;
+        }
+        const reconnectedConnection = await getReconnectedConnection(connectSession?.connectSession);
+
         const [updatedConnection] = await connectionService.upsertConnection({
             connectionId,
             providerConfigKey,
             parsedRawCredentials: credentials,
-            connectionConfig,
+            connectionConfig: withStoredConnectionConfig(reconnectedConnection?.connection_config, connectionConfig),
             webhookUrlOverride: session.webhookUrlOverride,
             environmentId: session.environmentId
         });
@@ -2299,21 +2327,7 @@ class OAuthController {
             return;
         }
 
-        let connectSession: ConnectSessionAndEndUser | undefined;
-        if (session.connectSessionId) {
-            const connectSessionRes = await getConnectSession(db.knex, {
-                id: session.connectSessionId,
-                accountId: account.id,
-                environmentId: environment.id
-            });
-            if (connectSessionRes.isErr()) {
-                void logCtx.error('Failed to get session');
-                await logCtx.failed();
-                await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError('failed to get session'));
-                return;
-            }
-
-            connectSession = connectSessionRes.value;
+        if (connectSession) {
             await syncEndUserToConnection(db.knex, {
                 connectSession: connectSession.connectSession,
                 connection: updatedConnection.connection,
@@ -2441,12 +2455,13 @@ class OAuthController {
                 }
 
                 const tags = connectSession?.connectSession.tags;
+                const reconnectedConnection = await getReconnectedConnection(connectSession?.connectSession);
 
                 const [updatedConnection] = await connectionService.upsertConnection({
                     connectionId,
                     providerConfigKey,
                     parsedRawCredentials: parsedAccessTokenResult,
-                    connectionConfig,
+                    connectionConfig: withStoredConnectionConfig(reconnectedConnection?.connection_config, connectionConfig),
                     webhookUrlOverride: session.webhookUrlOverride,
                     environmentId: environment.id,
                     tags
@@ -2700,12 +2715,13 @@ class OAuthController {
             }
 
             const tags = connectSession?.connectSession.tags;
+            const reconnectedConnection = await getReconnectedConnection(connectSession?.connectSession);
 
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
                 parsedRawCredentials,
-                connectionConfig: session.connectionConfig,
+                connectionConfig: withStoredConnectionConfig(reconnectedConnection?.connection_config, session.connectionConfig),
                 webhookUrlOverride: session.webhookUrlOverride,
                 environmentId: session.environmentId,
                 tags

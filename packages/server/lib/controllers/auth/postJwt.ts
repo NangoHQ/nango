@@ -23,12 +23,18 @@ import {
     testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
+import {
+    errorRestrictConnectionId,
+    isIntegrationAllowed,
+    resolveConnectionConfig,
+    resolveOutboundWebhookUrlOverride,
+    withStoredConnectionConfig
+} from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
+import type { Metadata, PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
 const bodyValidation = z.looseObject({});
@@ -75,7 +81,8 @@ export const postPublicJwtAuthorization = asyncWrapperWithEnvironment<PostPublic
     const bodyData = val.data as PostPublicJwtAuthorization['Body'];
     const queryString: PostPublicJwtAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicJwtAuthorization['Params'] = paramVal.data;
-    const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let metadata: Metadata = {};
     const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
@@ -145,7 +152,9 @@ export const postPublicJwtAuthorization = asyncWrapperWithEnvironment<PostPublic
                 res.status(400).send({ error: { code: 'invalid_connection' } });
                 return;
             }
-            connectionId = connection?.connection_id;
+            connectionId = connection.connection_id;
+            connectionConfig = withStoredConnectionConfig(connection.connection_config, connectionConfig);
+            metadata = connection.metadata ?? {};
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
@@ -182,7 +191,7 @@ export const postPublicJwtAuthorization = asyncWrapperWithEnvironment<PostPublic
             credentials,
             connectionConfig,
             webhookUrlOverride,
-            metadata: {},
+            metadata,
             config,
             environment,
             tags: connectSession?.tags

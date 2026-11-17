@@ -25,12 +25,18 @@ import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema,
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
+import {
+    errorRestrictConnectionId,
+    isIntegrationAllowed,
+    resolveConnectionConfig,
+    resolveOutboundWebhookUrlOverride,
+    withStoredConnectionConfig
+} from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { AuthOperationType, AwsSigV4Credentials, PostPublicAwsSigV4Authorization } from '@nangohq/types';
+import type { AuthOperationType, AwsSigV4Credentials, ConnectionConfig, Metadata, PostPublicAwsSigV4Authorization } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
 const bodyValidation = z
@@ -156,6 +162,8 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
         // to settings.defaultRegion and silently overwrite the customer's original region,
         // changing the SigV4 signing region and proxy endpoint.
         let existingConnectionConfig: Record<string, unknown> | null = null;
+        let reconnectedConnectionConfig: ConnectionConfig | null = null;
+        let metadata: Metadata = {};
         if (isConnectSession && connectSession.connectionId) {
             const existing = await connectionService.getConnectionById(connectSession.connectionId);
             if (!existing) {
@@ -166,6 +174,8 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
             }
             connectionId = existing.connection_id;
             existingConnectionConfig = existing.connection_config ?? null;
+            reconnectedConnectionConfig = existing.connection_config;
+            metadata = existing.metadata ?? {};
         } else {
             // Non-connect-session reconnect path: look up by connection_id + integration key.
             const existingResult = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
@@ -269,9 +279,9 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
             connectionId,
             providerConfigKey,
             credentials,
-            connectionConfig,
+            connectionConfig: withStoredConnectionConfig(reconnectedConnectionConfig, connectionConfig),
             webhookUrlOverride,
-            metadata: {},
+            metadata,
             config,
             environment,
             tags: connectSession?.tags

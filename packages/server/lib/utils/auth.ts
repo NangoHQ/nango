@@ -1,9 +1,9 @@
-import { getConnectionConfig } from '@nangohq/shared';
+import { connectionService, getConnectionConfig } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import type { RequestLocals } from './express.js';
 import type { LogContext } from '@nangohq/logs';
-import type { ApiError, ConnectionConfig, ConnectSession, IntegrationConfig } from '@nangohq/types';
+import type { ApiError, ConnectionConfig, ConnectSession, DBConnection, IntegrationConfig } from '@nangohq/types';
 import type { Response } from 'express';
 
 /**
@@ -26,6 +26,21 @@ export function resolveConnectionConfig({
     }
 
     return connectionConfig;
+}
+
+// Set by each auth flow for the flow itself, so a stored value must never outlive it
+const flowOwnedConnectionConfigKeys = new Set(['pending', 'pendingLog', 'overrideTokenRefresh', 'oauth_scopes']);
+
+export function withStoredConnectionConfig(storedConnectionConfig: ConnectionConfig | null | undefined, connectionConfig: ConnectionConfig): ConnectionConfig {
+    const kept = Object.entries(storedConnectionConfig ?? {}).filter(([key]) => !flowOwnedConnectionConfigKeys.has(key));
+    return { ...Object.fromEntries(kept), ...connectionConfig };
+}
+
+export async function getReconnectedConnection(connectSession: ConnectSession | undefined): Promise<DBConnection | null> {
+    if (!connectSession?.connectionId) {
+        return null;
+    }
+    return await connectionService.getConnectionById(connectSession.connectionId);
 }
 
 export function resolveOutboundWebhookUrlOverride({ connectSession }: { connectSession: ConnectSession | undefined }): string | null {

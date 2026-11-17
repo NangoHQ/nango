@@ -28,12 +28,18 @@ import {
     testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
+import {
+    errorRestrictConnectionId,
+    isIntegrationAllowed,
+    resolveConnectionConfig,
+    resolveOutboundWebhookUrlOverride,
+    withStoredConnectionConfig
+} from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { ApiKeyCredentials, PostPublicApiKeyAuthorization } from '@nangohq/types';
+import type { ApiKeyCredentials, Metadata, PostPublicApiKeyAuthorization } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
 const bodyValidation = connectionCredentialsApiKeySchema;
@@ -80,7 +86,8 @@ export const postPublicApiKeyAuthorization = asyncWrapperWithEnvironment<PostPub
     const { apiKey }: PostPublicApiKeyAuthorization['Body'] = val.data;
     const queryString: PostPublicApiKeyAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicApiKeyAuthorization['Params'] = paramsVal.data;
-    const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let metadata: Metadata = {};
     const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
@@ -149,7 +156,9 @@ export const postPublicApiKeyAuthorization = asyncWrapperWithEnvironment<PostPub
                 res.status(400).send({ error: { code: 'invalid_connection' } });
                 return;
             }
-            connectionId = connection?.connection_id;
+            connectionId = connection.connection_id;
+            connectionConfig = withStoredConnectionConfig(connection.connection_config, connectionConfig);
+            metadata = connection.metadata ?? {};
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
@@ -174,7 +183,7 @@ export const postPublicApiKeyAuthorization = asyncWrapperWithEnvironment<PostPub
             credentials,
             connectionConfig,
             webhookUrlOverride,
-            metadata: {},
+            metadata,
             config,
             environment,
             tags: connectSession?.tags

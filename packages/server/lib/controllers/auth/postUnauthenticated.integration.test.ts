@@ -273,4 +273,49 @@ describe(`GET ${endpoint}`, () => {
         });
         expect(connectionBefore?.updated_at.toISOString()).not.toBe(connectionAfter?.updated_at.toISOString());
     });
+
+    it('should keep the stored connection config on reconnect', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+        const resSession = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { end_user: { id: '1', email: 'john@example.com' }, allowed_integrations: ['unauthenticated'] }
+        });
+        isSuccess(resSession.json);
+
+        const resConnect = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { connect_session_token: resSession.json.data.token },
+            params: { providerConfigKey: config.unique_key }
+        });
+        isSuccess(resConnect.json);
+
+        await db
+            .knex('_nango_connections')
+            .where({ connection_id: resConnect.json.connectionId, environment_id: env.id })
+            .update({ connection_config: { workspace_id: 'stored', region: 'eu', pending: true } });
+
+        const resSessionReconnect = await api.fetch('/connect/sessions/reconnect', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { connection_id: resConnect.json.connectionId, integration_id: resConnect.json.providerConfigKey }
+        });
+        isSuccess(resSessionReconnect.json);
+
+        const resReconnect = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { connect_session_token: resSessionReconnect.json.data.token, params: { region: 'us' } },
+            params: { providerConfigKey: config.unique_key }
+        });
+        isSuccess(resReconnect.json);
+
+        const connection = await connectionService.checkIfConnectionExists(db.knex, {
+            connectionId: resConnect.json.connectionId,
+            providerConfigKey: resConnect.json.providerConfigKey,
+            environmentId: env.id
+        });
+        expect(connection?.connection_config).toStrictEqual({ workspace_id: 'stored', region: 'us' });
+    });
 });

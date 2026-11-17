@@ -22,12 +22,18 @@ import {
     testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
+import {
+    errorRestrictConnectionId,
+    isIntegrationAllowed,
+    resolveConnectionConfig,
+    resolveOutboundWebhookUrlOverride,
+    withStoredConnectionConfig
+} from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { PostPublicTbaAuthorization, TbaCredentials } from '@nangohq/types';
+import type { Metadata, PostPublicTbaAuthorization, TbaCredentials } from '@nangohq/types';
 
 const queryStringValidation = z
     .object({
@@ -82,7 +88,8 @@ export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublic
     const { token_id: tokenId, token_secret: tokenSecret, oauth_client_id_override, oauth_client_secret_override } = body;
     const queryString = queryStringVal.data satisfies PostPublicTbaAuthorization['Querystring'];
     const { providerConfigKey } = paramVal.data satisfies PostPublicTbaAuthorization['Params'];
-    const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let metadata: Metadata = {};
     const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
@@ -156,7 +163,9 @@ export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublic
                 res.status(400).send({ error: { code: 'invalid_connection' } });
                 return;
             }
-            connectionId = connection?.connection_id;
+            connectionId = connection.connection_id;
+            connectionConfig = withStoredConnectionConfig(connection.connection_config, connectionConfig);
+            metadata = connection.metadata ?? {};
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
@@ -207,7 +216,7 @@ export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublic
                 oauth_client_secret: config.oauth_client_secret
             },
             webhookUrlOverride,
-            metadata: {},
+            metadata,
             config,
             environment,
             tags: connectSession?.tags

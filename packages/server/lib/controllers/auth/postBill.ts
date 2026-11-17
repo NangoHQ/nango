@@ -19,12 +19,18 @@ import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema,
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
+import {
+    errorRestrictConnectionId,
+    isIntegrationAllowed,
+    resolveConnectionConfig,
+    resolveOutboundWebhookUrlOverride,
+    withStoredConnectionConfig
+} from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { PostPublicBillAuthorization, ProviderBill } from '@nangohq/types';
+import type { Metadata, PostPublicBillAuthorization, ProviderBill } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
 const bodyValidation = z
@@ -79,7 +85,8 @@ export const postPublicBillAuthorization = asyncWrapperWithEnvironment<PostPubli
     const { username, password, organization_id: organizationId, dev_key: devkey }: PostPublicBillAuthorization['Body'] = val.data;
     const queryString: PostPublicBillAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBillAuthorization['Params'] = paramsVal.data;
-    const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let metadata: Metadata = {};
     const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
@@ -149,7 +156,9 @@ export const postPublicBillAuthorization = asyncWrapperWithEnvironment<PostPubli
                 res.status(400).send({ error: { code: 'invalid_connection' } });
                 return;
             }
-            connectionId = connection?.connection_id;
+            connectionId = connection.connection_id;
+            connectionConfig = withStoredConnectionConfig(connection.connection_config, connectionConfig);
+            metadata = connection.metadata ?? {};
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
@@ -168,7 +177,7 @@ export const postPublicBillAuthorization = asyncWrapperWithEnvironment<PostPubli
             credentials: credentialsRes.value,
             connectionConfig,
             webhookUrlOverride,
-            metadata: {},
+            metadata,
             config,
             environment,
             tags: connectSession?.tags

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from './auth.js';
+import { resolveConnectionConfig, resolveOutboundWebhookUrlOverride, withStoredConnectionConfig } from './auth.js';
 
 import type { ConnectSession } from '@nangohq/types';
 
@@ -121,5 +121,24 @@ describe('resolveOutboundWebhookUrlOverride', () => {
 
     it('treats a blank webhook_url override as no override', () => {
         expect(resolveOutboundWebhookUrlOverride({ connectSession: connectSessionWithWebhookOverride('   ') })).toBeNull();
+    });
+});
+
+describe('withStoredConnectionConfig', () => {
+    it('keeps stored values the new config does not set', () => {
+        expect(withStoredConnectionConfig({ emailAddressHash: 'abc', subdomain: 'old' }, { subdomain: 'new' })).toStrictEqual({
+            emailAddressHash: 'abc',
+            subdomain: 'new'
+        });
+    });
+
+    it('drops values owned by the auth flow', () => {
+        expect(
+            withStoredConnectionConfig({ pending: true, pendingLog: 'log', overrideTokenRefresh: true, oauth_scopes: 'read', workspace_id: 'w' }, {})
+        ).toStrictEqual({ workspace_id: 'w' });
+    });
+
+    it('returns the new config when nothing is stored', () => {
+        expect(withStoredConnectionConfig(null, { subdomain: 'new' })).toStrictEqual({ subdomain: 'new' });
     });
 });
