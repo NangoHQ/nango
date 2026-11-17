@@ -6727,6 +6727,10 @@ microsoft-admin:
     - UserSettings.Read.All
     - UserSettings.ReadWrite.All
 
+# source: https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow (client credentials only accept the /.default scope)
+microsoft-admin-cert:
+    - https://graph.microsoft.com/.default
+
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-consent
 # source: providers.yaml default_scopes
