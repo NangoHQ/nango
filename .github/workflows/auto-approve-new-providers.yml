@@ -4,22 +4,65 @@ on:
         types: [opened, synchronize, reopened]
         paths:
             - 'packages/providers/providers.yaml'
+    check_run:
+        types: [completed]
 permissions:
     contents: read
     pull-requests: read
+    checks: read
 concurrency:
-    group: auto-approve-new-providers-${{ github.event.pull_request.number }}
+    group: auto-approve-new-providers-${{ github.event.pull_request.number || github.event.check_run.pull_requests[0].number }}
     cancel-in-progress: true
 jobs:
     auto-approve:
+        if: github.event_name == 'pull_request_target' || github.event.check_run.app.slug == 'cubic-dev-ai'
         runs-on: ubuntu-latest
         steps:
-            - name: Check if trusted author
-              id: trust_check
+            - name: Find the PR
+              id: pr
               uses: actions/github-script@v7
               with:
                   script: |
-                      const login = context.payload.pull_request.user.login;
+                      let pr = context.payload.pull_request;
+
+                      // Rerun after Cubic's check: look up the PR, which check_run only lists for branches in this repo
+                      if (context.eventName === 'check_run') {
+                        const number = context.payload.check_run.pull_requests[0]?.number;
+                        if (!number) {
+                          console.log(`No PR for commit ${context.payload.check_run.head_sha}`);
+                          return false;
+                        }
+                        const params = {
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          pull_number: number,
+                        };
+                        ({ data: pr } = await github.rest.pulls.get(params));
+
+                        // The paths filter doesn't apply to check_run
+                        const files = await github.paginate(github.rest.pulls.listFiles, params);
+                        if (!files.some((f) => f.filename === 'packages/providers/providers.yaml')) {
+                          console.log(`Skipped: PR #${number} doesn't change providers.yaml`);
+                          return false;
+                        }
+                      }
+
+                      core.setOutput('number', pr.number);
+                      core.setOutput('author', pr.user.login);
+                      core.setOutput('base_sha', pr.base.sha);
+                      core.setOutput('head_sha', pr.head.sha);
+                      return true;
+                  result-encoding: string
+
+            - name: Check if trusted author
+              if: steps.pr.outputs.result == 'true'
+              id: trust_check
+              uses: actions/github-script@v7
+              env:
+                  AUTHOR: ${{ steps.pr.outputs.author }}
+              with:
+                  script: |
+                      const login = process.env.AUTHOR;
 
                       // Effective repo permission, which includes access granted through org teams
                       try {
@@ -42,13 +85,13 @@ jobs:
               if: steps.trust_check.outputs.result == 'true'
               uses: actions/checkout@v4
               with:
-                  ref: ${{ github.event.pull_request.base.sha }}
+                  ref: ${{ steps.pr.outputs.base_sha }}
                   fetch-depth: 0
                   persist-credentials: false
 
             - name: Fetch PR head (as data only)
               if: steps.trust_check.outputs.result == 'true'
-              run: git fetch --no-tags origin "pull/${{ github.event.pull_request.number }}/head"
+              run: git fetch --no-tags origin "pull/${{ steps.pr.outputs.number }}/head"
 
             - uses: ./.github/actions/setup-node
               if: steps.trust_check.outputs.result == 'true'
@@ -60,7 +103,7 @@ jobs:
             - name: Check the PR only adds new providers
               if: steps.trust_check.outputs.result == 'true'
               id: providers_check
-              run: node scripts/auto-approve-new-providers.mjs "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+              run: node scripts/auto-approve-new-providers.mjs "${{ steps.pr.outputs.base_sha }}" "${{ steps.pr.outputs.head_sha }}"
 
             - name: Generate GitHub App token
               if: ${{ !cancelled() && steps.trust_check.outputs.result == 'true' }}
@@ -79,9 +122,9 @@ jobs:
                       const { data: pr } = await github.rest.pulls.get({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
-                        pull_number: context.payload.pull_request.number,
+                        pull_number: ${{ steps.pr.outputs.number }},
                       });
-                      const checked = context.payload.pull_request.head.sha;
+                      const checked = '${{ steps.pr.outputs.head_sha }}';
                       if (pr.head.sha !== checked) {
                         console.log(`PR head moved from ${checked} to ${pr.head.sha}; skipping approval`);
                         return false;
@@ -89,16 +132,63 @@ jobs:
                       return true;
                   result-encoding: string
 
+            - name: Check Cubic has reviewed
+              if: steps.head_check.outputs.result == 'true'
+              id: cubic_check
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      // Cubic runs its check on every commit, but only posts a review when it has comments
+                      const { data: checks } = await github.rest.checks.listForRef({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        ref: '${{ steps.pr.outputs.head_sha }}',
+                        check_name: 'cubic · AI code reviewer',
+                      });
+                      if (!checks.check_runs.some((run) => run.app?.slug === 'cubic-dev-ai' && run.status === 'completed')) {
+                        console.log('Waiting: Cubic has not finished reviewing the latest commit');
+                        return false;
+                      }
+
+                      const { repository } = await github.graphql(
+                        `query($owner: String!, $repo: String!, $number: Int!) {
+                          repository(owner: $owner, name: $repo) {
+                            pullRequest(number: $number) {
+                              reviewThreads(first: 100) { totalCount nodes { isResolved comments(first: 1) { nodes { author { login } } } } }
+                            }
+                          }
+                        }`,
+                        { owner: context.repo.owner, repo: context.repo.repo, number: ${{ steps.pr.outputs.number }} }
+                      );
+                      const { reviewThreads } = repository.pullRequest;
+                      const isCubic = (node) => node?.author?.login === 'cubic-dev-ai';
+
+                      // Fail closed rather than miss an unresolved thread past the first page
+                      if (reviewThreads.totalCount > reviewThreads.nodes.length) {
+                        console.log(`Skipped: ${reviewThreads.totalCount} review threads, too many to check`);
+                        return false;
+                      }
+                      const unresolved = reviewThreads.nodes.filter((t) => !t.isResolved && isCubic(t.comments.nodes[0])).length;
+                      if (unresolved > 0) {
+                        console.log(`Waiting: ${unresolved} unresolved Cubic thread(s)`);
+                        return false;
+                      }
+
+                      console.log('Cubic has finished on the latest commit and all its threads are resolved');
+                      return true;
+                  result-encoding: string
+
             - name: Approve PR
-              if: steps.providers_check.outputs.approve == 'true' && steps.head_check.outputs.result == 'true'
+              if: steps.providers_check.outputs.approve == 'true' && steps.head_check.outputs.result == 'true' && steps.cubic_check.outputs.result == 'true'
               uses: hmarr/auto-approve-action@v4
               with:
                   github-token: ${{ steps.app-token.outputs.token }}
+                  pull-request-number: ${{ steps.pr.outputs.number }}
                   review-message: |
                       ✅ Auto-approved: only adds new providers (${{ steps.providers_check.outputs.added }}).
 
             - name: Dismiss earlier auto-approval
-              if: ${{ !cancelled() && steps.trust_check.outputs.result == 'true' && steps.providers_check.outputs.approve != 'true' }}
+              if: ${{ !cancelled() && steps.trust_check.outputs.result == 'true' && (steps.providers_check.outputs.approve != 'true' || steps.cubic_check.outputs.result == 'false') }}
               uses: actions/github-script@v7
               with:
                   github-token: ${{ steps.app-token.outputs.token }}
@@ -107,16 +197,16 @@ jobs:
                       const reviews = await github.paginate(github.rest.pulls.listReviews, {
                         owner: context.repo.owner,
                         repo: context.repo.repo,
-                        pull_number: context.payload.pull_request.number,
+                        pull_number: ${{ steps.pr.outputs.number }},
                       });
                       for (const review of reviews) {
                         if (review.state === 'APPROVED' && review.user?.login === botLogin) {
                           await github.rest.pulls.dismissReview({
                             owner: context.repo.owner,
                             repo: context.repo.repo,
-                            pull_number: context.payload.pull_request.number,
+                            pull_number: ${{ steps.pr.outputs.number }},
                             review_id: review.id,
-                            message: 'The PR no longer only adds new providers, so the auto-approval was withdrawn.',
+                            message: 'The PR no longer only adds new providers, or Cubic has not cleared the latest commit, so the auto-approval was withdrawn.',
                           });
                           console.log(`Dismissed review ${review.id} by ${review.user.login}`);
                         }
