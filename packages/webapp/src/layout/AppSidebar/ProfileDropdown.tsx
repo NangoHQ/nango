@@ -42,12 +42,12 @@ export const ProfileDropdown: React.FC = () => {
             {
                 label: 'Team',
                 icon: Users,
-                href: `/team-settings`
+                href: `/team`
             },
             {
                 label: 'Profile',
                 icon: UserCog,
-                href: `/user-settings`
+                href: `/profile`
             }
         ];
 

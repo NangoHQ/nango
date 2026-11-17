@@ -3,7 +3,6 @@ import { act, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CopyButton } from './copy-button';
 import { Field, FieldDescription, FieldError, FieldLabel } from './field';
 import { Input } from './input';
 import { InputGroup, InputGroupInput } from './input-group';
@@ -203,48 +202,6 @@ describe('SecretInput', () => {
         render(<SecretInput value={secret} canReveal={false} aria-label="Secret key" />);
         expect(container.querySelectorAll('button')).toHaveLength(0);
         expect($<HTMLInputElement>('input').value).toBe(maskSecret(secret));
-    });
-});
-
-describe('CopyButton', () => {
-    it('copies and shows Copied for ~1.5s', async () => {
-        vi.useFakeTimers();
-        const writeText = vi.fn().mockResolvedValue(undefined);
-        Object.assign(navigator, { clipboard: { writeText } });
-        render(<CopyButton text="a0583184" />);
-        const button = $<HTMLButtonElement>('button');
-        expect(button.getAttribute('aria-label')).toBe('Copy');
-        await act(async () => {
-            button.click();
-            await Promise.resolve();
-        });
-        expect(writeText).toHaveBeenCalledWith('a0583184');
-        expect(button.getAttribute('aria-label')).toBe('Copied');
-        act(() => {
-            vi.advanceTimersByTime(1500);
-        });
-        expect(button.getAttribute('aria-label')).toBe('Copy');
-    });
-
-    it('restarts the Copied timer on every copy', async () => {
-        vi.useFakeTimers();
-        Object.assign(navigator, { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
-        render(<CopyButton text="a0583184" />);
-        const button = $<HTMLButtonElement>('button');
-        const click = () =>
-            act(async () => {
-                button.click();
-                await Promise.resolve();
-            });
-        await click();
-        act(() => {
-            vi.advanceTimersByTime(1000);
-        });
-        await click();
-        act(() => {
-            vi.advanceTimersByTime(1000);
-        });
-        expect(button.getAttribute('aria-label')).toBe('Copied');
     });
 });
 

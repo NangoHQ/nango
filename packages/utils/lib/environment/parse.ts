@@ -246,6 +246,9 @@ const ENVS_SHAPE = z.object({
     // changes stay visible until it elapses. Avoid raising it beyond 1 minute unless strictly
     // necessary — a larger TTL widens that eventual-consistency window. Read once at startup.
     AUTH_PERSIST_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().max(60_000).optional().default(60_000), // 1 minute
+    // In-process cache of the account context loaded for a task capability token. Separate from the
+    // persist cache so the two lookups can be toggled independently. Uses the persist TTL.
+    AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED: z.stringbool().optional().default(false),
 
     // License configuration options
     NANGO_LICENSE: z.string().optional(),
@@ -491,6 +494,7 @@ const ENVS_SHAPE = z.object({
 
     // Self-hosting
     NANGO_SELF_HOSTING_PORT: z.coerce.number().optional().default(3010),
+    NANGO_SELF_HOSTING_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(61_000),
     NANGO_SELF_HOSTING_DATABASE_URL: z.url().optional(),
     NANGO_SELF_HOSTING_DATABASE_SSL: z.stringbool().optional().default(false),
     NANGO_SELF_HOSTING_DB_POOL_MAX: z.coerce.number().int().positive().optional().default(5),

@@ -1,29 +1,29 @@
 import {
     ArrowRight,
     ArrowUpRight,
-    Blocks,
+    BookOpen,
     Check,
     Copy,
     KeyRound,
+    LibraryBig,
     List,
     Lock,
     MessageSquareCode,
     PartyPopper,
     RefreshCw,
     RotateCcw,
-    Sparkles,
-    Wrench
+    Sparkles
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import { useLocalStorage } from 'react-use';
 
-import { Button, copyText } from '@nangohq/design-system';
+import { Button, copyText, LinkButton } from '@nangohq/design-system';
 
 import { ChecklistRow } from '@/components/patterns/ChecklistRow';
 import { PromptCard } from '@/components/patterns/PromptCard';
 import { CompactStepCard, StepCard, StepList } from '@/components/patterns/StepCard';
-import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAgentGettingStarted, useRestartAgentGettingStarted } from '@/hooks/useAgentGettingStarted';
 import { useApiKeys } from '@/hooks/useApiKeys';
@@ -37,6 +37,7 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { globalEnv } from '@/utils/env';
+import { LocalStorageKeys } from '@/utils/local-storage';
 import { deriveAgentProgress } from './agentProgress';
 import { getInstallPrompt, pickPromptApiKey } from './agentPrompt';
 
@@ -76,7 +77,9 @@ export const AgentGettingStarted: React.FC = () => {
     const { data, error } = useAgentGettingStarted();
     const restartMutation = useRestartAgentGettingStarted();
 
-    const [promptCopied, setPromptCopied] = useState(false);
+    const [promptCopiedByEnv, setPromptCopiedByEnv] = useLocalStorage<Record<string, boolean>>(LocalStorageKeys.GettingStartedPromptCopied, {});
+    const promptCopied = Boolean(promptCopiedByEnv?.[env]);
+    const markPromptCopied = () => setPromptCopiedByEnv({ ...promptCopiedByEnv, [env]: true });
     const progress = data ? deriveAgentProgress({ progress: data.data, promptCopied }) : null;
 
     const [justCopied, setJustCopied] = useState<Copied | null>(null);
@@ -107,7 +110,7 @@ export const AgentGettingStarted: React.FC = () => {
             return;
         }
         track('onboarding:copy_prompt_button_click', { has_api_key: apiKey !== null });
-        setPromptCopied(true);
+        markPromptCopied();
     };
 
     const copyApiKey = async () => {
@@ -136,17 +139,17 @@ export const AgentGettingStarted: React.FC = () => {
                     throw new Error('restart_failed');
                 }
                 track('onboarding:restart_button_click');
-                setPromptCopied(false);
+                setPromptCopiedByEnv({});
             }
         });
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout width="narrow">
             <Helmet>
                 <title>Getting started - Nango</title>
             </Helmet>
-            <div className="mx-auto flex w-full max-w-[820px] flex-col gap-7">
+            <div className="flex flex-col gap-7">
                 <h2 className="text-ds-3xl font-ds-regular leading-ds-tight tracking-ds-tight text-text-strong">Add Nango to your agent</h2>
 
                 {error && !data ? (
@@ -202,15 +205,12 @@ export const AgentGettingStarted: React.FC = () => {
                                 {showPlaygroundLink && (
                                     <p className="type-text-regular-xs text-text-muted">
                                         Not ready? Try it first in the{' '}
-                                        <ButtonLink
-                                            to={`/${env}/playground`}
-                                            variant="link-accent"
-                                            size="xs"
-                                            onClick={() => track('onboarding:playground_link_click')}
-                                        >
-                                            Agent Playground
-                                            <ArrowRight />
-                                        </ButtonLink>
+                                        <LinkButton asChild size="sm">
+                                            <Link to={`/${env}/playground`} onClick={() => track('onboarding:playground_link_click')}>
+                                                Agent Playground
+                                                <ArrowRight />
+                                            </Link>
+                                        </LinkButton>
                                     </p>
                                 )}
                             </StepCard>
@@ -268,10 +268,12 @@ const TryIntegrationsStep: React.FC<{
             done: progress.hasConnection,
             label: progress.hasConnection ? 'Account connected' : 'Connect an account',
             trailing: progress.hasConnection ? (
-                <ButtonLink to={`/${env}/connections`} variant="link-neutral" size="xs">
-                    View connection
-                    <ArrowRight />
-                </ButtonLink>
+                <LinkButton asChild tone="neutral" size="sm">
+                    <Link to={`/${env}/connections`}>
+                        View connection
+                        <ArrowRight />
+                    </Link>
+                </LinkButton>
             ) : null
         },
         { done: progress.hasToolCall, label: progress.hasToolCall ? 'First tool call ran' : 'Run your first tool call', trailing: null }
@@ -328,20 +330,21 @@ type GoFurtherDestination = AnalyticsEventProperties<'onboarding:go_further_link
 const GoFurther: React.FC<{ env: string }> = ({ env }) => {
     const links: { destination: GoFurtherDestination; icon: LucideIcon; title: string; description: string; to: string; external?: boolean }[] = [
         {
-            destination: 'integrations',
-            icon: Blocks,
-            title: 'Add more integrations',
-            description: 'Give your agent access to 1,000+ APIs.',
-            to: `/${env}/integrations`
-        },
-        { destination: 'logs', icon: List, title: 'View logs', description: 'Every tool call and API request your agent makes.', to: `/${env}/logs` },
-        {
             destination: 'catalog',
-            icon: Wrench,
+            icon: LibraryBig,
             title: 'Explore the catalog',
             description: 'Pre-built tools your agent can use right away.',
             to: `/${env}/catalog`
         },
+        {
+            destination: 'agent_sessions_docs',
+            icon: BookOpen,
+            title: 'How agent sessions work',
+            description: 'One MCP server per user, for all your APIs.',
+            to: 'https://nango.dev/docs/guides/agent-sessions',
+            external: true
+        },
+        { destination: 'logs', icon: List, title: 'View logs', description: 'Every tool call and API request your agent makes.', to: `/${env}/logs` },
         {
             destination: 'syncs_docs',
             icon: RefreshCw,

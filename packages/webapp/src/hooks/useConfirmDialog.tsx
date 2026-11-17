@@ -9,7 +9,8 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    Button
+    Button,
+    LinkButton
 } from '@nangohq/design-system';
 
 import type { ReactNode } from 'react';
@@ -89,12 +90,12 @@ export const useConfirmDialog = () => {
                     <AlertDialogDescription>{options.description}</AlertDialogDescription>
                     {options.docs && (
                         <div className="self-start">
-                            <Button asChild variant="link-accent">
+                            <LinkButton asChild size="lg">
                                 <a href={options.docs.url} target="_blank" rel="noopener noreferrer">
                                     {options.docs.title}
                                     <ExternalLink />
                                 </a>
-                            </Button>
+                            </LinkButton>
                         </div>
                     )}
                 </AlertDialogHeader>

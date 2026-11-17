@@ -31,9 +31,15 @@ export const ThemeSwitcher: React.FC = () => {
                 // The radios inside carry the semantics; the menu row is only a keyboard stop.
                 role="none"
                 className="shrink-0 rounded-ds-sm outline-none"
+                // Stops Radix focusing the row on each mouse move, which steals focus from the radios and flickers their tooltip.
+                onPointerMove={(event) => {
+                    event.preventDefault();
+                    if (!event.currentTarget.contains(document.activeElement)) {
+                        event.currentTarget.closest<HTMLElement>('[role="menu"]')?.focus({ preventScroll: true });
+                    }
+                }}
                 onFocus={(event) => {
-                    // Radix focuses the row on hover too; only hand focus to the selected item from the keyboard,
-                    // or every hover would open its tooltip.
+                    // Only hand focus to the selected item from the keyboard, or a click on the track would open its tooltip.
                     if (event.target === event.currentTarget && event.currentTarget.matches(':focus-visible')) {
                         event.currentTarget.querySelector<HTMLElement>('[aria-checked="true"]')?.focus();
                     }

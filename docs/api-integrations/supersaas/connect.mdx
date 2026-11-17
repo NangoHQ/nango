@@ -1,0 +1,48 @@
+---
+title: 'SuperSaaS - How do I link my account?'
+sidebarTitle: 'SuperSaaS'
+---
+
+## Overview
+
+To authenticate with SuperSaaS, you need:
+
+1. **Account name** — the name of your SuperSaaS account, chosen at signup.
+2. **API key** — the API key of your SuperSaaS account, from the Account Info page.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A SuperSaaS account. If you don't have one, [sign up](https://www.supersaas.com/accounts/new). SuperSaaS offers a free version with no time limit and no credit card requirement.
+
+### Step 1: Find your account name
+
+1. Sign in to your [SuperSaaS account](https://www.supersaas.com/dashboard/login).
+2. On the **SuperSaaS Administrator Dashboard**, click **Account Info** in the left menu.
+
+<img src="/api-integrations/supersaas/dashboard_account_info.png" alt="SuperSaaS Administrator Dashboard with Account Info highlighted in the left menu"/>
+
+3. Note the **Account name** at the top of the Account Info page. You will enter it in the **Account name** field.
+
+### Step 2: Generate your API key
+
+1. On the same Account Info page, scroll to the **API Key** section at the bottom.
+2. Click **Generate**. If a key already exists, the section shows it with a **Roll key** button instead: copy the existing key rather than rolling it, since **Roll key** replaces it.
+
+<img src="/api-integrations/supersaas/generate_api_key.png" alt="SuperSaaS Account Info page with the Generate button in the API Key section"/>
+
+3. Copy the API key with the copy icon next to it.
+
+<img src="/api-integrations/supersaas/api_key_created.png" alt="SuperSaaS API Key section with the copy icon next to the generated key"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with SuperSaaS.
+2. Enter your account name in the **Account name** field.
+3. Enter your API key in the **API key** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/supersaas/form.png" alt="SuperSaaS Connect UI form with the Account name and API key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to SuperSaaS.

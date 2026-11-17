@@ -2,7 +2,7 @@ import { ArrowUpRight, Info } from 'lucide-react';
 import { parseAsBoolean, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 
-import { Alert, AlertActions, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Switch } from '@/components/ui/Switch';
@@ -129,7 +129,7 @@ export const Usage: React.FC<{ showInvoicesLink: boolean }> = ({ showInvoicesLin
                     </AlertDescription>
                     {usage?.data.customer.portalUrl && (
                         <AlertActions>
-                            <Button asChild variant="link-accent" size="xs">
+                            <AlertButton asChild size="sm">
                                 <a
                                     href={usage.data.customer.portalUrl}
                                     target="_blank"
@@ -139,7 +139,7 @@ export const Usage: React.FC<{ showInvoicesLink: boolean }> = ({ showInvoicesLin
                                     View billing portal
                                     <ArrowUpRight />
                                 </a>
-                            </Button>
+                            </AlertButton>
                         </AlertActions>
                     )}
                 </Alert>

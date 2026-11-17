@@ -68,6 +68,7 @@ describe('compileAll', () => {
             name: 'fetchIssues',
             integrationId: 'github',
             filePath: './github/functions/fetchIssues.ts',
+            version: expect.stringMatching(/^[a-f0-9]{64}$/),
             description: 'Fetch a GitHub issue on demand',
             trigger: { kind: 'http' },
             requires: { connection: true, outbound: true, invoke: false },
@@ -85,6 +86,7 @@ describe('compileAll', () => {
             name: 'get_issue',
             integrationId: 'github',
             filePath: './github/tools/getIssue.ts',
+            version: expect.stringMatching(/^[a-f0-9]{64}$/),
             description: 'Get a GitHub issue',
             tags: {
                 domain: 'issues',
@@ -102,7 +104,8 @@ describe('compileAll', () => {
         expect(functionsJson[2]).toMatchObject({
             name: 'fetchIssues',
             integrationId: 'github.js',
-            filePath: './github.js/functions/fetchIssues.ts'
+            filePath: './github.js/functions/fetchIssues.ts',
+            version: expect.stringMatching(/^[a-f0-9]{64}$/)
         });
         expect(fs.existsSync(path.join(dir, 'build', 'github.js_functions_fetchIssues.cjs'))).toBe(true);
 

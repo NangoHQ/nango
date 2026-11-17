@@ -59,7 +59,7 @@ export const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
                             </TooltipTrigger>
                             <TooltipContent side="top">{revealLabel}</TooltipContent>
                         </Tooltip>
-                        <CopyButton text={value} onCopy={onCopy} disabled={disabled} />
+                        <CopyButton value={value} size="xs" onCopy={onCopy} disabled={disabled} />
                     </InputGroupAddon>
                 )}
             </InputGroup>

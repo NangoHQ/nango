@@ -19,7 +19,7 @@ export const CopyInput = React.forwardRef<HTMLInputElement, CopyInputProps>(
         <InputGroup size={size}>
             <InputGroupInput ref={ref} readOnly mono={mono} value={value} disabled={disabled} {...props} />
             <InputGroupAddon align="inline-end">
-                <CopyButton text={value} label={copyLabel} onCopy={onCopy} disabled={disabled} />
+                <CopyButton value={value} size="xs" label={copyLabel} onCopy={onCopy} disabled={disabled} />
             </InputGroupAddon>
         </InputGroup>
     )

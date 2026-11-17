@@ -4,13 +4,13 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { acceptInvitation, accountService, getInvitation, pbkdf2, userService, validateInvitation } from '@nangohq/shared';
-import { flagHasUsage, PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { flagHasUsage, PBKDF2_ITERATIONS, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { identifyAccountMembership } from '../../../services/accountAnalytics.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
+import { linkNewTeamToBilling } from '../../../utils/billing.js';
 import { isDisposableEmail } from '../../../utils/disposableEmail.js';
 import { signupAcquisitionSchema } from '../../../utils/signupAcquisition.js';
 import { signupAdvertisingFromRequest } from '../../../utils/signupAdvertising.js';
@@ -132,15 +132,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     void identifyAccountMembership(account.id);
 
     if (!token && flagHasUsage) {
-        const linkOrbCustomerRes = await linkBillingCustomer(account, user);
-        if (linkOrbCustomerRes.isErr()) {
-            report(linkOrbCustomerRes.error);
-        } else {
-            const linkOrbSubscriptionRes = await linkBillingFreeSubscription(account);
-            if (linkOrbSubscriptionRes.isErr()) {
-                report(linkOrbSubscriptionRes.error);
-            }
-        }
+        await linkNewTeamToBilling(account, user);
     }
 
     // Ask for email validation if not coming from an invitation

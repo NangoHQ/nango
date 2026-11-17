@@ -93,11 +93,11 @@ The reverse move is `--mode byoc` with the `--alerts` value from the new tfvars.
 
 ### Rotating an installation key
 
-On the customer's request or a suspected leak. Both keys verify while the customer rolls the secret; delete the old one once they confirm. On a confirmed compromise delete first, uploads fail until the new key is in place.
+On the customer's request or a suspected leak. Both keys verify while the customer rolls the secret; delete the old one once they confirm, or once its `last_used_at`, stamped by every upload the key signs, stops moving. On a confirmed compromise delete first, uploads fail until the new key is in place.
 
 ```bash
 nango-registry key create --installation <uuid> | jq -r .privateKeyPem
-nango-registry key list --installation <uuid> | jq -c 'map({kid, created_at})'
+nango-registry key list --installation <uuid> | jq -c 'map({kid, created_at, last_used_at})'
 nango-registry key delete --kid <old kid> --yes
 ```
 

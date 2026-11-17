@@ -1,7 +1,7 @@
 import { Err, Ok } from '@nangohq/utils';
 
 import { INSTALLATION_KEYS_TABLE, INSTALLATION_LICENSES_TABLE, INSTALLATIONS_TABLE } from '../db/schema.js';
-import { inserted, isUniqueViolation, orMissing, table } from './db.js';
+import { inserted, isUniqueViolation, table } from './db.js';
 import { listInstallationKeys } from './installation-key.service.js';
 import { getActiveLicense } from './installation-license.service.js';
 
@@ -55,15 +55,23 @@ export async function createInstallation(
     }
 }
 
-export async function getInstallationByUuid(
+export type InstallationSearchFilter = { id: number } | { uuid: string } | { customerId: number };
+
+export async function searchInstallations(
     db: RegistryDb,
-    { uuid, includeDeleted = false }: { uuid: string; includeDeleted?: boolean }
-): Promise<Result<DBSelfHostingInstallation | null>> {
+    filter?: InstallationSearchFilter,
+    { includeDeleted = false }: { includeDeleted?: boolean } = {}
+): Promise<Result<DBSelfHostingInstallation[]>> {
     try {
         return Ok(
-            (await installations(db)
-                .where({ uuid, ...(!includeDeleted && { deleted_at: null }) })
-                .first()) ?? null
+            await installations(db)
+                .where({
+                    ...(!includeDeleted && { deleted_at: null }),
+                    ...(filter && 'id' in filter && { id: filter.id }),
+                    ...(filter && 'uuid' in filter && { uuid: filter.uuid }),
+                    ...(filter && 'customerId' in filter && { customer_id: filter.customerId })
+                })
+                .orderBy('id')
         );
     } catch (err) {
         return Err(err);
@@ -74,19 +82,18 @@ export async function requireInstallation(
     db: RegistryDb,
     { uuid, includeDeleted = false }: { uuid: string; includeDeleted?: boolean }
 ): Promise<Result<DBSelfHostingInstallation>> {
-    return orMissing(await getInstallationByUuid(db, { uuid, includeDeleted }), `no ${includeDeleted ? '' : 'live '}installation ${uuid}`);
+    const found = await searchInstallations(db, { uuid }, { includeDeleted });
+    if (found.isErr()) {
+        return Err(found.error);
+    }
+    const [installation] = found.value;
+    return installation ? Ok(installation) : Err(new Error(`no ${includeDeleted ? '' : 'live '}installation ${uuid}`));
 }
 
-export async function listInstallations(
-    db: RegistryDb,
-    { customerId, includeDeleted = false }: { customerId?: number; includeDeleted?: boolean } = {}
-): Promise<Result<DBSelfHostingInstallation[]>> {
+export async function markInstallationSeen(db: RegistryDb, { id, at }: { id: number; at: Date }): Promise<Result<void>> {
     try {
-        return Ok(
-            await installations(db)
-                .where({ ...(!includeDeleted && { deleted_at: null }), ...(customerId !== undefined && { customer_id: customerId }) })
-                .orderBy('id')
-        );
+        await installations(db).where({ id }).update({ last_seen_at: at });
+        return Ok(undefined);
     } catch (err) {
         return Err(err);
     }

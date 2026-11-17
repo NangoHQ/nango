@@ -318,6 +318,22 @@ describe('trackAgentSessionToolCall', () => {
         expect(onlyEvent().properties).not.toHaveProperty('is_mcp_tool');
     });
 
+    it.each([
+        { functionSource: 'catalog', expected: 'catalog' },
+        { functionSource: 'repo', expected: 'custom' },
+        { functionSource: 'standalone', expected: 'custom' }
+    ] as const)('reports a $functionSource function as $expected', ({ functionSource, expected }) => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc', functionSource }));
+
+        expect(onlyEvent().properties).toMatchObject({ function_source: expected });
+    });
+
+    it('leaves the function source off for an MCP tool', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'linear-mcp', toolName: 'list_issues', mcpTool: true }));
+
+        expect(onlyEvent().properties).not.toHaveProperty('function_source');
+    });
+
     it('leaves pinned out when the call site cannot say', () => {
         inRequest(() => trackAgentSessionToolCall({ metaTool: 'nango_execute', session, toolName: 'made_up', errorCode: 'tool_not_in_session' }));
 
@@ -358,6 +374,31 @@ describe('trackAgentSessionProxyRequest', () => {
         });
     });
 
+    it.each([
+        { path: '/v1/pages/59833787-2cf9-4fdf-8782-e53db20768a5?filter=archived', endpoint: '/v1/pages/59833787-2cf9-4fdf-8782-e53db20768a5' },
+        { path: '/oauth2/v3/userinfo#me', endpoint: '/oauth2/v3/userinfo' },
+        { path: '/repos/acme/billing-service/issues/42', endpoint: '/repos/acme/billing-service/issues/42' }
+    ])('reports $path as the endpoint $endpoint', ({ path, endpoint }) => {
+        inRequest(() => trackAgentSessionProxyRequest({ session, integrationId: 'notion', method: 'GET', path }));
+
+        expect(onlyEvent().properties).toMatchObject({ endpoint });
+    });
+
+    it('reports which arguments made the request invalid', () => {
+        inRequest(() =>
+            trackAgentSessionProxyRequest({
+                session,
+                errorCode: 'invalid_input',
+                invalidArguments: ['path: invalid_format', 'connection_id: unrecognized_key']
+            })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({
+            error_code: 'invalid_input',
+            invalid_arguments: 'path: invalid_format, connection_id: unrecognized_key'
+        });
+    });
+
     it('reports the provider error code of a failed request', () => {
         inRequest(() =>
             trackAgentSessionProxyRequest({
@@ -376,6 +417,21 @@ describe('trackAgentSessionProxyRequest', () => {
             error_code: 'upstream_error',
             provider_error_code: 'rate_limited'
         });
+    });
+
+    it('carries the goal and the intent the agent gave', () => {
+        inRequest(() =>
+            trackAgentSessionProxyRequest({
+                session,
+                integrationId: 'notion',
+                method: 'GET',
+                status: 200,
+                goal: 'find the roadmap doc',
+                intent: 'no tool reads a page, a read page tool would'
+            })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({ goal: 'find the roadmap doc', intent: 'no tool reads a page, a read page tool would' });
     });
 
     it('reports a call rejected before its arguments could be read', () => {
@@ -410,6 +466,7 @@ describe('trackAgentSessionToolSearch', () => {
             trackAgentSessionToolSearch({
                 session,
                 query: 'email a customer',
+                queryCount: 2,
                 goal: 'reply to the customer about their refund',
                 matches,
                 related,
@@ -423,6 +480,7 @@ describe('trackAgentSessionToolSearch', () => {
             agent_session_id: 'session-1',
             meta_tool: 'nango_tool_search',
             query: 'email a customer',
+            query_count: 2,
             goal: 'reply to the customer about their refund',
             match_count: 2,
             related_count: 1,
@@ -439,6 +497,7 @@ describe('trackAgentSessionToolSearch', () => {
 
         const { properties } = onlyEvent();
         expect(properties).not.toHaveProperty('query');
+        expect(properties).not.toHaveProperty('query_count');
         expect(properties).toMatchObject({ is_success: false, error_code: 'invalid_input' });
     });
 

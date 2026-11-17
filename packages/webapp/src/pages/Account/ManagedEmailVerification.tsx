@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { Alert, AlertDescription, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button, InputGroup, InputGroupInput, LinkButton } from '@nangohq/design-system';
 
 import { useManagedEmailVerification, useManagedEmailVerificationAPI } from '@/hooks/useAuth';
 import DefaultLayout from '@/layout/DefaultLayout';
@@ -92,9 +92,9 @@ export const ManagedEmailVerification: React.FC = () => {
 
             <span className="text-body-medium-regular text-text-muted text-center">
                 Didn&apos;t get the code?{' '}
-                <Button asChild variant="link-accent">
+                <LinkButton asChild size="lg">
                     <Link to="/signin">Start the Google sign-in flow again.</Link>
-                </Button>
+                </LinkButton>
             </span>
         </DefaultLayout>
     );
