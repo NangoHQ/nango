@@ -35,7 +35,6 @@ export type GetConnections = ApiEndpoint<{
         integrationIds?: string[] | undefined;
         search?: string | undefined;
         withError?: boolean | undefined;
-        tags?: Tags | undefined;
         page?: number | undefined;
     };
     Path: '/api/v1/connections';

@@ -29,9 +29,6 @@ export function useConnections(queries: Omit<GetConnections['Querystring'], 'pag
             if (queries.withError !== undefined) {
                 usp.set('withError', String(queries.withError));
             }
-            for (const [key, value] of Object.entries(queries.tags ?? {})) {
-                usp.set(`tags[${key}]`, value);
-            }
             usp.set('page', String(pageParam));
 
             const res = await apiFetch(`/api/v1/connections?${usp.toString()}`, {

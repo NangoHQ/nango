@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
-import { connectionService, connectionTagsSchema, getSyncsByConnectionIds } from '@nangohq/shared';
+import { connectionService, getSyncsByConnectionIds } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToApi } from '../../../formatters/connection.js';
@@ -23,7 +23,6 @@ const queryStringValidation = z
             .optional(),
         search: z.string().max(255).optional(),
         withError: z.stringbool().optional(),
-        tags: connectionTagsSchema.optional(),
         env: envSchema,
         page: z.coerce.number().min(0).max(50).optional()
     })
@@ -47,8 +46,7 @@ export const getConnections = asyncWrapperWithEnvironment<GetConnections>(async 
         page: queryString.page,
         search: queryString.search,
         integrationIds: queryString.integrationIds,
-        withError: queryString.withError,
-        tags: queryString.tags
+        withError: queryString.withError
     });
 
     const pausedSyncsByConnection = new Map<number, string[]>();
