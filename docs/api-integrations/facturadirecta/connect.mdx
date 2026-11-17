@@ -1,0 +1,54 @@
+---
+title: 'FacturaDirecta - How do I link my account?'
+sidebarTitle: 'FacturaDirecta'
+---
+
+## Overview
+
+To authenticate with FacturaDirecta, you need:
+
+1. **Company ID** — the identifier of your company in the FacturaDirecta API.
+2. **API Key** — an API key created for that company.
+
+This guide will show you how to get both.
+
+### Prerequisites
+
+- A FacturaDirecta account with a company. API keys are available on every plan, including the free Gratis plan.
+
+### Step 1: Copy your company ID
+
+1. Log in to [FacturaDirecta](https://app.facturadirecta.com) and open the company you want to connect.
+2. Click the **Settings** (gear) icon in the top bar.
+
+<img src="/api-integrations/facturadirecta/open_settings.png" alt="FacturaDirecta top bar with the Settings gear icon highlighted" />
+
+3. In the Settings menu, click **API and integrations** (**API e integraciones**).
+4. In the **API** card, copy the value under **Your company identifier in the API**: this is your **Company ID**.
+
+<img src="/api-integrations/facturadirecta/api_settings_create_key.png" alt="FacturaDirecta API settings with the company identifier field and the Create new API key button" />
+
+<Note>An API key only works for the company it was created in. Use the company ID of that same company.</Note>
+
+### Step 2: Create an API key
+
+1. On the same page, click **Create new API key**.
+2. Enter a **Name** for the key, then set the permissions your integration needs. Click **Read only** to grant read access to every resource.
+3. Click **Create key**, then confirm with **Yes, create key**.
+
+<img src="/api-integrations/facturadirecta/new_api_key_dialog.png" alt="FacturaDirecta New API key dialog with the Name field, the Read only preset and the Create key button" />
+
+4. In the **New API key created** dialog, click **Copy** to copy the full API key. It is shown only once.
+
+<img src="/api-integrations/facturadirecta/api_key_created.png" alt="FacturaDirecta New API key created dialog with the copy button for the full key" />
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with FacturaDirecta.
+2. Enter your company ID in the **Company ID** field.
+3. Enter your API key in the **API Key** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/facturadirecta/form.png" alt="FacturaDirecta Connect UI form with the Company ID and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to FacturaDirecta.

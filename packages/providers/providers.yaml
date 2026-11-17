@@ -13825,6 +13825,52 @@ factorial-api-key:
             pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
             doc_section: '#step-1-generating-your-api-key'
 
+facturadirecta:
+    display_name: FacturaDirecta
+    categories:
+        - invoicing
+        - accounting
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.facturadirecta.com/api
+        headers:
+            facturadirecta-api-key: ${apiKey}
+            accept-version: ${connectionConfig.version} || 1.0.10
+        connection_config:
+            companyId: ${connectionConfig.companyId}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+        verification:
+            method: GET
+            endpoints:
+                - /${connectionConfig.companyId}/apiKeyInfo
+    docs: https://nango.dev/docs/api-integrations/facturadirecta
+    docs_connect: https://nango.dev/docs/api-integrations/facturadirecta/connect
+    connection_config:
+        companyId:
+            type: string
+            title: Company ID
+            description: Your company identifier in the FacturaDirecta API.
+            example: com_3a7e8d29-4f5b-4c6e-9a1d-2b8c4e7f5d3a
+            pattern: '^[A-Za-z0-9_-]+$'
+            order: 1
+            doc_section: '#step-1-copy-your-company-id'
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your FacturaDirecta API key.
+            example: Qm7t*******************************E7uW
+            pattern: '^[A-Za-z0-9]{6}\.[A-Za-z0-9]{16,}$'
+            doc_section: '#step-2-create-an-api-key'
+
 fairing:
     display_name: Fairing
     categories:
@@ -13890,6 +13936,41 @@ facebook-system-user:
             example: EAAM5b*******************TgZDZD
             doc_section: '#step-1-generating-a-system-user-access-token'
 
+faktoora:
+    display_name: faktoora
+    categories:
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.environment}
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/invoices?perPage=1
+    docs: https://nango.dev/docs/api-integrations/faktoora
+    docs_connect: https://nango.dev/docs/api-integrations/faktoora/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The faktoora API host to use.
+            format: hostname
+            enum:
+                - api.faktoora.com
+                - api.demo.faktoora.com
+                - api.sandbox.faktoora.com
+            order: 1
+            doc_section: '#step-1-choose-your-environment'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your faktoora API key.
+            example: Zx4q************************Hn7w
+            doc_section: '#step-2-create-an-api-key'
+
 fanvue:
     display_name: Fanvue
     categories:
@@ -13922,6 +14003,176 @@ fanvue:
             title: ''
             description: ''
             automated: true
+
+favro:
+    display_name: Favro
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://favro.com/api
+        connection_config:
+            organizationId: ${connectionConfig.organizationId}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+            remaining: 'x-ratelimit-remaining'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/organizations?limit=1
+    docs: https://nango.dev/docs/api-integrations/favro
+    docs_connect: https://nango.dev/docs/api-integrations/favro/connect
+    connection_config:
+        organizationId:
+            type: string
+            title: Organization ID
+            description: The ID of your Favro organization.
+            pattern: '^[A-Za-z0-9]+$'
+            example: 7c3f19a0b52e48d6a91f0e2b
+            order: 1
+            doc_section: '#step-2-find-your-organization-id'
+    credentials:
+        username:
+            type: string
+            title: Email
+            description: The email address of your Favro account.
+            example: user@example.com
+            doc_section: '#step-1-create-an-api-token'
+        password:
+            type: string
+            title: API token
+            description: Your Favro API token.
+            secret: true
+            example: R_q8Vn*********************************3kTz
+            pattern: '^R_[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-create-an-api-token'
+
+featherless:
+    display_name: Featherless
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.featherless.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/plan
+    docs: https://nango.dev/docs/api-integrations/featherless
+    docs_connect: https://nango.dev/docs/api-integrations/featherless/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Featherless API key.
+            pattern: '^rc_[A-Za-z0-9]{20,}$'
+            example: rc_k7m2********************************************************9xqd
+            doc_section: '#step-1-create-an-api-key'
+
+feedbin:
+    display_name: Feedbin
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.feedbin.com
+        verification:
+            method: GET
+            endpoints:
+                - /v2/authentication.json
+    docs: https://nango.dev/docs/api-integrations/feedbin
+    docs_connect: https://nango.dev/docs/api-integrations/feedbin/connect
+    credentials:
+        username:
+            type: string
+            title: Email
+            description: The email address of your Feedbin account.
+            example: user@example.com
+            doc_section: '#step-1-find-your-account-email'
+        password:
+            type: string
+            title: Password
+            description: The password of your Feedbin account.
+            secret: true
+            example: '********'
+            doc_section: '#step-2-enter-your-credentials-in-the-connect-ui'
+
+feedblitz:
+    display_name: FeedBlitz
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.feedblitz.com/f.api
+        headers:
+            user-agent: nango
+        query:
+            key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /user
+    docs: https://nango.dev/docs/api-integrations/feedblitz
+    docs_connect: https://nango.dev/docs/api-integrations/feedblitz/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your FeedBlitz API key.
+            doc_section: '#step-1-get-your-api-key'
+
+feedier:
+    display_name: Feedier
+    categories:
+        - surveys
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.bx.feedier.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v3/teams?limit=1
+    docs: https://nango.dev/docs/api-integrations/feedier
+    docs_connect: https://nango.dev/docs/api-integrations/feedier/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Private Key
+            description: Your Feedier private API key.
+            pattern: '^[A-Za-z0-9]{16,}$'
+            example: q7Rk************************Z2mW
+            doc_section: '#step-1-copy-your-private-key'
+
+felt:
+    display_name: Felt
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://felt.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/user
+    docs: https://nango.dev/docs/api-integrations/felt
+    docs_connect: https://nango.dev/docs/api-integrations/felt/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Felt API token
+            pattern: '^felt_pat_\S+$'
+            example: felt_pat_Qm7x***********************************K2pd
+            doc_section: '#step-1-generate-an-api-token'
 
 fiber-ai:
     display_name: Fiber AI
@@ -14064,6 +14315,447 @@ fern:
             prefix: https://
             order: 1
             doc_section: '#step-2-find-your-docs-url'
+
+fidel-api:
+    display_name: Fidel API
+    categories:
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fidel.uk
+        headers:
+            fidel-key: ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v1/programs?limit=1
+    docs: https://nango.dev/docs/api-integrations/fidel-api
+    docs_connect: https://nango.dev/docs/api-integrations/fidel-api/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fidel API secret API key (test or live)
+            pattern: '^sk_[A-Za-z0-9_-]{8,}$'
+            example: sk_test_3f9a****************************c6e1
+            doc_section: '#step-1-create-an-api-key'
+
+filepost:
+    display_name: FilePost
+    categories:
+        - storage
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://filepost.dev
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/account
+    docs: https://nango.dev/docs/api-integrations/filepost
+    docs_connect: https://nango.dev/docs/api-integrations/filepost/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your FilePost API key.
+            pattern: '^fh_[A-Za-z0-9_-]+$'
+            example: fh_Q7mK***********************************x2Rd
+            doc_section: '#step-1-get-your-api-key'
+
+files-com:
+    display_name: Files.com
+    categories:
+        - storage
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.files.com/api/rest
+        headers:
+            x-filesapi-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/api_key
+    docs: https://nango.dev/docs/api-integrations/files-com
+    docs_connect: https://nango.dev/docs/api-integrations/files-com/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Site Subdomain
+            description: The part of your Files.com site URL before .files.com
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: mycompany
+            prefix: https://
+            suffix: .files.com
+            order: 1
+            doc_section: '#step-1-find-your-site-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: A Files.com user or site-wide API key
+            pattern: '^[A-Za-z0-9_-]{20,}$'
+            example: k7q2********************************************************m4x9
+            doc_section: '#step-2-create-an-api-key'
+
+filetopdf-dev:
+    display_name: FileToPDF.dev
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.filetopdf.dev
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/filetopdf-dev
+    docs_connect: https://nango.dev/docs/api-integrations/filetopdf-dev/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your FileToPDF.dev secret key.
+            pattern: '^sk_[a-z]+_[A-Za-z0-9]+$'
+            example: sk_live_q7m2********************************************************x9k4
+            doc_section: '#step-1-create-an-api-key'
+
+finage:
+    display_name: Finage
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.finage.co.uk
+        query:
+            apikey: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /marketstatus
+    docs: https://nango.dev/docs/api-integrations/finage
+    docs_connect: https://nango.dev/docs/api-integrations/finage/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Finage API key.
+            pattern: '^API_[A-Za-z0-9]+$'
+            example: API_KEYM4TQ************************7XB2
+            doc_section: '#step-1-copy-your-api-key'
+
+finalscout:
+    display_name: FinalScout
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.finalscout.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/account
+    docs: https://nango.dev/docs/api-integrations/finalscout
+    docs_connect: https://nango.dev/docs/api-integrations/finalscout/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your FinalScout API key.
+            pattern: '^[A-Za-z0-9]{16,}$'
+            example: k7q2************************m9x4
+            doc_section: '#step-1-copy-your-api-key'
+
+financial-modeling-prep:
+    display_name: Financial Modeling Prep
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://financialmodelingprep.com
+        headers:
+            apikey: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /stable/search-symbol?query=AAPL&limit=1
+    docs: https://nango.dev/docs/api-integrations/financial-modeling-prep
+    docs_connect: https://nango.dev/docs/api-integrations/financial-modeling-prep/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Financial Modeling Prep API key.
+            pattern: '^[A-Za-z0-9]{16,}$'
+            example: 6tR5************************7ZUo
+            doc_section: '#step-1-copy-your-api-key'
+
+finlight:
+    display_name: Finlight
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.finlight.me
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/sources
+    docs: https://nango.dev/docs/api-integrations/finlight
+    docs_connect: https://nango.dev/docs/api-integrations/finlight/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your finlight API key
+            pattern: '^sk_[A-Za-z0-9]+$'
+            example: sk_fyan********************************************************8djl
+            doc_section: '#step-1-create-an-api-key'
+
+finmei:
+    display_name: Finmei
+    categories:
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.finmei.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            remaining: 'x-ratelimit-remaining'
+        verification:
+            method: GET
+            endpoints:
+                - /profile
+    docs: https://nango.dev/docs/api-integrations/finmei
+    docs_connect: https://nango.dev/docs/api-integrations/finmei/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Finmei API token
+            pattern: '^[A-Za-z0-9|-]{20,}$'
+            example: 7Kq2*****************************************************************************x9Tm
+            doc_section: '#step-1-create-an-api-token'
+
+finmo:
+    display_name: Finmo
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.finmo.net
+        headers:
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v1/wallet?limit=1
+    docs: https://nango.dev/docs/api-integrations/finmo
+    docs_connect: https://nango.dev/docs/api-integrations/finmo/connect
+    credentials:
+        username:
+            type: string
+            title: Access API Key
+            description: Your Finmo Access API key.
+            secret: true
+            example: AK_FINMO_7Q2D****************************K4W9
+            pattern: '^AK_FINMO_[A-Za-z0-9_]+$'
+            doc_section: '#step-1-generate-an-api-key-pair'
+        password:
+            type: string
+            title: Secret API Key
+            description: Your Finmo Secret API key.
+            secret: true
+            example: SK_FINMO_B5R1********************************M3XJ
+            pattern: '^SK_FINMO_[A-Za-z0-9_]+$'
+            doc_section: '#step-1-generate-an-api-key-pair'
+
+fireberry:
+    display_name: Fireberry
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fireberry.com/api
+        headers:
+            tokenid: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /record/crmuser?pagesize=1
+    docs: https://nango.dev/docs/api-integrations/fireberry
+    docs_connect: https://nango.dev/docs/api-integrations/fireberry/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Token
+            description: Your Fireberry API Access Token (TokenID).
+            pattern: '^[A-Za-z0-9-]+$'
+            example: 8c2e****************************4b7d
+            doc_section: '#step-1-copy-your-api-access-token'
+
+fireworks-ai:
+    display_name: Fireworks AI
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fireworks.ai
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/accounts?pageSize=1
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/fireworks-ai
+    docs_connect: https://nango.dev/docs/api-integrations/fireworks-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fireworks AI API key.
+            doc_section: '#step-1-create-an-api-key'
+
+fish-audio:
+    display_name: Fish Audio
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fish.audio
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /wallet/self/api-credit
+    docs: https://nango.dev/docs/api-integrations/fish-audio
+    docs_connect: https://nango.dev/docs/api-integrations/fish-audio/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fish Audio API key.
+            pattern: '^(sk-fish-)?[A-Za-z0-9_-]{20,}$'
+            example: sk-fish-Qm7v***********************************3Lpa
+            doc_section: '#step-1-create-an-api-key'
+
+fivetran:
+    display_name: Fivetran
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.fivetran.com
+        headers:
+            accept: application/json
+        retry:
+            after:
+                - 'retry-after'
+            remaining: 'x-rate-limit-remaining'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/account/info
+    docs: https://nango.dev/docs/api-integrations/fivetran
+    docs_connect: https://nango.dev/docs/api-integrations/fivetran/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Fivetran API key.
+            secret: true
+            example: Rk3w********Tq8z
+            pattern: '^[A-Za-z0-9_-]{8,}$'
+            doc_section: '#step-1-generate-an-api-key'
+        password:
+            type: string
+            title: API Secret
+            description: The secret generated with that key.
+            secret: true
+            example: m7Gp************************2xVc
+            doc_section: '#step-1-generate-an-api-key'
+
+flatfile:
+    display_name: Flatfile
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.x.flatfile.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/accounts/current
+    docs: https://nango.dev/docs/api-integrations/flatfile
+    docs_connect: https://nango.dev/docs/api-integrations/flatfile/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret Key
+            description: Your Flatfile secret key or personal access token
+            pattern: '^(sk|pat)_\S+$'
+            example: sk_q7m2************************x9k4
+            doc_section: '#step-1-get-your-secret-key-or-personal-access-token'
+
+fleetbase:
+    display_name: Fleetbase
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fleetbase.io
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v1/organizations/current
+    docs: https://nango.dev/docs/api-integrations/fleetbase
+    docs_connect: https://nango.dev/docs/api-integrations/fleetbase/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fleetbase live, test or restricted API key.
+            pattern: '^flb_(test_|live_).+$'
+            example: flb_live_Kp7d************************w3Zq
+            doc_section: '#step-1-create-an-api-key'
+
+flippingbook:
+    display_name: FlippingBook
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api-tc.is.flippingbook.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/auth/key
+    docs: https://nango.dev/docs/api-integrations/flippingbook
+    docs_connect: https://nango.dev/docs/api-integrations/flippingbook/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your FlippingBook Online API key.
+            doc_section: '#step-1-create-an-api-key'
 
 freeagent:
     display_name: FreeAgent

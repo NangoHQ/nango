@@ -1,0 +1,46 @@
+---
+title: 'Flatfile - How do I link my account?'
+sidebarTitle: 'Flatfile'
+---
+
+## Overview
+
+To authenticate with Flatfile, you need:
+
+1. **Secret Key** — the secret key of a Flatfile environment (starts with `sk_`), or a personal access token (starts with `pat_`).
+
+This guide will show you how to get either one.
+
+### Prerequisites
+
+- A Flatfile account. You can [sign up](https://platform.flatfile.com/account/sign-up) for free; usage in your development environment is always free.
+
+### Step 1: Get your secret key or personal access token
+
+**Secret key**
+
+1. Log in to [Flatfile](https://platform.flatfile.com) and click **API Keys & Secrets** in the sidebar.
+2. Pick the environment you want to connect (for example, development) with the switcher at the top left. Each environment has its own keys, created automatically.
+3. Under **API Keys**, copy the **Secret Key** (starts with `sk_`) with the copy button. Don't use the **Publishable Key** (starts with `pk_`): it can only create a Space.
+
+<img src="/api-integrations/flatfile/copy_secret_key.png" alt="Flatfile API Keys & Secrets page with the environment switcher and the Secret Key copy button" />
+
+**Personal access token**
+
+A personal access token has the permissions of the user who created it.
+
+1. Open the user menu (the three dots next to your name, bottom left) and select **Personal Access Tokens**.
+2. Click **New Personal Access Token**, enter a name, then click **Create Token**.
+3. Copy the token (starts with `pat_`) with the **Copy** button. Flatfile shows it only once.
+
+<img src="/api-integrations/flatfile/personal_access_token_created.png" alt="Flatfile Create Personal Access Token dialog with the Copy button highlighted" />
+
+### Step 2: Enter your secret key in the Connect UI
+
+1. Open the form where you need to authenticate with Flatfile.
+2. Enter your secret key or personal access token in the **Secret Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/flatfile/form.png" alt="Flatfile Connect UI form with the Secret Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Flatfile.
