@@ -1,0 +1,46 @@
+---
+title: 'Finmei - How do I link my account?'
+sidebarTitle: 'Finmei'
+---
+
+## Overview
+
+To authenticate with Finmei, you need:
+
+1. **API Token** — a token you create in the Integrations tab of your Finmei settings.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Finmei account with API access. Finmei offers the API with its Pro plan.
+
+### Step 1: Create an API token
+
+1. Log in to [Finmei](https://app.finmei.com/login) and click **Settings** in the left sidebar.
+
+<img src="/api-integrations/finmei/open_settings.png" alt="Finmei sidebar with the Settings link highlighted" />
+
+2. Open the **Integrations** tab.
+
+<img src="/api-integrations/finmei/open_integrations.png" alt="Finmei settings with the Integrations tab highlighted" />
+
+3. Under **API tokens**, enter a name in the **API token name** field (for example, the name of your app), then click **Create**.
+
+<img src="/api-integrations/finmei/create_api_token.png" alt="Finmei API tokens section with a token name entered and the Create button highlighted" />
+
+4. Click **Copy** to copy the token right away. Finmei shows it only once.
+
+<img src="/api-integrations/finmei/copy_api_token.png" alt="Finmei API tokens section showing the new token with the Copy button highlighted" />
+
+Each token is assigned to one business and can't read data from other businesses in the same account. Create the token in the business you want to connect.
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Finmei.
+2. Enter your API token in the **API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/finmei/form.png" alt="Finmei Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Finmei.

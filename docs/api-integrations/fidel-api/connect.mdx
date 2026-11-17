@@ -1,0 +1,43 @@
+---
+title: 'Fidel API - How do I link my account?'
+sidebarTitle: 'Fidel API'
+---
+
+## Overview
+
+To authenticate with Fidel API, you need:
+
+1. **API Key** — a secret API key (test or live) from your Fidel API dashboard.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Fidel API account. [Sign-up](https://dashboard.fidel.uk/sign-up) is free and needs no credit card; a new account gives you test API keys.
+
+### Step 1: Create an API key
+
+1. Log in to the [Fidel API dashboard](https://dashboard.fidel.uk/sign-in) and go to **Account Settings** > **Plan**.
+2. In the **API Keys** section, click **Create**.
+
+<img src="/api-integrations/fidel-api/account_plan_api_keys.png" alt="Fidel API Account Settings Plan tab with the Create button in the API Keys section highlighted" />
+
+3. Set **Key type** to **API key** (not **SDK key**), then click **Create key**.
+
+<img src="/api-integrations/fidel-api/create_api_key_dialog.png" alt="Fidel API create key dialog with the API key type selected and the Create key button highlighted" />
+
+4. Copy the key, then click **Done**. Fidel API shows the key only once.
+
+<img src="/api-integrations/fidel-api/api_key_created.png" alt="Fidel API dialog showing the newly created API key" />
+
+A test key starts with `sk_test_` and returns test data. To use live data, switch on the **Live Mode** toggle at the bottom left of the dashboard and create a live API key the same way.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Fidel API.
+2. Enter your secret API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/fidel-api/form.png" alt="Fidel API Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Fidel API.
