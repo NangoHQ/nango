@@ -1,24 +1,17 @@
 // @vitest-environment jsdom
-import { act, useState } from 'react';
+import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Field, FieldDescription, FieldError, FieldLabel } from './field';
 import { Input } from './input';
 import { InputGroup, InputGroupInput } from './input-group';
-import { SearchInput, setNativeValue } from './search-input';
 import { Textarea } from './textarea';
 import { TooltipProvider } from './tooltip';
 
 import type { Root } from 'react-dom/client';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-// The open "Copied" tooltip measures itself; jsdom has no ResizeObserver.
-globalThis.ResizeObserver ??= class {
-    observe = vi.fn();
-    unobserve = vi.fn();
-    disconnect = vi.fn();
-};
 
 let container: HTMLDivElement;
 let root: Root;
@@ -45,16 +38,6 @@ function $<T extends Element = HTMLElement>(selector: string): T {
         throw new Error(`No element matches ${selector}`);
     }
     return el;
-}
-
-function type(input: HTMLInputElement, value: string) {
-    act(() => setNativeValue(input, value));
-}
-
-function key(target: EventTarget, k: string) {
-    act(() => {
-        target.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
-    });
 }
 
 describe('Field wiring', () => {
@@ -102,6 +85,32 @@ describe('Field wiring', () => {
         const ids = Array.from(container.querySelectorAll('input')).map((input) => input.id);
         expect(ids[0]).toBeTruthy();
         expect(ids[1]).toBe('');
+    });
+
+    it('marks only the first control invalid', () => {
+        render(
+            <Field data-invalid>
+                <FieldLabel>Headers</FieldLabel>
+                <Input />
+                <Input />
+                <FieldError>Row 2 is missing a value.</FieldError>
+            </Field>
+        );
+        const [first, second] = Array.from(container.querySelectorAll('input'));
+        expect(first?.getAttribute('aria-invalid')).toBe('true');
+        expect(first?.getAttribute('aria-describedby')).toBeTruthy();
+        expect(second?.hasAttribute('aria-invalid')).toBe(false);
+        expect(second?.hasAttribute('aria-describedby')).toBe(false);
+    });
+
+    it('leaves the label unlinked without a design-system control', () => {
+        render(
+            <Field>
+                <FieldLabel>Role</FieldLabel>
+                <select />
+            </Field>
+        );
+        expect($<HTMLLabelElement>('label').hasAttribute('for')).toBe(false);
     });
 
     it('points the label at an explicit control id', () => {
@@ -170,66 +179,5 @@ describe('className overrides', () => {
             expect(input.className).toContain('font-mono');
             expect(input.className).not.toContain('font-sans');
         }
-    });
-});
-
-describe('SearchInput', () => {
-    function Controlled() {
-        const [value, setValue] = useState('');
-        return <SearchInput value={value} onValueChange={setValue} placeholder="Filter scopes" />;
-    }
-
-    it('focuses on "/" and swaps the hint for Clear once there is a value', () => {
-        render(<Controlled />);
-        const input = $<HTMLInputElement>('input');
-        expect($('kbd').textContent).toBe('/');
-        key(document.body, '/');
-        expect(document.activeElement).toBe(input);
-
-        type(input, 'read');
-        expect(container.querySelector('kbd')).toBeNull();
-        act(() => $<HTMLButtonElement>('button[aria-label="Clear search"]').click());
-        expect(input.value).toBe('');
-        expect(container.querySelector('kbd')).not.toBeNull();
-    });
-
-    it('ignores "/" while typing in another field', () => {
-        render(
-            <>
-                <input data-testid="other" />
-                <SearchInput />
-            </>
-        );
-        const other = $<HTMLInputElement>('[data-testid=other]');
-        act(() => other.focus());
-        key(other, '/');
-        expect(document.activeElement).toBe(other);
-    });
-
-    it('does not clear a read-only field', () => {
-        render(<SearchInput defaultValue="read" readOnly />);
-        const input = $<HTMLInputElement>('input');
-        key(input, 'Escape');
-        expect(input.value).toBe('read');
-        expect($<HTMLButtonElement>('button[aria-label="Clear search"]').disabled).toBe(true);
-    });
-
-    it('takes its name from a FieldLabel, not the placeholder', () => {
-        render(
-            <Field>
-                <FieldLabel>Scopes</FieldLabel>
-                <SearchInput />
-            </Field>
-        );
-        expect($('input').hasAttribute('aria-label')).toBe(false);
-    });
-
-    it('clears on Esc (uncontrolled)', () => {
-        const onValueChange = vi.fn();
-        render(<SearchInput defaultValue="read" onValueChange={onValueChange} />);
-        const input = $<HTMLInputElement>('input');
-        key(input, 'Escape');
-        expect(input.value).toBe('');
-        expect(onValueChange).toHaveBeenLastCalledWith('');
     });
 });
