@@ -387,40 +387,33 @@ html:not(.dark) #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc
    * Push only the Update components leftward into the reserved gutter.
    * The page header (title, description, copy page button) stays at its
    * original prose-constrained position because we don't touch
-   * #content-area or #content. The Update flex row has a fixed 160px
-   * label column + 24px gap = 184px on the left, so we shift the entire
-   * .update-container left by 184px AND grow its width by 184px. Net
-   * effect: the date pill sits in the gutter, the content column starts
-   * where the date used to be (aligned with the page title), and the
-   * right edge stays aligned with the rest of the page content.
+   * #content-area or #content. The label column is widened to 290px
+   * (below), so with the 24px gap the Update flex row has 314px on the
+   * left. We shift the entire .update-container left by 314px AND grow
+   * its width by 314px. Net effect: the date pill sits in the gutter,
+   * the content column starts where the date used to be (aligned with
+   * the page title), and the right edge stays aligned with the rest of
+   * the page content.
    */
   body:has([data-page-href*="updates/changelog"]) .update-container {
-    margin-left: -184px !important;
-    width: calc(100% + 184px) !important;
+    margin-left: -314px !important;
+    width: calc(100% + 314px) !important;
     max-width: none !important;
   }
 
   /*
-   * Let long labels grow leftward instead of wrapping. The label column
-   * is a fixed 160px, so a 3-4 word label like "Agent goals and intents
-   * in logs" used to wrap onto three lines. Right-aligning the column
-   * makes the pill and date hug the content, and a pill wider than the
-   * column overflows to the left (align-items: flex-end overflows on the
-   * start side) into the empty gutter. The 290px cap stops the pill at
-   * the logo's left edge; anything longer wraps as before.
+   * Mintlify's label column is a fixed 160px, so a 3-4 word label like
+   * "Agent goals and intents in logs" wrapped onto three lines. 290px
+   * fits nearly every label on one line, and puts the column's left
+   * edge in line with the logo, so every pill starts at the same x.
+   * The description (date) carries its own max-w-[160px].
    */
   body:has([data-page-href*="updates/changelog"]) .update-container > div:first-child {
-    align-items: flex-end !important;
-  }
-
-  body:has([data-page-href*="updates/changelog"]) [data-component-part="update-label"] {
-    width: max-content !important;
-    max-width: 290px !important;
-    text-align: right !important;
+    width: 290px !important;
   }
 
   body:has([data-page-href*="updates/changelog"]) [data-component-part="update-description"] {
-    text-align: right !important;
+    max-width: none !important;
   }
 }
 
