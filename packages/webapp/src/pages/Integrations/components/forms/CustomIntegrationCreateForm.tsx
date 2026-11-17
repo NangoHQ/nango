@@ -56,7 +56,7 @@ export const CustomIntegrationCreateForm: React.FC<{
 
                     <div>
                         <Button type="submit" loading={loading}>
-                            Create
+                            Add integration
                         </Button>
                     </div>
                 </form>

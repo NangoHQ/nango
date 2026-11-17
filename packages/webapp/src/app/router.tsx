@@ -264,7 +264,7 @@ const routes: RouteObject[] = [
                             },
                             {
                                 path: 'create',
-                                handle: { breadcrumb: 'Set up new integration' } as BreadcrumbHandle,
+                                handle: { breadcrumb: 'Add integration' } as BreadcrumbHandle,
                                 children: [
                                     {
                                         index: true,
@@ -318,7 +318,7 @@ const routes: RouteObject[] = [
                             {
                                 path: 'create',
                                 element: <ConnectionCreate />,
-                                handle: { breadcrumb: 'Create test connection' } as BreadcrumbHandle
+                                handle: { breadcrumb: 'Add test connection' } as BreadcrumbHandle
                             },
                             {
                                 path: 'create-legacy',

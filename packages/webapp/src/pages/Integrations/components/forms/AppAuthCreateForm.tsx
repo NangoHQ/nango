@@ -125,7 +125,7 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
 
                     <div>
                         <Button loading={loading} onClick={onCreatePreProvisioned}>
-                            Create
+                            Add integration
                         </Button>
                     </div>
                 </div>
@@ -208,7 +208,7 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
 
                             <div>
                                 <Button type="submit" loading={loading}>
-                                    Create
+                                    Add integration
                                 </Button>
                             </div>
                         </form>
