@@ -1,0 +1,71 @@
+---
+title: 'CompanyEnrich'
+sidebarTitle: 'CompanyEnrich'
+description: 'Integrate your application with the CompanyEnrich API'
+---
+
+CompanyEnrich provides company enrichment, company and people search, and similar-company discovery.
+
+## 🚀 Quickstart
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+        In Nango ([free signup](https://app.nango.dev)), open the **Integrations** tab, select **Configure New Integration**, and choose **CompanyEnrich**.
+    </Step>
+    <Step id="authorize-companyenrich" title="Authorize CompanyEnrich">
+        In the **Connections** tab, select **Add Test Connection**, then **Authorize** and enter your CompanyEnrich API key without the `Bearer` prefix. See the [connect guide](/api-integrations/companyenrich/connect) to obtain your key.
+
+        Nango validates the key with `GET /me`, which does not consume CompanyEnrich credits.
+    </Step>
+    <Step id="call-companyenrich-api" title="Call the CompanyEnrich API">
+        Replace the placeholders with your [Nango Environment API key](/reference/backend/http-api/api-keys), integration ID from the **Integrations** tab, and connection ID from the **Connections** tab.
+
+        <Tabs>
+            <Tab title="cURL">
+                ```bash
+                curl "https://api.nango.dev/proxy/me" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+            </Tab>
+            <Tab title="Node">
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+                const res = await nango.get({
+                    endpoint: '/me',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>'
+                });
+
+                console.log(res.data.credits);
+                ```
+            </Tab>
+        </Tabs>
+
+        This request returns your account's credit balance and capabilities at no credit cost. Check the **Logs** tab in Nango to inspect the request.
+    </Step>
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow the [Auth implementation guide](/guides/auth/auth-guide) to let your users connect their CompanyEnrich accounts, then use the [proxy](/guides/platform/proxy-requests) to call CompanyEnrich endpoints.
+    </Step>
+
+</Steps>
+
+## 📚 CompanyEnrich integration guides
+
+- [How to obtain your CompanyEnrich API key](/api-integrations/companyenrich/connect)
+- [CompanyEnrich API reference](https://docs.companyenrich.com/reference)
+- [Current user endpoint](https://docs.companyenrich.com/reference/get_me)
+
+Data endpoints can consume credits. Check CompanyEnrich's [credit guide](https://docs.companyenrich.com/docs/credits) and each endpoint's pagination and access requirements before making requests.
+
+## 🧩 Pre-built functions for CompanyEnrich
+
+import PreBuiltUseCases from '/snippets/generated/companyenrich/PreBuiltUseCases.mdx';
+
+<PreBuiltUseCases />

@@ -1,0 +1,25 @@
+---
+title: 'CompanyEnrich - How do I link my account?'
+sidebarTitle: 'CompanyEnrich'
+description: 'Obtain your CompanyEnrich API key and connect your account to Nango'
+---
+
+## Overview
+
+You need a CompanyEnrich account and API key to connect to Nango.
+
+## Step 1: Get your API key
+
+1. Sign in to the [CompanyEnrich dashboard](https://app.companyenrich.com/) or create an account.
+2. Retrieve your API key from the dashboard.
+3. Copy the key without adding the `Bearer` prefix. Nango adds the prefix when sending requests.
+
+## Step 2: Enter your credentials in Nango
+
+1. Open the CompanyEnrich connection form.
+2. Paste your key into the **API Key** field.
+3. Submit the form.
+
+Nango validates your credentials with CompanyEnrich's [current user endpoint](https://docs.companyenrich.com/reference/get_me). This check does not consume credits.
+
+If authentication fails, confirm that you copied the complete API key without the `Bearer` prefix or extra spaces.
