@@ -77,14 +77,14 @@ function sqsServing(receives: unknown[][], failDeletes: string[] = []) {
     return { sqs: { send, destroy: vi.fn() } as unknown as SQSClient, deleted, deleteBatches, send };
 }
 
-function processor(sqs: SQSClient, store: AuditBatchWriter, batch: { maxEvents?: number; maxWaitMs?: number; visibilityTimeoutSeconds?: number } = {}) {
+function processor(sqs: SQSClient, store: AuditBatchWriter, batch: { maxEvents?: number; maxWaitMs?: number } = {}) {
     return new AuditProcessor({
         queueUrl: QUEUE_URL,
         store,
         concurrency: 1,
         maxMessages: 10,
         waitTimeSeconds: 0,
-        visibilityTimeoutSeconds: batch.visibilityTimeoutSeconds ?? 30,
+        visibilityTimeoutSeconds: 30,
         batchMaxEvents: batch.maxEvents ?? 100,
         batchMaxWaitMs: batch.maxWaitMs ?? 60_000,
         sqs
@@ -202,7 +202,10 @@ describe('AuditProcessor', () => {
 });
 
 describe('AuditProcessor batching', () => {
-    afterEach(() => vi.restoreAllMocks());
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
 
     it('collects events from several receives into one insert', async () => {
         const recordMany = vi.fn().mockResolvedValue(Ok(undefined));
@@ -262,15 +265,20 @@ describe('AuditProcessor batching', () => {
         expect(deleted.sort()).toEqual(['handle-a', 'handle-b', 'handle-c', 'handle-d', 'handle-e']);
     });
 
-    it('gives up on a stuck write at the visibility timeout, warning that the buffer will be redelivered', async () => {
+    it('gives up on a stuck write after 10 seconds, warning that the buffer will be redelivered', async () => {
         const warning = vi.spyOn(logger, 'warning').mockImplementation(() => undefined as never);
         const recordMany = vi.fn().mockReturnValue(new Promise(() => undefined));
         const { sqs, deleted, send } = sqsServing([[auditMessage('a')]]);
-        const proc = processor(sqs, { recordMany }, { visibilityTimeoutSeconds: 0.05 });
+        const proc = processor(sqs, { recordMany });
         proc.start();
 
         await vi.waitFor(() => expect(send.mock.calls.filter((c) => c[0] instanceof ReceiveMessageCommand).length).toBeGreaterThan(1));
-        await proc.stop();
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        const stopping = proc.stop();
+        await vi.advanceTimersByTimeAsync(9_999);
+        expect(warning).not.toHaveBeenCalled();
+        await vi.advanceTimersByTimeAsync(1);
+        await stopping;
 
         expect(recordMany).toHaveBeenCalledTimes(1);
         expect(deleted).toEqual([]);
@@ -333,6 +341,20 @@ describe('AuditProcessor batching', () => {
         expect(report).toHaveBeenCalledWith(expect.objectContaining({ message: 'Audit consumer delete partially failed' }), {
             failed: [expect.objectContaining({ Id: '1', Code: 'ReceiptHandleIsInvalid' })]
         });
+    });
+
+    it('receives only as many messages as the batch has room for', async () => {
+        const recordMany = vi.fn().mockResolvedValue(Ok(undefined));
+        const { sqs, send } = sqsServing([[auditMessage('a'), auditMessage('b')]]);
+        const proc = processor(sqs, { recordMany }, { maxEvents: 3 });
+        proc.start();
+
+        const asked = () =>
+            send.mock.calls.filter((c) => c[0] instanceof ReceiveMessageCommand).map((c) => (c[0] as ReceiveMessageCommand).input.MaxNumberOfMessages);
+        await vi.waitFor(() => expect(asked().length).toBeGreaterThan(1));
+        await proc.stop();
+
+        expect(asked().slice(0, 2)).toEqual([3, 1]);
     });
 
     it('deletes in requests of at most ten messages', async () => {

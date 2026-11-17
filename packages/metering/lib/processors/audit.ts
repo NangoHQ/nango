@@ -15,6 +15,9 @@ import type { AuditRecordedEvent } from '@nangohq/types';
 
 const SUBJECT = 'audit';
 const SQS_BATCH_LIMIT = 10;
+// Well inside Kubernetes' default 30 s grace period, so the rest of metering's shutdown still runs. Anything not
+// written by then is left undeleted and redelivers.
+const STOP_DEADLINE_MS = 10_000;
 
 interface Received {
     receiptHandle: string;
@@ -67,10 +70,9 @@ export class AuditProcessor {
     public async stop(): Promise<void> {
         this.abortController.abort();
 
-        // Past the visibility timeout the buffered messages redeliver anyway, so waiting longer gains nothing.
         let deadline: NodeJS.Timeout | undefined;
         const timedOut = new Promise<false>((resolve) => {
-            deadline = setTimeout(() => resolve(false), this.props.visibilityTimeoutSeconds * 1000);
+            deadline = setTimeout(() => resolve(false), STOP_DEADLINE_MS);
         });
         const drained = await Promise.race([Promise.allSettled(this.loops).then(() => true as const), timedOut]);
         clearTimeout(deadline);
@@ -91,7 +93,8 @@ export class AuditProcessor {
                 const res = await this.sqs.send(
                     new ReceiveMessageCommand({
                         QueueUrl: this.props.queueUrl,
-                        MaxNumberOfMessages: this.props.maxMessages,
+                        // Only as many as the batch has room for, so a buffer never outgrows one write.
+                        MaxNumberOfMessages: Math.min(this.props.maxMessages, this.props.batchMaxEvents - buffer.length),
                         WaitTimeSeconds: this.waitTimeSeconds(buffer),
                         VisibilityTimeout: this.props.visibilityTimeoutSeconds,
                         MessageAttributeNames: ['All'],
