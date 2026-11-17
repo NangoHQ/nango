@@ -170,11 +170,7 @@ export const InvoicingEmailsField: React.FC = () => {
                     </FormLabel>
                     <FormControl>
                         <Combobox items={[]} multiple value={emails} inputValue={inputValue} onValueChange={commit} open={false}>
-                            <ComboboxChips
-                                onKeyDown={handleUndoShortcut}
-                                onMouseDown={handleContainerMouseDown}
-                                className="min-h-8 bg-surface-input border-border-input"
-                            >
+                            <ComboboxChips onKeyDown={handleUndoShortcut} onMouseDown={handleContainerMouseDown} className="min-h-8 bg-surface-input">
                                 {emails.length > 0 && (
                                     <ComboboxValue>
                                         {emails.map((email) => (
