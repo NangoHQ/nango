@@ -55,6 +55,7 @@ describe(`POST ${endpoint}`, () => {
             body: { apiKey: 'second' }
         });
         isSuccess(resReconnect.json);
+        expect(resReconnect.json.connectionId).toBe(resConnect.json.connectionId);
 
         const connection = await connectionService.checkIfConnectionExists(db.knex, {
             connectionId: resConnect.json.connectionId,
