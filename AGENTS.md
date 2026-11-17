@@ -25,6 +25,16 @@ For full local dev setup (Docker, service URLs, auth flows, troubleshooting), us
 
 Run `npm run dev -w packages/webapp` from each worktree. Vite picks the next free port (3000 → 3001 → 3002 …) and each dashboard calls the local backend at `localhost:3003` directly — the API's dev CORS trusts any `localhost` port, so no proxy or `apiUrl` rewrite is needed. Only `/env.js` is proxied so `window._env` loads same-origin.
 
+### Multiple local stacks
+
+To run a second API from a worktree that changes the backend, give it a slot. Slot `N` moves every port to the `3000 + N×100` block: webapp `3N00`, API `3N03`, Connect UI `3N09`.
+
+```bash
+NANGO_DEV_SLOT=1 npm run dev:watch:web
+```
+
+All slots share the Docker services, so they use the same database. `dev:watch:apps` and `dev:watch:headless` also accept a slot, but a second jobs and orchestrator on that database share the task queue with slot 0, so a sync or action can run on either stack's code. OAuth apps registered with a `localhost:3003` callback only work on slot 0.
+
 ### Remote API
 
 Pass `REMOTE_API=<env>` to proxy all API traffic to a live backend instead. No local backend needed.
