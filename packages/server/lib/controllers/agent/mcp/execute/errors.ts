@@ -5,6 +5,7 @@ import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../../../services/mcpProxy
 import { TOOL_CALL_TIMEOUT_MS } from '../../../../services/remoteMcp.service.js';
 import { InternalMcpError, PublicMcpError, safeFailureDetail } from '../../../mcp/utils.js';
 import { proxyErrorToMcp } from '../proxy/errors.js';
+import { connectionDeletedError } from '../sessionConnection.js';
 
 import type { ActionExecutionError } from '../../../../services/action.service.js';
 import type { RemoteMcpError } from '../../../../services/remoteMcp.service.js';
@@ -26,13 +27,6 @@ export function toolUnavailableError({ integrationId, toolName }: { integrationI
     );
 }
 
-function integrationNoLongerConnectedError(integrationId: string): PublicMcpError {
-    return new PublicMcpError(`Integration '${integrationId}' is no longer connected, so nothing on it can run. Tell the user they need to reconnect it.`, {
-        code: 'integration_not_connected',
-        integrationId
-    });
-}
-
 function toolFailedError({ integrationId, toolName, detail }: { integrationId: string; toolName: string; detail: string }): PublicMcpError {
     return new PublicMcpError(
         `Tool '${toolName}' ran on integration '${integrationId}' and failed: ${detail}. Read the failure before deciding whether to call it again with different input or to tell the user.`,
@@ -44,7 +38,7 @@ export function actionExecutionErrorToMcp({ error, integrationId, toolName }: { 
     const code = error.code;
     switch (code) {
         case 'unknown_connection':
-            return integrationNoLongerConnectedError(integrationId);
+            return connectionDeletedError(integrationId);
         case 'unknown_provider':
             return integrationUnavailableError(integrationId);
         case 'unknown_action':
@@ -66,7 +60,7 @@ export function functionInvokeErrorToMcp({ error, integrationId, toolName }: { e
     const code = error.code;
     switch (code) {
         case 'connection_not_found':
-            return integrationNoLongerConnectedError(integrationId);
+            return connectionDeletedError(integrationId);
         case 'function_not_found':
         case 'function_disabled':
         case 'invalid_invocation':
