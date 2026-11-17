@@ -196,10 +196,11 @@ function main() {
         process.exit(2);
     }
 
-    const files = parseNameStatus(git('diff', '--name-status', `${baseSha}...${headSha}`));
+    const mergeBase = git('merge-base', baseSha, headSha).trim();
+    const files = parseNameStatus(git('diff', '--name-status', `${mergeBase}..${headSha}`));
     const result = evaluate({
         files,
-        readBase: (path) => git('show', `${baseSha}:${path}`),
+        readBase: (path) => git('show', `${mergeBase}:${path}`),
         readHead: (path) => git('show', `${headSha}:${path}`)
     });
 
