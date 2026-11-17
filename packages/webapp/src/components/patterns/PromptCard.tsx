@@ -28,8 +28,10 @@ export const PromptCard: React.FC<PromptCardProps> = ({ prompt, provider, name, 
             onClick={onClick}
             aria-label={action === 'copy' ? `Copy prompt: ${prompt}` : undefined}
             className={cn(
-                'group flex gap-3 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-[13px] text-left type-text-regular-sm text-text-default transition-[background-color,border-color,box-shadow] hover:border-border-strong hover:bg-surface-panel hover:shadow-container-panel',
-                action === 'send' ? 'items-center' : 'items-start'
+                'group flex gap-3 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-[13px] text-left type-text-regular-sm text-text-default',
+                action === 'send'
+                    ? 'items-center transition-[background-color,border-color,box-shadow] hover:border-border-strong hover:bg-surface-panel hover:shadow-container-panel'
+                    : 'items-start'
             )}
         >
             {/* Template logos pad their artwork, so a 25px box draws an 18px logo. */}
@@ -46,14 +48,16 @@ export const PromptCard: React.FC<PromptCardProps> = ({ prompt, provider, name, 
                     {copied ? 'Copied' : ''}
                 </span>
             )}
-            <ActionIcon
-                aria-hidden
-                className={cn(
-                    'size-3.5 shrink-0 transition-colors',
-                    action === 'copy' && 'mt-[3px]',
-                    copied ? 'text-status-success-icon' : 'text-text-muted group-hover:text-text-default'
-                )}
-            />
+            {action === 'copy' ? (
+                <span
+                    aria-hidden
+                    className="-mx-1 -mb-1 -mt-px flex size-[22px] shrink-0 items-center justify-center rounded-ds-xs transition-colors group-hover:bg-surface-panel-muted"
+                >
+                    <ActionIcon className={cn('size-3.5', copied ? 'text-status-success-icon' : 'text-text-muted group-hover:text-text-strong')} />
+                </span>
+            ) : (
+                <ActionIcon aria-hidden className="size-3.5 shrink-0 text-text-muted transition-colors group-hover:text-text-default" />
+            )}
         </button>
     );
 };
