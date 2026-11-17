@@ -295,7 +295,9 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         <Card>
             <CardHeader>
                 <CardTitle>Test connection</CardTitle>
-                <CardDescription>Pick an integration to test from the list below</CardDescription>
+                <CardDescription>
+                    {paramIntegrationId ? 'Connect a test account to try this integration' : 'Pick an integration to test from the list below'}
+                </CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="flex flex-col gap-2.5">
@@ -317,7 +319,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                                         size="md"
                                         disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
                                     >
-                                        Authorize
+                                        Connect
                                     </Button>
                                 </span>
                             )}
