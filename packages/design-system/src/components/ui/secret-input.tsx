@@ -11,7 +11,10 @@ const VISIBLE_SUFFIX = 3;
 // Fixed, so the mask doesn't leak how long the secret is.
 const MASK_LENGTH = 20;
 
-export function maskSecret(value: string, showSuffix = true): string {
+function maskSecret(value: string, showSuffix: boolean): string {
+    if (!value) {
+        return '';
+    }
     const mask = '•'.repeat(MASK_LENGTH);
     if (!showSuffix || value.length <= VISIBLE_SUFFIX) {
         return mask;
@@ -76,7 +79,7 @@ export const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(
             <InputGroup>
                 <InputGroupInput ref={ref} readOnly value={isRevealed ? secret : maskSecret(secret, canReveal)} disabled={disabled} {...props} />
                 <InputGroupAddon align="inline-end">
-                    {buttonsDisabled && disabledReason ? (
+                    {!canReveal && disabledReason ? (
                         // disabled buttons get no pointer events, so the tooltip hangs on a wrapper
                         <Tooltip>
                             <TooltipTrigger asChild>
