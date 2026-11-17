@@ -11,6 +11,7 @@ export interface AgentPlaygroundIntegrationSetup {
     displayName?: string;
     integrationId?: string;
     outcome: 'created' | 'existing' | 'missing_credentials' | 'needs_developer_app' | 'needs_setup' | 'not_created';
+    usesSharedCredentials?: boolean;
 }
 
 export type AgentPlaygroundSetUpToolName = 'set_up_integrations';

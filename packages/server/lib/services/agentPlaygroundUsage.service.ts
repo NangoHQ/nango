@@ -110,7 +110,7 @@ export function isUsableOutcome(outcome: AgentPlaygroundIntegrationSetup['outcom
 export function trackIntegrationSetup(
     ctx: { account: DBTeam; environment: DBEnvironment; plan: DBPlan | null; user: DBUser },
     setup: AgentPlaygroundIntegrationSetup,
-    trigger: NonNullable<AnalyticsEventProperties<'playground:integration_create'>['trigger']>
+    trigger: AnalyticsEventProperties<'playground:integration_create'>['trigger']
 ): void {
     const { outcome } = setup;
     const base = { provider: setup.provider, is_existing: outcome === 'existing' || outcome === 'missing_credentials', trigger };
@@ -129,7 +129,13 @@ export function trackIntegrationSetup(
             environment: ctx.environment,
             user: ctx.user,
             plan: ctx.plan,
-            eventProperties: { provider: setup.provider, is_playground: true, source: 'playground', is_shared_credentials: true, has_missing_fields: false }
+            eventProperties: {
+                provider: setup.provider,
+                is_playground: true,
+                source: 'playground',
+                is_shared_credentials: setup.usesSharedCredentials ?? false,
+                has_missing_fields: false
+            }
         });
     }
 }
