@@ -1,25 +1,17 @@
 import * as React from 'react';
 
-/**
- * Wiring shared by Field and the controls inside it. Field owns the ids; FieldLabel, FieldDescription and FieldError
- * read them, and Input / InputGroupInput pick up `id`, `aria-describedby` and `aria-invalid` from it.
- *
- * Explicit props always win, so callers that wire ids themselves (the webapp's react-hook-form `Form`) are untouched.
- */
 export interface FieldContextValue {
     controlId: string;
     descriptionId: string;
     errorId: string;
     invalid: boolean;
     disabled: boolean;
-    /** The id the FieldDescription actually rendered with (an explicit `id` overrides `descriptionId`). */
     registerDescription: (id: string | null) => void;
     registerError: (id: string | null) => void;
     registerControl: (key: string) => () => void;
     setControlId: (key: string, id: string | undefined) => void;
-    /** Only the first mounted control takes `controlId`, so a Field holding two inputs never duplicates an id. */
     primaryControlKey: string | null;
-    labelTarget: string;
+    labelTarget: string | undefined;
     renderedDescriptionId: string | null;
     renderedErrorId: string | null;
 }
@@ -36,10 +28,7 @@ interface ControlA11yProps {
     'aria-invalid'?: React.AriaAttributes['aria-invalid'];
 }
 
-/**
- * Returns the a11y props a control should add when it sits inside a Field. Spread it after the caller's props:
- * every key is only set when the caller left it undefined.
- */
+/** Spread after the caller's props: it only sets keys the caller left undefined, so react-hook-form's ids survive. */
 export function useFieldControl(props: ControlA11yProps): ControlA11yProps {
     const field = useFieldContext();
     const key = React.useId();
@@ -47,12 +36,13 @@ export function useFieldControl(props: ControlA11yProps): ControlA11yProps {
     const setControlId = field?.setControlId;
     React.useLayoutEffect(() => registerControl?.(key), [registerControl, key]);
     React.useLayoutEffect(() => setControlId?.(key, props.id), [setControlId, key, props.id]);
-    if (!field) {
+    // Only the first control: a Field's error describes one input, not every row of a list inside it.
+    if (!field || field.primaryControlKey !== key) {
         return {};
     }
 
     const result: ControlA11yProps = {};
-    if (props.id === undefined && field.primaryControlKey === key) {
+    if (props.id === undefined) {
         result.id = field.controlId;
     }
     if (props['aria-describedby'] === undefined) {

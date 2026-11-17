@@ -1,22 +1,21 @@
 import { Braces, CheckCircle2, ChevronDown, ChevronUp, CircleSlash, RotateCcw, Table2, Wrench, XCircle } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { Badge, Button } from '@nangohq/design-system';
+import { Badge, Button, SegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
-import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Spinner } from '@/components/ui/Spinner';
 import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
 import { isUnfinished } from '../replyOutcome';
-import { describeTool, labelFor, toolArguments } from '../toolDisplay';
+import { describeTool, labelFor, searchSummary, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
 import type { PendingApproval } from '../approvalTracking';
-import type { IntegrationLabels, ToolDisplay } from '../toolDisplay';
+import type { IntegrationLabels, SearchOutput, ToolDisplay } from '../toolDisplay';
 import type { BadgeProps } from '@nangohq/design-system';
 import type { DynamicToolUIPart } from 'ai';
 
@@ -58,16 +57,6 @@ function useRunDuration(running: boolean, awaitingApproval: boolean, done: boole
 
 function formatDuration(ms: number): string {
     return ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`;
-}
-
-function searchSummary(matches: number, related: number): string {
-    if (matches > 0) {
-        return matches === 1 ? '1 match' : `${matches} matches`;
-    }
-    if (related > 0) {
-        return related === 1 ? '1 related tool' : `${related} related tools`;
-    }
-    return 'No tool found';
 }
 
 const METHOD_VARIANT: Record<string, BadgeProps['variant']> = {
@@ -165,8 +154,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
         return <ApprovalCard part={part} display={display} onApprove={onApprove} />;
     }
 
-    const searchOutput =
-        display.kind === 'search' && part.state === 'output-available' ? (part.output as { matches?: unknown[]; related?: unknown[] }) : undefined;
+    const searchOutput = display.kind === 'search' && part.state === 'output-available' ? (part.output as SearchOutput) : undefined;
 
     const payload = (
         <Payload
@@ -202,7 +190,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
                         <span className={cn('shrink-0', running && 'animate-pulse')}>{display.title}</span>
                         {display.subtitle && <span className="min-w-0 truncate text-text-muted">{display.subtitle}</span>}
                         <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
-                            {searchOutput && <span>{searchSummary(searchOutput.matches?.length ?? 0, searchOutput.related?.length ?? 0)}</span>}
+                            {searchOutput && <span>{searchSummary(searchOutput)}</span>}
                             {meta}
                         </span>
                     </CollapsibleTrigger>
@@ -341,15 +329,14 @@ const Payload: React.FC<{ input: unknown; output: unknown; error: string | undef
                 value={input}
                 view={view}
                 action={
-                    <SegmentedControl<PayloadView>
-                        aria-label="Payload view"
-                        value={view}
-                        onChange={setView}
-                        options={[
-                            { value: 'table', label: 'Table', Icon: Table2 },
-                            { value: 'json', label: 'JSON', Icon: Braces }
-                        ]}
-                    />
+                    <SegmentedControl size="sm" aria-label="Payload view" value={view} onValueChange={(next) => setView(next as PayloadView)}>
+                        <SegmentedControlItem value="table" icon={<Table2 />}>
+                            Table
+                        </SegmentedControlItem>
+                        <SegmentedControlItem value="json" icon={<Braces />}>
+                            JSON
+                        </SegmentedControlItem>
+                    </SegmentedControl>
                 }
             />
             {error !== undefined ? (

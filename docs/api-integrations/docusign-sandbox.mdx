@@ -1,0 +1,84 @@
+---
+title: 'DocuSign (Sandbox)'
+sidebarTitle: 'DocuSign (Sandbox)'
+description: 'Integrate your application with the DocuSign developer environment'
+---
+
+## 🚀 Quickstart
+
+Connect to a DocuSign developer account with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _DocuSign (Sandbox)_.
+
+    DocuSign has no Nango-managed OAuth app. Follow the [setup guide](/api-integrations/docusign-sandbox/how-to-register-your-own-docusign-sandbox-oauth-app) to register your own in the developer environment and enter its integration key and secret.
+    </Step>
+    <Step title="Authorize DocuSign (Sandbox)">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in with your [DocuSign developer account](https://go.docusign.com/o/sandbox/). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the DocuSign API">
+    Let's make your first request to fetch the account. Nango saves the user's `accountId` in the connection config. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), [connection ID](https://app.nango.dev/dev/connections) and that account ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/restapi/v2.1/accounts/<ACCOUNT-ID>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/restapi/v2.1/accounts/<ACCOUNT-ID>',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 DocuSign (Sandbox) integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own DocuSign (Sandbox) OAuth app](/api-integrations/docusign-sandbox/how-to-register-your-own-docusign-sandbox-oauth-app)  
+Create an app in the DocuSign developer environment and connect it to Nango
+
+- [How to set up webhooks with DocuSign (Sandbox) on Nango](/api-integrations/docusign-sandbox/webhooks)  
+Receive real-time envelope and recipient events with DocuSign Connect
+
+Official docs: [DocuSign eSignature REST API](https://developers.docusign.com/docs/esign-rest-api/)
+
+## 🧩 Pre-built syncs & actions for DocuSign (Sandbox)
+
+Explore Nango-provided actions in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/docusign-sandbox/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

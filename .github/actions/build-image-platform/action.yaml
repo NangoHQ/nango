@@ -1,0 +1,60 @@
+name: 'Build nangohq/nango for one platform'
+description: 'Builds the unified image for one platform and, when it can push, pushes it untagged and returns its digest.'
+
+inputs:
+    platform:
+        description: 'linux/amd64 or linux/arm64'
+        required: true
+    sha:
+        description: 'Git hash the image is built from'
+        required: true
+    can-push:
+        description: 'Whether Docker Hub credentials are available'
+        required: true
+    docker-username:
+        required: false
+    docker-password:
+        required: false
+
+outputs:
+    digest:
+        description: 'Digest of the pushed image, empty when not pushed'
+        value: ${{ steps.build.outputs.digest }}
+
+runs:
+    using: 'composite'
+    steps:
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+
+        - name: Log in to Docker Hub
+          if: inputs.can-push == 'true'
+          uses: docker/login-action@v3
+          with:
+              username: ${{ inputs.docker-username }}
+              password: ${{ inputs.docker-password }}
+
+        # Needed for buildx gha cache to work
+        - name: Expose GitHub Runtime
+          uses: crazy-max/ghaction-github-runtime@v2
+
+        - name: Build image
+          id: build
+          shell: bash
+          env:
+              CAN_PUSH: ${{ inputs.can-push }}
+              PLATFORM: ${{ inputs.platform }}
+              SHA: ${{ inputs.sha }}
+              METADATA_FILE: ${{ runner.temp }}/metadata.json
+          run: |
+              if [[ "$CAN_PUSH" == 'true' ]]; then
+                ./scripts/build_docker.sh push "$SHA" "$PLATFORM"
+                digest=$(jq -r '."containerimage.digest"' "$METADATA_FILE")
+                if [[ "$digest" != sha256:* ]]; then
+                  echo "No digest in $METADATA_FILE"
+                  exit 1
+                fi
+                echo "digest=$digest" >> "$GITHUB_OUTPUT"
+              else
+                ./scripts/build_docker.sh build "$SHA" "$PLATFORM"
+              fi

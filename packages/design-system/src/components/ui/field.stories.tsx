@@ -1,11 +1,10 @@
 import { Controller, useForm } from 'react-hook-form';
 
 import { Button } from './button';
-import { CopyInput } from './copy-input';
+import { CopyButton } from './copy-button';
 import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet } from './field';
 import { Input } from './input';
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupSwatch } from './input-group';
-import { SecretInput } from './secret-input';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -37,7 +36,6 @@ export const States: Story = {
                 </Field>
             </div>
             <div className="flex flex-col gap-1">
-                {/* Don't mark required fields with * — mark the optional ones. */}
                 <span className="story-section-heading">Optional</span>
                 <Field>
                     <FieldLabel optional>Secondary URL</FieldLabel>
@@ -56,7 +54,6 @@ export const States: Story = {
             </div>
             <div className="flex flex-col gap-1">
                 <span className="story-section-heading">Invalid (with error)</span>
-                {/* data-invalid on Field sets aria-invalid on the control and wires the error into aria-describedby */}
                 <Field data-invalid>
                     <FieldLabel>Name</FieldLabel>
                     <Input mono defaultValue="Dev Env" />
@@ -77,7 +74,15 @@ export const States: Story = {
 
 const ENV_ID = 'a0583184-a6ef-40e5-b716-2d7aeacf84b3';
 
-// vertical (default) and horizontal (settings rows) × default / error / disabled.
+const EnvIdInput = () => (
+    <InputGroup>
+        <InputGroupInput readOnly mono value={ENV_ID} />
+        <InputGroupAddon align="inline-end">
+            <CopyButton value={ENV_ID} size="xs" />
+        </InputGroupAddon>
+    </InputGroup>
+);
+
 export const Orientation: Story = {
     render: () => (
         <div className="flex flex-col gap-10">
@@ -114,7 +119,7 @@ export const Orientation: Story = {
                         <FieldLabel>Environment ID</FieldLabel>
                         <FieldDescription>Use it in API calls and when you contact support.</FieldDescription>
                     </FieldContent>
-                    <CopyInput value={ENV_ID} />
+                    <EnvIdInput />
                 </Field>
                 <Field orientation="horizontal" data-invalid>
                     <FieldContent>
@@ -136,7 +141,6 @@ export const Orientation: Story = {
     )
 };
 
-// orientation="inline": label beside a small control, e.g. a checkbox row. (Before the Dharma refresh this was `horizontal`.)
 export const Inline: Story = {
     render: () => (
         <Field orientation="inline">
@@ -146,7 +150,6 @@ export const Inline: Story = {
     )
 };
 
-// The Figma review frame (Dharma 2588:319), rebuilt from components.
 export const ReviewFrame: Story = {
     render: () => (
         <div className="flex w-[400px] flex-col gap-6">
@@ -157,12 +160,8 @@ export const ReviewFrame: Story = {
             </Field>
             <Field>
                 <FieldLabel>Environment ID</FieldLabel>
-                <CopyInput value={ENV_ID} />
+                <EnvIdInput />
                 <FieldDescription>Use it in API calls and when you contact support.</FieldDescription>
-            </Field>
-            <Field>
-                <FieldLabel>Secret key</FieldLabel>
-                <SecretInput value="nango_sk_dev_7f2a9e1b3c5d8f0a2b4c6d8e0f1a34c9" />
             </Field>
             <Field>
                 <FieldLabel optional>Secondary URL</FieldLabel>

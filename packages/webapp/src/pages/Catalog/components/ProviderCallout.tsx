@@ -3,10 +3,12 @@ import { ArrowRight, CircleCheck, Zap } from 'lucide-react';
 import { Alert, AlertActions, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { pluralize } from '../catalog.utils';
 
 export type ProviderCalloutState =
-    | { kind: 'configured'; count: number }
+    | { kind: 'loading' }
+    | { kind: 'configured'; integrationIds: string[] }
     | { kind: 'instant-managed' }
     | { kind: 'instant-api-key' }
     | { kind: 'instant-mcp' }
@@ -18,12 +20,33 @@ interface ProviderCalloutProps {
     displayName: string;
     provider: string;
     env: string;
-    setupButton: React.ReactNode;
 }
 
-export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, displayName, provider, env, setupButton }) => {
+export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, displayName, provider, env }) => {
     if (state.kind === 'none') {
         return null;
+    }
+
+    if (state.kind === 'loading') {
+        return <Skeleton className="h-[62px] w-full" />;
+    }
+
+    const onlyIntegrationId = state.kind === 'configured' && state.integrationIds.length === 1 ? state.integrationIds[0] : undefined;
+    if (onlyIntegrationId) {
+        return (
+            <Alert variant="neutral" size="wide" icon="success" role="note">
+                <CircleCheck />
+                <AlertTitle>
+                    {displayName} integration set up in {env}
+                </AlertTitle>
+                <AlertDescription>Manage it from its integration page, or add another one, e.g. with different scopes.</AlertDescription>
+                <AlertActions>
+                    <AlertButtonLink to={`/${env}/integrations/${encodeURIComponent(onlyIntegrationId)}`}>
+                        View integration <ArrowRight />
+                    </AlertButtonLink>
+                </AlertActions>
+            </Alert>
+        );
     }
 
     if (state.kind === 'configured') {
@@ -31,9 +54,9 @@ export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, display
             <Alert variant="neutral" size="wide" icon="success" role="note">
                 <CircleCheck />
                 <AlertTitle>
-                    {pluralize(state.count, `${displayName} integration`)} set up in {env}
+                    {pluralize(state.integrationIds.length, `${displayName} integration`)} set up in {env}
                 </AlertTitle>
-                <AlertDescription>Manage them from Integrations, or set up another one, e.g. with different scopes.</AlertDescription>
+                <AlertDescription>Manage them from Integrations, or add another one, e.g. with different scopes.</AlertDescription>
                 <AlertActions>
                     <AlertButtonLink to={`/${env}/integrations?provider=${encodeURIComponent(provider)}`}>
                         View in Integrations <ArrowRight />
@@ -48,7 +71,6 @@ export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, display
             <Zap data-filled />
             <AlertTitle>Instant setup</AlertTitle>
             <AlertDescription>{INSTANT_SETUP_COPY[state.kind](displayName)}</AlertDescription>
-            <AlertActions>{setupButton}</AlertActions>
         </Alert>
     );
 };

@@ -29,8 +29,7 @@ type StateRow = {
     input: React.ComponentProps<typeof InputGroupInput>;
 };
 
-// Hover is frozen with data-story-state (see .storybook/preview.css). Focus is driven by real browser focus —
-// click into any field to see the 1.5px focus/ring-default border.
+// Hover is frozen with data-story-state (see .storybook/preview.css)
 const STATES: StateRow[] = [
     { label: 'Default', input: { placeholder: 'Placeholder' } },
     { label: 'Hover', group: { 'data-story-state': 'hover' }, input: { placeholder: 'Placeholder' } },
@@ -79,7 +78,6 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
     );
 }
 
-// Icon / text / kbd / swatch addons get 6px side padding; button addons are 24px ghost icon buttons 4px from the edge.
 export const Addons: Story = {
     render: () => (
         <div className="grid w-[720px] grid-cols-2 gap-x-8 gap-y-5">
@@ -154,7 +152,7 @@ export const Addons: Story = {
                         <InputGroup size={size}>
                             <InputGroupInput mono readOnly value={ENV_ID} />
                             <InputGroupAddon align="inline-end">
-                                <CopyButton text={ENV_ID} />
+                                <CopyButton value={ENV_ID} size="xs" />
                             </InputGroupAddon>
                         </InputGroup>
                     </Row>
@@ -164,7 +162,6 @@ export const Addons: Story = {
     )
 };
 
-// Layouts kept for existing call sites: block addons, textarea, the Agent Playground composer and hug-content search.
 export const Layouts: Story = {
     render: () => (
         <div className="flex w-80 flex-col gap-4">

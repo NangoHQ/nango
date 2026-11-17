@@ -1,12 +1,14 @@
 import { changedFields, makeAuditTarget as makeTarget } from '../../audit.js';
-import { Audit, auditable } from './auditable.js';
-import { nonEmptyString, omitUndefined } from './input.js';
+import { Audit, auditable, maybeAuditable } from './auditable.js';
+import { callerSubject, credentialsReadTargets, skipUnlessCredentialsRead } from './credentialsRead.js';
+import { nonEmptyString, omitUndefined, param, query, uuid } from './input.js';
 import { accountEnvironmentTarget, environmentFromUuid } from './lookups.js';
 
 import type {
     DeleteEnvironment,
     DeletePublicEnvironment,
     EnvironmentUpdatedMetadata,
+    GetPublicEnvironment,
     PatchEnvironment,
     PatchPublicEnvironment,
     PatchWebhook,
@@ -100,6 +102,13 @@ export const auditEnvironmentDeleted = auditable<DeleteEnvironment>({
 export const auditPublicEnvironmentDeleted = auditable<DeletePublicEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'deleted', scope: 'account' }),
     target: (req, locals) => accountEnvironmentTarget(req.params.environmentUuid, locals)
+});
+
+export const auditPublicEnvironmentCredentialsRead = maybeAuditable<GetPublicEnvironment>({
+    policy: Audit.auditable({ resource: 'environment', action: 'credentials_read', scope: 'environment' }),
+    skipWhen: skipUnlessCredentialsRead((req) => query(req, 'with_secrets') === 'true'),
+    subject: callerSubject,
+    atFinish: (req) => credentialsReadTargets('environment', req, uuid(param(req, 'environmentUuid')))
 });
 
 // Keep only the origin (scheme + host) of a URL — a webhook URL can carry a secret token in its path,

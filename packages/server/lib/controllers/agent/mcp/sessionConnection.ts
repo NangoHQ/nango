@@ -5,6 +5,7 @@ import * as agentSessionService from '../../../services/agentSession.service.js'
 import * as agentSessionConnectionsService from '../../../services/agentSessionConnections.service.js';
 import * as agentSessionMcpDiscoveryService from '../../../services/agentSessionMcpDiscovery.service.js';
 import * as agentSessionToolsetService from '../../../services/agentSessionToolset.service.js';
+import { PublicMcpError } from '../../mcp/utils.js';
 import { withAddedToolSlugs } from './sessionServer.js';
 
 import type { AgentSession, AgentSessionResolvedConnection, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
@@ -42,6 +43,17 @@ export async function resolveSessionConnection({
     await fill({ session, integrationId, connection });
 
     return connection;
+}
+
+/**
+ * A session's connections are fixed when it is resolved, so one deleted afterwards cannot be
+ * replaced from inside the session, and reconnecting it is no way out either.
+ */
+export function connectionDeletedError(integrationId: string): PublicMcpError {
+    return new PublicMcpError(
+        `The connection this session uses for '${integrationId}' was deleted, so nothing on it can run and it cannot be reconnected here. Tell the user a new session is needed to use it again.`,
+        { code: 'connection_deleted', integrationId }
+    );
 }
 
 export async function withConnectionsCreatedInSession(session: AgentSession): Promise<AgentSession> {

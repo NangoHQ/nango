@@ -6,9 +6,9 @@ import promptly from 'promptly';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Ok } from '../utils/result.js';
-import { tsToJsPath } from './compile.js';
 import { parseIntegrationDefinitions } from './definitions.js';
 import { deploy } from './deploy.js';
+import { tsToJsPath } from './project-path.js';
 
 import type { DeployOptions } from '../types.js';
 import type { FunctionConfig, ParsedIntegrationDefinitions } from './definitions.js';

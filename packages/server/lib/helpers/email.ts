@@ -12,7 +12,7 @@ export function sanitizeEmailSubject(subject: string): string {
 // Encoding matters: URLSearchParams.get() turns "+" into a space, so a plus-addressed email
 // would come back malformed and the dashboard would silently drop the prefill.
 export function buildInvitePrefillUrl(email: string): string {
-    return `${basePublicUrl}/team-settings?invite_email=${encodeURIComponent(email)}`;
+    return `${basePublicUrl}/team?invite_email=${encodeURIComponent(email)}`;
 }
 
 export async function sendVerificationEmail(email: string, name: string, token: string) {

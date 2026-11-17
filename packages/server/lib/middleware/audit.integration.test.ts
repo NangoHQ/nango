@@ -9,6 +9,7 @@ import { envs } from '../env.js';
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
 import type { AuditAction, AuditResource } from '@nangohq/audit';
+import type * as FeatureFlags from '@nangohq/feature-flags';
 import type { ApiKeyScope } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
 
@@ -26,6 +27,15 @@ import type { MockInstance } from 'vitest';
 //
 // connection.created is emitted from the connectionCreated hook rather than a middleware, so its
 // live-stack cases live in auditConnection.integration.test.ts.
+
+const dataPlaneRollout = vi.hoisted(() => vi.fn(() => Promise.resolve(false)));
+vi.mock('@nangohq/feature-flags', async (importOriginal) => {
+    const actual = await importOriginal<typeof FeatureFlags>();
+    return {
+        ...actual,
+        getFlags: () => ({ ...actual.getFlags(), shouldAuditDataPlaneCredentialRead: dataPlaneRollout })
+    };
+});
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
@@ -639,6 +649,279 @@ describe('audit middleware — live-stack contract', () => {
             }
         });
     });
+
+    // Whether a read returned credentials is a fact only the handler knows, so each handler is probed here.
+    describe('credentials reads — the handler reports what it returned', () => {
+        async function credentialsReadEvent(resource: AuditResource) {
+            await vi.waitFor(() => {
+                expect(auditEvent(resource, 'credentials_read')).toBeDefined();
+            });
+            return auditEvent(resource, 'credentials_read');
+        }
+
+        it('dashboard connection read', async () => {
+            const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            await seeders.createConfigSeed(env, 'algolia', 'algolia');
+            const connection = await seeders.createConnectionSeed({
+                env,
+                provider: 'algolia',
+                rawCredentials: { type: 'API_KEY', apiKey: 'audit-connection-secret' }
+            });
+            const session = await authenticateUser(api, user);
+
+            const res = await api.fetch('/api/v1/connections/:connectionId', {
+                method: 'GET',
+                session,
+                params: { connectionId: connection.connection_id },
+                query: { env: 'dev', provider_config_key: 'algolia' }
+            });
+
+            expect(res.res.status).toBe(200);
+            const event = await credentialsReadEvent('connection');
+            expect(event).toMatchObject({
+                outcome: 'success',
+                accountId: account.id,
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'user', id: String(user.id) },
+                targets: [{ type: 'connection', id: connection.connection_id }],
+                metadata: { providerConfigKey: 'algolia' }
+            });
+            expect(JSON.stringify(event)).not.toContain('audit-connection-secret');
+        });
+
+        it('dashboard integration read', async () => {
+            const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            await seeders.createConfigSeed(env, 'algolia', 'algolia');
+            const session = await authenticateUser(api, user);
+
+            const read = await api.fetch('/api/v1/integrations/:providerConfigKey', {
+                method: 'GET',
+                session,
+                params: { providerConfigKey: 'algolia' },
+                query: { env: 'dev' }
+            });
+            expect(read.res.status).toBe(200);
+            expect(await credentialsReadEvent('integration')).toMatchObject({
+                outcome: 'success',
+                accountId: account.id,
+                targets: [{ type: 'integration', id: 'algolia' }]
+            });
+        });
+
+        it('dashboard environment api keys list', async () => {
+            const { account, env, user, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const session = await authenticateUser(api, user);
+
+            const res = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'GET',
+                session,
+                // @ts-expect-error querystring is not typed on this endpoint
+                query: { env: 'dev' }
+            });
+            expect(res.res.status).toBe(200);
+            const event = await credentialsReadEvent('api_key');
+            expect(event).toMatchObject({
+                outcome: 'success',
+                accountId: account.id,
+                environment: { id: env.uuid, display: env.name },
+                targets: expect.arrayContaining([expect.objectContaining({ type: 'api_key', id: apiKey.uuid })])
+            });
+            expect(JSON.stringify(event)).not.toContain(apiKey.secret);
+        });
+
+        it('public integration read: nothing without include=credentials, recorded with it, and the deprecated config read', async () => {
+            const { account, env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            await seeders.createConfigSeed(env, 'algolia', 'algolia');
+
+            const plain = await api.fetch('/integrations/:uniqueKey', {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'algolia' },
+                query: {}
+            });
+            expect(plain.res.status).toBe(200);
+            // The finish listener is async; give it a turn before concluding nothing was recorded.
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            expect(auditEvent('integration', 'credentials_read')).toBeUndefined();
+
+            const res = await api.fetch('/integrations/:uniqueKey', {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'algolia' },
+                query: { include: ['credentials'] }
+            });
+            expect(res.res.status).toBe(200);
+            expect(await credentialsReadEvent('integration')).toMatchObject({
+                outcome: 'success',
+                accountId: account.id,
+                actor: { type: 'api_key', id: apiKey.uuid },
+                targets: [{ type: 'integration', id: 'algolia' }]
+            });
+
+            auditSpy.mockClear();
+            // @ts-expect-error the deprecated route has no endpoint type
+            const config = await api.fetch('/config/:providerConfigKey', {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { providerConfigKey: 'algolia' },
+                query: { include_creds: 'true' }
+            });
+            expect(config.res.status).toBe(200);
+            expect(await credentialsReadEvent('integration')).toMatchObject({
+                outcome: 'success',
+                accountId: account.id,
+                targets: [{ type: 'integration', id: 'algolia' }]
+            });
+        });
+
+        it('public api key read and the account api keys list', async () => {
+            const { account, env, user, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const key = (
+                await customerKeyService.createAccountApiKey(db.knex, { accountId: account.id, displayName: 'Admin', scopes: ['account:*'] })
+            ).unwrap();
+
+            const read = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: key.secret,
+                params: { environmentUuid: env.uuid, keyUuid: apiKey.uuid }
+            });
+            expect(read.res.status).toBe(200);
+            const event = await credentialsReadEvent('api_key');
+            expect(event).toMatchObject({
+                outcome: 'success',
+                accountId: account.id,
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: key.uuid },
+                targets: [{ type: 'api_key', id: apiKey.uuid }]
+            });
+            expect(JSON.stringify(event)).not.toContain(apiKey.secret);
+
+            auditSpy.mockClear();
+            const session = await authenticateUser(api, user);
+            const list = await api.fetch('/api/v1/account/api-keys', { method: 'GET', session });
+            expect(list.res.status).toBe(200);
+            expect(await credentialsReadEvent('api_key')).toMatchObject({
+                outcome: 'success',
+                accountId: account.id,
+                environment: null,
+                targets: [{ type: 'api_key', id: key.uuid, display: 'Admin' }]
+            });
+        });
+
+        it('public environment read with_secrets', async () => {
+            const { account, env } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const key = (
+                await customerKeyService.createAccountApiKey(db.knex, { accountId: account.id, displayName: 'Admin', scopes: ['account:*'] })
+            ).unwrap();
+
+            const res = await api.fetch('/environments/:environmentUuid', {
+                method: 'GET',
+                token: key.secret,
+                params: { environmentUuid: env.uuid },
+                query: { with_secrets: 'true' }
+            });
+            expect(res.res.status).toBe(200);
+            expect(await credentialsReadEvent('environment')).toMatchObject({
+                outcome: 'success',
+                accountId: account.id,
+                environment: { id: env.uuid, display: env.name },
+                targets: [{ type: 'environment', id: env.uuid, display: env.name }]
+            });
+        });
+    });
+    describe('data-plane connection credentials read', () => {
+        afterEach(() => {
+            dataPlaneRollout.mockReset().mockResolvedValue(false);
+        });
+
+        async function seedConnection() {
+            const seeded = await seeders.seedAccountEnvAndUser({
+                plan: { has_audit_trail_control_plane: true, audit_trail_data_plane_scopes: ['read_credentials'] }
+            });
+            await seeders.createConfigSeed(seeded.env, 'algolia', 'algolia');
+            const connection = await seeders.createConnectionSeed({
+                env: seeded.env,
+                provider: 'algolia',
+                rawCredentials: { type: 'API_KEY', apiKey: 'audit-data-plane-secret' }
+            });
+            return { ...seeded, connection };
+        }
+
+        it('records the read when the rollout picks the request, on both routes', async () => {
+            dataPlaneRollout.mockResolvedValue(true);
+            const { account, env, apiKey, connection } = await seedConnection();
+
+            for (const path of ['/connections/:connectionId', '/connection/:connectionId']) {
+                auditSpy.mockClear();
+                // The endpoint type only declares the deprecated path.
+                const res = await api.fetch(path as '/connection/:connectionId', {
+                    method: 'GET',
+                    token: apiKey.secret,
+                    params: { connectionId: connection.connection_id },
+                    query: { provider_config_key: 'algolia' }
+                });
+
+                expect(res.res.status).toBe(200);
+                await vi.waitFor(() => {
+                    expect(auditEvent('connection', 'credentials_read')).toBeDefined();
+                });
+                const event = auditEvent('connection', 'credentials_read');
+                expect(event).toMatchObject({
+                    outcome: 'success',
+                    accountId: account.id,
+                    environment: { id: env.uuid, display: env.name },
+                    actor: { type: 'api_key', id: apiKey.uuid },
+                    targets: [{ type: 'connection', id: connection.connection_id }],
+                    metadata: { providerConfigKey: 'algolia' }
+                });
+                expect(JSON.stringify(event)).not.toContain('audit-data-plane-secret');
+            }
+        });
+
+        it('records a denial from the scope check, naming the connection from the path', async () => {
+            dataPlaneRollout.mockResolvedValue(true);
+            const { account, env, apiKey, connection } = await seedConnection();
+            (await customerKeyService.updateApiKeyScopes(db.knex, apiKey.id, ['environment:integrations:list'], env.id)).unwrap();
+
+            const res = await api.fetch('/connection/:connectionId', {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { connectionId: connection.connection_id },
+                query: { provider_config_key: 'algolia' }
+            });
+
+            expect(res.res.status).toBe(403);
+            await vi.waitFor(() => {
+                expect(auditEvent('connection', 'credentials_read')).toBeDefined();
+            });
+            expect(auditEvent('connection', 'credentials_read')).toMatchObject({
+                outcome: 'denied',
+                accountId: account.id,
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: apiKey.uuid },
+                targets: [{ type: 'connection', id: connection.connection_id }]
+            });
+        });
+
+        it('records nothing while the rollout leaves the request out', async () => {
+            const { account, apiKey, connection } = await seedConnection();
+
+            const res = await api.fetch('/connection/:connectionId', {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { connectionId: connection.connection_id },
+                query: { provider_config_key: 'algolia' }
+            });
+
+            expect(res.res.status).toBe(200);
+            // The rollout is the gate's last check: once it has said no, the request cannot record anything.
+            await vi.waitFor(() => {
+                expect(dataPlaneRollout).toHaveBeenCalledWith(account.uuid);
+            });
+            expect(auditEvent('connection', 'credentials_read')).toBeUndefined();
+        });
+    });
+
     describe('impersonation', () => {
         const adminUuid = envs.NANGO_ADMIN_UUID;
         afterEach(() => {

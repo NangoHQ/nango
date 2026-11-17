@@ -43,6 +43,7 @@ vi.mock('../../../../services/agentGettingStarted.service.js', () => ({
 }));
 
 const { executeSessionTool, executeTool } = await import('./execute.js');
+const { executeDirectToolCall } = await import('../directCall.js');
 
 const TOOL = {
     config: { uuid: '11111111-1111-4111-8111-111111111111', name: 'read_doc', enabled: true },
@@ -250,6 +251,19 @@ describe('executeSessionTool', () => {
         expect(executeAction).not.toHaveBeenCalled();
     });
 
+    it('tells the agent a new session is needed when the connection was deleted', async () => {
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(new ActionExecutionError({ code: 'unknown_connection', message: 'Failed to find connection' }))
+        });
+
+        const result = await execute('read_doc');
+
+        expect(codeOf(result)).toBe('connection_deleted');
+        expect(integrationOf(result)).toBe('notion');
+        expect(errorOf(result).message).toContain('a new session is needed');
+    });
+
     it('tells the agent which tool failed and why', async () => {
         executeAction.mockResolvedValue({
             logCtx: undefined,
@@ -430,6 +444,47 @@ describe('executeSessionTool', () => {
         expect(executeAction).not.toHaveBeenCalled();
     });
 
+    it.each([
+        { source: 'catalog', expected: 'catalog' },
+        { source: 'repo', expected: 'custom' }
+    ] as const)('tracks a $source action as a $expected function', async ({ source, expected }) => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            functionSource: source,
+            result: Err(new ActionExecutionError({ code: 'action_failed', message: 'boom' }))
+        });
+
+        await execute('read_doc');
+
+        expect(track).toHaveBeenCalledWith(expect.objectContaining({ eventProperties: expect.objectContaining({ function_source: expected }) }));
+    });
+
+    it('tracks the source of an invoked tool', async () => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ ...TOOL, currentVersion: { ...TOOL.currentVersion, source: 'standalone' } }));
+
+        await execute('read_doc', { input: { id: '1' } });
+
+        expect(track).toHaveBeenCalledWith(expect.objectContaining({ eventProperties: expect.objectContaining({ function_source: 'custom' }) }));
+    });
+
+    it('tracks the source of a disabled tool', async () => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+        vi.spyOn(toolService, 'findTool').mockResolvedValue(
+            Ok({
+                config: { ...TOOL.config, enabled: false },
+                currentVersion: { ...TOOL.currentVersion, source: 'catalog' }
+            } as functionConfigService.CurrentFunctionConfig)
+        );
+
+        await execute('read_doc');
+
+        expect(track).toHaveBeenCalledWith(
+            expect.objectContaining({ eventProperties: expect.objectContaining({ error_code: 'tool_not_in_session', function_source: 'catalog' }) })
+        );
+    });
+
     it('refuses a disabled tool rather than running the action it shadows', async () => {
         vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok({ ...TOOL, config: { ...TOOL.config, enabled: false } }));
 
@@ -456,7 +511,7 @@ describe('executeSessionTool', () => {
     });
 
     it.each<{ code: FunctionInvocationErrorCode; cause?: unknown; expected: string | undefined }>([
-        { code: 'connection_not_found', expected: 'integration_not_connected' },
+        { code: 'connection_not_found', expected: 'connection_deleted' },
         { code: 'function_not_found', expected: 'tool_not_in_session' },
         { code: 'function_disabled', expected: 'tool_not_in_session' },
         { code: 'invalid_invocation', expected: 'tool_not_in_session' },
@@ -527,6 +582,31 @@ describe('nango_execute', () => {
 
         expect(errorOf(result).message).toContain('Invalid nango_execute arguments');
         expect(codeOf(result)).toBe('invalid_input');
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+
+    it('tracks which argument made a call invalid', async () => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+
+        await executeTool.handler({ tool: 'notion__read_doc', goal: PURPOSE.goal }, context());
+
+        expect(track).toHaveBeenCalledWith(
+            expect.objectContaining({ eventProperties: expect.objectContaining({ error_code: 'invalid_input', invalid_arguments: 'intent: invalid_type' }) })
+        );
+    });
+
+    it('tracks which argument made a direct call invalid', async () => {
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => {});
+        const ctx = context();
+        const tool = ctx.callable.get('notion__read_doc')!;
+
+        await executeDirectToolCall({ name: 'notion__read_doc', tool, args: { goal: PURPOSE.goal, intent: 7 }, context: ctx });
+
+        expect(track).toHaveBeenCalledWith(
+            expect.objectContaining({
+                eventProperties: expect.objectContaining({ tool_name: 'read_doc', error_code: 'invalid_input', invalid_arguments: 'intent: invalid_type' })
+            })
+        );
         expect(executeAction).not.toHaveBeenCalled();
     });
 

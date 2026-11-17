@@ -1,7 +1,7 @@
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { useRef } from 'react';
 
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@nangohq/design-system';
 
 import { useSlashToFocus } from '@/hooks/useSlashToFocus';
 
@@ -22,9 +22,21 @@ export const SearchField: React.FC<SearchFieldProps> = ({ value, placeholder, on
             </InputGroupAddon>
             <InputGroupInput ref={inputRef} type="text" placeholder={placeholder} value={value} onChange={(event) => onChange(event.currentTarget.value)} />
             <InputGroupAddon align="inline-end">
-                <span>
-                    <kbd className="rounded-ds-xs border-ds-hairline border-border-default px-1.5 type-code-regular-xs text-text-muted">/</kbd>
-                </span>
+                {value ? (
+                    <InputGroupButton
+                        label="Clear search"
+                        onClick={() => {
+                            onChange('');
+                            inputRef.current?.focus();
+                        }}
+                    >
+                        <X />
+                    </InputGroupButton>
+                ) : (
+                    <span>
+                        <kbd className="rounded-ds-xs border-ds-hairline border-border-default px-1.5 type-code-regular-xs text-text-muted">/</kbd>
+                    </span>
+                )}
             </InputGroupAddon>
         </InputGroup>
     );

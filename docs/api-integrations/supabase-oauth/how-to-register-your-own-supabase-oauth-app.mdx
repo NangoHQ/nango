@@ -1,0 +1,33 @@
+---
+title: 'How to register your own Supabase OAuth app'
+sidebarTitle: 'Supabase (OAuth) Setup'
+description: 'Create a Supabase OAuth app and connect its credentials to Nango'
+---
+
+This guide shows you how to create an OAuth app in your Supabase organization to get your OAuth credentials (client ID & secret). Your users then authorize your app to manage their own organizations and projects through the Management API.
+
+<Steps>
+  <Step title="Create a Supabase account">
+    If you don't have a Supabase account, [sign up](https://supabase.com/dashboard/sign-up) for free.
+  </Step>
+  <Step title="Create an OAuth app">
+    1. In your organization's settings, open the [**OAuth Apps**](https://supabase.com/dashboard/org/_/apps) tab.
+    2. Click **Publish OAuth app**.
+    3. Enter an **Application name** and your **Website URL**.
+    4. Under **Authorization callback URLs**, add `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)).
+    5. Under **Application permissions**, set each area your integration needs to **Read** or **Write** (see [scopes](https://supabase.com/docs/guides/integrations/build-a-supabase-oauth-integration/oauth-scopes)): for example **Organizations** and **Projects** to **Read** to list organizations and projects.
+    6. Click **Confirm**, then copy the **Client ID** and **Client Secret**. The client secret is shown only once.
+  </Step>
+  <Step title="Add the credentials in Nango">
+    In your Supabase (OAuth) integration in Nango, paste the client ID and secret. Leave scopes empty: Supabase applies the scopes chosen on the OAuth app, and its `scope` parameter is deprecated.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Note>You can change an OAuth app's scopes at any time, but existing users must authorize your app again to get the new scopes.</Note>
+
+For more details, see [Build a Supabase Integration](https://supabase.com/docs/guides/integrations/build-a-supabase-oauth-integration).
+
+---

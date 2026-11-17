@@ -23,6 +23,10 @@ const artifact = {
 } satisfies FunctionDeploymentArtifact;
 
 describe(functionVersionHash, () => {
+    it('matches the CLI hash', () => {
+        expect(functionVersionHash(artifact).unwrap()).toBe('41e0e2d3d7be65eb90b53b0f6eabbda23b88392c15552302f2df811b825215d6');
+    });
+
     it('treats omitted and empty tags as the same version', () => {
         expect(functionVersionHash({ ...artifact, tags: {} }).unwrap()).toBe(functionVersionHash(artifact).unwrap());
         expect(functionVersionHash({ ...artifact, tags: undefined }).unwrap()).toBe(functionVersionHash(artifact).unwrap());

@@ -1,0 +1,57 @@
+---
+title: 'Dify - How do I link my account?'
+sidebarTitle: 'Dify'
+---
+
+## Overview
+
+To authenticate with Dify, you need:
+
+1. **API Key** — an app API key (to call one Dify app) or a knowledge base API key (to call your workspace's knowledge bases).
+
+This guide will show you how to create either one.
+
+### Prerequisites
+
+- A [Dify Cloud](https://cloud.dify.ai) account. The free Sandbox plan includes API access.
+- For a knowledge base API key: the workspace owner or admin role. Only they can create, view, and delete knowledge base keys.
+
+### Step 1: Create an API key
+
+An app API key works only for the app you create it in. A knowledge base API key works for all knowledge bases in your workspace, or only the ones you pick when you create it.
+
+**App API key**
+
+1. Sign in to [Dify Cloud](https://cloud.dify.ai) and open your app in **Studio**.
+2. If the app has never been published, click **Publish**, then **Publish** again. The app's API stays unavailable until the app is published.
+3. In the app's sidebar, click **Access Point**. Under **Backend Service API**, click **API Key**.
+
+<img src="/api-integrations/dify/app_access_point_api_key.png" alt="Dify app Access Point page with the API Key button under Backend Service API highlighted" />
+
+4. Click **Create new Secret key**.
+5. Copy the key (it starts with `app-`), then click **I have saved this key**. Dify shows the key only once.
+
+<img src="/api-integrations/dify/app_api_key_created.png" alt="Dify API key created dialog with the copy button highlighted" />
+
+**Knowledge base API key**
+
+1. In the Dify sidebar, click **Knowledge**.
+2. Click **Service API** in the top-right corner, then **API Key**.
+
+<img src="/api-integrations/dify/knowledge_service_api_key.png" alt="Dify Knowledge page with the Service API menu and API Key button highlighted" />
+
+3. Click **Create new Secret key**, choose **All Knowledge Bases** or **Specific Knowledge Bases** under **Knowledge Base Access**, then click **Create**.
+
+<img src="/api-integrations/dify/knowledge_api_key_scope.png" alt="Dify Add API Key dialog with the Knowledge Base Access options and the Create button" />
+
+4. Copy the key (it starts with `dataset-`), then click **I have saved this key**. Dify shows the key only once.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Dify.
+2. Paste your app or knowledge base API key in the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/dify/form.png" alt="Dify Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Dify.

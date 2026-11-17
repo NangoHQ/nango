@@ -1,4 +1,4 @@
-import { ArrowUpRight, BarChart3, Blocks, BookOpen, Cog, LibraryBig, List, MessageSquareCode, MessagesSquare, Plug, Sprout, X } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Blocks, BookOpen, Bot, Cog, LibraryBig, List, MessagesSquare, Plug, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/Sidebar';
 import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { useDismissAgentGettingStarted } from '@/hooks/useAgentGettingStarted';
+import { useCanUseAgentPlayground } from '@/hooks/useCanUseAgentPlayground';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
@@ -47,12 +48,12 @@ export const AppSidebar: React.FC = () => {
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const { can } = usePermissions();
-    const showPlayground = Boolean(meta?.agentPlayground) && can('environment:agent_sessions:write');
+    const showPlayground = useCanUseAgentPlayground();
 
     const items = useMemo<SidebarItem[]>(() => {
         return [
             { title: 'Catalog', url: `/${env}/catalog`, icon: LibraryBig },
-            showPlayground ? { title: 'Playground', url: `/${env}/playground`, icon: MessageSquareCode } : null,
+            showPlayground ? { title: 'Playground', url: `/${env}/playground`, icon: Bot } : null,
             { title: 'Integrations', url: `/${env}/integrations`, icon: Blocks },
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },
             { title: 'Logs', url: `/${env}/logs`, icon: List },
@@ -148,7 +149,7 @@ export const AppSidebar: React.FC = () => {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                <SidebarSeparator className="mb-2" />
+                <SidebarSeparator className="my-1.5" />
                 <ProfileDropdown />
             </SidebarFooter>
         </Sidebar>

@@ -1,0 +1,51 @@
+---
+title: 'Push by Techulus - How do I link my account?'
+sidebarTitle: 'Push by Techulus'
+---
+
+## Overview
+
+To authenticate with Push by Techulus, you need:
+
+1. **API Key** — your Push account API key, or a team API key.
+
+This guide will show you how to find it.
+
+### Prerequisites
+
+- A Push account. The Free plan includes API access. If you don't have an account, sign up in the [Push console](https://push.techulus.com/console).
+- To receive notifications, install the Push app on an iOS or Android device, sign in to your account, and allow notifications.
+
+### Step 1: Copy your API key
+
+Use the account API key to notify all devices in your account, or a team API key to notify the devices of every member of that team.
+
+**Account API key**
+
+1. Sign in to the [Push console](https://push.techulus.com/console).
+2. In the left sidebar, click **API Credentials**.
+3. Under **API Key**, click **Copy**. The key is created with your account; if it is compromised, contact Push support for a replacement.
+
+<img src="/api-integrations/push-by-techulus/api_credentials_copy_key.png" alt="Push console API Credentials page with the Copy button for the account API key"/>
+
+You can also copy the account API key from the **Account** tab in the Push mobile app.
+
+**Team API key**
+
+1. In the left sidebar of the Push console, click **Teams**.
+2. To add a team, click **Create**, enter a team name, then click **Confirm**.
+3. Copy the key shown next to **API Key** under the team name.
+
+<img src="/api-integrations/push-by-techulus/team_api_key_created.png" alt="Push console Teams page showing a team's API key under the team name"/>
+
+In the Push mobile app, team API keys are on the team details screen.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Push by Techulus.
+2. Enter your account or team API key in the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/push-by-techulus/form.png" alt="Push by Techulus Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Push by Techulus.
