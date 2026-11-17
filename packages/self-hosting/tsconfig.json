@@ -12,9 +12,6 @@
             "path": "../hosted-telemetry"
         },
         {
-            "path": "../kvstore"
-        },
-        {
             "path": "../license"
         },
         {

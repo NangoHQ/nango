@@ -1,7 +1,5 @@
 import './tracer.js';
 
-import * as cron from 'node-cron';
-
 import { destroyHostedTelemetryDb } from '@nangohq/hosted-telemetry';
 import { metrics, once, report } from '@nangohq/utils';
 
@@ -30,6 +28,7 @@ process.on('uncaughtException', (err) => {
 
 let api: Server;
 let clickhouse: ClickHouseClient | undefined;
+let uploadTelemetry: { abort: () => Promise<void> } | undefined;
 
 try {
     let server: Express;
@@ -38,7 +37,7 @@ try {
         clickhouse = cloud.clickhouse;
         server = createCloudServer(cloud);
     } else {
-        await bootInstallation();
+        ({ uploadTelemetry } = await bootInstallation());
         server = createInstallationServer();
     }
 
@@ -60,9 +59,10 @@ try {
 
 const close = once(() => {
     logger.info('Closing...');
-    cron.getTasks().forEach((task) => void task.stop());
+    const uploadTelemetryStopped = uploadTelemetry?.abort();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     api.close(async () => {
+        await uploadTelemetryStopped;
         await destroyCloudDb();
         await clickhouse?.close();
         await destroyHostedTelemetryDb();

@@ -60,22 +60,38 @@ export async function enqueueUploads(
     }
 }
 
-/** The uploads still waiting, oldest first. */
-export async function listQueuedUploads(knex: Knex, { schema = HOSTED_TELEMETRY_SCHEMA }: { schema?: string } = {}): Promise<Result<QueuedUpload[]>> {
+/**
+ * Runs `work` on the oldest queued upload that no other replica is working on. The row stays locked until `work` ends,
+ * so only one replica works on an upload at a time. Returns null when there is none.
+ *
+ * Postgres ends the transaction and releases the row if `work` leaves it idle for longer than `idleTimeoutMs`.
+ */
+export async function withQueuedUpload<T>(
+    knex: Knex,
+    { idleTimeoutMs, schema = HOSTED_TELEMETRY_SCHEMA }: { idleTimeoutMs: number; schema?: string },
+    work: (trx: Knex.Transaction, upload: QueuedUpload) => Promise<Result<T>>
+): Promise<Result<T | null>> {
     try {
-        const res = await knex.raw<{ rows: { day: string; metric: string; cursor_ts: Date | null; cursor_attributes: MetricRow['attributes'] | null }[] }>(
-            `SELECT to_char(day, 'YYYY-MM-DD') AS day, metric, cursor_ts, cursor_attributes FROM ??.??
-             WHERE status = 'queued'
-             ORDER BY day, metric`,
-            [schema, HOSTED_TELEMETRY_UPLOADS_TABLE]
-        );
-        return Ok(
-            res.rows.map((row) => ({
+        return await knex.transaction(async (trx): Promise<Result<T | null>> => {
+            await trx.raw(`SELECT set_config('idle_in_transaction_session_timeout', ?, true)`, [String(idleTimeoutMs)]);
+            const res = await trx.raw<{ rows: { day: string; metric: string; cursor_ts: Date | null; cursor_attributes: MetricRow['attributes'] | null }[] }>(
+                `SELECT to_char(day, 'YYYY-MM-DD') AS day, metric, cursor_ts, cursor_attributes FROM ??.??
+                 WHERE status = 'queued'
+                 ORDER BY day, metric
+                 LIMIT 1
+                 FOR UPDATE SKIP LOCKED`,
+                [schema, HOSTED_TELEMETRY_UPLOADS_TABLE]
+            );
+            const row = res.rows[0];
+            if (!row) {
+                return Ok(null);
+            }
+            return await work(trx, {
                 day: row.day,
                 metric: row.metric,
                 cursor: row.cursor_ts && row.cursor_attributes ? { ts: row.cursor_ts, attributes: row.cursor_attributes } : null
-            }))
-        );
+            });
+        });
     } catch (err) {
         return Err(err);
     }

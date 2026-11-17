@@ -1,11 +1,14 @@
+import { setTimeout } from 'node:timers/promises';
+
 import knexFactory from 'knex';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { ensureDailyPartitions } from '@nangohq/migrations';
+import { Ok } from '@nangohq/utils';
 
 import { migrate } from './migrate.js';
 import { HOSTED_TELEMETRY_TABLE, HOSTED_TELEMETRY_UPLOADS_TABLE } from './schema.js';
-import { enqueueUploads, failExpiredUploads, failUpload, listQueuedUploads, readUploadPage, saveUploadProgress } from './uploads.js';
+import { enqueueUploads, failExpiredUploads, failUpload, readUploadPage, saveUploadProgress, withQueuedUpload } from './uploads.js';
 
 import type { Knex } from 'knex';
 
@@ -114,8 +117,10 @@ describe('enqueueUploads', () => {
     });
 });
 
-describe('listQueuedUploads', () => {
-    it('lists the queued uploads, oldest first, with their cursor', async () => {
+describe('withQueuedUpload', () => {
+    const idleTimeoutMs = 60_000;
+
+    it('works on the oldest queued upload, with its cursor', async () => {
         await insert(
             { ts: '2026-11-08T10:00:00Z', metric: connections },
             { ts: '2026-11-08T10:00:00Z', metric: concurrency },
@@ -127,15 +132,73 @@ describe('listQueuedUploads', () => {
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor, done: false, schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-07', metric: concurrency, cursor, done: true, schema })).unwrap();
 
-        const queued = (await listQueuedUploads(knex, { schema })).unwrap();
+        const worked = await withQueuedUpload(knex, { idleTimeoutMs, schema }, (_trx, upload) => Promise.resolve(Ok(upload)));
 
-        expect(queued).toEqual([
-            { day: '2026-11-08', metric: concurrency, cursor },
-            { day: '2026-11-08', metric: connections, cursor: null },
-            { day: '2026-11-09', metric: concurrency, cursor: null }
-        ]);
+        expect(worked.unwrap()).toEqual({ day: '2026-11-08', metric: concurrency, cursor });
     });
 
+    it('does not call the work when nothing is queued', async () => {
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
+        (await failUpload(knex, { day: '2026-11-08', metric: concurrency, schema })).unwrap();
+
+        const worked = await withQueuedUpload(knex, { idleTimeoutMs, schema }, () => Promise.resolve(Ok('called')));
+
+        expect(worked.unwrap()).toBeNull();
+    });
+
+    it('gives each replica a different upload, and none to the one that finds them all taken', async () => {
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-08T10:00:00Z', metric: connections });
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
+        const metric = (hold: Promise<unknown>) =>
+            withQueuedUpload(knex, { idleTimeoutMs, schema }, async (_trx, upload) => {
+                await hold;
+                return Ok(upload.metric);
+            });
+        const { promise: held, resolve: release } = Promise.withResolvers<unknown>();
+
+        const first = metric(held);
+        const second = metric(held);
+        // Lets both take their upload before the third looks for one.
+        await setTimeout(200);
+        const third = await metric(Promise.resolve());
+        release(null);
+
+        expect(new Set([(await first).unwrap(), (await second).unwrap()])).toEqual(new Set([concurrency, connections]));
+        expect(third.unwrap()).toBeNull();
+    });
+
+    it('saves what the work wrote and releases the upload when the work ends', async () => {
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
+        const cursor = { ts: at('2026-11-08T10:00:00Z'), attributes: {} };
+
+        (
+            await withQueuedUpload(knex, { idleTimeoutMs, schema }, (trx, { day, metric }) =>
+                saveUploadProgress(trx, { day, metric, cursor, done: false, schema })
+            )
+        ).unwrap();
+        const next = await withQueuedUpload(knex, { idleTimeoutMs, schema }, (_trx, upload) => Promise.resolve(Ok(upload)));
+
+        expect(next.unwrap()).toEqual({ day: '2026-11-08', metric: concurrency, cursor });
+    });
+
+    it('releases the upload, without saving anything, when the work leaves it idle for too long', async () => {
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
+
+        const hung = await withQueuedUpload(knex, { idleTimeoutMs: 100, schema }, async (trx, { day, metric }) => {
+            await setTimeout(500);
+            return await saveUploadProgress(trx, { day, metric, cursor: null, done: true, schema });
+        });
+        const next = await withQueuedUpload(knex, { idleTimeoutMs, schema }, (_trx, upload) => Promise.resolve(Ok(upload)));
+
+        expect(hung.isErr()).toBe(true);
+        expect(next.unwrap()).toEqual({ day: '2026-11-08', metric: concurrency, cursor: null });
+    });
+});
+
+describe('saveUploadProgress', () => {
     it('does not change an upload that already succeeded or failed', async () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-08T10:00:00Z', metric: connections });
         (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
