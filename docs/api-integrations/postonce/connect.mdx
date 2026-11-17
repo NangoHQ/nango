@@ -7,19 +7,19 @@ sidebarTitle: 'PostOnce'
 
 To authenticate with PostOnce, you need:
 
-1. **API Key** — an API key created on the Developers page of your PostOnce dashboard.
+1. **API Key** — an API key created under **Preferences → API keys** in your PostOnce dashboard.
 
 This guide will show you how to create one.
 
 ### Prerequisites
 
-- A PostOnce account. If you don't have one, [sign up](https://postonce.to/). If your plan does not include API access, the Developers page shows an upgrade prompt instead of the create form.
+- A PostOnce account. If you don't have one, [sign up](https://postonce.to/). If your plan does not include API access, the **API keys** tab shows an upgrade prompt instead of the create form.
 
 ### Step 1: Create an API key
 
 1. Sign in to the [PostOnce dashboard](https://postonce.to/dashboard).
-2. Open **Developers** from the left navigation panel, then the **Keys & billing** tab.
-3. In the **API keys** section, enter a **Key name**.
+2. Open [Preferences](https://postonce.to/dashboard/preferences), then the **API keys** tab.
+3. Enter a **Key name**.
 4. Open **Scopes** and select the scopes your app needs. Keep `accounts:read` selected: Nango uses it to verify the key.
 5. Click **Create**.
 6. Copy the key. It starts with `po_live_` and is shown only once.
