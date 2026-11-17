@@ -28,7 +28,7 @@ async function insert(...rows: { ts: string; metric: string; attributes?: Record
 
 async function uploads(): Promise<{ day: string; metric: string; status: string }[]> {
     const res = await knex.raw<{ rows: { day: string; metric: string; status: string }[] }>(
-        `SELECT day::text AS day, metric, status FROM ??.?? ORDER BY day, metric`,
+        `SELECT to_char(day, 'YYYY-MM-DD') AS day, metric, status FROM ??.?? ORDER BY day, metric`,
         [schema, HOSTED_TELEMETRY_UPLOADS_TABLE]
     );
     return res.rows;

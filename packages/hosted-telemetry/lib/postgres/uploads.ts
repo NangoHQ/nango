@@ -64,7 +64,7 @@ export async function enqueueUploads(
 export async function listQueuedUploads(knex: Knex, { schema = HOSTED_TELEMETRY_SCHEMA }: { schema?: string } = {}): Promise<Result<QueuedUpload[]>> {
     try {
         const res = await knex.raw<{ rows: { day: string; metric: string; cursor_ts: Date | null; cursor_attributes: MetricRow['attributes'] | null }[] }>(
-            `SELECT day::text AS day, metric, cursor_ts, cursor_attributes FROM ??.??
+            `SELECT to_char(day, 'YYYY-MM-DD') AS day, metric, cursor_ts, cursor_attributes FROM ??.??
              WHERE status = 'queued'
              ORDER BY day, metric`,
             [schema, HOSTED_TELEMETRY_UPLOADS_TABLE]
