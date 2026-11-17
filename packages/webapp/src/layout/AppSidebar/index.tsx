@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/Sidebar';
 import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { useDismissAgentGettingStarted } from '@/hooks/useAgentGettingStarted';
+import { useCanUseAgentPlayground } from '@/hooks/useCanUseAgentPlayground';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
@@ -47,7 +48,7 @@ export const AppSidebar: React.FC = () => {
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const { can } = usePermissions();
-    const showPlayground = Boolean(meta?.agentPlayground) && can('environment:agent_sessions:write');
+    const showPlayground = useCanUseAgentPlayground();
 
     const items = useMemo<SidebarItem[]>(() => {
         return [
