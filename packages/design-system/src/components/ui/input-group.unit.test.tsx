@@ -7,7 +7,6 @@ import { Field, FieldDescription, FieldError, FieldLabel } from './field';
 import { Input } from './input';
 import { InputGroup, InputGroupInput } from './input-group';
 import { SearchInput, setNativeValue } from './search-input';
-import { maskSecret, SecretInput } from './secret-input';
 import { Textarea } from './textarea';
 import { TooltipProvider } from './tooltip';
 
@@ -171,37 +170,6 @@ describe('className overrides', () => {
             expect(input.className).toContain('font-mono');
             expect(input.className).not.toContain('font-sans');
         }
-    });
-});
-
-describe('SecretInput', () => {
-    const secret = 'nango_sk_dev_abcdef4c9';
-
-    it('masks all but the last 3 characters with a fixed-length mask', () => {
-        expect(maskSecret(secret)).toBe('•'.repeat(20) + '4c9');
-        expect(maskSecret('ab')).toBe('•'.repeat(20));
-    });
-
-    it('reveals and hides', () => {
-        render(<SecretInput value={secret} aria-label="Secret key" />);
-        const input = $<HTMLInputElement>('input');
-        expect(input.readOnly).toBe(true);
-        expect(input.value).toBe(maskSecret(secret));
-        const reveal = $<HTMLButtonElement>('button[aria-label="Show secret"]');
-        expect(reveal.getAttribute('aria-pressed')).toBe('false');
-        act(() => reveal.click());
-        expect(input.value).toBe(secret);
-        expect(reveal.getAttribute('aria-label')).toBe('Show secret');
-        expect(reveal.getAttribute('aria-pressed')).toBe('true');
-        act(() => reveal.click());
-        expect(input.value).toBe(maskSecret(secret));
-        expect(reveal.getAttribute('aria-pressed')).toBe('false');
-    });
-
-    it('hides reveal and copy without access', () => {
-        render(<SecretInput value={secret} canReveal={false} aria-label="Secret key" />);
-        expect(container.querySelectorAll('button')).toHaveLength(0);
-        expect($<HTMLInputElement>('input').value).toBe(maskSecret(secret));
     });
 });
 

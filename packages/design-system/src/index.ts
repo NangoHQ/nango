@@ -65,7 +65,6 @@ export {
 } from './components/ui/inline-code';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
 export { CopyInput, type CopyInputProps } from './components/ui/copy-input';
-export { SecretInput, type SecretInputProps } from './components/ui/secret-input';
 export { SearchInput, type SearchInputProps } from './components/ui/search-input';
 export { LinkButton, type LinkButtonProps, linkButtonVariants } from './components/ui/link-button';
 export { Textarea, type TextareaProps } from './components/ui/textarea';

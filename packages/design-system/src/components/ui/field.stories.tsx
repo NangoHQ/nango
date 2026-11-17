@@ -5,7 +5,6 @@ import { CopyInput } from './copy-input';
 import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet } from './field';
 import { Input } from './input';
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupSwatch } from './input-group';
-import { SecretInput } from './secret-input';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -159,10 +158,6 @@ export const ReviewFrame: Story = {
                 <FieldLabel>Environment ID</FieldLabel>
                 <CopyInput value={ENV_ID} />
                 <FieldDescription>Use it in API calls and when you contact support.</FieldDescription>
-            </Field>
-            <Field>
-                <FieldLabel>Secret key</FieldLabel>
-                <SecretInput value="nango_sk_dev_7f2a9e1b3c5d8f0a2b4c6d8e0f1a34c9" />
             </Field>
             <Field>
                 <FieldLabel optional>Secondary URL</FieldLabel>
