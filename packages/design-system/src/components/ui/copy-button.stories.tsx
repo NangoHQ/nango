@@ -4,7 +4,7 @@ import type { CopyButtonProps } from './copy-button';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta<typeof CopyButton> = {
-    title: 'Design System/Components/CopyButton',
+    title: 'Design System/Components/Buttons/CopyButton',
     component: CopyButton,
     parameters: { layout: 'padded' },
     args: { value: 'nango_sk_live_7f3a9c21', size: 'sm' },
