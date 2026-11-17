@@ -9,8 +9,8 @@ import svgr from 'vite-plugin-svgr';
 
 import type { Plugin } from 'vite';
 
-const DEV_PORT = 3000;
-const LOCAL_API_PORT = 3003;
+const DEV_PORT = Number(process.env['NANGO_WEBAPP_PORT'] || 3000);
+const LOCAL_API_PORT = Number(process.env['SERVER_PORT'] || 3003);
 
 const REMOTE_API_URLS: Record<string, string> = {
     dev: 'https://api-development.nango.dev',
