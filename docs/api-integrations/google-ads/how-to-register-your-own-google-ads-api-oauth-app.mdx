@@ -66,7 +66,11 @@ This guide shows you how to register your own app with Google to obtain your OAu
   <Step id="check-api-access-level" title="Check your Google Ads API access level">
     Google Ads API access is set by the Google Cloud project that owns your OAuth client. You don't need a developer token: Google [sunset developer tokens](https://developers.google.com/google-ads/api/docs/api-policy/developer-token) on September 9, 2026.
 
-    At **Explorer** access, your project can call production accounts up to 2,880 operations per day. Each search request, including each page of results, counts as one operation. Apply for Basic or Standard access if you need more. See [Google's access levels documentation](https://developers.google.com/google-ads/api/docs/api-policy/access-levels).
+    Enabling the API gives your project **Test** access, which only works with Google Ads test accounts. To call production accounts, open your project's **Google Ads API Overview** page in the Google Cloud Console and apply for **Explorer** access. Approval is automated in most cases.
+
+    Explorer access allows up to 2,880 operations per day on production accounts. Each search request, including each page of results, counts as one operation. Apply for Basic or Standard access from the same page if you need more. See [Google's access levels documentation](https://developers.google.com/google-ads/api/docs/api-policy/access-levels).
+
+    <Note>Calls to production accounts from a project with only Test access fail with `CLOUD_PROJECT_NOT_APPROVED_FOR_PRODUCTION` (v25 and later) or `ACTION_NOT_PERMITTED` (v24 and earlier).</Note>
   </Step>
   <Step id="set-login-customer-id" title="Set your manager account customer ID (optional)">
     If you access your users' Google Ads accounts through a manager (MCC) account, Nango sends that account's customer ID (10 digits, no hyphens) as the `login-customer-id` header. Skip this step if you don't use a manager account.
