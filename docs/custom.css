@@ -399,6 +399,29 @@ html:not(.dark) #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc
     width: calc(100% + 184px) !important;
     max-width: none !important;
   }
+
+  /*
+   * Let long labels grow leftward instead of wrapping. The label column
+   * is a fixed 160px, so a 3-4 word label like "Agent goals and intents
+   * in logs" used to wrap onto three lines. Right-aligning the column
+   * makes the pill and date hug the content, and a pill wider than the
+   * column overflows to the left (align-items: flex-end overflows on the
+   * start side) into the empty gutter. The 290px cap stops the pill at
+   * the logo's left edge; anything longer wraps as before.
+   */
+  body:has([data-page-href*="updates/changelog"]) .update-container > div:first-child {
+    align-items: flex-end !important;
+  }
+
+  body:has([data-page-href*="updates/changelog"]) [data-component-part="update-label"] {
+    width: max-content !important;
+    max-width: 290px !important;
+    text-align: right !important;
+  }
+
+  body:has([data-page-href*="updates/changelog"]) [data-component-part="update-description"] {
+    text-align: right !important;
+  }
 }
 
 /* ══ CHANGELOG PAGE — tighten the gap around entry dividers ══════ */
