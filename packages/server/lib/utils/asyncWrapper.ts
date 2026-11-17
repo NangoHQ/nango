@@ -58,6 +58,11 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
     });
 }
 
+/** A task token stores `EnvironmentWithoutSecrets`. Every other auth path stores a `DBEnvironment`. */
+export function hasDbEnvironment(locals: RequestLocals): locals is RequestLocals & { environment: DBEnvironment } {
+    return locals.authType !== 'taskToken' && locals.environment != null;
+}
+
 /**
  * Returns the request's environment, or null *after having responded* 500 if it has none.
  *
@@ -65,13 +70,12 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
  * is a wiring mistake rather than a client error.
  */
 export function requireEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | null {
-    const { environment } = res.locals;
-    if (!environment) {
+    if (!hasDbEnvironment(res.locals)) {
         respondMissingEnvironment(req, res);
         return null;
     }
 
-    return environment as DBEnvironment;
+    return res.locals.environment;
 }
 
 /**
