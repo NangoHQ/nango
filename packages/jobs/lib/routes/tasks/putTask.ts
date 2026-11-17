@@ -57,7 +57,7 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) =>
     const auth = getInternalServiceAuth(res);
     if (auth?.kind === 'jwt' && auth.res) {
         const syncJob = auth.res.syncId ? await getSyncJobByRunId(taskId) : null;
-        if (!taskPropsBoundToCapability(auth.res, nangoProps, taskId, syncJob)) {
+        if (!taskPropsBoundToCapability(auth, nangoProps, taskId, syncJob)) {
             res.status(401).json({ error: { code: 'put_task_failed', message: 'Unauthorized' } });
             return;
         }

@@ -113,19 +113,19 @@ describe('putTask bodySchema error', () => {
 
 describe('taskPropsBoundToCapability', () => {
     it('accepts the environment, connection, sync, and sync job stored for this task', () => {
-        expect(taskPropsBoundToCapability(resource, boundProps, taskId, syncJob)).toBe(true);
+        expect(taskPropsBoundToCapability(capabilityAuth(), boundProps, taskId, syncJob)).toBe(true);
     });
 
     it('rejects body identifiers that are not the token resource or this task sync job', () => {
-        expect(taskPropsBoundToCapability(resource, foreignProps, taskId, syncJob)).toBe(false);
+        expect(taskPropsBoundToCapability(capabilityAuth(), foreignProps, taskId, syncJob)).toBe(false);
     });
 
     it('rejects a sync job from another run of the same sync', () => {
-        expect(taskPropsBoundToCapability(resource, boundProps, taskId, { ...syncJob, run_id: '22222222-2222-4222-8222-222222222222' })).toBe(false);
+        expect(taskPropsBoundToCapability(capabilityAuth(), boundProps, taskId, { ...syncJob, run_id: '22222222-2222-4222-8222-222222222222' })).toBe(false);
     });
 
     it('rejects a sync id when the token is not bound to a sync', () => {
-        const action: TaskCapabilityResource = { environmentId: 1, connectionId: 2 };
+        const action = capabilityAuth({ environmentId: 1, connectionId: 2 });
         expect(taskPropsBoundToCapability(action, { environmentId: 1, nangoConnectionId: 2, syncId: resource.syncId, syncJobId: 7 }, taskId, syncJob)).toBe(
             false
         );
