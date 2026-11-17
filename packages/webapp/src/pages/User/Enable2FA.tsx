@@ -3,10 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Button, CopyButton } from '@nangohq/design-system';
 
 import { Checkbox } from '@/components/ui/Checkbox';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useMFA } from '@/hooks/useMFA';
@@ -116,7 +115,7 @@ export const Enable2FA: React.FC = () => {
                                                     data-ph-mask
                                                 >
                                                     <span>{secret}</span>
-                                                    <CopyButton text={secret.replace(/\s/g, '')} />
+                                                    <CopyButton value={secret.replace(/\s/g, '')} size="2xs" />
                                                 </div>
                                             )}
                                         </div>

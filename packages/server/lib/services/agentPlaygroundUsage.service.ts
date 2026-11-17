@@ -2,6 +2,7 @@ import { productTracking } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
+import type { PlaygroundRequest } from './agentPlaygroundRequest.js';
 import type { AgentPlaygroundIntegrationSetup, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 import type { LanguageModelUsage } from 'ai';
 
@@ -135,6 +136,7 @@ export function trackStarterIntegrationSetup(
 export interface PlaygroundTurn {
     isFirstTurn: boolean;
     starterProvider?: string;
+    request?: PlaygroundRequest;
 }
 
 export function trackPlaygroundTurn({
@@ -172,6 +174,14 @@ export function trackPlaygroundTurn({
             environment_id: ctx.environment.id,
             is_first_turn: turn.isFirstTurn,
             ...(turn.starterProvider ? { starter_provider: turn.starterProvider } : {}),
+            ...(turn.request
+                ? {
+                      intent: turn.request.intent,
+                      requested_providers: turn.request.providers,
+                      requested_provider_count: turn.request.providers.length,
+                      has_unsupported_provider: turn.request.hasUnsupportedProvider
+                  }
+                : {}),
             is_success: outcome !== 'error',
             ...(outcome === 'error' ? { error_code: 'model_error', ...(errorCategory ? { error_category: errorCategory } : {}) } : {}),
             is_stopped: outcome === 'aborted',

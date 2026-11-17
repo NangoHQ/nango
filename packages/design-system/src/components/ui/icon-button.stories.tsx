@@ -6,7 +6,7 @@ import type { IconButtonSize, IconButtonVariant } from './button';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
-    title: 'Design System/Components/IconButton',
+    title: 'Design System/Components/Buttons/IconButton',
     parameters: { layout: 'padded' }
 };
 

@@ -8,9 +8,9 @@ import { createFunction, deriveFunctionCapabilities, reservedToolTagKeys, toolTo
 
 import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
-import { detectFeatures, getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
+import { detectFeatures, getEntryPoints, readIndexContent } from './compile.js';
 import { buildJsonSchemaDefinitionsFromZodModels } from './json-schema.js';
-import { normalizeProjectRelativePath, resolveProjectPath } from './project-path.js';
+import { normalizeProjectRelativePath, resolveProjectPath, tsToJsPath } from './project-path.js';
 import {
     DuplicateEndpointDefinitionError,
     DuplicateModelDefinitionError,
