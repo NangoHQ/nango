@@ -1,4 +1,5 @@
 // Read-only first tasks per provider, so trying an integration in the playground can't change anyone's data.
+// Providers missing here get a generic prompt. The Agent Playground PostHog dashboard ranks which of them people try.
 export const PROVIDER_STARTER_PROMPTS: Record<string, string> = {
     '1password-scim': 'List the users in my 1Password (SCIM) account',
     'active-campaign': 'Show my 5 newest ActiveCampaign contacts',
