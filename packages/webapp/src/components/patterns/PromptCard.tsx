@@ -1,5 +1,7 @@
 import { ArrowRight, Check, Copy } from 'lucide-react';
 
+import { IconButton } from '@nangohq/design-system';
+
 import { GithubLogo } from '@/assets/GithubLogo';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { cn } from '@/utils/utils';
@@ -16,24 +18,10 @@ interface PromptCardProps {
     onClick: () => void;
 }
 
-/**
- * An example prompt for an integration, as a clickable card.
- */
 export const PromptCard: React.FC<PromptCardProps> = ({ prompt, provider, name, action, copied = false, onClick }) => {
-    const ActionIcon = action === 'send' ? ArrowRight : copied ? Check : Copy;
-
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            aria-label={action === 'copy' ? `Copy prompt: ${prompt}` : undefined}
-            className={cn(
-                'group flex gap-3 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-[13px] text-left type-text-regular-sm text-text-default',
-                action === 'send'
-                    ? 'items-center transition-[background-color,border-color,box-shadow] hover:border-border-strong hover:bg-surface-panel hover:shadow-container-panel'
-                    : 'items-start'
-            )}
-        >
+    const cardClassName = 'flex gap-3 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-[13px] text-left type-text-regular-sm text-text-default';
+    const content = (
+        <>
             {/* Template logos pad their artwork, so a 25px box draws an 18px logo. */}
             {provider === 'github' ? (
                 <GithubLogo className="-m-[3.5px] size-[25px] shrink-0 text-text-strong" />
@@ -43,22 +31,37 @@ export const PromptCard: React.FC<PromptCardProps> = ({ prompt, provider, name, 
             <span className="flex-1">
                 <PromptText prompt={prompt} name={name} />
             </span>
-            {action === 'copy' && (
-                <span className="sr-only" aria-live="polite">
-                    {copied ? 'Copied' : ''}
-                </span>
-            )}
-            {action === 'copy' ? (
-                <span
-                    aria-hidden
-                    className="-mx-1 -mb-1 -mt-px flex size-[22px] shrink-0 items-center justify-center rounded-ds-xs transition-colors group-hover:bg-surface-panel-muted"
-                >
-                    <ActionIcon className={cn('size-3.5', copied ? 'text-status-success-icon' : 'text-text-muted group-hover:text-text-strong')} />
-                </span>
-            ) : (
-                <ActionIcon aria-hidden className="size-3.5 shrink-0 text-text-muted transition-colors group-hover:text-text-default" />
-            )}
-        </button>
+        </>
+    );
+
+    if (action === 'send') {
+        return (
+            <button
+                type="button"
+                onClick={onClick}
+                className={cn(
+                    cardClassName,
+                    'group items-center transition-[background-color,border-color,box-shadow] hover:border-border-strong hover:bg-surface-panel hover:shadow-container-panel'
+                )}
+            >
+                {content}
+                <ArrowRight aria-hidden className="size-3.5 shrink-0 text-text-muted transition-colors group-hover:text-text-default" />
+            </button>
+        );
+    }
+
+    return (
+        <div className={cn(cardClassName, 'items-start')}>
+            {content}
+            <span className="sr-only" aria-live="polite">
+                {copied ? 'Copied' : ''}
+            </span>
+            <span className="-my-0.5 -mr-1 shrink-0">
+                <IconButton variant="ghost" size="xs" label={`Copy prompt: ${prompt}`} title="Copy prompt" onClick={onClick}>
+                    {copied ? <Check className="size-3.5 text-status-success-icon" /> : <Copy className="size-3.5" />}
+                </IconButton>
+            </span>
+        </div>
     );
 };
 
