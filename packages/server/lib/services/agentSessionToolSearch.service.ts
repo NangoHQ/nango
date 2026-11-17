@@ -236,29 +236,35 @@ function bestMatchScoreFor(topScore: number | undefined): number {
 }
 
 /**
- * A related tool is listed once per call, under the query it scores best on, and not at all when another
- * query already returns it as a match. A query with a match gets fewer, since the agent already has a
- * tool to call. Matches are left alone, so every query keeps its own answer.
+ * A related tool is listed once per call, and not at all when another query already returns it as a
+ * match. Tools are placed best score first, each under the closest query that still has room, so a
+ * query that is full passes a tool on rather than dropping it. A query with a match gets fewer, since
+ * the agent already has a tool to call. Matches are left alone, so every query keeps its own answer.
  */
 export function trimRelated<T extends { best: ScoredCandidate[]; related: ScoredCandidate[] }>(rankings: T[]): (T & { relatedElsewhere: boolean })[] {
     const matched = new Set(rankings.flatMap(({ best }) => best.map((candidate) => candidate.slug)));
+    const kept = rankings.map(({ best }) => ({ max: best.length > 0 ? MAX_RELATED_WITH_MATCH : MAX_RELATED_WITHOUT_MATCH, tools: [] as ScoredCandidate[] }));
+    const placedIn = new Map<string, number>();
 
-    const closest = new Map<string, { index: number; score: number }>();
-    rankings.forEach(({ related }, index) => {
-        for (const { slug, score } of related) {
-            const current = closest.get(slug);
-            if (!current || score < current.score) {
-                closest.set(slug, { index, score });
-            }
+    const offers = rankings
+        .flatMap(({ related }, index) => related.map((candidate) => ({ index, candidate })))
+        .sort((a, b) => a.candidate.score - b.candidate.score || a.index - b.index);
+
+    for (const { index, candidate } of offers) {
+        const query = kept[index];
+        if (!query || matched.has(candidate.slug) || placedIn.has(candidate.slug) || query.tools.length >= query.max) {
+            continue;
         }
-    });
 
-    return rankings.map((ranking, index) => {
-        const own = ranking.related.filter(({ slug }) => !matched.has(slug) && closest.get(slug)?.index === index);
-        const max = ranking.best.length > 0 ? MAX_RELATED_WITH_MATCH : MAX_RELATED_WITHOUT_MATCH;
+        query.tools.push(candidate);
+        placedIn.set(candidate.slug, index);
+    }
 
-        return { ...ranking, related: own.slice(0, max), relatedElsewhere: own.length < ranking.related.length };
-    });
+    return rankings.map((ranking, index) => ({
+        ...ranking,
+        related: kept[index]?.tools ?? [],
+        relatedElsewhere: ranking.related.some(({ slug }) => matched.has(slug) || (placedIn.get(slug) ?? index) !== index)
+    }));
 }
 
 /**
@@ -487,7 +493,7 @@ function searchGuidance({
         lines.push('Related tools come without a schema. Search again with wording closer to one to get it.');
     }
 
-    const listed = returned.filter((candidate) => candidate.listed).map(({ slug }) => slug);
+    const listed = [...new Set(returned.filter((candidate) => candidate.listed).map(({ slug }) => slug))];
     if (listed.length > 0) {
         lines.push(`${codeList(listed)} ${listed.length === 1 ? 'is' : 'are'} also in your tool list under the same name.`);
     }

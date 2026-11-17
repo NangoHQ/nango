@@ -402,6 +402,17 @@ describe('trimRelated', () => {
         expect(slugs(third)).toStrictEqual([]);
     });
 
+    it('passes a tool on to its next closest query when the closest one is full', () => {
+        const [full, open] = trimRelated([
+            { best: [scored('send_email', 0.1)], related: [...tools('a', 3), scored('get_thread', 0.6)] },
+            { best: [], related: [scored('get_thread', 0.7)] }
+        ]);
+
+        expect(slugs(full)).toStrictEqual(['a_0', 'a_1', 'a_2']);
+        expect(slugs(open)).toStrictEqual(['get_thread']);
+        expect(open?.relatedElsewhere).toBe(false);
+    });
+
     it('fills the cap from deeper down when a query loses tools to another', () => {
         const [first, second] = trimRelated([
             { best: [scored('send_email', 0.1)], related: tools('a', 3) },
