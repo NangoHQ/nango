@@ -25,6 +25,7 @@ describe('buildInstructions', () => {
         expect(instructions).toContain("any app from Nango's catalog that has instant setup");
         expect(instructions).toContain('Add an app without asking only when the user named it');
         expect(instructions).toContain('only use an integration in the session that is the kind of app they mean');
+        expect(instructions).toContain('When the result lists an app as unknown, ask which of its suggestions they mean');
     });
 
     it('only points at a Connect button it created, and only blames the connection when the error does', () => {
