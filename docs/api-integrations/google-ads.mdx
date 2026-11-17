@@ -25,7 +25,7 @@ Connect to Google Ads with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/googleads/v17/customers" \
+            curl "https://api.nango.dev/proxy/googleads/v26/customers:listAccessibleCustomers" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -43,7 +43,7 @@ Connect to Google Ads with Nango and see data flow in 2 minutes.
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/googleads/v17/customers',
+            endpoint: '/googleads/v26/customers:listAccessibleCustomers',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
