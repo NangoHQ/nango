@@ -1,10 +1,9 @@
 import { ExternalLink, Play, Trash2 } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 
-import { Badge, Button } from '@nangohq/design-system';
+import { Badge, CopyButton, LinkButton } from '@nangohq/design-system';
 
 import { CodeBlock } from '@/components/ui/CodeBlock';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { Separator } from '@/components/ui/Separator';
 import { Spinner } from '@/components/ui/Spinner';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -65,9 +64,8 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                     (canOpenPlayground || deletion) && (
                         <>
                             {canOpenPlayground && (
-                                <Button
-                                    variant="link-accent"
-                                    size="xs"
+                                <LinkButton
+                                    size="sm"
                                     disabled={!fn.runType}
                                     onClick={() => {
                                         if (!fn.runType) return;
@@ -81,13 +79,13 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                                 >
                                     <Play />
                                     Test run this function
-                                </Button>
+                                </LinkButton>
                             )}
                             {canOpenPlayground && deletion && <Separator orientation="vertical" />}
                             {deletion && (
-                                <Button
-                                    variant="link-neutral-danger"
-                                    size="xs"
+                                <LinkButton
+                                    tone="neutral-danger"
+                                    size="sm"
                                     loading={isDeleting}
                                     onClick={() =>
                                         void confirm({
@@ -101,7 +99,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                                 >
                                     <Trash2 />
                                     Delete
-                                </Button>
+                                </LinkButton>
                             )}
                         </>
                     )
@@ -135,18 +133,16 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                         <div className="flex min-h-4.5 flex-wrap items-center justify-between gap-x-2 gap-y-1">
                             <span className="type-text-medium-xs text-text-default">Customize this function</span>
                             {(source === 'catalog' || source === 'tools-catalog' || source === 'template') && (
-                                <Button asChild variant="link-accent" size="xs">
+                                <LinkButton asChild size="sm">
                                     <a href="https://nango.dev/docs/guides/functions/functions-guide#guide" target="_blank" rel="noreferrer">
                                         Learn about custom functions <ExternalLink />
                                     </a>
-                                </Button>
+                                </LinkButton>
                             )}
                         </div>
                         <div className="flex items-center gap-2 rounded-ds-lg bg-surface-panel px-3 py-2.5">
-                            <span className="min-w-0 flex-1 type-code-medium-xs text-text-secondary">
-                                {pullCommand ?? 'Pulling tools is not supported yet.'}
-                            </span>
-                            {pullCommand && <CopyButton text={pullCommand} />}
+                            <span className="min-w-0 flex-1 type-code-medium-xs text-text-secondary">{pullCommand}</span>
+                            <CopyButton size="2xs" value={pullCommand} />
                         </div>
                     </div>
                 </div>

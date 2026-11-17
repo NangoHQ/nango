@@ -337,6 +337,7 @@ describe('proxyTool analytics', () => {
             integration_id: 'notion',
             provider: 'notion',
             http_method: 'GET',
+            endpoint: '/v1/pages/1',
             http_status: 200,
             ...PURPOSE
         });
@@ -351,6 +352,44 @@ describe('proxyTool analytics', () => {
         expect(onlyEvent().properties).toMatchObject({ http_status: 429, error_code: 'upstream_error' });
     });
 
+    it.each([
+        {
+            provider: 'Notion',
+            body: { object: 'error', status: 400, code: 'validation_error', message: 'body.parent.page_id should be defined' },
+            code: 'validation_error'
+        },
+        {
+            provider: 'Stripe',
+            body: { error: { type: 'invalid_request_error', code: 'resource_missing', message: 'No such customer' } },
+            code: 'resource_missing'
+        },
+        { provider: 'Google', body: { error: { code: 400, status: 'INVALID_ARGUMENT', message: 'Invalid value' } }, code: 'INVALID_ARGUMENT' },
+        { provider: 'Slack', body: { ok: false, error: 'channel_not_found' }, code: 'channel_not_found' },
+        { provider: 'Salesforce', body: [{ errorCode: 'INVALID_FIELD', message: 'No such column' }], code: 'INVALID_FIELD' },
+        { provider: 'HubSpot', body: { status: 'error', category: 'VALIDATION_ERROR', message: 'Property values were not valid' }, code: 'VALIDATION_ERROR' },
+        { provider: 'a GraphQL API', body: { errors: [{ message: 'Argument not valid', extensions: { code: 'INVALID_INPUT' } }] }, code: 'INVALID_INPUT' },
+        { provider: 'Twilio', body: { code: 21211, message: "The 'To' number is not a valid phone number.", status: 400 }, code: '21211' },
+        { provider: 'Meta', body: { error: { message: 'Invalid OAuth access token', type: 'OAuthException', code: 190 } }, code: '190' }
+    ])('records the error code $provider answered with', async ({ body, code }) => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse(body, 400, 'upstream_error')) });
+
+        await callProxyInRequest({ integration: 'notion', method: 'POST', path: '/v1/pages' });
+
+        expect(onlyEvent().properties).toMatchObject({ is_success: false, http_status: 400, error_code: 'upstream_error', provider_error_code: code });
+    });
+
+    it('records no provider error code when the provider answered with only a message', async () => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({
+            result: Ok(jsonResponse({ error: 'Contact jane@acme.com already exists' }, 409, 'upstream_error'))
+        });
+
+        await callProxyInRequest({ integration: 'notion', method: 'POST', path: '/v1/pages' });
+
+        const { properties } = onlyEvent();
+        expect(properties).toMatchObject({ is_success: false, error_code: 'upstream_error' });
+        expect(properties).not.toHaveProperty('provider_error_code');
+    });
+
     // A failure before the provider answered carries Nango's status, so reporting it would read as the provider's.
     it('records a request that never reached the provider without a status', async () => {
         vi.spyOn(proxyService, 'request').mockResolvedValue({
@@ -362,6 +401,35 @@ describe('proxyTool analytics', () => {
         const { properties } = onlyEvent();
         expect(properties).not.toHaveProperty('http_status');
         expect(properties).toMatchObject({ error_code: 'proxy_request_failed', provider_error_code: 'bad_gateway' });
+    });
+
+    it('records which integration an invalid request was for and why it was rejected, without its input', async () => {
+        await callProxyInRequest({ integration: 'notion', method: 'GET', path: 'v1/pages/1', connection_id: 'other' });
+
+        const { properties } = onlyEvent();
+        expect(properties).toMatchObject({
+            integration_id: 'notion',
+            http_method: 'GET',
+            error_code: 'invalid_input',
+            invalid_arguments: 'path: invalid_format, connection_id: unrecognized_key'
+        });
+        expect(properties).not.toHaveProperty('endpoint');
+        expect(properties).not.toHaveProperty('goal');
+        expect(properties).not.toHaveProperty('intent');
+    });
+
+    it('leaves out an integration that is itself the invalid argument', async () => {
+        await callProxyInRequest({ integration: 'not/a/key', method: 'GET', path: '/v1/pages/1' });
+
+        const { properties } = onlyEvent();
+        expect(properties).not.toHaveProperty('integration_id');
+        expect(properties).toMatchObject({ invalid_arguments: 'integration: invalid_format' });
+    });
+
+    it('records a credential header as the reason a request was rejected', async () => {
+        await callProxyInRequest({ integration: 'notion', method: 'GET', path: '/v1/pages/1', headers: { authorization: 'attacker' } });
+
+        expect(onlyEvent().properties).toMatchObject({ error_code: 'invalid_input', invalid_arguments: 'headers: credential_header' });
     });
 
     it('records a request the session rejected before it was made', async () => {

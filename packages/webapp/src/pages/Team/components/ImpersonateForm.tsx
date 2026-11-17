@@ -17,7 +17,8 @@ import {
     DialogHeader,
     DialogTitle,
     FieldLabel,
-    Input
+    Input,
+    LinkButton
 } from '@nangohq/design-system';
 
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
@@ -175,9 +176,9 @@ export const ImpersonateForm: React.FC = () => {
                     {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-status-danger-text">{form.formState.errors.root.message}</p>}
                     {needsEnrollment && (
                         <div className="mt-1 mx-4">
-                            <Button asChild variant="link-accent">
+                            <LinkButton asChild size="lg">
                                 <Link to="/user-settings/enable-2fa">Enroll 2FA</Link>
-                            </Button>
+                            </LinkButton>
                         </div>
                     )}
                 </form>

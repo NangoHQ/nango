@@ -6,13 +6,12 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { CopyButton, InputGroup, InputGroupAddon, InputGroupInput, LinkButton } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -102,7 +101,7 @@ export const IntegrationsList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-3">
+        <DashboardLayout className="flex flex-col gap-3">
             <Helmet>
                 <title>Integrations - Nango</title>
             </Helmet>
@@ -132,9 +131,9 @@ export const IntegrationsList = () => {
                     {providerFilter ? (
                         <div className="flex items-center gap-2 text-text-secondary text-body-small-regular">
                             <span>Showing {initialIntegrations?.[0]?.meta.displayName ?? providerFilter} integrations</span>
-                            <Button variant="link-accent" size="sm" onClick={() => void setProviderFilter(null)}>
+                            <LinkButton size="sm" onClick={() => void setProviderFilter(null)}>
                                 Show all
-                            </Button>
+                            </LinkButton>
                         </div>
                     ) : (
                         <span />
@@ -212,7 +211,7 @@ export const IntegrationsList = () => {
                                 <TableCell className="text-text-secondary !text-body-small-regular">
                                     <div className="flex gap-1.5 items-center">
                                         {integration.unique_key}
-                                        <CopyButton text={integration.unique_key} />
+                                        <CopyButton size="2xs" value={integration.unique_key} />
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-text-strong text-body-small-semi text-center">{integration.meta.connectionCount}</TableCell>

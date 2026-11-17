@@ -3,7 +3,6 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import {
-    Button,
     Card,
     CardAction,
     CardContent,
@@ -11,6 +10,7 @@ import {
     CardHeader,
     CardTitle,
     Input,
+    LinkButton,
     SegmentedControl,
     SegmentedControlItem
 } from '@nangohq/design-system';
@@ -65,12 +65,12 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                             <div className="flex flex-col gap-5">
                                 <div className="flex items-center justify-between gap-2">
                                     <h3 className="text-body-small-medium uppercase text-text-secondary">End User</h3>
-                                    <Button asChild variant="link-accent" size="xs">
+                                    <LinkButton asChild size="sm">
                                         <a href={CONNECT_SESSION_DOCS_URL} target="_blank" rel="noopener noreferrer">
                                             API reference
                                             <ExternalLink />
                                         </a>
-                                    </Button>
+                                    </LinkButton>
                                 </div>
                                 <FormField
                                     control={control}

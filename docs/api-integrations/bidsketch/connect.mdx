@@ -1,0 +1,34 @@
+---
+title: 'Bidsketch - How do I link my account?'
+sidebarTitle: 'Bidsketch'
+---
+
+## Overview
+
+To authenticate with Bidsketch, you need:
+
+1. **API Token** — an API token from your Bidsketch account settings.
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- A Bidsketch account. If you don't have one, [sign up](https://signup.bidsketch.com/signup/solo). Plans start with a 14-day free trial.
+- Admin access to the account. Only the account admin can manage API tokens.
+
+### Step 1: Create an API token
+
+1. Sign in to Bidsketch as the account admin.
+2. Go to **Account Settings** and open the **API & Integration** tab. Your API tokens are also at `https://<your-subdomain>.bidsketch.com/account/api_tokens`.
+3. To create a token, click **new API token**.
+4. Copy the API token.
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Bidsketch.
+2. Enter your API token in the **API Token** field.
+3. Submit the form. Nango checks the token with Bidsketch and connects you if it is valid.
+
+<img src="/api-integrations/bidsketch/form.png" alt="Bidsketch Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Bidsketch.

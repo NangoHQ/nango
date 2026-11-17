@@ -231,7 +231,8 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'playground:agent_turn_complete': {
         surface: 'server',
-        insight: 'What the Agent Playground costs per account, how often turns fail or get stopped, and whether first chats start from a starter',
+        insight:
+            'What the Agent Playground costs per account, how often turns fail or get stopped, whether first chats start from a starter, and what first messages ask for',
         fires: 'When an Agent Playground turn finishes, fails or is stopped',
         properties: z.object({
             agent_session_id: z.string(),
@@ -239,6 +240,11 @@ export const analyticsEventCatalogue = defineCatalogue({
             environment_id: z.number(),
             is_first_turn: z.boolean(),
             starter_provider: z.string().optional(),
+            intent: z.string().optional(),
+            // An array, because counting typed requests per app needs every app named. The labeller caps it at 10.
+            requested_providers: z.array(z.string()).optional(),
+            requested_provider_count: z.number().optional(),
+            has_unsupported_provider: z.boolean().optional(),
             is_success: z.boolean(),
             error_code: z.string().optional(),
             is_stopped: z.boolean(),
@@ -642,6 +648,7 @@ export const analyticsEventCatalogue = defineCatalogue({
             is_mcp_tool: z.boolean().optional(),
             // Catalog is a function Nango ships, custom is one the customer wrote. Unset for MCP tools and calls that failed before the tool resolved.
             function_source: z.enum(['catalog', 'custom']).optional(),
+            invalid_arguments: z.string().optional(),
             goal: z.string().optional(),
             intent: z.string().optional()
         })
@@ -657,9 +664,11 @@ export const analyticsEventCatalogue = defineCatalogue({
             ...toolCallResult,
             integration_id: z.string().optional(),
             http_method: stringOf<HTTP_METHOD>().optional(),
+            endpoint: z.string().optional(),
             provider: z.string().optional(),
             http_status: z.number().optional(),
             provider_error_code: z.string().optional(),
+            invalid_arguments: z.string().optional(),
             goal: z.string().optional(),
             intent: z.string().optional()
         })
@@ -667,17 +676,20 @@ export const analyticsEventCatalogue = defineCatalogue({
     'agents:tool_search_complete': {
         surface: 'server',
         insight: 'How often does tool search return a tool the agent then uses, read against the task the agent was searching for',
-        fires: 'When a tool search in an agent session returns',
+        fires: 'Once per query when a tool search in an agent session returns',
         properties: z.object({
             ...agentSession,
             meta_tool: z.literal('nango_tool_search'),
             ...outcome,
             ...toolCallResult,
             query: z.string().optional(),
+            // A call searches several queries at once. Its events share log_operation_id, so searches per task count distinct ids.
+            query_count: z.number().optional(),
             goal: z.string().optional(),
             match_count: z.number(),
             related_count: z.number(),
             top_match_confidence: z.number().optional(),
+            invalid_arguments: z.string().optional(),
             // Arrays on purpose: search quality is judged by reading a query next to its results. The search limit caps both.
             matches: z.array(z.custom<AgentSessionToolSearchHit>()),
             related: z.array(z.custom<AgentSessionToolSearchHit>())

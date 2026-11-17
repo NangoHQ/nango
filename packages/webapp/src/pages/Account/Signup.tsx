@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { LinkButton } from '@nangohq/design-system';
 
 import DefaultLayout from '../../layout/DefaultLayout';
 import { SignupForm } from './components/SignupForm';
@@ -17,9 +17,9 @@ export const Signup: React.FC = () => {
                 <h2 className="text-title-group text-text-strong">Sign up to Nango</h2>
                 <span className="text-body-medium-regular text-text-muted">
                     Already have an account?{' '}
-                    <Button asChild variant="link-accent">
+                    <LinkButton asChild size="lg">
                         <Link to="/signin">Log in.</Link>
-                    </Button>
+                    </LinkButton>
                 </span>
             </div>
 
