@@ -502,7 +502,7 @@ Takes up to five `queries`, each a few keywords naming one action, and a `goal` 
 }
 ```
 
-The result carries `guidance` for the agent, `integrations` with whether each integration it names is connected, and one entry in `results` per query, in the order sent. Each entry carries its `query`, `matches` for the best hits, `related` tools for weaker matches to narrow down, and `guidance` when there is something to say about that query in particular.
+The result carries `guidance` for the agent, `integrations` with whether each integration it names is connected, and one entry in `results` per query, in the order sent. Each entry carries its `query`, `matches` for the best hits, `related` tools for weaker matches to narrow down, and `guidance` when there is something to say about that query in particular. When several tools fit a query equally well, none of them is a match and they come back as related.
 
 Every tool names the `tool` to pass to `nango_execute`, its `integration`, and a `description`. Only a match includes `input`, which is either its JSON Schema, `none` when it takes no input, or `unavailable` when the schema could not be read. A related tool is a lead to search again on, not something to call yet.
 
