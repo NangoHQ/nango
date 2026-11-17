@@ -1,12 +1,11 @@
 import { RefreshCw, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { Alert, AlertDescription, AlertTitle, Button, FieldLabel } from '@nangohq/design-system';
+import { Alert, AlertDescription, AlertTitle, Button, FieldLabel, SecretInput } from '@nangohq/design-system';
 
 import { DocsIconLink } from '@/components/patterns/DocsIconLink.js';
 import { EditableInput } from '@/components/patterns/EditableInput.js';
-import { PermissionGate } from '@/components/patterns/PermissionGate.js';
-import { SecretInput } from '@/components/patterns/SecretInput.js';
+import { PERMISSION_DENIED_REASON, PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useToast } from '@/hooks/useToast.js';
@@ -126,7 +125,11 @@ export const Webhooks: React.FC = () => {
                             Learn more
                         </a>
                     </p>
-                    <SecretInput value={environmentAndAccount.webhook_signing_key ?? ''} copy={canReadSigningKey} canRead={canReadSigningKey} readOnly />
+                    <SecretInput
+                        value={environmentAndAccount.webhook_signing_key ?? ''}
+                        canReveal={canReadSigningKey}
+                        disabledReason={PERMISSION_DENIED_REASON}
+                    />
                     {bothKeysValidUntil && (
                         <Alert variant="warning" size="compact">
                             <TriangleAlert />

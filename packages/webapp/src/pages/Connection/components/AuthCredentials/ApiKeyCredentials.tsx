@@ -1,6 +1,6 @@
-import { FieldLabel } from '@nangohq/design-system';
+import { FieldLabel, SecretInput } from '@nangohq/design-system';
 
-import { SecretInput } from '@/components/patterns/SecretInput';
+import { PERMISSION_DENIED_REASON } from '@/components/patterns/PermissionGate';
 
 import type { ApiKeyCredentials } from '@nangohq/types';
 
@@ -12,7 +12,7 @@ export const ApiKeyCredentialsComponent: React.FC<{
         <>
             <div className="flex flex-col gap-2">
                 <FieldLabel htmlFor="api_key">API key</FieldLabel>
-                <SecretInput id="api_key" value={credentials.apiKey} disabled copy canRead={canRead} />
+                <SecretInput id="api_key" value={credentials.apiKey} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
             </div>
         </>
     );

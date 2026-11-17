@@ -13,13 +13,13 @@ import {
     FieldLabel,
     InputGroup,
     InputGroupInput,
+    SecretInput,
     Tooltip,
     TooltipContent,
     TooltipTrigger
 } from '@nangohq/design-system';
 
 import { ScopesInput } from '@/components/patterns/ScopesInput';
-import { SecretInput } from '@/components/patterns/SecretInput';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/Form';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
@@ -197,7 +197,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                                         <FormItem>
                                             <FormLabel>Client secret</FormLabel>
                                             <FormControl>
-                                                <SecretInput {...field} />
+                                                <SecretInput editable {...field} />
                                             </FormControl>
                                         </FormItem>
                                     )}
