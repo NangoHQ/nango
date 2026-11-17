@@ -3044,9 +3044,9 @@ Takes up to five `queries`, each a few keywords naming one action, and a `goal` 
 }
 ```
 
-The result holds one entry in `results` per query, in the order sent. Each entry carries its `query`, `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
+The result carries `guidance` for the agent, `integrations` with whether each integration it names is connected, and one entry in `results` per query, in the order sent. Each entry carries its `query`, `matches` for the best hits, `related` tools for weaker matches to narrow down, and `guidance` when there is something to say about that query in particular.
 
-Only a best match includes `input`, its argument schema — a weak match is a lead, not something to call yet.
+Every tool names the `tool` to pass to `nango_execute`, its `integration`, and a `description`. Only a match includes `input`, its argument schema. A related tool is a lead to search again on, not something to call yet.
 
 ### nango_execute
 
