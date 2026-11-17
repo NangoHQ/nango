@@ -75,21 +75,21 @@ export const AgentPlayground: React.FC = () => {
     }
     if (!meta.data.agentPlayground) {
         return (
-            <DashboardLayout title="Agent Playground">
+            <DashboardLayout>
                 <p className="text-text-secondary">The Agent Playground is not enabled for this account.</p>
             </DashboardLayout>
         );
     }
     if (!can('environment:agent_sessions:write')) {
         return (
-            <DashboardLayout title="Agent Playground">
+            <DashboardLayout>
                 <p className="text-text-secondary">{`Your role can't use the Agent Playground in this environment.`}</p>
             </DashboardLayout>
         );
     }
 
     return (
-        <DashboardLayout fullWidth className="h-full" title="Agent Playground" titleActions={<div ref={setToolbarSlot} />}>
+        <DashboardLayout width="narrow" className="h-full" actions={<div ref={setToolbarSlot} />}>
             <Helmet>
                 <title>Agent Playground - Nango</title>
             </Helmet>
@@ -290,14 +290,14 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
 
     if (messages.length === 0) {
         return (
-            <div className="mx-auto flex h-full max-w-[800px] flex-col">
+            <div className="flex h-full flex-col">
                 <EmptyState composer={composer} onPick={send} />
             </div>
         );
     }
 
     return (
-        <div className="mx-auto flex h-full max-w-3xl flex-col">
+        <div className="flex h-full flex-col">
             {toolbarSlot &&
                 createPortal(
                     <Button onClick={onReset}>

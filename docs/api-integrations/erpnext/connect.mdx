@@ -1,0 +1,52 @@
+---
+title: 'ERPNext - How do I link my account?'
+sidebarTitle: 'ERPNext'
+---
+
+## Overview
+
+To authenticate with ERPNext, you need:
+
+1. **Site Hostname** — the hostname of your ERPNext site, for example `erp.example.com`.
+2. **API Key** — the API key of the ERPNext user the integration acts as.
+3. **API Secret** — the API secret generated together with the API key.
+
+This guide will show you how to find all three.
+
+### Prerequisites
+
+- An ERPNext site, self-hosted or on [Frappe Cloud](https://frappecloud.com/erpnext/signup). Frappe Cloud offers a 14-day free trial.
+- A user with the **System Manager** role. Only System Managers can generate API keys.
+
+### Step 1: Find your site hostname
+
+1. Open your ERPNext site in your browser.
+2. Copy the hostname from the address bar, without `https://` or any path. On Frappe Cloud it ends in `.frappe.cloud`; on a self-hosted install it is your own domain, such as `erp.example.com`.
+
+### Step 2: Generate your API key and API secret
+
+API requests run with the permissions of the user the keys belong to, so pick a user whose roles cover the data your integration needs.
+
+1. In your ERPNext site, go to **Setup** > **Users** and open the user the API key should act as.
+
+<img src="/api-integrations/erpnext/user_list.png" alt="ERPNext user list under Setup with a user to open"/>
+
+2. Open the **Settings** tab, expand **API Access** and click **Generate Keys**.
+
+<img src="/api-integrations/erpnext/generate_keys.png" alt="ERPNext user Settings tab with the API Access section expanded and the Generate Keys button"/>
+
+3. In the **API Keys** popup, copy the **API Secret** and the **API Key**. The API Secret is shown only once: store it somewhere safe. If you lose it, click **Generate Keys** again to get a new secret.
+
+<img src="/api-integrations/erpnext/api_keys_created.png" alt="ERPNext API Keys popup showing the API Key and API Secret fields"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ERPNext.
+2. In **Site Hostname**, enter your hostname from Step 1 (for example, `erp.example.com`).
+3. In **API Key**, paste the API Key from Step 2.
+4. In **API Secret**, paste the API Secret from Step 2.
+5. Submit the form. Nango checks the credentials with your ERPNext site before saving the connection.
+
+<img src="/api-integrations/erpnext/form.png" alt="ERPNext Connect UI form with the Site Hostname, API Key and API Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to ERPNext.

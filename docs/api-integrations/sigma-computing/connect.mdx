@@ -1,0 +1,42 @@
+---
+title: 'Sigma Computing - How do I link my account?'
+sidebarTitle: 'Sigma Computing'
+---
+
+## Overview
+
+To authenticate with Sigma Computing, you need:
+
+1. **API URL** — the Sigma API URL for the cloud your organization is hosted on.
+2. **Client ID** and **Client Secret** — API client credentials created in Sigma.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Sigma organization on a paid plan. API credentials are not available on free trials.
+- The **Admin** account type, or the **Create API keys** permission on your account type.
+
+### Step 1: Find your API URL
+
+1. In Sigma, select your user avatar and select **Administration**.
+2. In the side panel, select **Developer access**.
+3. Your API base URL is shown at the top of the page. You'll pick it in the Connect UI.
+
+### Step 2: Create API credentials
+
+1. On the same **Developer access** page, click **Create new**.
+2. For **Select scopes**, select the **REST API** checkbox.
+3. Enter a **Name** for the credentials, and optionally a **Description**.
+4. If you are an admin, select the **Owner** of the credentials. API calls use the permissions of this user's account type.
+5. Click **Create**, then copy the **Client ID** and **Client Secret**. Sigma does not show the secret again after you close the dialog.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Sigma Computing.
+2. Select your **API URL**, then enter your **Client ID** and **Client Secret**.
+3. Submit the form, and you should be connected.
+
+<img src="/api-integrations/sigma-computing/form.png" alt="Sigma Computing Connect UI form with the API URL, Client ID and Client Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Sigma Computing.

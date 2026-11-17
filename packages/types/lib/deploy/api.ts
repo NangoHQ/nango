@@ -45,6 +45,7 @@ export type PostDeploy = ApiEndpoint<{
         source?: FunctionSource | undefined;
     };
     Success: SyncDeploymentResult[];
+    Error: ApiError<'legacy_actions_deprecated'>;
 }>;
 
 export type PostDeployInternal = ApiEndpoint<{

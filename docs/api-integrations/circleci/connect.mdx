@@ -1,0 +1,46 @@
+---
+title: 'CircleCI - How do I link my account?'
+sidebarTitle: 'CircleCI'
+---
+
+## Overview
+
+To authenticate with CircleCI, you need:
+
+1. **Personal API Token** — a personal API token from your CircleCI user settings.
+
+<Note>Use a personal API token. Project API tokens (Project Settings > API Permissions) are not supported.</Note>
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- A CircleCI account. If you don't have one, [sign up](https://app.circleci.com/signup). No credit card is required.
+
+### Step 1: Create a personal API token
+
+1. Sign in to CircleCI and open [User Settings](https://app.circleci.com/settings/user).
+2. Select **Personal API Tokens** in the left menu, then click **Create New Token**.
+
+<img src="/api-integrations/circleci/user_settings_personal_api_tokens.png" alt="CircleCI User Settings with Personal API Tokens selected and the Create New Token button" />
+
+3. Choose the **Access level** your integration needs (**Read**, **Write** or **Admin**).
+4. Enter a name in the **Token name** field.
+5. Pick an **Expiry date**. It can be at most one year in the future.
+6. Click **Add API Token**.
+
+<img src="/api-integrations/circleci/create_api_token_dialog.png" alt="CircleCI Create New API Token dialog with the access level, token name and expiry date fields and the Add API Token button" />
+
+7. Copy the token. You will not be able to view it again.
+
+<img src="/api-integrations/circleci/api_token_created.png" alt="CircleCI dialog showing the new personal API token with a Copy button" />
+
+### Step 2: Enter your personal API token in the Connect UI
+
+1. Open the form where you need to authenticate with CircleCI.
+2. Enter your token in the **Personal API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/circleci/form.png" alt="CircleCI Connect UI form with the Personal API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to CircleCI.

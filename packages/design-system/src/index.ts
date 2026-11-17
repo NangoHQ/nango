@@ -14,17 +14,7 @@ export {
     AlertDialogTitle,
     AlertDialogTrigger
 } from './components/ui/alert-dialog';
-export {
-    Alert,
-    AlertActions,
-    AlertButton,
-    type AlertButtonProps,
-    alertButtonVariants,
-    AlertDescription,
-    type AlertProps,
-    AlertTitle,
-    alertVariants
-} from './components/ui/alert';
+export { Alert, AlertActions, AlertButton, type AlertButtonProps, AlertDescription, type AlertProps, AlertTitle, alertVariants } from './components/ui/alert';
 export { Badge, type BadgeProps, badgeVariants } from './components/ui/badge';
 export {
     Button,
@@ -33,8 +23,11 @@ export {
     type IconButtonProps,
     type IconButtonSize,
     type IconButtonVariant,
+    ICON_BUTTON_SIZES,
+    ICON_BUTTON_VARIANTS,
     buttonVariants
 } from './components/ui/button';
+export { COPY_BUTTON_RESET_MS, COPY_BUTTON_SIZES, CopyButton, type CopyButtonProps, type CopyButtonSize } from './components/ui/copy-button';
 export {
     SplitButton,
     SplitButtonAction,
@@ -62,7 +55,16 @@ export {
     DialogTitle,
     DialogTrigger
 } from './components/ui/dialog';
+export {
+    InlineCode,
+    type InlineCodeProps,
+    type InlineCodeSize,
+    type InlineCodeTone,
+    InlineCodeToneProvider,
+    inlineCodeVariants
+} from './components/ui/inline-code';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
+export { LinkButton, type LinkButtonProps, linkButtonVariants } from './components/ui/link-button';
 export { Textarea, type TextareaProps } from './components/ui/textarea';
 export {
     InputGroup,
@@ -89,6 +91,14 @@ export {
     fieldVariants
 } from './components/ui/field';
 export {
+    SegmentedControl,
+    SegmentedControlItem,
+    type SegmentedControlItemProps,
+    segmentedControlItemVariants,
+    type SegmentedControlProps,
+    segmentedControlVariants
+} from './components/ui/segmented-control';
+export {
     Tooltip,
     TooltipContent,
     type TooltipContentProps,
@@ -97,4 +107,5 @@ export {
     type TooltipProviderProps,
     TooltipTrigger
 } from './components/ui/tooltip';
+export { copyText } from './lib/clipboard';
 export { dsTwMergeConfig } from './lib/twMergeConfig';

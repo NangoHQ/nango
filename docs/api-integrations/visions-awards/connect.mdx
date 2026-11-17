@@ -1,0 +1,34 @@
+---
+title: 'Visions Awards - How do I link my account?'
+sidebarTitle: 'Visions Awards'
+---
+
+## Overview
+
+To authenticate with Visions Awards, you need:
+
+1. **Client ID** - the client identifier configured for your API access.
+2. **Client Secret** - the client secret paired with it.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- API access to the Visions Awards V-Suite web API. The client credentials are configured by Visions Awards, so ask your Visions Awards contact for them.
+
+### Step 1: Get your API client credentials
+
+1. Ask your Visions Awards contact for the **Client ID** and **Client Secret** configured for API authentication.
+2. Store the client secret somewhere safe: it gives access to your sales orders.
+
+Nango sends both values to [`POST /api/auth/token`](https://webservices.visionsawards.com/proofs/Help/Api/POST-api-auth-token), which returns an access token for the other API calls. Wrong credentials are rejected there, so the connection is only created when they are valid.
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Visions Awards.
+2. Enter your **Client ID** and **Client Secret**.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/visions-awards/form.png" alt="Visions Awards Connect UI form with the Client ID and Client Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Visions Awards.

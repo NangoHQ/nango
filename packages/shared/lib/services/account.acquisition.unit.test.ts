@@ -18,7 +18,7 @@ describe('account acquisition after commit', () => {
         const group = vi.spyOn(productTracking, 'identifyAccountGroup').mockImplementation(() => undefined);
         const acquisition = { acquisition_utm_source: 'facebook', acquisition_landing_path: '/' };
 
-        expect(await accountService.getOrCreateAccount('Test organization', acquisition)).toEqual(account);
+        expect(await accountService.getOrCreateAccount('Test organization', acquisition)).toEqual({ account, created: true });
 
         expect(track).toHaveBeenCalledExactlyOnceWith({ name: 'auth:account_create', team: account, eventProperties: acquisition });
         expect(group).toHaveBeenCalledExactlyOnceWith(42, acquisition);
@@ -33,7 +33,7 @@ describe('account acquisition after commit', () => {
         const track = vi.spyOn(productTracking, 'track');
         const group = vi.spyOn(productTracking, 'identifyAccountGroup');
 
-        expect(await accountService.getOrCreateAccount(account.name, { acquisition_utm_source: 'google' })).toEqual(account);
+        expect(await accountService.getOrCreateAccount(account.name, { acquisition_utm_source: 'google' })).toEqual({ account, created: false });
 
         expect(create).not.toHaveBeenCalled();
         expect(track).not.toHaveBeenCalled();

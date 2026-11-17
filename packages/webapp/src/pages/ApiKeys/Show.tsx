@@ -9,6 +9,7 @@ import {
     AlertDescription,
     AlertTitle,
     Button,
+    CopyButton,
     Dialog,
     DialogBody,
     DialogContent,
@@ -25,7 +26,6 @@ import {
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
@@ -161,7 +161,7 @@ const DeleteAccountApiKeyButton: React.FC<{
             confirmationKeyword={apiKey.display_name}
             confirmButtonText="Delete Account API key"
             trigger={
-                <IconButton label={`Delete Account API key ${apiKey.display_name}`} variant="ghost" size="2xs" disabled={disabled}>
+                <IconButton label={`Delete Account API key ${apiKey.display_name}`} variant="danger-ghost" size="2xs" disabled={disabled}>
                     <Trash2 size={14} />
                 </IconButton>
             }
@@ -199,7 +199,7 @@ export const AccountApiKeysShow: React.FC = () => {
 
     if (!user) {
         return (
-            <DashboardLayout fullWidth title="Account API keys">
+            <DashboardLayout>
                 <Helmet>
                     <title>Account API keys - Nango</title>
                 </Helmet>
@@ -214,7 +214,7 @@ export const AccountApiKeysShow: React.FC = () => {
 
     if (!canListAccountKeys) {
         return (
-            <DashboardLayout fullWidth title="Account API keys">
+            <DashboardLayout>
                 <Helmet>
                     <title>Account API keys - Nango</title>
                 </Helmet>
@@ -229,7 +229,7 @@ export const AccountApiKeysShow: React.FC = () => {
     const apiKeys = data?.data ?? [];
 
     return (
-        <DashboardLayout fullWidth title="Account API keys">
+        <DashboardLayout>
             <Helmet>
                 <title>Account API keys - Nango</title>
             </Helmet>
@@ -301,7 +301,8 @@ export const AccountApiKeysShow: React.FC = () => {
                                     <TableCell>
                                         <div className="flex items-center gap-1">
                                             <CopyButton
-                                                text={apiKey.secret}
+                                                value={apiKey.secret}
+                                                size="2xs"
                                                 onCopy={() => track('auth:copy_button_click', { copied_item: 'api_key_secret' })}
                                             />
                                             <DeleteAccountApiKeyButton apiKey={apiKey} disabled={isDeleting || !canDeleteAccountKeys} onDelete={handleDelete} />

@@ -11,6 +11,7 @@ import { Button, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput 
 import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import { queryClient, useStore } from '../../../store';
 import { track } from '../../../utils/analytics';
 import { APIError, apiFetch } from '../../../utils/api';
@@ -31,7 +32,6 @@ interface Props {
 
 type LogsFilter = AnalyticsEventProperties<'logs:filter_update'>['filter'];
 
-const parseSearch = parseAsString.withDefault('');
 const parseLive = parseAsBoolean.withDefault(true).withOptions({ history: 'push' });
 const parseStates = parseAsArrayOf(parseAsStringLiteral(statusOptions.map((opt) => opt.value)), ',')
     .withDefault(['all'])
@@ -50,7 +50,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     const tableContainerRef = useRef<HTMLDivElement>(null);
 
     // --- Data fetch
-    const [search, setSearch] = useQueryState('search', parseSearch);
+    const [search, setSearch] = useSearchQueryState();
     const [isLive, setLive] = useQueryState('live', parseLive);
     const [states, setStates] = useQueryState('states', parseStates);
     const [types, setTypes] = useQueryState('types', parseTypes);

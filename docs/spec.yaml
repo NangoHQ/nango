@@ -488,7 +488,7 @@ paths:
                     $ref: '#/components/responses/NotFound'
         delete:
             summary: Delete a function
-            description: Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint. Requires an API key with the `environment:functions:delete` scope.
+            description: Deletes a deployed function and enqueues its async teardown. Supports standalone native functions, tools, syncs, and deprecated actions. Functions managed by `nango deploy` (repo source) and catalog functions cannot be deleted through this endpoint. Requires an API key with the `environment:functions:delete` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -507,11 +507,11 @@ paths:
                   required: true
                   schema:
                       type: string
-                      enum: [action, sync]
-                  description: Required to disambiguate a sync and a deprecated action that share a name.
+                      enum: [action, sync, tool, function]
+                  description: Required to disambiguate functions that share a name.
             responses:
                 '200':
-                    description: Successfully enqueued the function deletion
+                    description: Function deletion accepted
                     content:
                         application/json:
                             schema:
@@ -527,7 +527,7 @@ paths:
                                             success:
                                                 type: boolean
                 '400':
-                    description: Invalid request, or the function is managed by `nango deploy`.
+                    description: Invalid request, or the function is managed by `nango deploy` or the tools catalog.
                     content:
                         application/json:
                             schema:
@@ -538,7 +538,7 @@ paths:
                                         properties:
                                             code:
                                                 type: string
-                                                enum: [function_managed_by_deploy]
+                                                enum: [function_managed_by_deploy, invalid_request]
                                             message:
                                                 type: string
                 '401':

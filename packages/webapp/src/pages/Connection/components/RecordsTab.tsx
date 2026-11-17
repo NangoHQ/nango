@@ -1,6 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ArrowUpRight, ChevronLeft, ExternalLink, Info, Loader, Search } from 'lucide-react';
-import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
@@ -33,6 +32,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useConnectionRecordModels, useConnectionRecordPayload, useConnectionRecords } from '@/hooks/useRecords';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import { ConnectionTabLayout } from '@/pages/Connection/components/ConnectionTabLayout';
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
@@ -47,7 +47,6 @@ const RECORDS_PAGE_SIZE = 20;
 const RECORD_ROW_HEIGHT_PX = 44;
 const RECORD_HEADER_HEIGHT_PX = 44;
 const LOAD_MORE_SENTINEL_HEIGHT_PX = 48;
-const parseSearch = parseAsString.withDefault('');
 
 export const RecordsTab = () => {
     const env = useStore((state) => state.env);
@@ -153,7 +152,7 @@ export const ConnectionRecordTable = ({
     model: ConnectionRecordModel;
     providerConfigKey: string;
 }) => {
-    const [search, setSearch] = useQueryState('search', parseSearch);
+    const [search, setSearch] = useSearchQueryState();
     const debouncedSearch = useDebouncedValue(search.trim(), 300);
 
     const { data, error, isLoading, isPlaceholderData, fetchNextPage, hasNextPage, isFetchingNextPage } = useConnectionRecords(
@@ -220,7 +219,7 @@ export const ConnectionRecordTable = ({
 
             {model.count > 0 && (
                 <InputGroup>
-                    <InputGroupInput type="text" placeholder="Search by record ID" value={search} onChange={(e) => void setSearch(e.target.value || null)} />
+                    <InputGroupInput type="text" placeholder="Search by record ID" value={search} onChange={(e) => setSearch(e.target.value)} />
                     <InputGroupAddon>
                         <Search />
                     </InputGroupAddon>

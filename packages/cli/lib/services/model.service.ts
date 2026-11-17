@@ -198,7 +198,15 @@ export function generateNangoJson({ fullPath, parsed, debug }: { fullPath: strin
     }
 }
 
-export function generateFunctionsJson({ fullPath, functions, debug }: { fullPath: string; functions: FunctionConfig[]; debug: boolean }): void {
+export function generateFunctionsJson({
+    fullPath,
+    functions,
+    debug
+}: {
+    fullPath: string;
+    functions: (FunctionConfig & { version: string })[];
+    debug: boolean;
+}): void {
     const exportPath = path.resolve(fullPath, '.nango');
     const functionsJsonPath = path.join(exportPath, 'functions.json');
 

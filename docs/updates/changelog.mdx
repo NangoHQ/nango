@@ -4,6 +4,55 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="Tools" description="November 9, 2026">
+  Tools are the new way to build on-demand functions in Nango. They replace actions.
+
+  A tool is a function your backend or AI agent calls on demand for reads, writes, or operations that combine several API calls. Compared to actions, tools:
+
+  - **Have typed input and output:** Nango validates the input against the schema before the tool runs.
+  - **Read connection metadata and save checkpoints:** Declare `data.metadata` or `data.checkpoint` schemas and the tool gets them at call time.
+  - **Carry instructions and required scopes:** Agents learn when and how to use the tool from the definition itself.
+
+  Follow the [tools guide](/guides/functions/tools) to build and deploy a tool, then call it from [agent sessions](/guides/agent-sessions), [API](/reference/backend/http-api/tools/call), [SDK](/reference/backend/backend-sdk/node#call-a-tool) or the [Management MCP server](/reference/backend/management-mcp#functions).
+
+  **Actions are deprecated.** Existing action functions and the action APIs keep working. See [migrate from actions to tools](/guides/platform/migrations/migrate-from-actions).
+</Update>
+---
+
+<Update label="Add Nango to your agent" description="November 5, 2026">
+  The Getting started page now sets up Nango in your own coding agent. Copy the prompt, paste it into your agent, and it installs Nango in a few minutes. Then ask your agent to use an integration.
+
+  ![Getting started page with the Add Nango to your agent steps](/images/changelog/getting-started-agent.png)
+</Update>
+---
+
+<Update label="Agent goals and intents in logs" description="November 5, 2026">
+  Tool calls an agent makes in an agent session now record the user's `goal` and the agent's `intent` for each call. Open the call in Logs to see why the agent did what it did. See [agent sessions](/guides/agent-sessions#nango-execute).
+
+  ![Operation details of an agent tool call showing the goal and intent fields](/images/changelog/agent-tool-call-log.png)
+</Update>
+---
+
+<Update label="Five more Nango-managed OAuth apps" description="November 5, 2026">
+  Close, Google Tasks, Smartsheet, Twitch, and Webex now have [Nango-managed OAuth apps](/guides/auth/auth-guide#nango-managed-oauth-apps), for 81 APIs in total. See the [full list](/guides/auth/auth-guide#apis-with-a-nango-managed-oauth-app).
+
+  You can also use them from the API. [Create an integration](/reference/backend/http-api/integration/create) now accepts `NANGO_MANAGED` credentials instead of registering your own app. The Node SDK's `createQuickstartIntegration()` was removed in 0.72.2. Use `createIntegration()` with `NANGO_MANAGED` credentials instead.
+</Update>
+---
+
+<Update label="Update environments from the API" description="November 5, 2026">
+  Environments can now be updated from the account-level API, and you can bring your own webhook signing key.
+
+  [Update an environment](/reference/backend/http-api/environments/update) changes its name, production flag, webhook settings, and OpenTelemetry export. [Create an environment](/reference/backend/http-api/environments/create) and [rotate the webhook signing key](/reference/backend/http-api/environments/rotate-webhook-signing-key) both accept a key you supply instead of generating one.
+</Update>
+---
+
+<Update label="CLI updates" description="November 5, 2026">
+  - **Deploy one function by path:** `nango deploy dev github/tools/create-issue.ts` deploys a single function without touching the others. `--action` and `--sync` still work but are deprecated. See [deploy](/reference/functions/functions-cli#deploy).
+  - **`nango clone` removed:** Use [`nango pull --catalog`](/guides/functions/functions-guide#extend-a-template) instead.
+</Update>
+---
+
 <Update label="52 new APIs in October" description="November 1, 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="52 new APIs in October">

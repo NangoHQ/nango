@@ -84,6 +84,11 @@
     }
 }
 
+@utility bg-state-selected-hover {
+    background-color: var(--color-state-selected);
+    background-image: linear-gradient(var(--color-state-hover), var(--color-state-hover));
+}
+
 @utility focus-error {
     @variant focus {
         outline: none;
@@ -245,6 +250,12 @@
     #root {
         width: 100%;
         height: 100%;
+    }
+
+    /* Without this, iOS Safari rubber-bands the zoomed-out dashboard past its edges. */
+    [data-viewport='desktop'],
+    [data-viewport='desktop'] * {
+        overscroll-behavior: none;
     }
 
     [data-theme='dark'] {

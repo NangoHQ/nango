@@ -116,6 +116,20 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         isConnectionMcpEnabled(accountUuid: string) {
             return client.isEnabled('connection-mcp', { targetingKey: accountUuid, accountUuid }, true);
+        },
+        /**
+         * Whether GitHub App connections can carry their own app `private_key` and `webhook_secret`.
+         * Temporary workaround for BYOA GitHub Apps. Default `false`.
+         */
+        isGithubAppConnectionCredentialsEnabled() {
+            return client.isEnabled('github-app-connection-credentials', {}, false);
+        },
+        /**
+         * Whether this data-plane credential read is recorded in the audit trail. Temporary, for the rollout,
+         * which uses random stickiness so a percentage applies to requests, not accounts. Default `false`.
+         */
+        shouldAuditDataPlaneCredentialRead(accountUuid: string) {
+            return client.isEnabled('audit-trail-data-plane-credential-reads', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }
