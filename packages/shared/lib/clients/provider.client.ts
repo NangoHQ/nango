@@ -50,6 +50,8 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
             case 'facebook':
+            case 'facebook-login-for-business':
+            case 'instagram-login-for-business':
             case 'meta-mcp':
             case 'followupboss':
             case 'instagram':
@@ -142,6 +144,8 @@ class ProviderClient {
             case 'sentry-mcp':
                 return this.createSentryMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
             case 'facebook':
+            case 'facebook-login-for-business':
+            case 'instagram-login-for-business':
             case 'meta-mcp':
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'instagram':
