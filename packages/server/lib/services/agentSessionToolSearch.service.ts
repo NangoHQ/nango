@@ -87,7 +87,6 @@ const STOPWORDS = new Set([
     'your'
 ]);
 
-// Ranked from 0, everything matched, to 1, nothing matched.
 const BEST_MATCH_SCORE = 0.4;
 const MAX_MATCH_SCORE = 0.85;
 
@@ -120,6 +119,28 @@ type ScoredCandidate = SearchCandidate & { score: number };
  */
 export type ToolSlugLookup = (tool: { integration: string; action: string }) => string | undefined;
 
+/**
+ * Searches the session's tools, one ranking per query, and returns each query's matches with
+ * their input schema and its related tools by name only.
+ *
+ * Each query is ranked on its own:
+ * 1. Every pinned and searchable tool in the session is a candidate.
+ * 2. Stopwords are dropped from the query and each remaining word is fuzzy matched against the
+ *    tool's action, description, integration and provider. A tool's score is the share of words
+ *    it fails to answer, from 0 (all of them) to 1 (none). Tools above MAX_MATCH_SCORE are dropped.
+ * 3. A tool is a match when it scores within the cutting line. The line is BEST_MATCH_SCORE, or
+ *    a margin behind the top tool when that tool scores within LEADING_MATCH_SCORE, so a tool a
+ *    long query clearly leads with is not lost to the words around it.
+ * 4. When several tools share the top score, the one whose name and description hold the most
+ *    query words exactly, stopwords included, is the only match. If the words cannot tell them
+ *    apart either, none is a match and the agent is told to search again by tool name.
+ * 5. Anything that is not a match is related, up to MAX_BEST_MATCHES matches and
+ *    MAX_RELATED_CANDIDATES related tools.
+ *
+ * Then across the queries in the call, related tools are trimmed: each is listed once, under the
+ * query it scores best on, and not at all when another query matches it. A query keeps fewer
+ * when it already has a match.
+ */
 export async function searchSessionTools({
     account,
     environment,
@@ -227,13 +248,7 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
     return { best, related, tied: lead === 'tied' && (scored[0]?.score ?? 1) <= bestMatchScore };
 }
 
-/**
- * Several tools sharing the top score would each come back with a full schema, though the query
- * cannot tell them apart. The tie goes to the leader whose name and description hold the most query
- * words exactly, stopwords included, so 'get message' picks get-message over delete-message. Exact,
- * since a fuzzy 'get' also hits 'delete'. The winner is then the only match. A tie that holds even
- * so promotes nothing, and the agent picks from the related tools.
- */
+// Exact words, not fuzzy ones, since a fuzzy 'get' also hits 'delete' and would break the tie wrongly.
 function breakLeadingTie({ scored, query }: { scored: { candidate: SearchCandidate; score: number }[]; query: string }): {
     scored: { candidate: SearchCandidate; score: number }[];
     lead: 'single' | 'tie_broken' | 'tied';
@@ -268,9 +283,6 @@ function singular(word: string): string {
     return word.length > 3 && word.endsWith('s') ? word.slice(0, -1) : word;
 }
 
-// Unmatched query words can give even a well-fitting top tool a high score, so the cutting line follows the top result.
-// If there are no matches or the top one is weaker than LEADING_MATCH_SCORE, the cutting line is BEST_MATCH_SCORE.
-// Else it is whichever is greater, BEST_MATCH_SCORE or topScore plus a margin. Lower scores are better matches.
 function bestMatchScoreFor(topScore: number | undefined): number {
     if (topScore === undefined || topScore > LEADING_MATCH_SCORE) {
         return BEST_MATCH_SCORE;
@@ -280,10 +292,8 @@ function bestMatchScoreFor(topScore: number | undefined): number {
 }
 
 /**
- * A related tool is listed once per call, and not at all when another query already returns it as a
- * match. Tools are placed best score first, each under the closest query that still has room, so a
- * query that is full passes a tool on rather than dropping it. A query with a match gets fewer, since
- * the agent already has a tool to call. Matches are left alone, so every query keeps its own answer.
+ * A query that is full passes a tool on to its next closest query rather than dropping it.
+ * Matches are never trimmed, so every query keeps its own answer.
  */
 export function trimRelated<T extends { best: ScoredCandidate[]; related: ScoredCandidate[] }>(rankings: T[]): (T & { relatedElsewhere: boolean })[] {
     const matched = new Set(rankings.flatMap(({ best }) => best.map((candidate) => candidate.slug)));
@@ -311,11 +321,7 @@ export function trimRelated<T extends { best: ScoredCandidate[]; related: Scored
     }));
 }
 
-/**
- * Scored a word at a time rather than as one string, because Fuse matches a query as a single
- * pattern and a use case phrased as a sentence then matches nothing at all. Every word counts the
- * same, so a tool answering three of four words outranks one that answers a single word exactly.
- */
+// A word at a time, because Fuse matches the query as one pattern and a sentence then matches nothing.
 function scoreCandidates({ candidates, terms }: { candidates: SearchCandidate[]; terms: string[] }): { candidate: SearchCandidate; score: number }[] {
     if (terms.length === 0) {
         return [];
@@ -343,10 +349,7 @@ function scoreCandidates({ candidates, terms }: { candidates: SearchCandidate[];
         );
 }
 
-/**
- * A query with nothing but stopwords in it is searched as written, on the grounds that a caller who
- * searched for 'how to' meant something by it and an empty result teaches them nothing.
- */
+// A query of only stopwords, like 'how to', is searched as written rather than returning nothing.
 function queryTerms(query: string): string[] {
     const words = queryWords(query);
     const meaningful = words.filter((word) => word.length > 1 && !STOPWORDS.has(word));
@@ -369,7 +372,7 @@ function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; 
         const tools = [...compiled.pinned.map((tool) => ({ tool, listed: true })), ...compiled.searchable.map((tool) => ({ tool, listed: false }))];
 
         return tools.flatMap(({ tool, listed }): SearchCandidate[] => {
-            // A tool with no name cannot be called, so returning it would only waste the agent's turn.
+            // Defensive: a tool the listing has no slug for cannot be called.
             const slug = slugOf({ integration, action: tool.name });
 
             return slug
