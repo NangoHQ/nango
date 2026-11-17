@@ -1,9 +1,9 @@
 import { pipeUIMessageStreamToResponse, validateUIMessages } from 'ai';
 import { z } from 'zod';
 
-import { getFlags } from '@nangohq/feature-flags';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../../env.js';
 import { resolveAuditAttribution } from '../../../middleware/audit/auditable.js';
 import { startTurn } from '../../../services/agentPlayground.service.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
@@ -36,8 +36,8 @@ export const postAgentPlaygroundChat = asyncWrapperWithEnvironment<PostAgentPlay
 
     const { account, environment, plan, user } = res.locals;
 
-    if (!(await getFlags().isAgentPlaygroundEnabled(account.uuid))) {
-        res.status(404).send({ error: { code: 'feature_disabled', message: 'Agent Playground is not enabled for this account' } });
+    if (!envs.NANGO_FEATURE_FLAG_AGENT_PLAYGROUND) {
+        res.status(404).send({ error: { code: 'feature_disabled', message: 'Agent Playground is not enabled on this Nango instance' } });
         return;
     }
 

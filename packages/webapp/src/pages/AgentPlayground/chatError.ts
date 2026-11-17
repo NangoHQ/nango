@@ -25,7 +25,7 @@ export function describeChatError(message: string): ChatErrorDisplay {
                 ...(retryable ? { detail: 'Try again in a few minutes.', action: 'retry' } : { detail: 'Please check back later.', action: 'none' })
             };
         case 'feature_disabled':
-            return { title: 'The Agent Playground is not enabled for this account.', action: 'none' };
+            return { title: 'The Agent Playground is not enabled on this Nango instance.', action: 'none' };
         case 'session_creation_failed':
             return { title: "Couldn't start the agent.", ...(detail ? { detail } : {}), action: 'retry' };
         case 'too_many_request':

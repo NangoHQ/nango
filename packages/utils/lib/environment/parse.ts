@@ -901,6 +901,8 @@ const ENVS_SHAPE = z.object({
         .optional()
         .default(2 * 1024 * 1024),
 
+    // Not read through the flag provider. Keep the name: self-hosted configs already set it.
+    NANGO_FEATURE_FLAG_AGENT_PLAYGROUND: z.stringbool().optional().default(false),
     NANGO_AGENT_PLAYGROUND_MODEL: z.string().optional().default('gpt-6-luna'),
     // Without it the Agent Playground answers from a mock model.
     OPENAI_API_KEY: z.string().optional(),

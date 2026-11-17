@@ -3,9 +3,9 @@ import { MockLanguageModelV4 } from 'ai/test';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import { getFlags } from '@nangohq/feature-flags';
 import { productTracking, seeders } from '@nangohq/shared';
 
+import { envs } from '../../../env.js';
 import { playgroundConnectionTags } from '../../../services/agentPlayground.service.js';
 import * as agentSessionService from '../../../services/agentSession.service.js';
 import { AGENT_SESSION_TAG_KEY } from '../../../services/agentSessionConnections.service.js';
@@ -127,6 +127,7 @@ async function integrationsIn(environmentId: number): Promise<{ unique_key: stri
 
 describe('POST /api/v1/agent-playground/chat', () => {
     beforeAll(async () => {
+        envs.NANGO_FEATURE_FLAG_AGENT_PLAYGROUND = true;
         api = await runServer();
         await seeders.createSharedCredentialsSeed('google-calendar');
     });
@@ -137,6 +138,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     afterAll(() => {
+        envs.NANGO_FEATURE_FLAG_AGENT_PLAYGROUND = false;
         api.server.close();
     });
 
@@ -145,17 +147,18 @@ describe('POST /api/v1/agent-playground/chat', () => {
         shouldBeProtected(res);
     });
 
-    it('returns 404 when the flag is off', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(false);
+    it('returns 404 when the playground is off', async () => {
         const { user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
+        envs.NANGO_FEATURE_FLAG_AGENT_PLAYGROUND = false;
         const { res, json } = await api.fetch('/api/v1/agent-playground/chat', {
             method: 'POST',
             query: { env: 'dev' },
             body: { messages: [userMessage('hi')] },
             session
         });
+        envs.NANGO_FEATURE_FLAG_AGENT_PLAYGROUND = true;
 
         expect(res.status).toBe(404);
         isError(json);
@@ -163,7 +166,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('rejects an empty history and a system message', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -182,7 +184,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('streams a reply to a typed message without creating integrations', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -211,7 +212,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it("attributes the session's tool events to the user and account, marked as the playground's", async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { account, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
         modelOverride.current = () => twoStepModel([{ type: 'finish', finishReason: { unified: 'stop', raw: undefined }, usage: stepUsage }]);
@@ -268,7 +268,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     }
 
     it('labels what a typed first message asks for, alongside the reply', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
         const model = labellingModel();
@@ -295,7 +294,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('does not label a later message', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
         const model = labellingModel();
@@ -313,7 +311,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('tracks a turn that fails mid-stream once, as a failure, with the failing step', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
         modelOverride.current = () =>
@@ -333,7 +330,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('tracks a turn whose model request throws, as a failure', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
         modelOverride.current = () => twoStepModel('throws');
@@ -349,7 +345,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('tells the client the model is unavailable when the credit is spent, and tracks why', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
         modelOverride.current = () =>
@@ -382,7 +377,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('tracks a stopped turn once, with the steps that finished', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
         modelOverride.current = () => twoStepModel('until-aborted');
@@ -421,7 +415,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it("creates only the pre-made prompt's integration, on Nango's OAuth app", async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -449,7 +442,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('reuses an existing integration, and stops for one that is missing credentials', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user, env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'my-calendar', 'google-calendar');
         const session = await authenticateUser(api, user);
@@ -470,7 +462,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it("stops without creating anything when the prompt's provider needs the user's own OAuth app", async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -491,7 +482,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('ignores a pre-made prompt provider the playground does not offer', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -503,7 +493,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it("reaches the environment's integrations, but only connections tagged with the user's email", async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { account, user, env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'my-notion', 'notion');
         await seeders.createConfigSeed(env, 'my-airtable', 'airtable');
@@ -523,7 +512,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it("reuses a user's own session but not another member's", async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { account, user } = await seeders.seedAccountEnvAndUser();
         const teammate = await seeders.seedUser(account.id);
         const ownerSession = await authenticateUser(api, user);
@@ -543,7 +531,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('starts a new session once an integration is added to the environment', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { account, user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -563,7 +550,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('starts a new session once the user connects an app outside the chat', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { account, user, env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'my-notion', 'notion');
         const session = await authenticateUser(api, user);
@@ -581,7 +567,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('keeps the session when the user connects an app from the chat', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user, env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'my-notion', 'notion');
         const session = await authenticateUser(api, user);
@@ -600,7 +585,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('starts a new session without calling it expired when the last one was terminated', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { account, user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -614,7 +598,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it('continues on a new session once the old one expires, with the connections made in it', async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { account, user, env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'my-notion', 'notion');
         const session = await authenticateUser(api, user);
@@ -642,7 +625,6 @@ describe('POST /api/v1/agent-playground/chat', () => {
     });
 
     it("starts a new session once the user's email no longer matches it", async () => {
-        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 

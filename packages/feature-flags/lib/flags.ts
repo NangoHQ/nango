@@ -93,9 +93,6 @@ export function buildFlags(client: FeatureFlagsClient) {
         allowUnauthorizedAirtableWebhook(accountUuid: string) {
             return client.isEnabled('allow-unauthorized-airtable-webhook', { targetingKey: accountUuid, accountUuid }, false);
         },
-        isAgentPlaygroundEnabled(accountUuid: string) {
-            return client.isEnabled('agent-playground', { targetingKey: accountUuid, accountUuid }, false);
-        },
         /**
          * Whether this account can create agent sessions with `nango_run_code`. Without it the setting
          * is rejected as an unknown meta tool. Default `false`.

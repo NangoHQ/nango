@@ -10,9 +10,9 @@ describe('describeChatError', () => {
     });
 
     it('offers no retry when the feature is off', () => {
-        const error = JSON.stringify({ error: { code: 'feature_disabled', message: 'Agent Playground is not enabled for this account' } });
+        const error = JSON.stringify({ error: { code: 'feature_disabled', message: 'Agent Playground is not enabled on this Nango instance' } });
 
-        expect(describeChatError(error)).toEqual({ title: 'The Agent Playground is not enabled for this account.', action: 'none' });
+        expect(describeChatError(error)).toEqual({ title: 'The Agent Playground is not enabled on this Nango instance.', action: 'none' });
     });
 
     it('sends a rejected chat to a new chat', () => {
