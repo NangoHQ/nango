@@ -15,7 +15,7 @@ describe('setUpPlaygroundIntegration', () => {
 
         const setup = await setUpPlaygroundIntegration({ account, environment: env }, 'resend');
 
-        expect(setup).toEqual({ provider: 'resend', displayName: 'Resend', integrationId: 'pg-resend', outcome: 'created' });
+        expect(setup).toEqual({ provider: 'resend', displayName: 'Resend', integrationId: 'pg-resend', outcome: 'created', usesSharedCredentials: false });
         const integrations = await configService.listProviderConfigs(db.knex, env.id);
         expect(integrations.map(({ unique_key, missing_fields }) => ({ unique_key, missing_fields }))).toEqual([
             { unique_key: 'pg-resend', missing_fields: [] }

@@ -151,13 +151,14 @@ export async function setUpPlaygroundIntegration(
         return { ...base, outcome: needsSetupFields(provider) ? 'needs_setup' : 'needs_developer_app' };
     }
 
-    const created = await createPlaygroundIntegration({ environment, account, providerName, provider, useSharedCredentials: instantSetup === 'managed' });
+    const useSharedCredentials = instantSetup === 'managed';
+    const created = await createPlaygroundIntegration({ environment, account, providerName, provider, useSharedCredentials });
     if (!created) {
         return { ...base, outcome: 'not_created' };
     }
-    if (auditAttribution) {
+    if (created.inserted && auditAttribution) {
         await recordIntegrationCreated({
-            integrationId: created,
+            integrationId: created.integrationId,
             displayName: provider.display_name,
             provider: providerName,
             account,
@@ -165,7 +166,7 @@ export async function setUpPlaygroundIntegration(
             auditAttribution
         });
     }
-    return { ...base, integrationId: created, outcome: 'created' };
+    return { ...base, integrationId: created.integrationId, outcome: 'created', usesSharedCredentials: useSharedCredentials };
 }
 
 async function createPlaygroundIntegration({
@@ -174,7 +175,11 @@ async function createPlaygroundIntegration({
     providerName,
     provider,
     useSharedCredentials
-}: Pick<PlaygroundContext, 'environment' | 'account'> & { providerName: string; provider: Provider; useSharedCredentials: boolean }): Promise<string | null> {
+}: Pick<PlaygroundContext, 'environment' | 'account'> & {
+    providerName: string;
+    provider: Provider;
+    useSharedCredentials: boolean;
+}): Promise<{ integrationId: string; inserted: boolean } | null> {
     const integrationId = playgroundIntegrationId(providerName);
     const created = await createIntegration({
         body: { provider: providerName, useSharedCredentials, integrationId, displayName: provider.display_name },
@@ -186,19 +191,19 @@ async function createPlaygroundIntegration({
         // A concurrent request that inserted the same key first makes this one fail on the unique constraint.
         const concurrent = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
         if (concurrent) {
-            return concurrent.unique_key;
+            return { integrationId: concurrent.unique_key, inserted: false };
         }
         logger.error(`Agent Playground could not create ${integrationId}: ${created.error.message}`);
         return null;
     }
     if (created.value.unique_key === integrationId || !created.value.id) {
-        return created.value.unique_key;
+        return { integrationId: created.value.unique_key, inserted: true };
     }
 
     // Keep our own row in the list: concurrent requests must all pick the same winner, or each deletes its own.
     const winner = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
     if (!winner || winner.unique_key === created.value.unique_key) {
-        return created.value.unique_key;
+        return { integrationId: created.value.unique_key, inserted: true };
     }
     await configService.deleteProviderConfig({
         id: created.value.id,
@@ -206,7 +211,7 @@ async function createPlaygroundIntegration({
         providerConfigKey: created.value.unique_key,
         orchestrator: getOrchestrator()
     });
-    return winner.unique_key;
+    return { integrationId: winner.unique_key, inserted: false };
 }
 
 // A session fixes its toolset and pinned connections when created, so any change since then needs a new session.
