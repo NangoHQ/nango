@@ -3,7 +3,7 @@ import { getLogger } from '@nangohq/utils';
 
 import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
 import type { PlaygroundRequest } from './agentPlaygroundRequest.js';
-import type { AgentPlaygroundIntegrationSetup, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { AgentPlaygroundIntegrationSetup, AnalyticsEventProperties, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 import type { LanguageModelUsage } from 'ai';
 
 const logger = getLogger('AgentPlayground');
@@ -107,12 +107,13 @@ export function isUsableOutcome(outcome: AgentPlaygroundIntegrationSetup['outcom
     return outcome === 'created' || outcome === 'existing';
 }
 
-export function trackStarterIntegrationSetup(
+export function trackIntegrationSetup(
     ctx: { account: DBTeam; environment: DBEnvironment; plan: DBPlan | null; user: DBUser },
-    setup: AgentPlaygroundIntegrationSetup
+    setup: AgentPlaygroundIntegrationSetup,
+    trigger: NonNullable<AnalyticsEventProperties<'playground:integration_create'>['trigger']>
 ): void {
     const { outcome } = setup;
-    const base = { provider: setup.provider, is_existing: outcome === 'existing' || outcome === 'missing_credentials' };
+    const base = { provider: setup.provider, is_existing: outcome === 'existing' || outcome === 'missing_credentials', trigger };
     productTracking.track({
         name: 'playground:integration_create',
         team: ctx.account,
