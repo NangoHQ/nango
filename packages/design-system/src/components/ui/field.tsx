@@ -1,18 +1,25 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva } from 'class-variance-authority';
+import { CircleAlert } from 'lucide-react';
 import * as React from 'react';
 
 import { cn } from '../../lib/cn';
+import { FieldContext, useFieldContext } from './field-context';
 
+import type { FieldContextValue } from './field-context';
 import type { VariantProps } from 'class-variance-authority';
 
-export const fieldVariants = cva('group/field flex w-full gap-2', {
+export const fieldVariants = cva('group/field w-full', {
     variants: {
         orientation: {
-            // Label, control, description and error stacked (Figma "Field", space/2 gap)
-            vertical: 'flex-col',
-            // Label beside the control — e.g. a switch or checkbox row
-            horizontal: 'flex-row items-center'
+            vertical: 'flex flex-col gap-1.5',
+            // The label column spans both rows so the error lands under the control
+            horizontal: [
+                'grid grid-cols-[220px_minmax(0,1fr)] grid-rows-[auto_1fr] items-start gap-x-8 gap-y-1.5',
+                '[&>:first-child]:row-span-2 [&>:first-child]:pt-1.5',
+                '[&>:not(:first-child)]:col-start-2'
+            ],
+            inline: 'flex flex-row items-center gap-2'
         }
     },
     defaultVariants: {
@@ -20,14 +27,68 @@ export const fieldVariants = cva('group/field flex w-full gap-2', {
     }
 });
 
-export interface FieldProps extends React.ComponentProps<'div'>, VariantProps<typeof fieldVariants> {}
+export interface FieldProps extends React.ComponentProps<'div'>, VariantProps<typeof fieldVariants> {
+    'data-invalid'?: boolean | 'true' | 'false' | undefined;
+    'data-disabled'?: boolean | 'true' | 'false' | undefined;
+}
 
-/**
- * Composition container for a label + control + description + error (Figma "Field").
- * Set `data-invalid` to surface the invalid state to descendants (e.g. FieldLabel turns danger).
- */
-function Field({ className, orientation, ...props }: FieldProps) {
-    return <div role="group" data-slot="field" className={cn(fieldVariants({ orientation }), className)} {...props} />;
+function Field({ className, orientation, children, ...props }: FieldProps) {
+    const baseId = React.useId();
+    const [renderedDescriptionId, registerDescription] = React.useState<string | null>(null);
+    const [renderedErrorId, registerError] = React.useState<string | null>(null);
+    const [controls, setControls] = React.useState<{ key: string; id: string | undefined }[]>([]);
+    const invalid = props['data-invalid'] === true || props['data-invalid'] === 'true';
+    const disabled = props['data-disabled'] === true || props['data-disabled'] === 'true';
+
+    const registerControl = React.useCallback((key: string) => {
+        setControls((prev) => [...prev, { key, id: undefined }]);
+        return () => setControls((prev) => prev.filter((control) => control.key !== key));
+    }, []);
+    const setControlId = React.useCallback((key: string, id: string | undefined) => {
+        setControls((prev) =>
+            prev.some((control) => control.key === key && control.id !== id) ? prev.map((control) => (control.key === key ? { key, id } : control)) : prev
+        );
+    }, []);
+    const primary = controls[0];
+    const controlId = `${baseId}-control`;
+
+    const value = React.useMemo<FieldContextValue>(
+        () => ({
+            controlId,
+            descriptionId: `${baseId}-description`,
+            errorId: `${baseId}-error`,
+            invalid,
+            disabled,
+            registerDescription,
+            registerError,
+            registerControl,
+            setControlId,
+            primaryControlKey: primary?.key ?? null,
+            labelTarget: primary ? (primary.id ?? controlId) : undefined,
+            renderedDescriptionId,
+            renderedErrorId
+        }),
+        [controlId, invalid, disabled, registerControl, setControlId, primary?.key, primary?.id, renderedDescriptionId, renderedErrorId]
+    );
+
+    return (
+        <FieldContext.Provider value={value}>
+            <div
+                role="group"
+                data-slot="field"
+                data-orientation={orientation ?? 'vertical'}
+                className={cn(fieldVariants({ orientation }), className)}
+                {...props}
+            >
+                {children}
+            </div>
+        </FieldContext.Provider>
+    );
+}
+
+/** In a horizontal Field, wrap the label and description in this: only the first child fills the label column. */
+function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
+    return <div data-slot="field-content" className={cn('flex min-w-0 flex-col gap-0.5', className)} {...props} />;
 }
 
 /** Lays sibling Fields out in a row, sharing width evenly (Figma "Field Group"). */
@@ -65,35 +126,52 @@ function FieldLegend({ className, variant = 'legend', description, children, ...
     );
 }
 
-export type FieldLabelProps = React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>;
+export interface FieldLabelProps extends React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> {
+    optional?: boolean;
+}
 
 /** The design system's label (Figma "FieldLabel"). Wraps the radix label; there is no standalone Label component. */
-const FieldLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>, FieldLabelProps>(({ className, ...props }, ref) => (
-    <LabelPrimitive.Root
-        ref={ref}
-        data-slot="field-label"
-        className={cn(
-            // Layout — inline so the label can sit beside an icon, tooltip, or required asterisk (Figma space/2 gap)
-            'flex min-w-0 flex-wrap items-center gap-2 wrap-break-word select-none',
-            // Typography (Figma text/medium/md)
-            'text-text-strong text-ds-md font-ds-medium leading-ds-normal',
-            // Disabled affordances driven by an ancestor [data-disabled] or a peer :disabled control
-            'group-data-[disabled=true]:pointer-events-none peer-disabled:cursor-not-allowed',
-            // Turns danger on invalid (Figma): an ancestor Field carries data-invalid, or the label itself carries data-error
-            'group-data-[invalid=true]/field:text-text-danger data-[error=true]:text-text-danger',
-            className
-        )}
-        {...props}
-    />
-));
+const FieldLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>, FieldLabelProps>(
+    ({ className, optional, htmlFor, children, ...props }, ref) => {
+        const field = useFieldContext();
+        return (
+            <LabelPrimitive.Root
+                ref={ref}
+                data-slot="field-label"
+                htmlFor={htmlFor ?? field?.labelTarget}
+                className={cn(
+                    'flex min-w-0 flex-wrap items-baseline gap-1.5 wrap-break-word select-none',
+                    'font-sans text-ds-sm font-ds-medium leading-ds-snug tracking-ds-tight text-text-default',
+                    'group-data-[disabled=true]/field:text-text-disabled group-data-[disabled=true]/field:pointer-events-none peer-disabled:cursor-not-allowed',
+                    className
+                )}
+                {...props}
+            >
+                {children}
+                {optional && <span className="font-sans text-ds-xs font-ds-regular leading-ds-normal tracking-ds-normal text-text-muted">Optional</span>}
+            </LabelPrimitive.Root>
+        );
+    }
+);
 FieldLabel.displayName = 'FieldLabel';
 
-function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
+function FieldDescription({ className, id, ...props }: React.ComponentProps<'p'>) {
+    const field = useFieldContext();
+    const resolvedId = id ?? field?.descriptionId;
+    const register = field?.registerDescription;
+    React.useLayoutEffect(() => {
+        if (!register || !resolvedId) {
+            return;
+        }
+        register(resolvedId);
+        return () => register(null);
+    }, [register, resolvedId]);
+
     return (
         <p
             data-slot="field-description"
-            // Figma text/secondary + text/regular/xs
-            className={cn('text-text-secondary text-ds-xs font-ds-regular leading-ds-normal', className)}
+            id={resolvedId}
+            className={cn('font-sans text-ds-xs font-ds-regular leading-ds-normal text-text-secondary', className)}
             {...props}
         />
     );
@@ -104,8 +182,8 @@ export interface FieldErrorProps extends React.ComponentProps<'div'> {
     errors?: (({ message?: string } | undefined) | null)[];
 }
 
-/** Danger-colored validation message. Renders nothing when empty (matches the old FormMessage). */
-function FieldError({ className, children, errors, ...props }: FieldErrorProps) {
+function FieldError({ className, children, errors, id, ...props }: FieldErrorProps) {
+    const field = useFieldContext();
     let body: React.ReactNode = children;
     if ((body === undefined || body === null) && errors?.length) {
         const messages = Array.from(new Set(errors.map((error) => error?.message).filter((message): message is string => Boolean(message))));
@@ -122,13 +200,32 @@ function FieldError({ className, children, errors, ...props }: FieldErrorProps) 
         }
     }
 
-    if (body === undefined || body === null || body === '') {
+    const isEmpty = body === undefined || body === null || body === '';
+    const resolvedId = id ?? field?.errorId;
+    const register = field?.registerError;
+    React.useLayoutEffect(() => {
+        if (!register || !resolvedId || isEmpty) {
+            return;
+        }
+        register(resolvedId);
+        return () => register(null);
+    }, [register, resolvedId, isEmpty]);
+
+    if (isEmpty) {
         return null;
     }
 
     return (
-        <div role="alert" data-slot="field-error" className={cn('text-text-danger text-ds-xs font-ds-regular', className)} {...props}>
-            {body}
+        <div
+            role="alert"
+            id={resolvedId}
+            data-slot="field-error"
+            className={cn('font-sans text-ds-xs font-ds-regular leading-ds-normal text-text-danger flex items-start gap-1', className)}
+            {...props}
+        >
+            {/* Centred on the first 18px line (12px × 1.5) */}
+            <CircleAlert aria-hidden className="text-icon-danger mt-0.75 size-3 shrink-0" />
+            <div className="min-w-0">{body}</div>
         </div>
     );
 }
@@ -156,4 +253,4 @@ function FieldSeparator({ className, children, ...props }: React.ComponentProps<
     );
 }
 
-export { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet };
+export { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet };

@@ -72,11 +72,16 @@ export {
     inputGroupAddonVariants,
     InputGroupButton,
     InputGroupInput,
+    type InputGroupInputProps,
+    InputGroupKbd,
+    type InputGroupProps,
+    InputGroupSwatch,
     InputGroupText,
     InputGroupTextarea
 } from './components/ui/input-group';
 export {
     Field,
+    FieldContent,
     FieldDescription,
     FieldError,
     type FieldErrorProps,
