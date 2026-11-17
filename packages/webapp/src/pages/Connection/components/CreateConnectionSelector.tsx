@@ -296,9 +296,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             <CardHeader>
                 <CardTitle>Test connection</CardTitle>
                 <CardDescription>
-                    {paramIntegrationId && integration
-                        ? `Connect a test account to try ${integration.display_name || integration.meta.displayName}`
-                        : 'Pick an integration to test from the list below'}
+                    {paramIntegrationId ? 'Connect a test account to try this integration' : 'Pick an integration to test from the list below'}
                 </CardDescription>
             </CardHeader>
             <CardContent>
