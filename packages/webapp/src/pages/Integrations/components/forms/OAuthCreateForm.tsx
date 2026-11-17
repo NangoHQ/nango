@@ -197,7 +197,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                                         <FormItem>
                                             <FormLabel>Client secret</FormLabel>
                                             <FormControl>
-                                                <SecretInput editable {...field} />
+                                                <SecretInput editable {...field} value={field.value ?? ''} />
                                             </FormControl>
                                         </FormItem>
                                     )}

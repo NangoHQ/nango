@@ -116,7 +116,7 @@ export const CustomAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onS
                                 <FormItem>
                                     <FormLabel>Client Secret</FormLabel>
                                     <FormControl>
-                                        <SecretInput editable {...field} aria-invalid={!!fieldState.error} />
+                                        <SecretInput editable {...field} value={field.value ?? ''} aria-invalid={!!fieldState.error} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

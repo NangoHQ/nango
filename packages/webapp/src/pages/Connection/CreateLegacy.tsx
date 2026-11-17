@@ -1064,7 +1064,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                         editable
                                                         id={`credential-${paramName}`}
                                                         name={`credential-${paramName}`}
-                                                        value={credentialsState[paramName]}
+                                                        value={credentialsState[paramName] ?? ''}
                                                         onChange={(e) => handleCredentialParamsChange(paramName, e.target.value)}
                                                     />
                                                 </div>
@@ -1087,7 +1087,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                         editable
                                                         id={`assertion-option-${paramName}`}
                                                         name={`assertion-option-${paramName}`}
-                                                        value={assertionOptionState[paramName]}
+                                                        value={assertionOptionState[paramName] ?? ''}
                                                         onChange={(e) => handleAssertionOptionParamsChange(paramName, e.target.value)}
                                                     />
                                                 </div>

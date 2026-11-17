@@ -74,7 +74,7 @@ export const InstallPluginAuthCreateForm: React.FC<{ provider: ApiProviderListIt
                                 <FormItem>
                                     <FormLabel>Username</FormLabel>
                                     <FormControl>
-                                        <SecretInput editable {...field} aria-invalid={!!fieldState.error} />
+                                        <SecretInput editable {...field} value={field.value ?? ''} aria-invalid={!!fieldState.error} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -88,7 +88,7 @@ export const InstallPluginAuthCreateForm: React.FC<{ provider: ApiProviderListIt
                                 <FormItem>
                                     <FormLabel>Password</FormLabel>
                                     <FormControl>
-                                        <SecretInput editable {...field} aria-invalid={!!fieldState.error} />
+                                        <SecretInput editable {...field} value={field.value ?? ''} aria-invalid={!!fieldState.error} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
