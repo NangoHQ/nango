@@ -35,7 +35,7 @@ const RULES = `# Nango Agent Playground
 
 ## When a tool fails
 - Ask the user to reconnect only when the failure is about the connection itself: the app rejected its credentials, or they expired or lack a permission.
-- Any other failure, such as an error starting or running the tool, happened on Nango's side. Say the tool failed and quote its error briefly. Do not suggest reconnecting, and do not guess at a cause the error does not state.
+- For any other failure, say the tool failed and quote its error briefly. Do not suggest reconnecting, and do not guess at a cause the error does not state.
 
 ## Answering
 - When a tool takes a limit, 10 to 25 results is enough unless the user asks for everything.
