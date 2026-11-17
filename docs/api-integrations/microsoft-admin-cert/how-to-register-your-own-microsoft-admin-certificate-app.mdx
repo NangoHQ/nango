@@ -1,0 +1,58 @@
+---
+title: 'How to register your own Microsoft app with a certificate'
+sidebarTitle: 'Microsoft (Admin - Certificate) Setup'
+description: 'Register a Microsoft Entra app that authenticates with a certificate and connect its credentials to Nango'
+---
+
+This guide shows you how to register a Microsoft Entra app, upload a certificate to it and add the credentials to Nango (client ID, private key and certificate).
+
+<Steps>
+  <Step title="Register an application">
+    1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) as at least an Application Developer.
+    2. Go to **Identity** > **Applications** > **App registrations** and click **New registration**.
+    3. Enter a name for your app, for example "Nango Integration".
+    4. Under **Supported account types**, choose **Accounts in any organizational directory** so administrators of other organizations can connect, or **Accounts in this organizational directory only** for your own tenant.
+    5. Under **Redirect URI**, select **Web** and enter `https://api.nango.dev/oauth/callback`.
+    6. Click **Register**.
+  </Step>
+  <Step title="Note your application (client) ID">
+    On the app's **Overview** page, copy the **Application (client) ID**. This is the client ID for Nango.
+  </Step>
+  <Step title="Generate a certificate">
+    Generate an RSA private key and a self-signed certificate with OpenSSL (or use a certificate from your organization's certificate authority):
+
+    ```bash
+    openssl req -x509 -newkey rsa:2048 -keyout private_key.pem -out certificate.pem -days 365 -nodes \
+      -subj "/CN=NangoIntegration"
+    ```
+
+    This creates `private_key.pem` (keep it secret) and `certificate.pem` (the public certificate).
+  </Step>
+  <Step title="Upload the certificate">
+    1. In your app registration, open **Certificates & secrets** > **Certificates** and click **Upload certificate**.
+    2. Select `certificate.pem`, add a description and click **Add**.
+
+    <img src="/api-integrations/microsoft-oauth2-cc-cert/cert_upload.png" />
+
+    You don't need a client secret for this integration.
+  </Step>
+  <Step title="Add API permissions">
+    1. Open **API permissions** and click **Add a permission** > **Microsoft Graph** > **Application permissions**.
+    2. Select the permissions your app needs, for example `Organization.Read.All` or `User.Read.All`, and click **Add permissions**.
+  </Step>
+  <Step title="Add the credentials in Nango">
+    In your Microsoft (Admin - Certificate) integration in Nango:
+
+    1. Enter the **Application (client) ID** as the **Client ID**.
+    2. Paste the contents of `private_key.pem` in the **Client secret** field.
+    3. Paste the contents of `certificate.pem` in the **Certificate** field.
+    4. Set the scopes to `https://graph.microsoft.com/.default`.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+When a connection is created, the tenant's administrator grants your app's application permissions through Microsoft's admin consent page. Nango then gets access tokens with the client credentials flow, signing each request with your private key instead of sending a client secret. For more details, see [Microsoft identity platform certificate credentials](https://learn.microsoft.com/en-us/entra/identity-platform/certificate-credentials) and [admin consent](https://learn.microsoft.com/en-us/entra/identity-platform/v2-admin-consent).
+
+---
