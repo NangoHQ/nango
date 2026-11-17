@@ -52,7 +52,6 @@ const STATES: HalfState[] = [
     { label: 'Pressed main', action: { 'data-story-state': 'active' } },
     { label: 'Focus main', action: { 'data-story-state': 'focus-visible' } },
     { label: 'Focus menu', trigger: { 'data-story-state': 'focus-visible' } },
-    { label: 'Menu open', trigger: { 'aria-expanded': true } },
     { label: 'Disabled', group: { disabled: true } },
     { label: 'Loading', action: { loading: true } }
 ];
@@ -66,7 +65,7 @@ const SIZE_SPEC: Record<SplitButtonSize, string> = {
 
 // Rows = sizes, columns = states.
 const StateMatrix = ({ variant }: { variant: SplitButtonVariant }) => (
-    <div className="grid grid-cols-[auto_repeat(9,max-content)] items-center gap-x-8 gap-y-6">
+    <div className="grid items-center gap-x-8 gap-y-6" style={{ gridTemplateColumns: `auto repeat(${STATES.length}, max-content)` }}>
         <span />
         {STATES.map((state) => (
             <span key={state.label} className="story-section-heading">
