@@ -39,9 +39,6 @@ export function useGetIntegration(env: string, integrationId: string) {
             }
             return json;
         },
-        // The API reads from a replica, so an integration created a moment ago can 404 until the replica catches up.
-        retry: (failureCount, error) => failureCount < 3 && error instanceof APIError && error.res.status === 404,
-        retryDelay: 500,
         enabled: Boolean(env && integrationId)
     });
 }
