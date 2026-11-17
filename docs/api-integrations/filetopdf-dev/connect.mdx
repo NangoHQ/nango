@@ -1,0 +1,41 @@
+---
+title: 'FileToPDF.dev - How do I link my account?'
+sidebarTitle: 'FileToPDF.dev'
+---
+
+## Overview
+
+To authenticate with FileToPDF.dev, you need:
+
+1. **API Key** — a secret key created in your FileToPDF.dev workspace.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A FileToPDF.dev account. [Sign up](https://filetopdf.dev/signup) with Google or your email to get 10 free conversions.
+
+### Step 1: Create an API key
+
+1. Log in at [filetopdf.dev](https://filetopdf.dev/signup) and click **API Keys** in the sidebar.
+2. Click **Create New Key**.
+
+<img src="/api-integrations/filetopdf-dev/api_keys_page.png" alt="FileToPDF.dev API Keys page with the Create New Key button highlighted"/>
+
+3. Enter a name for the key, then click **Create secret key**.
+
+<img src="/api-integrations/filetopdf-dev/create_api_key_dialog.png" alt="Create new API Key dialog with a key name entered and the Create secret key button highlighted"/>
+
+4. Click the copy icon to copy the secret key, then click **Done**. The key starts with `sk_live_` and is shown only once.
+
+<img src="/api-integrations/filetopdf-dev/api_key_created.png" alt="Key Created Successfully dialog with the copy icon highlighted next to the hidden secret key"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with FileToPDF.dev.
+2. Enter your secret key in the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/filetopdf-dev/form.png" alt="FileToPDF.dev Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to FileToPDF.dev.

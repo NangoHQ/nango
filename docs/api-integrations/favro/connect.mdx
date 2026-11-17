@@ -1,0 +1,56 @@
+---
+title: 'Favro - How do I link my account?'
+sidebarTitle: 'Favro'
+---
+
+## Overview
+
+To authenticate with Favro, you need:
+
+1. **Organization ID** — the ID of your Favro organization.
+2. **Email** — the email address you log in to Favro with.
+3. **API token** — an API token created in your Favro profile.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Favro account. You can [sign up](https://favro.com/l/signup) for a 14-day free trial.
+
+### Step 1: Create an API token
+
+1. Log in to [Favro](https://favro.com/l/login) with your email. You'll enter this email in the **Email** field of the Connect UI.
+2. Click your organization name at the top left to open the main menu, then choose **My profile**.
+
+<img src="/api-integrations/favro/main_menu_my_profile.png" alt="Favro main menu open at the top left with My profile highlighted" />
+
+3. In **Profile and account**, open the **API Tokens** tab and click **Create new token**.
+
+<img src="/api-integrations/favro/api_tokens_tab.png" alt="Favro Profile and account dialog on the API Tokens tab with the Create new token button" />
+
+4. Enter a name for the token. Optionally tick **Read only** to limit the token to read-only endpoints. Then click **Create token**.
+
+<img src="/api-integrations/favro/create_token_form.png" alt="Favro API Tokens form with a token name, the Read only checkbox ticked and the Create token button" />
+
+5. Click **Copy to clipboard** and store the token securely.
+
+<img src="/api-integrations/favro/token_created.png" alt="Favro API Tokens tab showing the new token with the Copy to clipboard button" />
+
+<Tip>Favro shows the token only once. If you lose it, create a new one.</Tip>
+
+### Step 2: Find your organization ID
+
+1. Open your organization in Favro.
+2. Copy the ID from the browser address bar: it is the part after `/organization/` in `https://favro.com/organization/<ORGANIZATION-ID>/...`.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Favro.
+2. Enter your organization ID in the **Organization ID** field.
+3. Enter your Favro login email in the **Email** field.
+4. Enter your API token in the **API token** field.
+5. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/favro/form.png" alt="Favro Connect UI form with the Organization ID, Email and API token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Favro.
