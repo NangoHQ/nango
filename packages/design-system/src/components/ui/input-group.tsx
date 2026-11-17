@@ -60,9 +60,23 @@ const inputGroupVariants = cva(
 
 export type InputGroupProps = Omit<React.ComponentProps<'div'>, 'size'> & VariantProps<typeof inputGroupVariants>;
 
+const InputGroupContext = React.createContext(false);
+
+export function useInsideInputGroup(): boolean {
+    return React.useContext(InputGroupContext);
+}
+
 function InputGroup({ className, size, readOnlyStyle, ...props }: InputGroupProps) {
     return (
-        <div data-slot="input-group" data-size={size ?? 'md'} role="group" className={cn(inputGroupVariants({ size, readOnlyStyle }), className)} {...props} />
+        <InputGroupContext.Provider value={true}>
+            <div
+                data-slot="input-group"
+                data-size={size ?? 'md'}
+                role="group"
+                className={cn(inputGroupVariants({ size, readOnlyStyle }), className)}
+                {...props}
+            />
+        </InputGroupContext.Provider>
     );
 }
 
