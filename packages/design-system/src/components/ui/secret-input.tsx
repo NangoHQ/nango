@@ -43,7 +43,7 @@ export const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(
         const revealButton = (
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <InputGroupButton label={revealLabel} title="" aria-pressed={isRevealed} disabled={buttonsDisabled} onClick={() => setRevealed((r) => !r)}>
+                    <InputGroupButton label="Show secret" title="" aria-pressed={isRevealed} disabled={buttonsDisabled} onClick={() => setRevealed((r) => !r)}>
                         {isRevealed ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
                     </InputGroupButton>
                 </TooltipTrigger>
