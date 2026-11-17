@@ -109,8 +109,8 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
         <>
             <div className="flex shrink-0 items-center justify-between border-b border-border-muted px-4 py-3">
                 <div className="flex items-center gap-2">
-                    <IconButton variant="ghost" size="2xs" label="Back" onClick={onBack}>
-                        <ChevronLeft className="size-3.5" />
+                    <IconButton variant="ghost" size="xs" label="Back" onClick={onBack}>
+                        <ChevronLeft />
                     </IconButton>
                     <span className="font-medium text-text-default">Billing Overrides</span>
                     {overrides > 0 && <Tag variant="info">{overrides} active</Tag>}
@@ -121,8 +121,8 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                             Reset
                         </LinkButton>
                     )}
-                    <IconButton variant="ghost" size="2xs" label="Close" onClick={onClose}>
-                        <X className="size-3.5" />
+                    <IconButton variant="ghost" size="xs" label="Close" onClick={onClose}>
+                        <X />
                     </IconButton>
                 </div>
             </div>

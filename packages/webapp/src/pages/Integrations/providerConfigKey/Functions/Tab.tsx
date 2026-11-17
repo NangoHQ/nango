@@ -61,8 +61,8 @@ function FunctionNameCell({ name, description }: { name: string; description?: s
             <div className="flex min-w-0 flex-col gap-0.5">
                 <div className="flex min-w-0 items-center gap-1">
                     <span className="truncate type-code-medium-sm text-text-default">{name}</span>
-                    <span className="flex shrink-0 opacity-0 transition-opacity group-focus-within/function-row:opacity-100 group-hover/function-row:opacity-100">
-                        <CopyButton size="2xs" value={name} />
+                    <span className="-my-0.5 flex shrink-0 opacity-0 transition-opacity group-focus-within/function-row:opacity-100 group-hover/function-row:opacity-100">
+                        <CopyButton size="xs" value={name} />
                     </span>
                 </div>
                 {description && (

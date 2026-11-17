@@ -142,7 +142,9 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                         </div>
                         <div className="flex items-center gap-2 rounded-ds-lg bg-surface-panel px-3 py-2.5">
                             <span className="min-w-0 flex-1 type-code-medium-xs text-text-secondary">{pullCommand}</span>
-                            <CopyButton size="2xs" value={pullCommand} />
+                            <span className="-my-0.5 inline-flex">
+                                <CopyButton size="xs" value={pullCommand} />
+                            </span>
                         </div>
                     </div>
                 </div>

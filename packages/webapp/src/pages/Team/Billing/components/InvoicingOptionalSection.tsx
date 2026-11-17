@@ -24,11 +24,11 @@ export const InvoicingOptionalSection: React.FC<{
                     <OptionalTag />
                 </span>
                 {present ? (
-                    <IconButton type="button" variant="ghost" size="2xs" onClick={onRemove} label={removeLabel} aria-expanded={true} aria-controls={contentId}>
+                    <IconButton type="button" variant="ghost" size="xs" onClick={onRemove} label={removeLabel} aria-expanded={true} aria-controls={contentId}>
                         <Trash2 />
                     </IconButton>
                 ) : (
-                    <IconButton type="button" variant="ghost" size="2xs" onClick={onAdd} label={addLabel} aria-expanded={false} aria-controls={contentId}>
+                    <IconButton type="button" variant="ghost" size="xs" onClick={onAdd} label={addLabel} aria-expanded={false} aria-controls={contentId}>
                         <Plus />
                     </IconButton>
                 )}

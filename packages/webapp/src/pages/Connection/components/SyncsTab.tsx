@@ -341,7 +341,7 @@ const SyncRow = memo(function SyncRow({
             <TableCell className={cn(cellLayout, col.actions)}>
                 <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
-                        <IconButton variant="ghost" size="2xs" label="Sync actions" loading={isPending}>
+                        <IconButton variant="ghost" size="xs" label="Sync actions" loading={isPending}>
                             <Ellipsis />
                         </IconButton>
                     </DropdownMenuTrigger>

@@ -106,7 +106,7 @@ export const General: React.FC = () => {
                 <div className="relative">
                     <Input value={environmentAndAccount?.environment.uuid ?? ''} disabled className="font-mono bg-surface-canvas text-text-muted pr-10" />
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                        <CopyButton size="2xs" value={environmentAndAccount?.environment.uuid ?? ''} />
+                        <CopyButton size="xs" value={environmentAndAccount?.environment.uuid ?? ''} />
                     </div>
                 </div>
             </SettingsGroup>
