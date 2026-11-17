@@ -1855,6 +1855,7 @@
               "api-integrations/mezmo",
               "api-integrations/microsoft",
               "integrations/all/microsoft-admin",
+              "api-integrations/microsoft-admin-cert",
               "integrations/all/microsoft-ads",
               "integrations/all/microsoft-business-central",
               "api-integrations/microsoft-clarity",

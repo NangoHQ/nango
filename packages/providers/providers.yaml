@@ -22466,6 +22466,45 @@ microsoft-admin:
             doc_section: '#step-1-finding-your-tenant-id'
             order: 1
 
+microsoft-admin-cert:
+    display_name: Microsoft (Admin - Certificate)
+    auth_mode: OAUTH2
+    categories:
+        - communication
+        - dev-tools
+        - productivity
+        - iam
+    authorization_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/adminconsent
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    authorization_code_param_in_callback: tenant
+    token_request_auth_method: private_key_jwt
+    proxy:
+        base_url: https://graph.microsoft.com
+        retry:
+            after:
+                - 'retry-after'
+        decompress: true
+    docs: https://nango.dev/docs/api-integrations/microsoft-admin-cert
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-admin-cert/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-admin-cert/how-to-register-your-own-microsoft-admin-certificate-app
+    integration_config:
+        certificate:
+            type: string
+            title: Certificate
+            description: The certificate (PEM) uploaded to your Microsoft Entra app.
+            example: "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgIU...\n-----END CERTIFICATE-----"
+            doc_section: '#upload-the-certificate'
+            order: 1
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+
 microsoft-teams-bot:
     display_name: Microsoft Teams Bot
     auth_mode: OAUTH2
