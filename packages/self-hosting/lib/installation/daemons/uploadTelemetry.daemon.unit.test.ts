@@ -175,10 +175,10 @@ describe('uploadTelemetryTick', () => {
 
         expect(calls()).toEqual({ fills: 1, pages: 3 });
         expect(fillUploadQueue).toHaveBeenCalledWith(config);
-        expect(uploadNextPage).toHaveBeenCalledWith(config);
+        expect(uploadNextPage).toHaveBeenCalledWith(config, { rejectedBefore: start });
     });
 
-    it('fills the queue again an hour later', async () => {
+    it('starts a new loop an hour later: it fills the queue again and lets the rejected uploads be sent again', async () => {
         const tick = uploadTelemetryTick(config);
 
         await tick();
@@ -188,6 +188,24 @@ describe('uploadTelemetryTick', () => {
         await tick();
 
         expect(calls()).toEqual({ fills: 2, pages: 3 });
+        expect(vi.mocked(uploadNextPage).mock.calls.map(([, { rejectedBefore }]) => rejectedBefore)).toEqual([
+            start,
+            start,
+            new Date(start.getTime() + 60 * 60_000)
+        ]);
+    });
+
+    it('keeps uploading after Nango rejects an upload', async () => {
+        const rejection = new UploadRequestError('Nango answered 400', { status: 400, code: 'invalid_row' });
+        vi.mocked(uploadNextPage).mockResolvedValueOnce(
+            Ok({ outcome: 'rejected', day: '2026-11-09', metric: 'nango.hosted_metric.active_concurrency.max', rejection })
+        );
+        const tick = uploadTelemetryTick(config);
+
+        await tick();
+        await tick();
+
+        expect(calls()).toEqual({ fills: 1, pages: 2 });
     });
 
     it.each([
@@ -230,7 +248,7 @@ describe('uploadTelemetryTick', () => {
         const unreachable = new Error('could not reach Nango');
         vi.mocked(uploadNextPage)
             .mockResolvedValueOnce(Ok({ outcome: 'finished', ...upload }))
-            .mockResolvedValueOnce(Ok({ outcome: 'failed', ...upload, rejection }))
+            .mockResolvedValueOnce(Ok({ outcome: 'rejected', ...upload, rejection }))
             .mockResolvedValueOnce(Err(unreachable));
         const tick = uploadTelemetryTick(config);
 
@@ -241,7 +259,7 @@ describe('uploadTelemetryTick', () => {
         expect(span.addTags.mock.calls).toEqual([[upload], [upload]]);
         expect(span.setTag.mock.calls).toEqual([
             ['outcome', 'finished'],
-            ['outcome', 'failed'],
+            ['outcome', 'rejected'],
             ['error', rejection],
             ['error', unreachable]
         ]);

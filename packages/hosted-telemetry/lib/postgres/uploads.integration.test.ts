@@ -8,7 +8,7 @@ import { Ok } from '@nangohq/utils';
 
 import { migrate } from './migrate.js';
 import { HOSTED_TELEMETRY_TABLE, HOSTED_TELEMETRY_UPLOADS_TABLE } from './schema.js';
-import { enqueueUploads, failExpiredUploads, failUpload, readUploadPage, saveUploadProgress, withQueuedUpload } from './uploads.js';
+import { enqueueUploads, failExpiredUploads, readUploadPage, rejectUpload, saveUploadProgress, withQueuedUpload } from './uploads.js';
 
 import type { Knex } from 'knex';
 
@@ -35,6 +35,14 @@ async function uploads(): Promise<{ day: string; metric: string; status: string 
         [schema, HOSTED_TELEMETRY_UPLOADS_TABLE]
     );
     return res.rows;
+}
+
+async function rejections(): Promise<(Date | null)[]> {
+    const res = await knex.raw<{ rows: { rejected_at: Date | null }[] }>(`SELECT rejected_at FROM ??.?? ORDER BY day, metric`, [
+        schema,
+        HOSTED_TELEMETRY_UPLOADS_TABLE
+    ]);
+    return res.rows.map((row) => row.rejected_at);
 }
 
 beforeAll(async () => {
@@ -118,7 +126,8 @@ describe('enqueueUploads', () => {
 });
 
 describe('withQueuedUpload', () => {
-    const idleTimeoutMs = 60_000;
+    const rejectedBefore = at('2026-11-10T08:00:00Z');
+    const options = { idleTimeoutMs: 60_000, rejectedBefore, schema };
 
     it('works on the oldest queued upload, with its cursor', async () => {
         await insert(
@@ -132,7 +141,7 @@ describe('withQueuedUpload', () => {
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor, done: false, schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-07', metric: concurrency, cursor, done: true, schema })).unwrap();
 
-        const worked = await withQueuedUpload(knex, { idleTimeoutMs, schema }, (_trx, upload) => Promise.resolve(Ok(upload)));
+        const worked = await withQueuedUpload(knex, options, (_trx, upload) => Promise.resolve(Ok(upload)));
 
         expect(worked.unwrap()).toEqual({ day: '2026-11-08', metric: concurrency, cursor });
     });
@@ -140,11 +149,42 @@ describe('withQueuedUpload', () => {
     it('does not call the work when nothing is queued', async () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
         (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
-        (await failUpload(knex, { day: '2026-11-08', metric: concurrency, schema })).unwrap();
+        (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor: null, done: true, schema })).unwrap();
 
-        const worked = await withQueuedUpload(knex, { idleTimeoutMs, schema }, () => Promise.resolve(Ok('called')));
+        const worked = await withQueuedUpload(knex, options, () => Promise.resolve(Ok('called')));
 
         expect(worked.unwrap()).toBeNull();
+    });
+
+    it('works on an upload that Nango rejected only after the ones it never rejected', async () => {
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-09T10:00:00Z', metric: concurrency });
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
+        (await rejectUpload(knex, { day: '2026-11-08', metric: concurrency, at: at('2026-11-10T07:00:00Z'), schema })).unwrap();
+        const finish = () =>
+            withQueuedUpload(knex, options, async (trx, { day, metric }) => {
+                (await saveUploadProgress(trx, { day, metric, cursor: null, done: true, schema })).unwrap();
+                return Ok(day);
+            });
+
+        const first = await finish();
+        const second = await finish();
+
+        expect([first.unwrap(), second.unwrap()]).toEqual(['2026-11-09', '2026-11-08']);
+    });
+
+    it('leaves out an upload that Nango rejected at `rejectedBefore` or later', async () => {
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
+        const upload = { day: '2026-11-08', metric: concurrency, schema };
+        const take = () => withQueuedUpload(knex, options, (_trx, { day }) => Promise.resolve(Ok(day)));
+
+        (await rejectUpload(knex, { ...upload, at: rejectedBefore })).unwrap();
+        const rejectedNow = await take();
+        (await rejectUpload(knex, { ...upload, at: new Date(rejectedBefore.getTime() - 1) })).unwrap();
+        const rejectedEarlier = await take();
+
+        expect(rejectedNow.unwrap()).toBeNull();
+        expect(rejectedEarlier.unwrap()).toBe('2026-11-08');
     });
 
     it('gives each replica a different upload, and none to the one that finds them all taken', async () => {
@@ -153,7 +193,7 @@ describe('withQueuedUpload', () => {
         let taken = 0;
         const { promise: bothTaken, resolve: onBothTaken } = Promise.withResolvers<unknown>();
         const metric = (hold: Promise<unknown>) =>
-            withQueuedUpload(knex, { idleTimeoutMs, schema }, async (_trx, upload) => {
+            withQueuedUpload(knex, options, async (_trx, upload) => {
                 if (++taken === 2) {
                     onBothTaken(null);
                 }
@@ -177,12 +217,8 @@ describe('withQueuedUpload', () => {
         (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
         const cursor = { ts: at('2026-11-08T10:00:00Z'), attributes: {} };
 
-        (
-            await withQueuedUpload(knex, { idleTimeoutMs, schema }, (trx, { day, metric }) =>
-                saveUploadProgress(trx, { day, metric, cursor, done: false, schema })
-            )
-        ).unwrap();
-        const next = await withQueuedUpload(knex, { idleTimeoutMs, schema }, (_trx, upload) => Promise.resolve(Ok(upload)));
+        (await withQueuedUpload(knex, options, (trx, { day, metric }) => saveUploadProgress(trx, { day, metric, cursor, done: false, schema }))).unwrap();
+        const next = await withQueuedUpload(knex, options, (_trx, upload) => Promise.resolve(Ok(upload)));
 
         expect(next.unwrap()).toEqual({ day: '2026-11-08', metric: concurrency, cursor });
     });
@@ -191,11 +227,11 @@ describe('withQueuedUpload', () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
         (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
 
-        const hung = await withQueuedUpload(knex, { idleTimeoutMs: 100, schema }, async (trx, { day, metric }) => {
+        const hung = await withQueuedUpload(knex, { ...options, idleTimeoutMs: 100 }, async (trx, { day, metric }) => {
             await setTimeout(500);
             return await saveUploadProgress(trx, { day, metric, cursor: null, done: true, schema });
         });
-        const next = await withQueuedUpload(knex, { idleTimeoutMs, schema }, (_trx, upload) => Promise.resolve(Ok(upload)));
+        const next = await withQueuedUpload(knex, options, (_trx, upload) => Promise.resolve(Ok(upload)));
 
         expect(hung.isErr()).toBe(true);
         expect(next.unwrap()).toEqual({ day: '2026-11-08', metric: concurrency, cursor: null });
@@ -203,19 +239,34 @@ describe('withQueuedUpload', () => {
 });
 
 describe('saveUploadProgress', () => {
+    it('forgets that Nango rejected the upload once a page of it is accepted', async () => {
+        await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency });
+        (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
+        const rejectedAt = at('2026-11-10T07:00:00Z');
+
+        (await rejectUpload(knex, { day: '2026-11-08', metric: concurrency, at: rejectedAt, schema })).unwrap();
+        const rejected = await rejections();
+        (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor: null, done: false, schema })).unwrap();
+
+        expect(rejected).toEqual([rejectedAt]);
+        expect(await rejections()).toEqual([null]);
+        expect(await uploads()).toEqual([{ day: '2026-11-08', metric: concurrency, status: 'queued' }]);
+    });
+
     it('does not change an upload that already succeeded or failed', async () => {
         await insert({ ts: '2026-11-08T10:00:00Z', metric: concurrency }, { ts: '2026-11-08T10:00:00Z', metric: connections });
         (await enqueueUploads(knex, { since, today, metrics: [], schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: concurrency, cursor: null, done: true, schema })).unwrap();
-        (await failUpload(knex, { day: '2026-11-08', metric: connections, schema })).unwrap();
+        (await failExpiredUploads(knex, { since: at('2026-11-09T00:00:00Z'), schema })).unwrap();
 
-        (await failUpload(knex, { day: '2026-11-08', metric: concurrency, schema })).unwrap();
+        (await rejectUpload(knex, { day: '2026-11-08', metric: concurrency, at: at('2026-11-10T07:00:00Z'), schema })).unwrap();
         (await saveUploadProgress(knex, { day: '2026-11-08', metric: connections, cursor: null, done: true, schema })).unwrap();
 
         expect(await uploads()).toEqual([
             { day: '2026-11-08', metric: concurrency, status: 'succeeded' },
             { day: '2026-11-08', metric: connections, status: 'failed' }
         ]);
+        expect(await rejections()).toEqual([null, null]);
     });
 });
 

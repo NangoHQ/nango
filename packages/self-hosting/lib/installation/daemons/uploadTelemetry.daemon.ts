@@ -15,8 +15,9 @@ const logger = getLogger('daemon.uploadTelemetry');
 
 // A tick sends one page, so this is also the wait between two requests to Nango.
 const TICK_INTERVAL_MS = 10_000;
-// How often we look for new days to upload. With nothing to upload, or after a failure, we wait until then.
-const FILL_INTERVAL_MS = 60 * 60 * 1000;
+// A loop starts by queueing the new days. With nothing left to upload, or after a failure, we wait for the next loop.
+// An upload that Nango rejected is sent again once per loop.
+const LOOP_INTERVAL_MS = 60 * 60 * 1000;
 
 export async function uploadTelemetryDaemon(): Promise<{ abort: () => Promise<void> } | undefined> {
     if (!flags.hasHostedTelemetryUpload) {
@@ -86,24 +87,24 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig | null>> {
 }
 
 export function uploadTelemetryTick(config: UploaderConfig): () => Promise<void> {
-    let nextFillAt = 0;
+    let loopStartedAt = 0;
     let resting = false;
 
     return async () => {
         const now = Date.now();
-        const fillDue = now >= nextFillAt;
-        if (resting && !fillDue) {
+        const loopDue = now >= loopStartedAt + LOOP_INTERVAL_MS;
+        if (resting && !loopDue) {
             return;
         }
         if (config.licenseGraceUntil.getTime() <= now) {
             logger.warning(`Not uploading (the grace period of the license ended on ${config.licenseGraceUntil.toISOString()})`);
-            nextFillAt = now + FILL_INTERVAL_MS;
+            loopStartedAt = now;
             resting = true;
             return;
         }
         await tracer.trace('nango.self_hosting.daemon.uploadTelemetry', async (span) => {
-            if (fillDue) {
-                nextFillAt = now + FILL_INTERVAL_MS;
+            if (loopDue) {
+                loopStartedAt = now;
                 const filled = await fillUploadQueue(config);
                 if (filled.isErr()) {
                     span?.setTag('error', filled.error);
@@ -114,7 +115,7 @@ export function uploadTelemetryTick(config: UploaderConfig): () => Promise<void>
                     );
                 }
             }
-            const step = await uploadNextPage(config);
+            const step = await uploadNextPage(config, { rejectedBefore: new Date(loopStartedAt) });
             if (step.isErr()) {
                 span?.setTag('error', step.error);
                 logger.error('Uploading stopped. The rest will be uploaded later', step.error);
@@ -130,9 +131,9 @@ export function uploadTelemetryTick(config: UploaderConfig): () => Promise<void>
             span?.addTags({ metric: upload.metric, day: upload.day });
             if (upload.outcome === 'finished') {
                 logger.info(`Uploaded ${upload.metric} for ${upload.day}`);
-            } else if (upload.outcome === 'failed') {
+            } else if (upload.outcome === 'rejected') {
                 span?.setTag('error', upload.rejection);
-                logger.error(`Upload of ${upload.metric} for ${upload.day} failed and will not be retried. Request the data manually`, upload.rejection);
+                logger.error(`Nango rejected ${upload.metric} for ${upload.day}. It will be sent again later`, upload.rejection);
             }
         });
     };

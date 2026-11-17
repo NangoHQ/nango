@@ -3,7 +3,7 @@ import { gzip } from 'node:zlib';
 
 import tracer from 'dd-trace';
 
-import { enqueueUploads, failExpiredUploads, failUpload, readUploadPage, saveUploadProgress, withQueuedUpload } from '@nangohq/hosted-telemetry';
+import { enqueueUploads, failExpiredUploads, readUploadPage, rejectUpload, saveUploadProgress, withQueuedUpload } from '@nangohq/hosted-telemetry';
 import { Err, Ok, retry } from '@nangohq/utils';
 
 import { route } from '../cloud/routes/v1/telemetry/postUploads.js';
@@ -61,11 +61,10 @@ export class UploadRequestError extends Error {
     }
 
     /**
-     * Our upload endpoint rejected the rows we sent and would reject them again, so we do not retry. Any other answer is
-     * retried on a later run. That includes a key or a license that Nango does not accept, because fixing it does not
-     * change the rows.
+     * Our upload endpoint rejected the rows we sent. Sending them again gets the same answer until the endpoint or the
+     * installation changes. A key or a license that Nango does not accept is not this case.
      */
-    get permanent(): boolean {
+    get rejectedRows(): boolean {
         return this.status !== undefined && REJECTED_PAYLOAD_STATUSES.has(this.status) && this.code !== undefined;
     }
 }
@@ -176,29 +175,32 @@ async function uploadPage(config: UploaderConfig, knex: Knex, { day, metric, cur
 }
 
 type Upload = Pick<QueuedUpload, 'day' | 'metric'>;
-export type UploadStep = { outcome: 'idle' } | ({ outcome: 'sent' | 'finished' } & Upload) | ({ outcome: 'failed'; rejection: UploadRequestError } & Upload);
+export type UploadStep = { outcome: 'idle' } | ({ outcome: 'sent' | 'finished' } & Upload) | ({ outcome: 'rejected'; rejection: UploadRequestError } & Upload);
 
 /**
- * Sends one page of the oldest queued upload that no other replica is working on. `idle` means there is none. An
- * upload whose rows Nango rejects is marked as failed. Any other failure leaves the upload queued for a later attempt.
+ * Sends one page of the oldest queued upload that no other replica is working on. `idle` means there is none.
+ *
+ * An upload whose rows Nango rejects stays queued, behind the others. It is only sent again by a call whose
+ * `rejectedBefore` is later than the rejection, so the caller decides how often. Any other failure is returned and
+ * leaves the upload as it was.
  */
-export async function uploadNextPage(config: UploaderConfig): Promise<Result<UploadStep>> {
+export async function uploadNextPage(config: UploaderConfig, { rejectedBefore }: { rejectedBefore: Date }): Promise<Result<UploadStep>> {
     const schema = config.schema && { schema: config.schema };
-    const step = await withQueuedUpload<UploadStep>(config.knex, { idleTimeoutMs: LOCK_IDLE_TIMEOUT_MS, ...schema }, async (trx, upload) => {
+    const step = await withQueuedUpload<UploadStep>(config.knex, { idleTimeoutMs: LOCK_IDLE_TIMEOUT_MS, rejectedBefore, ...schema }, async (trx, upload) => {
         const { day, metric } = upload;
         const uploaded = await uploadPage(config, trx, upload);
         if (uploaded.isOk()) {
             return Ok({ outcome: uploaded.value, day, metric });
         }
         const rejection = uploaded.error;
-        if (!(rejection instanceof UploadRequestError && rejection.permanent)) {
+        if (!(rejection instanceof UploadRequestError && rejection.rejectedRows)) {
             return Err(rejection);
         }
-        const marked = await failUpload(trx, { day, metric, ...schema });
-        if (marked.isErr()) {
-            return Err(marked.error);
+        const recorded = await rejectUpload(trx, { day, metric, at: new Date(), ...schema });
+        if (recorded.isErr()) {
+            return Err(recorded.error);
         }
-        return Ok({ outcome: 'failed', day, metric, rejection });
+        return Ok({ outcome: 'rejected', day, metric, rejection });
     });
     if (step.isErr()) {
         return Err(step.error);

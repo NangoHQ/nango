@@ -64,11 +64,13 @@ export async function enqueueUploads(
  * Runs `work` on the oldest queued upload that no other replica is working on. The row stays locked until `work` ends,
  * so only one replica works on an upload at a time. Returns null when there is none.
  *
+ * An upload that Nango rejected comes after the ones it never rejected, and only if that was before `rejectedBefore`.
+ *
  * Postgres ends the transaction and releases the row if `work` leaves it idle for longer than `idleTimeoutMs`.
  */
 export async function withQueuedUpload<T>(
     knex: Knex,
-    { idleTimeoutMs, schema = HOSTED_TELEMETRY_SCHEMA }: { idleTimeoutMs: number; schema?: string },
+    { idleTimeoutMs, rejectedBefore, schema = HOSTED_TELEMETRY_SCHEMA }: { idleTimeoutMs: number; rejectedBefore: Date; schema?: string },
     work: (trx: Knex.Transaction, upload: QueuedUpload) => Promise<Result<T>>
 ): Promise<Result<T | null>> {
     try {
@@ -76,11 +78,11 @@ export async function withQueuedUpload<T>(
             await trx.raw(`SELECT set_config('idle_in_transaction_session_timeout', ?, true)`, [String(idleTimeoutMs)]);
             const res = await trx.raw<{ rows: { day: string; metric: string; cursor_ts: Date | null; cursor_attributes: MetricRow['attributes'] | null }[] }>(
                 `SELECT to_char(day, 'YYYY-MM-DD') AS day, metric, cursor_ts, cursor_attributes FROM ??.??
-                 WHERE status = 'queued'
-                 ORDER BY day, metric
+                 WHERE status = 'queued' AND (rejected_at IS NULL OR rejected_at < ?::timestamptz)
+                 ORDER BY rejected_at IS NOT NULL, day, metric
                  LIMIT 1
                  FOR UPDATE SKIP LOCKED`,
-                [schema, HOSTED_TELEMETRY_UPLOADS_TABLE]
+                [schema, HOSTED_TELEMETRY_UPLOADS_TABLE, rejectedBefore.toISOString()]
             );
             const row = res.rows[0];
             if (!row) {
@@ -143,7 +145,8 @@ export async function saveUploadProgress(
 ): Promise<Result<void>> {
     try {
         await knex.raw(
-            `UPDATE ??.?? SET cursor_ts = ?::timestamptz, cursor_attributes = ?::jsonb, status = CASE WHEN ? THEN 'succeeded' ELSE status END
+            `UPDATE ??.?? SET cursor_ts = ?::timestamptz, cursor_attributes = ?::jsonb, rejected_at = NULL,
+                 status = CASE WHEN ? THEN 'succeeded' ELSE status END
              WHERE day = ?::date AND metric = ? AND status = 'queued'`,
             [
                 schema,
@@ -161,15 +164,16 @@ export async function saveUploadProgress(
     }
 }
 
-/** Marks an upload as failed. We do not retry it: the data has to be requested manually. */
-export async function failUpload(
+/** Records that Nango rejected the rows of an upload. It stays queued until it succeeds or expires. */
+export async function rejectUpload(
     knex: Knex,
-    { day, metric, schema = HOSTED_TELEMETRY_SCHEMA }: { day: string; metric: string; schema?: string }
+    { day, metric, at, schema = HOSTED_TELEMETRY_SCHEMA }: { day: string; metric: string; at: Date; schema?: string }
 ): Promise<Result<void>> {
     try {
-        await knex.raw(`UPDATE ??.?? SET status = 'failed' WHERE day = ?::date AND metric = ? AND status = 'queued'`, [
+        await knex.raw(`UPDATE ??.?? SET rejected_at = ?::timestamptz WHERE day = ?::date AND metric = ? AND status = 'queued'`, [
             schema,
             HOSTED_TELEMETRY_UPLOADS_TABLE,
+            at.toISOString(),
             day,
             metric
         ]);
