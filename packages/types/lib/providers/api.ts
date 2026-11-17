@@ -29,6 +29,8 @@ export interface ApiProviderFunctionCounts {
     syncs: number;
 }
 
+export type ProviderInstantSetup = 'managed' | 'no-dev-app' | null;
+
 export interface ApiProviderListItem {
     name: string;
     displayName: string;
@@ -40,6 +42,7 @@ export interface ApiProviderListItem {
     docs_connect?: string | undefined;
     preConfigured: boolean;
     preConfiguredScopes: string[];
+    instantSetup: ProviderInstantSetup;
     clientRegistration?: McpOAuth2ClientRegistration;
     integration_config?: Record<string, SimplifiedJSONSchema> | undefined;
     functionCounts: ApiProviderFunctionCounts;
