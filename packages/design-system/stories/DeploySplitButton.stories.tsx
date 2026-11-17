@@ -11,6 +11,13 @@ const DeploySplitButton = ({ variant }: { variant: SplitButtonVariant }) => {
     const [pending, setPending] = useState<string | null>(null);
     const [last, setLast] = useState<string | null>(null);
 
+    const status = () => {
+        if (pending) {
+            return `${pending}…`;
+        }
+        return last ? `Ran: ${last}` : 'Nothing run yet';
+    };
+
     const run = (action: string) => {
         setPending(action);
         setTimeout(() => {
@@ -34,7 +41,7 @@ const DeploySplitButton = ({ variant }: { variant: SplitButtonVariant }) => {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </SplitButton>
-            <span className="text-ds-xs text-text-secondary">{pending ? `${pending}…` : last ? `Ran: ${last}` : 'Nothing run yet'}</span>
+            <span className="text-ds-xs text-text-secondary">{status()}</span>
         </div>
     );
 };
