@@ -54,6 +54,17 @@ const config = {
 } as unknown as ProviderConfig;
 
 describe('microsoft-admin client_credentials', () => {
+    // microsoft-admin-cert shares this request; microsoft-admin must keep sending exactly the client secret flow.
+    it('sends the client secret request unchanged on creation and refresh', async () => {
+        await withTokenServer(async (tokenUrl, bodies) => {
+            await providerClient.getToken(config, { auth_mode: 'OAUTH2' } as ProviderOAuth2, tokenUrl, 'unused', 'https://cb', '');
+            const connection = { credentials: { type: 'OAUTH2', access_token: 'old', raw: {} }, connection_config: {} } as unknown as DBConnectionDecrypted;
+            await providerClient.refreshToken({ auth_mode: 'OAUTH2', token_url: tokenUrl } as ProviderOAuth2, config, connection);
+            const expected = 'client_id=client-id&client_secret=client-secret&grant_type=client_credentials&scope=https%3A%2F%2Fgraph.microsoft.com%2F.default';
+            expect(bodies).toEqual([expected, expected]);
+        });
+    });
+
     // Microsoft rejects a double-encoded scope with AADSTS1002012 ("scope https%3A%2F%2Fgraph.microsoft.com%2F.default is not valid").
     it('sends the scope form-encoded exactly once on token creation', async () => {
         await withTokenServer(async (tokenUrl, bodies) => {
@@ -191,6 +202,6 @@ describe('microsoft-admin-cert client_credentials', () => {
                 '',
                 ''
             )
-        ).rejects.toThrow();
+        ).rejects.toThrow('The integration needs both the private key and the certificate');
     });
 });

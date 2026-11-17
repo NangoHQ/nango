@@ -21785,6 +21785,7 @@ microsoft-admin-cert:
     authorization_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/adminconsent
     token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
     authorization_code_param_in_callback: tenant
+    token_request_auth_method: private_key_jwt
     proxy:
         base_url: https://graph.microsoft.com
         retry:
@@ -21798,7 +21799,7 @@ microsoft-admin-cert:
         certificate:
             type: string
             title: Certificate
-            description: The public certificate (PEM) uploaded to your Microsoft Entra app registration. Paste the private key in the Client Secret field.
+            description: The certificate (PEM) uploaded to your Microsoft Entra app.
             example: "-----BEGIN CERTIFICATE-----\nMIIC+zCCAeOgAwIBAgIU...\n-----END CERTIFICATE-----"
             doc_section: '#upload-the-certificate'
             order: 1

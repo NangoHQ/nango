@@ -1,10 +1,11 @@
-import { constants, createHash, createHmac, createSign, randomUUID, X509Certificate } from 'crypto';
+import { createHash, createHmac, createSign, randomUUID, X509Certificate } from 'crypto';
 
 import braintree from 'braintree';
 import qs from 'qs';
 
 import { axiosInstance, getLogger, stringifyError } from '@nangohq/utils';
 
+import { signJWT } from '../auth/jwt.js';
 import { assertSafeOAuthUrl, getOAuthAxiosRequestConfig } from '../services/proxy/outbound-policy.js';
 import { NangoError } from '../utils/error.js';
 import { formatPem, getGlobalOAuthCallbackUrl, isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
@@ -2378,18 +2379,16 @@ class ProviderClient {
             .update(new X509Certificate(formatPem(certificatePem, 'CERTIFICATE')).raw)
             .digest();
         const now = Math.floor(Date.now() / 1000);
-        const header = { alg: 'PS256', typ: 'JWT', 'x5t#S256': this.base64url(thumbprint) };
-        const payload = { aud: tokenUrl, iss: clientId, sub: clientId, jti: randomUUID(), nbf: now, iat: now, exp: now + 300 };
-
-        const signingInput = `${this.base64url(JSON.stringify(header))}.${this.base64url(JSON.stringify(payload))}`;
         const keyType = privateKeyPem.includes('RSA PRIVATE KEY') ? 'RSA PRIVATE KEY' : 'PRIVATE KEY';
-        const signature = createSign('RSA-SHA256')
-            .update(signingInput)
-            .sign({ key: formatPem(privateKeyPem, keyType), padding: constants.RSA_PKCS1_PSS_PADDING, saltLength: constants.RSA_PSS_SALTLEN_DIGEST });
+        const clientAssertion = signJWT({
+            payload: { aud: tokenUrl, iss: clientId, sub: clientId, jti: randomUUID(), nbf: now, iat: now, exp: now + 300 },
+            secretOrPrivateKey: formatPem(privateKeyPem, keyType),
+            options: { algorithm: 'PS256', header: { alg: 'PS256', typ: 'JWT', 'x5t#S256': this.base64url(thumbprint) } }
+        });
 
         return {
             client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
-            client_assertion: `${signingInput}.${this.base64url(signature)}`
+            client_assertion: clientAssertion
         };
     }
 

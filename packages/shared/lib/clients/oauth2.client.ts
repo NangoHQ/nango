@@ -74,13 +74,14 @@ export function getSimpleOAuth2ClientConfig(
 
     // public clients send no secret. simple-oauth2 always writes one in body mode, so it's written to client_id instead.
     const isPublicClient = authConfig.token_request_auth_method === 'none';
+    const secret = authConfig.token_request_auth_method === 'private_key_jwt' ? '' : providerConfig.oauth_client_secret;
 
     return {
         client: isPublicClient
             ? { id: providerConfig.oauth_client_id, secret: providerConfig.oauth_client_id, secretParamName: 'client_id' }
             : {
                   id: providerConfig.oauth_client_id,
-                  secret: providerConfig.oauth_client_secret
+                  secret
               },
         http: {
             headers,

@@ -68,12 +68,11 @@ Find your tenant ID and grant admin consent.
 
 Official docs: [Microsoft identity platform certificate credentials](https://learn.microsoft.com/en-us/entra/identity-platform/certificate-credentials)
 
-## 🚨 API gotchas
+## API gotchas
 
 - This is the same admin-consent flow as [Microsoft Admin](/integrations/all/microsoft-admin), but Nango proves the app's identity with a JWT signed by your certificate's private key instead of a client secret. Use it when your organization does not allow client secrets.
 - Only an administrator of the tenant can authorize the connection, since admin consent grants the app's permissions for the whole organization.
 - The app only gets **Application permissions**. Use the `https://graph.microsoft.com/.default` scope, which requests every application permission granted to the app; `.default` can't be combined with other scopes.
-- Microsoft issues no refresh token for this flow: Nango requests a new access token with a freshly signed assertion when the current one expires.
 - When the certificate expires or you replace it, upload the new certificate in Microsoft Entra and update both the private key and the certificate in the Nango integration.
 
 ## 🧩 Pre-built syncs & tools for Microsoft (Admin - Certificate)
