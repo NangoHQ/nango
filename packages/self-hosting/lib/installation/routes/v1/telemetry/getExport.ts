@@ -24,7 +24,7 @@ type GetExport = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Querystring: { from: string; to: string };
-    Error: ApiError<'server_error' | 'license_expired'>;
+    Error: ApiError<'missing_key' | 'invalid_key' | 'invalid_request' | 'license_expired' | 'server_error'>;
     Success: never;
 }>;
 
