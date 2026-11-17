@@ -2353,6 +2353,12 @@ export class ConnectionService {
                 }
             }
             Object.assign(parsedCreds, ownPreconfiguredValues);
+            for (const field of preconfiguredFields) {
+                const schema = provider.integration_config?.[field];
+                if (parsedCreds[field] === undefined && schema?.optional && !schema.secret) {
+                    parsedCreds[field] = integrationConfig![field];
+                }
+            }
 
             for (const [key, value] of Object.entries(extractedHeaderValues)) {
                 if (!RESERVED_CRED_KEYS.has(key)) {
@@ -2706,8 +2712,8 @@ function pickDefinedFields(values: Record<string, unknown>, fields: Set<string>)
 }
 
 // Names of `integration_config` fields that have a value set on the integration itself (`custom`) —
-// these take precedence over anything submitted per-connection. The integration's value must never be
-// persisted onto a connection; a connection's own value for the field is kept as is.
+// these take precedence over anything submitted per-connection. A connection's own value for the field is kept
+// as is; the integration's value is only persisted as a fallback for optional, non-secret fields.
 export function getPreconfiguredTwoStepFields(provider: ProviderTwoStep, integrationConfig: Record<string, string> | null | undefined): Set<string> {
     if (!integrationConfig || !provider.integration_config) {
         return new Set();
