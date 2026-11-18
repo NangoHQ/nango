@@ -38,6 +38,23 @@ const resourceLinks: ResourceLink[] = [
     }
 ];
 
+const agentResourceLinks: ResourceLink[] = [
+    {
+        title: 'OpenAPI spec',
+        url: `${baseUrl}/spec.yaml`,
+        description: 'Exact HTTP API schemas for code generation or typed clients.'
+    },
+    {
+        title: 'Docs MCP server',
+        url: `${baseUrl}/mcp`,
+        description: 'Live docs context without authentication. The Management MCP server includes the same docs tools.'
+    }
+];
+
+function renderAgentResourceLinks(): string[] {
+    return agentResourceLinks.map((link) => `- [${link.title}](${link.url}): ${link.description}`);
+}
+
 type NavItem = string | NavGroup;
 
 interface NavGroup {
@@ -148,6 +165,8 @@ async function renderLlmsTxt(documentation: NavGroup, apiOverview: NavGroup, cha
         '',
         '> Nango is the tool calling layer for AI agents to act across 1,300+ APIs. These files are curated for agents: core docs are listed directly, while provider-specific API pages live in a compact catalog.',
         '',
+        ...renderAgentResourceLinks(),
+        '',
         `Full core-docs context: ${baseUrl}/llms-full.txt`,
         `API and integration catalog: ${baseUrl}/api-catalog.txt`,
         '',
@@ -219,6 +238,8 @@ async function renderLlmsFullTxt(routes: string[], catalog: CatalogEntry[]): Pro
         '# Nango Docs',
         '',
         '> Curated full-text context for Nango core docs. Provider-specific API pages are excluded to keep this file focused; use the API catalog section at the end to discover supported provider slugs.',
+        '',
+        ...renderAgentResourceLinks(),
         ''
     ];
 
@@ -324,6 +345,8 @@ function renderApiCatalog(catalog: CatalogEntry[]): string {
         '# Nango API and Integration Catalog',
         '',
         '> Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.',
+        '',
+        ...renderAgentResourceLinks(),
         '',
         `Provider count: ${catalog.length}`,
         '',

@@ -2,6 +2,9 @@
 
 > Curated full-text context for Nango core docs. Provider-specific API pages are excluded to keep this file focused; use the API catalog section at the end to discover supported provider slugs.
 
+- [OpenAPI spec](https://nango.dev/docs/spec.yaml): Exact HTTP API schemas for code generation or typed clients.
+- [Docs MCP server](https://nango.dev/docs/mcp): Live docs context without authentication. The Management MCP server includes the same docs tools.
+
 ## Introduction
 
 Source: https://nango.dev/docs/getting-started/intro-to-nango.md
