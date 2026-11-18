@@ -4,7 +4,7 @@ sidebarTitle: 'CI/CD'
 description: 'How to integrate Nango Function deployments into your CI/CD pipeline.'
 ---
 
-CI/CD for Nango is about keeping your [Functions](/guides/functions/functions-guide) — sync functions, tools, webhook functions, and event functions — in sync with your application across environments.
+CI/CD for Nango is about keeping your [Functions](/guides/platform/functions/functions-guide) — sync functions, tools, webhook functions, and event functions — in sync with your application across environments.
 
 The core principle: **deploy to Nango as part of the same pipeline step as your application**. Deploying them separately risks your app and your Functions going out of sync, which can cause subtle bugs that are hard to trace.
 
@@ -167,7 +167,7 @@ Run your test suite in CI before every deployment. Nango's testing framework use
 npm test
 ```
 
-See the [Testing integrations guide](/guides/functions/testing) for details.
+See the [Testing integrations guide](/guides/platform/functions/testing) for details.
 
 ## Ephemeral preview environments (e.g. Vercel)
 
@@ -199,5 +199,5 @@ In CI environments, Nango automatically disables dependency updates to prevent m
 
 ## Related resources
 
-- [Testing integrations](/guides/functions/testing) - A comprehensive guide to testing your Nango Functions.
+- [Testing integrations](/guides/platform/functions/testing) - A comprehensive guide to testing your Nango Functions.
 - [API Keys reference](/reference/backend/http-api/api-keys) - Available scopes and advised profiles for CI/CD and other use cases.

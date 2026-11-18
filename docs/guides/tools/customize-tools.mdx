@@ -1,6 +1,6 @@
 ---
 title: 'Tools'
-sidebarTitle: 'Tools'
+sidebarTitle: 'Customize tools'
 description: 'Build, test, deploy, and call tools from your backend or AI agent.'
 ---
 
@@ -10,7 +10,7 @@ Nango catalog tools are available without deploying code. Build your own when yo
 
 ## Create a tool
 
-In your [functions project](/guides/functions/functions-guide#build-locally-with-the-cli), add a tool and import it from `index.ts`:
+In your [functions project](/guides/platform/functions/functions-guide#build-locally-with-the-cli), add a tool and import it from `index.ts`:
 
 ```typescript github/tools/create-issue.ts
 import { createTool, scopes } from 'nango';
@@ -57,7 +57,7 @@ nango dryrun create-issue '<CONNECTION-ID>' -e dev --input '{"owner":"NangoHQ","
 nango deploy dev github/tools/create-issue.ts
 ```
 
-A dry run calls real provider APIs and can create or change data. See [Testing](/guides/functions/testing) and [CI/CD](/guides/functions/ci-cd).
+A dry run calls real provider APIs and can create or change data. See [Testing](/guides/platform/functions/testing) and [CI/CD](/guides/platform/functions/ci-cd).
 
 ## Call a tool
 

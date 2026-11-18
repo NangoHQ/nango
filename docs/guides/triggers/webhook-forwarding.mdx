@@ -6,7 +6,7 @@ description: 'Forward external API webhooks through Nango to your app, with conn
 
 Webhook forwarding lets Nango receive webhooks from external APIs and forward them to your app's webhook URL. Use it when your app should own the webhook handling logic, but you still want Nango to provide the provider-specific webhook URL, routing, signing, retries, and logs.
 
-For processing the webhook inside Nango function code, use [webhook functions](/guides/functions/webhook-functions).
+For processing the webhook inside Nango function code, use [webhook functions](/guides/triggers/webhook-functions).
 
 ## How forwarding works
 
@@ -71,7 +71,7 @@ Use forwarding when:
 - You need Nango to attribute the event to a connection when possible.
 - You want webhook delivery logs and retries without running Nango function code.
 
-Use [webhook functions](/guides/functions/webhook-functions) when Nango should update records, normalize the payload, or run connection-scoped integration logic immediately.
+Use [webhook functions](/guides/triggers/webhook-functions) when Nango should update records, normalize the payload, or run connection-scoped integration logic immediately.
 
 ## Configure forwarding
 
@@ -124,7 +124,7 @@ For retry behavior, timeout limits, and local testing tips, see [Webhook retries
 
 ## Related guides
 
-- [Webhook functions](/guides/functions/webhook-functions)
-- [Process external webhooks](/getting-started/use-cases/webhooks-from-external-apis)
+- [Webhook functions](/guides/triggers/webhook-functions)
+- [Process external webhooks](/guides/triggers/overview)
 - [Receive webhooks from Nango](/guides/platform/webhooks-from-nango)
 - [Observability](/guides/platform/observability)

@@ -78,7 +78,7 @@ description: "Full reference of the SDK available in Nango Functions."
   </Tab>
 </Tabs>
 
-Read more about [integration functions](/guides/functions/functions-guide) to understand what role they play in Nango.
+Read more about [integration functions](/guides/platform/functions/functions-guide) to understand what role they play in Nango.
 
 ## Configuration
 
@@ -118,7 +118,7 @@ Read more about [integration functions](/guides/functions/functions-guide) to un
 
 <ResponseField name="checkpoint" type="ZodSchema">
   Optional schema defining the shape of checkpoint data for this sync.
-  Use checkpoints to save progress and avoid re-fetching all data on every run. See the [checkpoints guide](/guides/functions/syncs/checkpoints) for details.
+  Use checkpoints to save progress and avoid re-fetching all data on every run. See the [checkpoints guide](/guides/syncs/checkpoints) for details.
 
   ```ts
   checkpoint: z.object({
@@ -186,7 +186,7 @@ Read more about [integration functions](/guides/functions/functions-guide) to un
 
 ### `createTool`
 
-Import `createTool` from `nango`. It creates a function for on-demand operations with access to the connected provider's API. See [Tools](/guides/functions/tools) for a complete example.
+Import `createTool` from `nango`. It creates a function for on-demand operations with access to the connected provider's API. See [Tools](/guides/tools/customize-tools) for a complete example.
 
 | Property | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -221,7 +221,7 @@ The `nango` argument provides connection access, outbound requests (`get`, `post
 ### `createAction` (deprecated)
 
 <Warning>
-  Deprecated. Use [`createTool`](#createtool) for new code. Existing action definitions and callers are documented in [Actions (deprecated)](/guides/functions/action-functions). See [migration guidance](/guides/platform/migrations/migrate-from-actions).
+  Deprecated. Use [`createTool`](#createtool) for new code. Existing action definitions and callers are documented in [Actions (deprecated)](/guides/platform/functions/action-functions). See [migration guidance](/guides/platform/migrations/migrate-from-actions).
 </Warning>
 
 ### `createOnEvent`
@@ -467,7 +467,7 @@ No parameters.
 ## Trigger action (deprecated)
 
 <Warning>
-  `nango.triggerAction` is deprecated and is not available in tools. Existing callers can find its contract in [Actions (deprecated)](/guides/functions/action-functions#calling-an-action-from-a-function).
+  `nango.triggerAction` is deprecated and is not available in tools. Existing callers can find its contract in [Actions (deprecated)](/guides/platform/functions/action-functions#calling-an-action-from-a-function).
 </Warning>
 
 ## Paginate through API responses
@@ -769,7 +769,7 @@ await nango.getConnection();
 
 ## Sync-specific helper methods
 
-Sync functions persist data updates to the Nango cache, which your app later fetches. See the [sync functions section](/guides/functions/syncs/sync-functions).
+Sync functions persist data updates to the Nango cache, which your app later fetches. See the [sync functions section](/guides/syncs/sync-functions).
 
 ### Checkpoints
 
@@ -778,7 +778,7 @@ Checkpoints allow syncs to save their progress and resume from where they left o
 - Tracking pagination state across sync runs
 - Storing custom cursor/offset values
 
-To use checkpoints, define a `checkpoint` schema in your sync configuration (see [Configuration](#createsync)). For a complete guide on implementing incremental syncs with checkpoints, see the [checkpoints guide](/guides/functions/syncs/checkpoints). If you are migrating from `nango.lastSyncDate`, see the [migration guide](/guides/platform/migrations/migrate-to-checkpoints).
+To use checkpoints, define a `checkpoint` schema in your sync configuration (see [Configuration](#createsync)). For a complete guide on implementing incremental syncs with checkpoints, see the [checkpoints guide](/guides/syncs/checkpoints). If you are migrating from `nango.lastSyncDate`, see the [migration guide](/guides/platform/migrations/migrate-to-checkpoints).
 
 #### getCheckpoint()
 
@@ -853,7 +853,7 @@ This does not remove cached payloads.
 If you want to permanently remove data from Nango storage for cost or compliance reasons, use [record pruning instead](/reference/backend/http-api/sync/prune-records).
 </Tip>
 
-To implement deletion detection in your syncs, [follow this guide](/guides/functions/syncs/deletion-detection).
+To implement deletion detection in your syncs, [follow this guide](/guides/syncs/deletion-detection).
 
 The only field that needs to be present in each record when calling `batchDelete` is the unique `id`; the other fields are ignored.
 
@@ -914,7 +914,7 @@ Call `trackDeletesStart` at the beginning of your sync execution, before fetchin
 `deleteRecordsFromPreviousExecutions` is deprecated. Use `trackDeletesStart`/`trackDeletesEnd` instead.
 </Note>
 
-For more details on deletion detection strategies, see the [detecting deletes guide](/guides/functions/syncs/deletion-detection).
+For more details on deletion detection strategies, see the [detecting deletes guide](/guides/syncs/deletion-detection).
 
 ### Update records
 
@@ -1025,7 +1025,7 @@ The [tool-call API](/reference/backend/http-api/tools/call) returns the payload 
 ### `ActionError`
 
 <Warning>
-  This helper is for deprecated actions. See [legacy action errors](/guides/functions/action-functions#action-errors). Use [`nango.Error`](#nango-error) in tools.
+  This helper is for deprecated actions. See [legacy action errors](/guides/platform/functions/action-functions#action-errors). Use [`nango.Error`](#nango-error) in tools.
 </Warning>
 
 ## Relative imports in functions

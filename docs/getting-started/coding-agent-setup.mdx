@@ -4,7 +4,7 @@ sidebarTitle: '✨ Coding agent setup'
 description: 'Connect your coding agent to Nango'
 ---
 
-Coding agents can speed up Nango integration work in two places: wiring Nango into your product and building [Nango Functions](/guides/functions/functions-guide).
+Coding agents can speed up Nango integration work in two places: wiring Nango into your product and building [Nango Functions](/guides/platform/functions/functions-guide).
 
 <Info>
 This page is about configuring Nango with your coding agent. To expose Nango integrations to your product's agents, see [Agent Sessions](/guides/agent-sessions).
@@ -207,7 +207,7 @@ Install the core skill to implement Nango integration functions:
 npx skills add NangoHQ/skills -s building-nango-functions
 ```
 
-See the [functions guide](/guides/functions/functions-guide) for more details.
+See the [functions guide](/guides/platform/functions/functions-guide) for more details.
 
 ## Docs MCP server
 
@@ -227,7 +227,7 @@ Nango integrations are defined as code. Usually, you or your coding agent write 
 
 Nango also exposes a Functions API for creating integrations just in time, without asking the user to interact with a codebase. A user can describe the integration behavior in text, and an agent can turn that into function code, compile it, dry run it against a connection, and deploy it directly to Nango.
 
-This is useful for faster onboarding, prototypes, and dynamic product experiences where integration behavior depends on what the user needs at that moment. It blurs the line between creating and consuming integrations: at consumption time, an agent can define the behavior, validate it, and make it available through Nango. See [build with the Functions API](/guides/functions/functions-guide#build-with-the-functions-api) for the workflow and API references.
+This is useful for faster onboarding, prototypes, and dynamic product experiences where integration behavior depends on what the user needs at that moment. It blurs the line between creating and consuming integrations: at consumption time, an agent can define the behavior, validate it, and make it available through Nango. See [build with the Functions API](/guides/platform/functions/functions-guide#build-with-the-functions-api) for the workflow and API references.
 
 ## Other agent tools
 

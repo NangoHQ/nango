@@ -66,7 +66,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No sync executions in the last 14 days.{' '}
-                                <Link to="https://nango.dev/docs/guides/functions/syncs/sync-functions" className="underline text-text-strong">
+                                <Link to="https://nango.dev/docs/guides/syncs/sync-functions" className="underline text-text-strong">
                                     Learn more
                                 </Link>
                             </div>
@@ -81,7 +81,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No tool executions in the last 14 days.{' '}
-                                <Link to="https://nango.dev/docs/guides/functions/action-functions" className="underline text-text-strong">
+                                <Link to="https://nango.dev/docs/guides/platform/functions/action-functions" className="underline text-text-strong">
                                     Learn more
                                 </Link>
                             </div>
@@ -95,7 +95,7 @@ export const Homepage: React.FC = () => {
                     help={
                         <div>
                             No proxy requests sent in the last 14 days.{' '}
-                            <Link to="https://nango.dev/docs/guides/platform/proxy-requests" className="underline text-text-strong">
+                            <Link to="https://nango.dev/docs/guides/auth/proxy-requests" className="underline text-text-strong">
                                 Learn more
                             </Link>
                         </div>
@@ -109,7 +109,7 @@ export const Homepage: React.FC = () => {
                         help={
                             <div>
                                 No webhook executions in the last 14 days.{' '}
-                                <Link to="https://nango.dev/docs/getting-started/use-cases/webhooks-from-external-apis" className="underline text-text-strong">
+                                <Link to="https://nango.dev/docs/guides/triggers/overview" className="underline text-text-strong">
                                     Learn more
                                 </Link>
                             </div>
@@ -123,7 +123,7 @@ export const Homepage: React.FC = () => {
                     help={
                         <div>
                             No authorization attempted in the last 14 days.{' '}
-                            <Link to="https://nango.dev/docs/guides/auth/auth-guide" className="underline text-text-strong">
+                            <Link to="https://nango.dev/docs/guides/auth/overview" className="underline text-text-strong">
                                 Learn more
                             </Link>
                         </div>

@@ -131,7 +131,7 @@
     },
     {
       "source": "/guides/platform/migrations/migrate-to-zero-yaml",
-      "destination": "/guides/functions/functions-guide"
+      "destination": "/guides/platform/functions/functions-guide"
     },
     {
       "source": "/reference/backend/http-api/connection/update-metadata-legacy",
@@ -184,6 +184,110 @@
     {
       "source": "/integrations/all/lattice/connect",
       "destination": "/api-integrations/lattice/connect"
+    },
+    {
+      "source": "/guides/auth/auth-guide",
+      "destination": "/guides/auth/overview"
+    },
+    {
+      "source": "/guides/platform/proxy-requests",
+      "destination": "/guides/auth/proxy-requests"
+    },
+    {
+      "source": "/getting-started/use-cases/tool-calling",
+      "destination": "/guides/tools/overview"
+    },
+    {
+      "source": "/guides/functions/tools",
+      "destination": "/guides/tools/customize-tools"
+    },
+    {
+      "source": "/getting-started/use-cases/webhooks-from-external-apis",
+      "destination": "/guides/triggers/overview"
+    },
+    {
+      "source": "/guides/platform/webhook-forwarding",
+      "destination": "/guides/triggers/webhook-forwarding"
+    },
+    {
+      "source": "/guides/functions/webhook-functions",
+      "destination": "/guides/triggers/webhook-functions"
+    },
+    {
+      "source": "/getting-started/use-cases/syncs",
+      "destination": "/guides/syncs/overview"
+    },
+    {
+      "source": "/guides/functions/syncs/sync-functions",
+      "destination": "/guides/syncs/sync-functions"
+    },
+    {
+      "source": "/guides/functions/syncs/realtime-syncs",
+      "destination": "/guides/syncs/realtime-syncs"
+    },
+    {
+      "source": "/guides/functions/syncs/checkpoints",
+      "destination": "/guides/syncs/checkpoints"
+    },
+    {
+      "source": "/guides/functions/syncs/sync-efficiency",
+      "destination": "/guides/syncs/sync-efficiency"
+    },
+    {
+      "source": "/guides/functions/syncs/records-cache",
+      "destination": "/guides/syncs/records-cache"
+    },
+    {
+      "source": "/guides/functions/syncs/deletion-detection",
+      "destination": "/guides/syncs/deletion-detection"
+    },
+    {
+      "source": "/guides/functions/syncs/sync-partitioning",
+      "destination": "/guides/syncs/sync-partitioning"
+    },
+    {
+      "source": "/guides/functions/functions-guide",
+      "destination": "/guides/platform/functions/functions-guide"
+    },
+    {
+      "source": "/guides/functions/event-functions",
+      "destination": "/guides/platform/functions/event-functions"
+    },
+    {
+      "source": "/guides/functions/storage",
+      "destination": "/guides/platform/functions/storage"
+    },
+    {
+      "source": "/guides/functions/logging",
+      "destination": "/guides/platform/functions/logging"
+    },
+    {
+      "source": "/guides/functions/rate-limits",
+      "destination": "/guides/platform/functions/rate-limits"
+    },
+    {
+      "source": "/guides/functions/data-validation",
+      "destination": "/guides/platform/functions/data-validation"
+    },
+    {
+      "source": "/guides/functions/testing",
+      "destination": "/guides/platform/functions/testing"
+    },
+    {
+      "source": "/guides/functions/ci-cd",
+      "destination": "/guides/platform/functions/ci-cd"
+    },
+    {
+      "source": "/guides/functions/unified-apis",
+      "destination": "/guides/platform/functions/unified-apis"
+    },
+    {
+      "source": "/guides/functions/action-functions",
+      "destination": "/guides/platform/functions/action-functions"
+    },
+    {
+      "source": "/getting-started/use-cases/sample-app",
+      "destination": "/getting-started/quickstart"
     }
   ],
   "navigation": {
@@ -197,80 +301,88 @@
             "pages": [
               "getting-started/intro-to-nango",
               "getting-started/quickstart",
-              "getting-started/coding-agent-setup",
-              {
-                "group": "Use cases",
-                "expanded": false,
-                "pages": [
-                  "getting-started/use-cases/tool-calling",
-                  "getting-started/use-cases/syncs",
-                  "getting-started/use-cases/actions",
-                  "getting-started/use-cases/webhooks-from-external-apis",
-                  "getting-started/use-cases/unified-apis",
-                  "getting-started/use-cases/customer-configuration",
-                  "getting-started/use-cases/implement-event-handler",
-                  "getting-started/use-cases/sample-app"
-                ]
-              }
+              "getting-started/coding-agent-setup"
             ]
           },
           {
             "group": "Guides",
             "pages": [
+              "guides/agent-sessions",
               {
                 "group": "Auth",
                 "expanded": false,
                 "pages": [
-                  "guides/auth/auth-guide",
+                  "guides/auth/overview",
+                  "guides/auth/customize-connect-ui",
                   "guides/auth/share-connect-link",
                   "guides/auth/connection-tags-configuration-metadata",
-                  "guides/auth/customize-connect-ui",
+                  "guides/auth/proxy-requests",
                   "guides/auth/token-refreshing",
                   "guides/auth/mcp-auth"
                 ]
               },
-              "guides/agent-sessions",
               {
-                "group": "Functions",
+                "group": "Tools",
                 "expanded": false,
                 "pages": [
-                  "guides/functions/functions-guide",
+                  "guides/tools/overview",
+                  "guides/tools/customize-tools"
+                ]
+              },
+              {
+                "group": "Triggers",
+                "expanded": false,
+                "pages": [
+                  "guides/triggers/overview",
+                  "guides/triggers/webhook-forwarding",
+                  "guides/triggers/webhook-functions"
+                ]
+              },
+              {
+                "group": "Syncs",
+                "expanded": false,
+                "pages": [
+                  "guides/syncs/overview",
+                  "guides/syncs/sync-functions",
+                  "guides/syncs/realtime-syncs",
                   {
-                    "group": "Sync functions",
+                    "group": "Advanced",
+                    "expanded": false,
                     "pages": [
-                      "guides/functions/syncs/sync-functions",
-                      "guides/functions/syncs/sync-efficiency",
-                      "guides/functions/syncs/checkpoints",
-                      "guides/functions/syncs/records-cache",
-                      "guides/functions/syncs/deletion-detection",
-                      "guides/functions/syncs/realtime-syncs",
-                      "guides/functions/syncs/sync-partitioning"
+                      "guides/syncs/checkpoints",
+                      "guides/syncs/sync-efficiency",
+                      "guides/syncs/records-cache",
+                      "guides/syncs/deletion-detection",
+                      "guides/syncs/sync-partitioning"
                     ]
-                  },
-                  "guides/functions/tools",
-                  "guides/functions/webhook-functions",
-                  "guides/functions/event-functions",
-                  "guides/functions/storage",
-                  "guides/functions/logging",
-                  "guides/functions/rate-limits",
-                  "guides/functions/data-validation",
-                  "guides/functions/testing",
-                  "guides/functions/ci-cd",
-                  "guides/functions/unified-apis"
+                  }
                 ]
               },
               {
                 "group": "Platform",
                 "expanded": false,
                 "pages": [
-                  "guides/platform/observability",
+                  {
+                    "group": "Functions",
+                    "expanded": false,
+                    "pages": [
+                      "guides/platform/functions/functions-guide",
+                      "guides/platform/functions/event-functions",
+                      "guides/platform/functions/storage",
+                      "guides/platform/functions/logging",
+                      "guides/platform/functions/rate-limits",
+                      "guides/platform/functions/data-validation",
+                      "guides/platform/functions/testing",
+                      "guides/platform/functions/ci-cd",
+                      "guides/platform/functions/unified-apis"
+                    ]
+                  },
+                  "guides/platform/webhooks-from-nango",
                   "guides/platform/environments",
-                  "guides/platform/limits",
+                  "guides/platform/observability",
                   "guides/platform/security",
                   "guides/platform/audit-trail",
-                  "guides/platform/proxy-requests",
-                  "guides/platform/webhooks-from-nango",
-                  "guides/platform/webhook-forwarding",
+                  "guides/platform/limits",
                   "guides/platform/common-issues",
                   {
                     "group": "Self-Hosting",

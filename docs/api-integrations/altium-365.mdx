@@ -82,6 +82,6 @@ import PreBuiltUseCases from "/snippets/generated/altium-365/PreBuiltUseCases.md
 ## API gotchas
 
 - A connection calls the regional endpoint of the region selected in the Connect UI. Altium uses regional endpoints for data that is not tied to a Workspace, such as the list of Workspaces a user can access, users and organizations. See [Altium 365 API endpoints](https://www.altium.com/documentation/altium-developer-center/altium-365/api).
-- Workspace data (projects, components, BOMs, comments, workflows) is served from the Workspace endpoint, `https://{workspace-domain}/api/graphql`. Get the Workspace's domain from the `url` and `location` fields of the `desWorkspaceInfos` query above, then call it with `baseUrlOverride` set to `https://{workspace-domain}/api`; Nango keeps the connection's access token. To look it up once per connection, run the query in a [`post-connection-creation` event function](/guides/functions/event-functions) and store the domain in the connection's metadata.
+- Workspace data (projects, components, BOMs, comments, workflows) is served from the Workspace endpoint, `https://{workspace-domain}/api/graphql`. Get the Workspace's domain from the `url` and `location` fields of the `desWorkspaceInfos` query above, then call it with `baseUrlOverride` set to `https://{workspace-domain}/api`; Nango keeps the connection's access token. To look it up once per connection, run the query in a [`post-connection-creation` event function](/guides/platform/functions/event-functions) and store the domain in the connection's metadata.
 
 ---

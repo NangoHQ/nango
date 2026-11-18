@@ -73,7 +73,7 @@ Subscribe with the user's connection, either per envelope or for the whole accou
 **Per account** (the user must be an account admin): create a Connect configuration on the user's account.
 
 <Accordion title="For agents">
-Both requests go through the [Nango proxy](/guides/platform/proxy-requests) with the user's connection, so a scoped [Environment API key](/reference/backend/http-api/api-keys#scopes) needs the `environment:proxy` scope. The connection config holds the user's `accountId`.
+Both requests go through the [Nango proxy](/guides/auth/proxy-requests) with the user's connection, so a scoped [Environment API key](/reference/backend/http-api/api-keys#scopes) needs the `environment:proxy` scope. The connection config holds the user's `accountId`.
 
 Per envelope:
 
@@ -149,14 +149,14 @@ If several connections share the same account, each receives the event. A verifi
 DocuSign sends one `X-DocuSign-Signature-N` header per active HMAC key, each a base64 HMAC-SHA256 of the raw body. Nango accepts the event when any of them matches the integration's webhook secret.
 
 <Warning>
-Nango rejects events with a missing or invalid signature. Without a webhook secret on the integration, Nango rejects all DocuSign events unless the integration [allows unverified webhooks](/guides/platform/webhook-forwarding#unverified-webhooks).
+Nango rejects events with a missing or invalid signature. Without a webhook secret on the integration, Nango rejects all DocuSign events unless the integration [allows unverified webhooks](/guides/triggers/webhook-forwarding#unverified-webhooks).
 </Warning>
 
 ## Handle the webhook
 
 Once routed to a connection, you can:
 
-- **Forward it to your app**: Nango forwards the event to your [webhook URL](/guides/platform/webhook-forwarding).
+- **Forward it to your app**: Nango forwards the event to your [webhook URL](/guides/triggers/webhook-forwarding).
 - **Handle it in a webhook function**: use `event` (for example `envelope-completed`) as the webhook subscription.
 
 DocuSign expects a response within five seconds. Fetch the envelope from the API when you need data the event does not carry, and keep a periodic sync running to catch anything a webhook missed.

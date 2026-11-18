@@ -466,7 +466,7 @@ A server that fails or does not answer `tools/list` within 10 seconds does not f
 
 #### Running MCP server tools
 
-Every call goes through the [Nango proxy](/guides/platform/proxy-requests), so Nango applies and refreshes the connection's credentials, and the call shows up in Nango logs as a proxy operation.
+Every call goes through the [Nango proxy](/guides/auth/proxy-requests), so Nango applies and refreshes the connection's credentials, and the call shows up in Nango logs as a proxy operation.
 
 A result the server marks with `isError` reaches the agent unchanged. When the call itself fails, the agent gets an error that says what to do next:
 
@@ -576,7 +576,7 @@ Nango tags the new connection with `nango/agent_session` so the session can find
 
 A connection can stop working mid-session: its credentials expired and can no longer be refreshed, or a tool needs a scope the connection was not granted. With `nango_create_connection` enabled, the agent can get the user to reconnect it without leaving the session. It needs no extra configuration.
 
-The user gets a [reconnect link](/guides/auth/auth-guide#build-reauthorization) and authorizes the session's existing connection again. A reconnect requests the integration's current scopes, so it fixes a missing scope the user declined the first time, or one you have since added to the integration. The session's tools then run on the new credentials.
+The user gets a [reconnect link](/guides/auth/overview#build-reauthorization) and authorizes the session's existing connection again. A reconnect requests the integration's current scopes, so it fixes a missing scope the user declined the first time, or one you have since added to the integration. The session's tools then run on the new credentials.
 
 - **Same connection:** it keeps its connection ID and its tags. The tags configured on the tool are only added to new connections.
 - **Works for either kind of connection:** one the session resolved from the tenant when it was created, or one the agent created during the session.

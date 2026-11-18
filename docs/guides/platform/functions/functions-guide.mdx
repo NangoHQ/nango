@@ -14,7 +14,7 @@ You can use Nango-maintained catalog tools directly, enable sync templates, or w
 
 ## How functions fit
 
-1. Your user authorizes an external API through [Nango Auth](/guides/auth/auth-guide).
+1. Your user authorizes an external API through [Nango Auth](/guides/auth/overview).
 2. Your app stores the resulting `connectionId`.
 3. You use a catalog tool, enable a sync template, or deploy a custom function for the integration.
 4. Nango runs the function on demand, on a schedule, from an external webhook, or after a connection lifecycle event.
@@ -137,7 +137,7 @@ Local development is the default path for production integrations. Use it when y
 
     <Accordion title="Team setup">
       Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy <env> <file>` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
-      Use CI to do full deploys across stable environments (like `staging` or `prod`). See the [CI/CD guide](/guides/functions/ci-cd).
+      Use CI to do full deploys across stable environments (like `staging` or `prod`). See the [CI/CD guide](/guides/platform/functions/ci-cd).
     </Accordion>
 
     <Accordion title="For agents">
@@ -194,12 +194,12 @@ Local development is the default path for production integrations. Use it when y
 
     | If you need to... | Use | Common trigger | Guide |
     | --- | --- | --- | --- |
-    | Keep external API data fresh, replicate records, or reconcile changes | Sync function | Schedule, manual sync trigger, or external webhook reconciliation | [Sync functions](/guides/functions/syncs/sync-functions) |
-    | Run an operation when your app, backend job, or agent asks for it | Tool | HTTP API, SDK, or MCP tool call | [Tools](/guides/functions/tools) |
-    | Process an external provider webhook inside Nango | Webhook function | External API webhook | [Webhook functions](/guides/functions/webhook-functions) |
-    | React to Nango connection lifecycle events | Event function | Connection creation, validation, or deletion | [Event functions](/guides/functions/event-functions) |
+    | Keep external API data fresh, replicate records, or reconcile changes | Sync function | Schedule, manual sync trigger, or external webhook reconciliation | [Sync functions](/guides/syncs/sync-functions) |
+    | Run an operation when your app, backend job, or agent asks for it | Tool | HTTP API, SDK, or MCP tool call | [Tools](/guides/tools/customize-tools) |
+    | Process an external provider webhook inside Nango | Webhook function | External API webhook | [Webhook functions](/guides/triggers/webhook-functions) |
+    | React to Nango connection lifecycle events | Event function | Connection creation, validation, or deletion | [Event functions](/guides/platform/functions/event-functions) |
 
-    For shared primitives, use [Storage](/guides/functions/storage) for connection metadata and [Data validation](/guides/functions/data-validation) for function input, output, and provider response validation.
+    For shared primitives, use [Storage](/guides/platform/functions/storage) for connection metadata and [Data validation](/guides/platform/functions/data-validation) for function input, output, and provider response validation.
   </Step>
 
   <Step id="test-and-deploy" title="Test and deploy">
@@ -225,7 +225,7 @@ Local development is the default path for production integrations. Use it when y
 
     A bare `nango deploy` reconciles all functions deployed from a CLI project: it deploys functions present locally and removes remote ones that aren't. This can delete teammates' functions in a shared environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
 
-    For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Tool guide](/guides/functions/tools#test-and-deploy), and [Testing](/guides/functions/testing).
+    For function-type-specific commands, see the [Sync function guide](/guides/syncs/sync-functions#test-and-deploy), [Tool guide](/guides/tools/customize-tools#test-and-deploy), and [Testing](/guides/platform/functions/testing).
   </Step>
 </Steps>
 
@@ -283,10 +283,10 @@ The CLI writes the function's TypeScript source locally; from there, `nango depl
 ## Related guides
 
 - [Function tool calling](/guides/agent-sessions) — expose tools to agents, LLM SDKs, and MCP clients.
-- [Unified APIs](/guides/functions/unified-apis) — build provider-specific functions behind one stable model.
-- [Logging](/guides/functions/logging) — control custom function logs locally and in cloud environments.
-- [Storage](/guides/functions/storage) — store per-connection metadata and read it inside functions.
-- [Data validation](/guides/functions/data-validation) — validate function input, output, and provider API responses.
-- [Testing](/guides/functions/testing) — dry runs, mocks, and snapshot tests.
-- [Rate limits](/guides/functions/rate-limits) — handle provider `429` responses and long-running retries.
-- [CI/CD](/guides/functions/ci-cd) — deploy functions with your application pipeline.
+- [Unified APIs](/guides/platform/functions/unified-apis) — build provider-specific functions behind one stable model.
+- [Logging](/guides/platform/functions/logging) — control custom function logs locally and in cloud environments.
+- [Storage](/guides/platform/functions/storage) — store per-connection metadata and read it inside functions.
+- [Data validation](/guides/platform/functions/data-validation) — validate function input, output, and provider API responses.
+- [Testing](/guides/platform/functions/testing) — dry runs, mocks, and snapshot tests.
+- [Rate limits](/guides/platform/functions/rate-limits) — handle provider `429` responses and long-running retries.
+- [CI/CD](/guides/platform/functions/ci-cd) — deploy functions with your application pipeline.

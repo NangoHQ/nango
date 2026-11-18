@@ -17,50 +17,45 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Introduction](https://nango.dev/docs/getting-started/intro-to-nango.md): The tool calling layer for AI agents across 1,300+ APIs.
 - [Quickstart](https://nango.dev/docs/getting-started/quickstart.md): Give your AI agent access to Gmail, Slack, Notion, and 1,300+ other APIs
 - [Coding agent setup](https://nango.dev/docs/getting-started/coding-agent-setup.md): Connect your coding agent to Nango
-- [Use cases: Tool calling for AI agents](https://nango.dev/docs/getting-started/use-cases/tool-calling.md): Give agents scoped, observable access to external APIs through Nango tools.
-- [Use cases: Sync external API data](https://nango.dev/docs/getting-started/use-cases/syncs.md): Keep external API data fresh for your product, RAG pipeline, or change-detection workflow.
-- [Use cases: Run external API operations](https://nango.dev/docs/getting-started/use-cases/actions.md): Use Nango functions to read, write, and automate external APIs on demand.
-- [Use cases: Process external webhooks](https://nango.dev/docs/getting-started/use-cases/webhooks-from-external-apis.md): Receive provider webhooks through Nango, then forward or process them with functions.
-- [Use cases: Build a unified API](https://nango.dev/docs/getting-started/use-cases/unified-apis.md): Normalize several external APIs behind your own stable product interface.
-- [Use cases: Customize per customer](https://nango.dev/docs/getting-started/use-cases/customer-configuration.md): Adapt integration behavior for each customer without forking code.
-- [Use cases: React to connection lifecycle events](https://nango.dev/docs/getting-started/use-cases/implement-event-handler.md): Run integration logic when a connection is validated, created, or deleted.
-- [Use cases: Sample app](https://nango.dev/docs/getting-started/use-cases/sample-app.md): A practical demonstration of integrating Nango in your codebase.
 
 ## Guides
 
-- [Auth: Auth guide](https://nango.dev/docs/guides/auth/auth-guide.md): Let your users connect external APIs to your agents & apps.
+- [Auth: Auth guide](https://nango.dev/docs/guides/auth/overview.md): Let your users connect external APIs to your agents & apps.
+- [Auth: Customize Connect UI](https://nango.dev/docs/guides/auth/customize-connect-ui.md): Guide to branding Nango Connect UI, overriding setup links, or building a headless auth flow with your own UI.
 - [Auth: Share a connect link](https://nango.dev/docs/guides/auth/share-connect-link.md): Generate a short-lived connect link and share it with your end user.
 - [Auth: Connection tags, configuration, and metadata](https://nango.dev/docs/guides/auth/connection-tags-configuration-metadata.md): Use tags, connection configuration, and metadata for the right connection-level data.
-- [Auth: Customize Connect UI](https://nango.dev/docs/guides/auth/customize-connect-ui.md): Guide to branding Nango Connect UI, overriding setup links, or building a headless auth flow with your own UI.
+- [Auth: Proxy requests](https://nango.dev/docs/guides/auth/proxy-requests.md): How to use the requests proxy from Nango
 - [Auth: Token refreshing & validity](https://nango.dev/docs/guides/auth/token-refreshing.md): How Nango handles OAuth token refresh and what to do when tokens are revoked.
 - [Auth: MCP Auth](https://nango.dev/docs/guides/auth/mcp-auth.md): Let your users connect to MCP servers through Nango
-- [Agent sessions](https://nango.dev/docs/guides/agent-sessions.md): Optimized interface for AI agents to use integrations
-- [Functions: Functions guide](https://nango.dev/docs/guides/functions/functions-guide.md): Understand Nango Functions and choose the right way to start using them.
-- [Functions: Sync functions: Sync function guide](https://nango.dev/docs/guides/functions/syncs/sync-functions.md): Build sync functions that keep external API data fresh and consumable by your app.
-- [Functions: Sync functions: Sync efficiency](https://nango.dev/docs/guides/functions/syncs/sync-efficiency.md): Build sync functions that replicate external datasets without wasting API calls, memory, or compute.
-- [Functions: Sync functions: Checkpoints](https://nango.dev/docs/guides/functions/syncs/checkpoints.md): Save progress mid-run, resume after failures, and turn full syncs into incremental ones.
-- [Functions: Sync functions: Records cache](https://nango.dev/docs/guides/functions/syncs/records-cache.md): How Nango stores synced records, detects changes, and lets your app fetch deltas via cursors.
-- [Functions: Sync functions: Deletion detection](https://nango.dev/docs/guides/functions/syncs/deletion-detection.md): Surface deletes from the external API — even when the API itself doesn't expose them cleanly.
-- [Functions: Sync functions: Real-time syncs with webhooks](https://nango.dev/docs/guides/functions/syncs/realtime-syncs.md): Combine webhooks from external APIs with periodic polling for a reliable, real-time stream of changes.
-- [Functions: Sync functions: Sync partitioning](https://nango.dev/docs/guides/functions/syncs/sync-partitioning.md): Spawn multiple independent sync processes inside a single connection — one per mailbox, drive folder, Slack channel, repo, or any other partition.
-- [Functions: Tools](https://nango.dev/docs/guides/functions/tools.md): Build, test, deploy, and call tools from your backend or AI agent.
-- [Functions: Webhook functions](https://nango.dev/docs/guides/functions/webhook-functions.md): Process external API webhooks inside Nango functions.
-- [Functions: Event functions](https://nango.dev/docs/guides/functions/event-functions.md): Run function logic automatically when Nango connection lifecycle events happen.
-- [Functions: Storage](https://nango.dev/docs/guides/functions/storage.md): Use connection metadata as the default storage for function parameters and per-customer configuration.
-- [Functions: Function logging](https://nango.dev/docs/guides/functions/logging.md): Use function logs for local debugging, cloud observability, and production troubleshooting.
-- [Functions: Rate limits](https://nango.dev/docs/guides/functions/rate-limits.md): Guide on how to handle API rate limits from external APIs.
-- [Functions: Data validation](https://nango.dev/docs/guides/functions/data-validation.md): How to validate data in your functions and in your app
-- [Functions: Testing integrations](https://nango.dev/docs/guides/functions/testing.md): How to test your Nango integrations using dry runs, mocks, and snapshots
-- [Functions: CI/CD for Nango Functions](https://nango.dev/docs/guides/functions/ci-cd.md): How to integrate Nango Function deployments into your CI/CD pipeline.
-- [Functions: Unified APIs with functions](https://nango.dev/docs/guides/functions/unified-apis.md): Build provider-specific functions behind one stable model and operation surface.
-- [Platform: Observability](https://nango.dev/docs/guides/platform/observability.md): How Nango helps you with observability for your integrations
+- [Tools: Tool calling for AI agents](https://nango.dev/docs/guides/tools/overview.md): Give agents scoped, observable access to external APIs through Nango tools.
+- [Tools: Agent sessions](https://nango.dev/docs/guides/tools/agent-sessions.md): Optimized interface for AI agents to use integrations
+- [Tools: Tools](https://nango.dev/docs/guides/tools/customize-tools.md): Build, test, deploy, and call tools from your backend or AI agent.
+- [Triggers: Process external webhooks](https://nango.dev/docs/guides/triggers/overview.md): Receive provider webhooks through Nango, then forward or process them with functions.
+- [Triggers: External webhook forwarding](https://nango.dev/docs/guides/triggers/webhook-forwarding.md): Forward external API webhooks through Nango to your app, with connection attribution.
+- [Triggers: Webhook functions](https://nango.dev/docs/guides/triggers/webhook-functions.md): Process external API webhooks inside Nango functions.
+- [Syncs: Sync external API data](https://nango.dev/docs/guides/syncs/overview.md): Keep external API data fresh for your product, RAG pipeline, or change-detection workflow.
+- [Syncs: Sync function guide](https://nango.dev/docs/guides/syncs/sync-functions.md): Build sync functions that keep external API data fresh and consumable by your app.
+- [Syncs: Real-time syncs with webhooks](https://nango.dev/docs/guides/syncs/realtime-syncs.md): Combine webhooks from external APIs with periodic polling for a reliable, real-time stream of changes.
+- [Syncs: Advanced: Checkpoints](https://nango.dev/docs/guides/syncs/checkpoints.md): Save progress mid-run, resume after failures, and turn full syncs into incremental ones.
+- [Syncs: Advanced: Sync efficiency](https://nango.dev/docs/guides/syncs/sync-efficiency.md): Build sync functions that replicate external datasets without wasting API calls, memory, or compute.
+- [Syncs: Advanced: Records cache](https://nango.dev/docs/guides/syncs/records-cache.md): How Nango stores synced records, detects changes, and lets your app fetch deltas via cursors.
+- [Syncs: Advanced: Deletion detection](https://nango.dev/docs/guides/syncs/deletion-detection.md): Surface deletes from the external API — even when the API itself doesn't expose them cleanly.
+- [Syncs: Advanced: Sync partitioning](https://nango.dev/docs/guides/syncs/sync-partitioning.md): Spawn multiple independent sync processes inside a single connection — one per mailbox, drive folder, Slack channel, repo, or any other partition.
+- [Platform: Functions: Functions guide](https://nango.dev/docs/guides/platform/functions/functions-guide.md): Understand Nango Functions and choose the right way to start using them.
+- [Platform: Functions: Event functions](https://nango.dev/docs/guides/platform/functions/event-functions.md): Run function logic automatically when Nango connection lifecycle events happen.
+- [Platform: Functions: Storage](https://nango.dev/docs/guides/platform/functions/storage.md): Use connection metadata as the default storage for function parameters and per-customer configuration.
+- [Platform: Functions: Function logging](https://nango.dev/docs/guides/platform/functions/logging.md): Use function logs for local debugging, cloud observability, and production troubleshooting.
+- [Platform: Functions: Rate limits](https://nango.dev/docs/guides/platform/functions/rate-limits.md): Guide on how to handle API rate limits from external APIs.
+- [Platform: Functions: Data validation](https://nango.dev/docs/guides/platform/functions/data-validation.md): How to validate data in your functions and in your app
+- [Platform: Functions: Testing integrations](https://nango.dev/docs/guides/platform/functions/testing.md): How to test your Nango integrations using dry runs, mocks, and snapshots
+- [Platform: Functions: CI/CD for Nango Functions](https://nango.dev/docs/guides/platform/functions/ci-cd.md): How to integrate Nango Function deployments into your CI/CD pipeline.
+- [Platform: Functions: Unified APIs with functions](https://nango.dev/docs/guides/platform/functions/unified-apis.md): Build provider-specific functions behind one stable model and operation surface.
+- [Platform: Receive webhooks from Nango](https://nango.dev/docs/guides/platform/webhooks-from-nango.md): Reference for the webhooks Nango sends to your app — setup, types, payloads, signature verification, and retries.
 - [Platform: Environments](https://nango.dev/docs/guides/platform/environments.md): Organize your integrations & data with environments
-- [Platform: Limits](https://nango.dev/docs/guides/platform/limits.md): Overview of resource limits on Nango Cloud.
+- [Platform: Observability](https://nango.dev/docs/guides/platform/observability.md): How Nango helps you with observability for your integrations
 - [Platform: Security](https://nango.dev/docs/guides/platform/security.md): How Nango secures your API credentials and customer data.
 - [Platform: Audit trail](https://nango.dev/docs/guides/platform/audit-trail.md): Review who changed what in your Nango account.
-- [Platform: Proxy requests](https://nango.dev/docs/guides/platform/proxy-requests.md): How to use the requests proxy from Nango
-- [Platform: Receive webhooks from Nango](https://nango.dev/docs/guides/platform/webhooks-from-nango.md): Reference for the webhooks Nango sends to your app — setup, types, payloads, signature verification, and retries.
-- [Platform: External webhook forwarding](https://nango.dev/docs/guides/platform/webhook-forwarding.md): Forward external API webhooks through Nango to your app, with connection attribution.
+- [Platform: Limits](https://nango.dev/docs/guides/platform/limits.md): Overview of resource limits on Nango Cloud.
 - [Platform: Common issues](https://nango.dev/docs/guides/platform/common-issues.md): Troubleshooting guide for frequent errors and how to fix them.
 - [Platform: Self-Hosting: Self-host Nango](https://nango.dev/docs/guides/platform/self-hosting/self-hosting.md): Run Nango outside our cloud: BYOC or Self-Managed.
 - [Platform: Self-Hosting: BYOC](https://nango.dev/docs/guides/platform/self-hosting/byoc.md): Nango-managed, in your cloud.

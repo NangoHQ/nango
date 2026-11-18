@@ -75,11 +75,11 @@ Nango supports every common integration pattern:
 
 | Use case | Description |
 | --- | --- |
-| [**AI tool calling & MCP**](https://nango.dev/docs/getting-started/use-cases/tool-calling) | Give AI agents the ability to act on external APIs |
-| [**Data syncing**](https://nango.dev/docs/guides/functions/syncs/sync-functions) | One or two-way sync for RAG pipelines, indexing, and triggers |
-| [**Webhook processing**](https://nango.dev/docs/getting-started/use-cases/webhooks-from-external-apis) | Receive and process webhooks from external APIs reliably |
+| [**AI tool calling & MCP**](https://nango.dev/docs/guides/tools/overview) | Give AI agents the ability to act on external APIs |
+| [**Data syncing**](https://nango.dev/docs/guides/syncs/sync-functions) | One or two-way sync for RAG pipelines, indexing, and triggers |
+| [**Webhook processing**](https://nango.dev/docs/guides/triggers/overview) | Receive and process webhooks from external APIs reliably |
 | [**API unification**](https://nango.dev/docs/getting-started/use-cases/unified-apis) | Normalize APIs to your own universal schema |
-| [**Actions**](https://nango.dev/docs/guides/functions/action-functions) | Write data and execute operations on behalf of your users |
+| [**Actions**](https://nango.dev/docs/guides/platform/functions/action-functions) | Write data and execute operations on behalf of your users |
 | [**Per-customer config**](https://nango.dev/docs/getting-started/use-cases/customer-configuration) | Customize integration behavior for each customer |
 
 ## Quickstart
@@ -105,7 +105,7 @@ const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID
 console.log(connection.credentials);
 ```
 
-Embed the [Auth](https://nango.dev/docs/guides/auth/auth-guide) flow in your product, make requests with the [Proxy](https://nango.dev/docs/guides/platform/proxy-requests), or build custom integrations with [Functions](https://nango.dev/docs/guides/functions/functions-guide).
+Embed the [Auth](https://nango.dev/docs/guides/auth/overview) flow in your product, make requests with the [Proxy](https://nango.dev/docs/guides/auth/proxy-requests), or build custom integrations with [Functions](https://nango.dev/docs/guides/platform/functions/functions-guide).
 
 ## Why Nango?
 

@@ -450,7 +450,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                 <EmptyCard>
                     <h3 className="text-title-body text-text-strong">No functions deployed in this integration yet</h3>
                     <p className="text-text-secondary text-body-medium-regular text-center">Build your own custom functions.</p>
-                    <ButtonLink to="https://nango.dev/docs/guides/functions/functions-guide" target="_blank" variant="secondary">
+                    <ButtonLink to="https://nango.dev/docs/guides/platform/functions/functions-guide" target="_blank" variant="secondary">
                         <Code /> Build custom
                     </ButtonLink>
                 </EmptyCard>
@@ -511,7 +511,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                             <DropdownMenuContent align="end" className="w-64">
                                 <DropdownMenuItem asChild>
                                     <a
-                                        href="https://nango.dev/docs/guides/functions/functions-guide#guide"
+                                        href="https://nango.dev/docs/guides/platform/functions/functions-guide#guide"
                                         target="_blank"
                                         rel="noreferrer"
                                         className="flex items-center gap-4"

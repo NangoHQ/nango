@@ -63,7 +63,7 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
         }'
       ```
 
-      If it fails because there is no Nango-managed app for this provider, tell the user. They need to [register their own OAuth app](/guides/auth/auth-guide).
+      If it fails because there is no Nango-managed app for this provider, tell the user. They need to [register their own OAuth app](/guides/auth/overview).
 
       **Any other `auth_mode`**, such as `API_KEY` or `BASIC`: create it with [`POST /integrations`](/reference/backend/http-api/integration/create). No developer app is needed, and users enter their own credentials when they connect:
 
@@ -182,10 +182,10 @@ This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own 
   <Card title="Configure agent sessions" icon="robot" href="/guides/agent-sessions">
     Restrict tools, pin connections, and scope access per user or organization.
   </Card>
-  <Card title="Build custom tools" icon="wand-magic-sparkles" href="/guides/functions/functions-guide">
+  <Card title="Build custom tools" icon="wand-magic-sparkles" href="/guides/platform/functions/functions-guide">
     Write your own tools when the catalog doesn't have what you need.
   </Card>
-  <Card title="Sync data" icon="arrows-rotate" href="/guides/functions/syncs/sync-functions">
+  <Card title="Sync data" icon="arrows-rotate" href="/guides/syncs/sync-functions">
     Keep external API data fresh in your app with sync functions.
   </Card>
 </CardGroup>

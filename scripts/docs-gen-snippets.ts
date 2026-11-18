@@ -201,7 +201,7 @@ function useCasesSnippet(useCases: any) {
 ${endpoints
     .map(
         (endpoint) =>
-            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Tool'}](${endpoint.type === 'sync' ? '/guides/functions/syncs/sync-functions' : '/guides/functions/tools'}) |`
+            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Tool'}](${endpoint.type === 'sync' ? '/guides/syncs/sync-functions' : '/guides/tools/customize-tools'}) |`
     )
     .join('\n')}
             `.trim();
@@ -214,7 +214,7 @@ ${endpoints
 function emptyUseCases() {
     return `_No pre-built syncs or tools available yet._
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>`;
+<Tip>Not seeing the integration you need? [Build your own](/guides/platform/functions/functions-guide) independently.</Tip>`;
 }
 
 interface Endpoint {

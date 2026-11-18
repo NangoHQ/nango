@@ -5,7 +5,7 @@ description: "Use tags, connection configuration, and metadata for the right con
 ---
 
 <Info>
-  Pre-requisite: complete the [Set up an integration](/guides/auth/auth-guide#guide) section of the Auth guide.
+  Pre-requisite: complete the [Set up an integration](/guides/auth/overview#guide) section of the Auth guide.
 </Info>
 
 A Nango connection can store several kinds of information besides credentials. Use the right field depending on what the data does.
@@ -234,7 +234,7 @@ It can be required to:
 
 Use connection configuration when the value is part of the connection's validity. If the value is missing, the connection may fail to authorize, fail credential checks, or be unusable for API requests.
 
-When you use the pre-built [Connect UI](/guides/auth/auth-guide), Nango generates the required forms for the integration and stores the submitted values as connection configuration.
+When you use the pre-built [Connect UI](/guides/auth/overview), Nango generates the required forms for the integration and stores the submitted values as connection configuration.
 
 When you use [headless auth with a custom UI](/guides/auth/customize-connect-ui#build-your-own-auth-ui), you must collect required connection configuration in your own UI and pass it to `nango.auth()`:
 
@@ -303,7 +303,7 @@ Good metadata examples:
 - tenant-specific identifiers discovered by your setup flow
 - provider webhook subscription IDs used by webhook functions
 
-Do not use metadata for credentials or values required to make the provider connection valid. Use connection configuration for that. Do not use metadata for synced datasets or large lists of records; use the [records cache](/guides/functions/syncs/records-cache) for sync output.
+Do not use metadata for credentials or values required to make the provider connection valid. Use connection configuration for that. Do not use metadata for synced datasets or large lists of records; use the [records cache](/guides/syncs/records-cache) for sync output.
 
 Set metadata after a connection is created:
 
@@ -348,12 +348,12 @@ Functions can read metadata for the connection they run for:
 const metadata = await nango.getMetadata();
 ```
 
-For deeper function patterns, see [Storage](/guides/functions/storage).
+For deeper function patterns, see [Storage](/guides/platform/functions/storage).
 
 **Related guides**
 
-- [Auth guide](/guides/auth/auth-guide) - create connections with Connect UI.
+- [Auth guide](/guides/auth/overview) - create connections with Connect UI.
 - [Customize Connect UI](/guides/auth/customize-connect-ui) - customize branding or pass connection configuration without Connect UI.
 - [Share a connect link](/guides/auth/share-connect-link) - include tags in link-based flows.
-- [Storage](/guides/functions/storage) - use metadata inside functions.
+- [Storage](/guides/platform/functions/storage) - use metadata inside functions.
 - [List connections API](/reference/backend/http-api/connections/list) - filter connections by tags.
