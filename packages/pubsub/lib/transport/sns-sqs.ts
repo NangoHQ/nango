@@ -133,7 +133,7 @@ export class SnsSqs implements Transport {
     private readonly pollerAbort = new Map<string, AbortController>();
 
     constructor(props?: SnsSqsProps) {
-        this.sns = props?.snsClient ?? new SNSClient({});
+        this.sns = props?.snsClient ?? new SNSClient({ maxAttempts: envs.NANGO_PUBSUB_SNS_PUBLISH_MAX_ATTEMPTS });
         this.sqs = props?.sqsClient ?? new SQSClient({});
         this.queueUrls = props?.queueUrls ?? {};
         this.topicArns = { ...props?.topicArns };
