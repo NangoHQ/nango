@@ -412,14 +412,8 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                         />
                         {canReadSecret && (
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                <IconButton
-                                    label="Toggle visibility"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setSecretRevealed((r) => !r)}
-                                    className="text-text-muted hover:text-text-strong"
-                                >
-                                    {secretRevealed ? <EyeOff strokeWidth={1} /> : <Eye strokeWidth={1} />}
+                                <IconButton label="Toggle visibility" variant="ghost" size="sm" onClick={() => setSecretRevealed((r) => !r)}>
+                                    {secretRevealed ? <EyeOff /> : <Eye />}
                                 </IconButton>
                                 <CopyButton size="sm" value={apiKey.secret} />
                             </div>
@@ -490,14 +484,8 @@ const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ se
                     <div className="relative">
                         <Input value={revealed ? secretKey : masked} disabled className="font-mono bg-surface-canvas text-text-muted pr-20" />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                            <IconButton
-                                label="Toggle visibility"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setRevealed((r) => !r)}
-                                className="text-text-muted hover:text-text-strong"
-                            >
-                                {revealed ? <EyeOff strokeWidth={1} /> : <Eye strokeWidth={1} />}
+                            <IconButton label="Toggle visibility" variant="ghost" size="sm" onClick={() => setRevealed((r) => !r)}>
+                                {revealed ? <EyeOff /> : <Eye />}
                             </IconButton>
                             <CopyButton size="sm" value={secretKey} />
                         </div>
