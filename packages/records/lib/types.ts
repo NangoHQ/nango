@@ -14,7 +14,7 @@ export interface FormattedRecord {
     data_hash: string;
     connection_id: number;
     model: string;
-    sync_id: string;
+    sync_id: string | null;
     sync_job_id: number;
     created_at?: Date;
     updated_at?: Date;

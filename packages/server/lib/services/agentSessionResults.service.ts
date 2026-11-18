@@ -10,9 +10,6 @@ import { describeResult } from './agentSessionResultShape.js';
 import type { AgentSession, AgentSessionResolvedConnection, DBPlan } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-// Records belong to a sync, and a stored result has none. No records code reads or deletes by sync id.
-const STORED_RESULT_SYNC_ID = '00000000-0000-4000-8000-00000000a9e7';
-
 const STORED_RESULT_HINT =
     'The result is too large to return in full. `shape` outlines its structure as TypeScript and `sample` shows the first items with long strings clipped. Call nango_run_code with this result_id and JavaScript that reads `data` and returns only what you need.';
 
@@ -117,7 +114,6 @@ async function storeToolResult({
         data: [{ id: recordId, tool: toolName, storedAt: new Date().toISOString(), data: (data ?? null) as never }],
         connectionId: connection.internalConnectionId,
         model,
-        syncId: STORED_RESULT_SYNC_ID,
         syncJobId: 0
     });
     if (formatted.isErr()) {
