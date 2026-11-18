@@ -20,6 +20,10 @@ export function isFailed(part: DynamicToolUIPart): boolean {
     return part.state === 'output-error' || part.state === 'output-denied';
 }
 
+export function isInterrupted(part: DynamicToolUIPart): boolean {
+    return part.state === 'output-error' && part.errorText === INTERRUPTED_CALL;
+}
+
 export function isShown(part: PlaygroundMessage['parts'][number]): boolean {
     return (part.type === 'text' && part.text.trim() !== '') || part.type === 'dynamic-tool';
 }
@@ -48,7 +52,7 @@ function stoppedLastToolCall(message: PlaygroundMessage): DynamicToolUIPart | un
     if (last?.type !== 'dynamic-tool') {
         return undefined;
     }
-    return isUnfinished(last) || (last.state === 'output-error' && last.errorText === INTERRUPTED_CALL) ? last : undefined;
+    return isUnfinished(last) || isInterrupted(last) ? last : undefined;
 }
 
 export function outcomeDisplay(message: PlaygroundMessage): {
