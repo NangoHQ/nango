@@ -79,13 +79,17 @@ function errorCode(body: string): string | undefined {
     }
 }
 
+export function telemetryRowLine(row: MetricRow): string {
+    const fields: TelemetryUploadRow = { kind: 'row', ts: row.ts.toISOString(), metric: row.metric, attributes: row.attributes, value: row.value };
+    return JSON.stringify(fields);
+}
+
 /** The rows as upload lines, as many of the first ones as fit in one upload. */
 function linesThatFit(rows: MetricRow[]): string[] {
     const lines: string[] = [];
     let bytes = HEADER_MAX_BYTES;
     for (const row of rows) {
-        const fields: TelemetryUploadRow = { kind: 'row', ts: row.ts.toISOString(), metric: row.metric, attributes: row.attributes, value: row.value };
-        const line = JSON.stringify(fields);
+        const line = telemetryRowLine(row);
         bytes += 1 + Buffer.byteLength(line);
         if (bytes > TELEMETRY_UPLOAD_MAX_UNCOMPRESSED_BYTES) {
             break;

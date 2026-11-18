@@ -40,8 +40,9 @@ try {
         clickhouse = cloud.clickhouse;
         server = createCloudServer(cloud);
     } else {
-        ({ uploadTelemetry } = await bootInstallation());
-        server = createInstallationServer();
+        const installation = await bootInstallation();
+        uploadTelemetry = installation.uploadTelemetry;
+        server = createInstallationServer(installation);
     }
 
     const port = envs.NANGO_SELF_HOSTING_PORT;

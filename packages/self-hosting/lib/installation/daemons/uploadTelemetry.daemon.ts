@@ -1,11 +1,10 @@
 import tracer from 'dd-trace';
 
 import { hostedTelemetryDb, storedMetricNames } from '@nangohq/hosted-telemetry';
-import { licensePublicKey, verifyLicense } from '@nangohq/license';
-import { cancellableDaemon, Err, flags, getLogger, normalizePem, Ok } from '@nangohq/utils';
+import { cancellableDaemon, Err, flags, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
-import { mintInstallationToken } from '../token.js';
+import { installationLicense, installationPrivateKey } from '../identity.js';
 import { fillUploadQueue, uploadNextPage } from '../uploader.js';
 
 import type { UploaderConfig } from '../uploader.js';
@@ -46,27 +45,16 @@ export async function uploadTelemetryDaemon(): Promise<{ abort: () => Promise<vo
 
 /** Returns no configuration when the license does not ask for telemetry. */
 export async function uploaderConfig(): Promise<Result<UploaderConfig | null>> {
-    if (!envs.NANGO_LICENSE) {
-        return Err(new Error('NANGO_LICENSE is not set'));
-    }
-    if (!licensePublicKey) {
-        return Err(new Error('this build has no license public key'));
-    }
-    const license = await verifyLicense(envs.NANGO_LICENSE, licensePublicKey);
+    const license = await installationLicense();
     if (license.isErr()) {
-        return Err(new Error(`the license does not verify: ${license.error.message}`));
+        return Err(license.error);
     }
     if (!license.value.telemetry) {
         return Ok(null);
     }
-    if (!envs.NANGO_INSTALLATION_PRIVATE_KEY) {
-        return Err(new Error('NANGO_INSTALLATION_PRIVATE_KEY is not set'));
-    }
-    const privateKeyPem = normalizePem(envs.NANGO_INSTALLATION_PRIVATE_KEY);
-    try {
-        await mintInstallationToken(privateKeyPem, { body: new Uint8Array() });
-    } catch (err) {
-        return Err(new Error(`NANGO_INSTALLATION_PRIVATE_KEY cannot sign an installation token: ${err instanceof Error ? err.message : String(err)}`));
+    const privateKeyPem = await installationPrivateKey();
+    if (privateKeyPem.isErr()) {
+        return Err(privateKeyPem.error);
     }
     if (!envs.NANGO_INSTALLATIONS_API_URL) {
         return Err(new Error('NANGO_INSTALLATIONS_API_URL is not set'));
@@ -78,7 +66,7 @@ export async function uploaderConfig(): Promise<Result<UploaderConfig | null>> {
     return Ok({
         knex,
         installationId: license.value.installation_id,
-        privateKeyPem,
+        privateKeyPem: privateKeyPem.value,
         url: envs.NANGO_INSTALLATIONS_API_URL,
         backfillDays: envs.NANGO_HOSTED_TELEMETRY_UPLOAD_BACKFILL_DAYS,
         metrics: storedMetricNames(),

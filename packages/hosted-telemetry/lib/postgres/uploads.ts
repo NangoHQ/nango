@@ -1,5 +1,6 @@
 import { Err, Ok } from '@nangohq/utils';
 
+import { readMetricPage } from './read.js';
 import { HOSTED_TELEMETRY_SCHEMA, HOSTED_TELEMETRY_TABLE, HOSTED_TELEMETRY_UPLOADS_TABLE } from './schema.js';
 
 import type { MetricRow } from '../exporter.js';
@@ -21,6 +22,7 @@ export interface QueuedUpload {
 /** Days are always UTC days, even if the database session uses another time zone. */
 const utcDay = (date: Date) => date.toISOString().slice(0, 10);
 const startOf = (day: string) => `${day}T00:00:00Z`;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Queues the uploads of every day we have full telemetry for, yesterday and before, that are not queued yet. A day
@@ -111,23 +113,9 @@ export async function readUploadPage(
     }: { day: string; metric: string; cursor: UploadCursor | null; limit: number; schema?: string }
 ): Promise<Result<MetricRow[]>> {
     try {
-        const res = await knex.raw<{ rows: Omit<MetricRow, 'metric'>[] }>(
-            `SELECT ts, attributes, value FROM ??.??
-             WHERE metric = ? AND ts >= ?::timestamptz AND ts < ?::timestamptz + interval '24 hours'
-             ${cursor ? 'AND (ts, attributes) > (?::timestamptz, ?::jsonb)' : ''}
-             ORDER BY ts, attributes
-             LIMIT ?`,
-            [
-                schema,
-                HOSTED_TELEMETRY_TABLE,
-                metric,
-                startOf(day),
-                startOf(day),
-                ...(cursor ? [cursor.ts.toISOString(), JSON.stringify(cursor.attributes)] : []),
-                limit
-            ]
-        );
-        return Ok(res.rows.map((row) => ({ ...row, metric })));
+        const from = new Date(startOf(day));
+        const to = new Date(from.getTime() + DAY_MS);
+        return Ok(await readMetricPage(knex, { from, to, metric, limit, schema, ...(cursor && { after: { metric, ...cursor } }) }));
     } catch (err) {
         return Err(err);
     }
