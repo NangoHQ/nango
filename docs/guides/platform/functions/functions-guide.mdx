@@ -44,6 +44,15 @@ There are three ways to use or develop Nango functions. Start with the path that
 | [Option 2: Build locally with the CLI](#build-locally-with-the-cli) | Serious production use cases where you want reviewable diffs, tests, CI/CD, and source control. | Write TypeScript functions in your repo, dry run them against real connections, and deploy with the Nango CLI. |
 | [Option 3: Build with the Functions API](#build-with-the-functions-api) | Prototypes, provider operations not covered by templates, and just-in-time integrations where an agent creates behavior dynamically. | Send generated TypeScript source to Nango, compile it, dry run it, and deploy it without a local functions project. |
 
+<a id="build-with-a-coding-agent"></a>
+<Tip>
+  **Building with a coding agent?** Nango's [skills](https://github.com/NangoHQ/skills) teach your agent how to write, test, and deploy functions. Options 2 and 3 below each link the skill for that workflow. If you haven't picked a workflow yet, install the general skill:
+
+  ```bash
+  npx skills add NangoHQ/skills -s building-nango-functions
+  ```
+</Tip>
+
 <a id="start-with-templates"></a>
 <a id="use-function-templates"></a>
 <a id="template-catalog"></a>

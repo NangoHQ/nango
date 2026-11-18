@@ -17,6 +17,10 @@ To deploy from CI, you need a scoped API key for each Nango environment.
    - `NANGO_SECRET_KEY_DEV`
    - `NANGO_SECRET_KEY_PROD`
 
+<Note>
+Coding agents running in CI can use the [Management MCP server](/reference/backend/management-mcp) with an Environment API key instead of OAuth. See [Use an API key instead](/reference/backend/management-mcp#use-an-api-key-instead) for client configuration and scopes.
+</Note>
+
 ## Recommended pipeline
 
 Treat Nango Functions like application code: validate on every PR, deploy to each environment in the same step as your application.
