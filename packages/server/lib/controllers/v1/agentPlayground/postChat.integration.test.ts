@@ -425,7 +425,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(turn.integrationSetup).toEqual({
             provider: 'google-calendar',
             displayName: 'Google Calendar',
-            integrationId: 'pg-google-calendar',
+            integrationId: 'google-calendar',
             outcome: 'created',
             usesSharedCredentials: true
         });
@@ -436,7 +436,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(turn.text).toContain('Mock reply');
         expect(turn.sessionCreated?.request.toolset).toBe('*');
         const integrations = await integrationsIn(env.id);
-        expect(integrations.map(({ unique_key }) => unique_key)).toEqual(['pg-google-calendar']);
+        expect(integrations.map(({ unique_key }) => unique_key)).toEqual(['google-calendar']);
         expect(integrations[0]?.shared_credentials_id).not.toBeNull();
     });
 

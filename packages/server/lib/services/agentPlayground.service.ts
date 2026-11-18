@@ -51,11 +51,8 @@ const logger = getLogger('AgentPlayground');
 const MAX_STEPS = 10;
 
 export const PLAYGROUND_PROVIDERS = ['google-calendar', 'google-mail', 'github', 'slack', 'linear', 'hubspot'];
-export const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
-
-export function playgroundIntegrationId(provider: string): string {
-    return `${PLAYGROUND_INTEGRATION_PREFIX}${provider}`;
-}
+// Integrations the playground created before it switched to plain provider names still use this prefix.
+const LEGACY_PLAYGROUND_PREFIX = 'pg-';
 
 function providerCatalog(): CatalogEntry[] {
     return Object.entries(getProviders() ?? {}).map(([provider, properties]) => ({ provider, name: properties.display_name }));
@@ -102,8 +99,8 @@ export function existingIntegrationFor<T extends { unique_key: string; provider:
 ): T | undefined {
     const matching = integrations.filter((integration) => integration.provider === provider);
     const pick = (candidates: T[]) =>
-        candidates.find((integration) => integration.unique_key === playgroundIntegrationId(provider)) ??
         candidates.find((integration) => integration.unique_key === provider) ??
+        candidates.find((integration) => integration.unique_key === `${LEGACY_PLAYGROUND_PREFIX}${provider}`) ??
         candidates[0];
     return pick(matching.filter((integration) => integration.missing_fields.length === 0)) ?? pick(matching);
 }
@@ -150,6 +147,10 @@ export async function setUpPlaygroundIntegration(
     if (!instantSetup) {
         return { ...base, outcome: needsSetupFields(provider) ? 'needs_setup' : 'needs_developer_app' };
     }
+    // Production integrations stay under the user's control, so the user adds them with one click on the card.
+    if (environment.is_production) {
+        return { ...base, outcome: 'needs_confirmation' };
+    }
 
     const useSharedCredentials = instantSetup === 'managed';
     const created = await createPlaygroundIntegration({ environment, account, providerName, provider, useSharedCredentials });
@@ -180,20 +181,26 @@ async function createPlaygroundIntegration({
     provider: Provider;
     useSharedCredentials: boolean;
 }): Promise<{ integrationId: string; inserted: boolean } | null> {
-    const integrationId = playgroundIntegrationId(providerName);
-    const created = await createIntegration({
-        body: { provider: providerName, useSharedCredentials, integrationId, displayName: provider.display_name },
-        provider,
-        environment,
-        account
-    });
+    const integrationId = providerName;
+    const create = (withId: boolean) =>
+        createIntegration({
+            body: { provider: providerName, useSharedCredentials, ...(withId && { integrationId }), displayName: provider.display_name },
+            provider,
+            environment,
+            account
+        });
+    let created = await create(true);
     if (created.isErr()) {
         // A concurrent request that inserted the same key first makes this one fail on the unique constraint.
         const concurrent = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
         if (concurrent) {
             return { integrationId: concurrent.unique_key, inserted: false };
         }
-        logger.error(`Agent Playground could not create ${integrationId}: ${created.error.message}`);
+        // Another app's integration holds the name, so let the dashboard's naming pick a free one.
+        created = await create(false);
+    }
+    if (created.isErr()) {
+        logger.error(`Agent Playground could not create the ${providerName} integration: ${created.error.message}`);
         return null;
     }
     if (created.value.unique_key === integrationId || !created.value.id) {
