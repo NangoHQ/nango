@@ -51,6 +51,11 @@ const agentResourceLinks: ResourceLink[] = [
     }
 ];
 
+// Rounds down to the nearest 100 so the claim stays true as providers are added or removed, e.g. 1348 -> "1,300+".
+function formatApiCount(count: number): string {
+    return `${(Math.floor(count / 100) * 100).toLocaleString('en-US')}+`;
+}
+
 function renderAgentResourceLinks(): string[] {
     return agentResourceLinks.map((link) => `- [${link.title}](${link.url}): ${link.description}`);
 }
@@ -163,7 +168,7 @@ async function renderLlmsTxt(documentation: NavGroup, apiOverview: NavGroup, cha
     const lines = [
         '# Nango Docs',
         '',
-        '> Nango is the tool calling layer for AI agents to act across 1,300+ APIs. These files are curated for agents: core docs are listed directly, while provider-specific API pages live in a compact catalog.',
+        `> Nango is the tool calling layer for AI agents to act across ${formatApiCount(catalog.length)} APIs. These files are curated for agents: core docs are listed directly, while provider-specific API pages live in a compact catalog.`,
         '',
         ...renderAgentResourceLinks(),
         '',
