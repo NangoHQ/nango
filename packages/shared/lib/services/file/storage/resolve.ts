@@ -37,6 +37,11 @@ export type AzureObjectStoreConfig = {
 
 export type ObjectStoreConfig = S3ObjectStoreConfig | GcsObjectStoreConfig | AzureObjectStoreConfig;
 
+export type TemplatesObjectStoreEnvs = {
+    AWS_TEMPLATES_BUCKET_NAME?: string | undefined;
+    AWS_TEMPLATES_REGION?: string | undefined;
+};
+
 const EXCLUSIVE_ERROR = 'S3, GCS, and Azure integration storage are mutually exclusive: set only one';
 const AZURE_PAIR_ERROR = 'AZURE_INTEGRATIONS_ACCOUNT_NAME and AZURE_INTEGRATIONS_CONTAINER_NAME must both be set';
 
@@ -74,6 +79,18 @@ function s3Config(envs: ObjectStoreEnvs): S3ObjectStoreConfig {
         region: envs.AWS_INTEGRATIONS_REGION || envs.AWS_REGION || DEFAULT_S3_REGION,
         ...(credentials ? { credentials } : {})
     };
+}
+
+/**
+ * A separate S3 bucket for integration templates (`templates-zero/`), or `null` to read them from the
+ * integrations bucket as before. Credentials come from the default AWS chain (for example EKS Pod Identity),
+ * never from the integrations bucket's keys, which may only grant access to that bucket.
+ */
+export function resolveTemplatesObjectStoreConfig(envs: TemplatesObjectStoreEnvs): S3ObjectStoreConfig | null {
+    if (!envs.AWS_TEMPLATES_BUCKET_NAME) {
+        return null;
+    }
+    return { provider: 's3', bucket: envs.AWS_TEMPLATES_BUCKET_NAME, region: envs.AWS_TEMPLATES_REGION || DEFAULT_S3_REGION };
 }
 
 /**

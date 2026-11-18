@@ -7,7 +7,7 @@ import { envs } from '../../env.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager from '../../utils/error.manager.js';
 import localFileService from './local.service.js';
-import { createObjectStore, resolveObjectStoreConfig } from './storage/index.js';
+import { copyObject, createObjectStore, resolveObjectStoreConfig, resolveTemplatesObjectStoreConfig } from './storage/index.js';
 
 import type { ServiceResponse } from '../../models/Generic.js';
 import type { ObjectStore } from './storage/index.js';
@@ -17,6 +17,7 @@ import type { Readable } from 'node:stream';
 
 class RemoteFileService {
     private store: ObjectStore | undefined;
+    private templatesStore: ObjectStore | undefined;
     private useRemote: boolean;
 
     publicRoute = 'integration-templates';
@@ -36,6 +37,22 @@ class RemoteFileService {
     private getStore(): ObjectStore {
         this.store ??= createObjectStore(resolveObjectStoreConfig(envs));
         return this.store;
+    }
+
+    /**
+     * Integration templates (`templates-zero/`) come from their own bucket when AWS_TEMPLATES_BUCKET_NAME is set,
+     * otherwise from the integrations bucket, as before.
+     */
+    private getTemplatesStore(): ObjectStore {
+        if (!this.templatesStore) {
+            const config = resolveTemplatesObjectStoreConfig(envs);
+            this.templatesStore = config ? createObjectStore(config) : this.getStore();
+        }
+        return this.templatesStore;
+    }
+
+    private getStoreFor(key: string): ObjectStore {
+        return key.startsWith(`${this.publicZeroYamlRoute}/`) ? this.getTemplatesStore() : this.getStore();
     }
 
     async upload({
@@ -95,7 +112,7 @@ class RemoteFileService {
         const sourceKey = `${this.publicZeroYamlRoute}/${sourcePath}`;
         try {
             if (this.useRemote) {
-                await this.getStore().copy(sourceKey, destinationPath);
+                await copyObject({ from: this.getTemplatesStore(), to: this.getStore(), sourceKey, destinationKey: destinationPath });
 
                 return destinationPath;
             } else {
@@ -113,12 +130,12 @@ class RemoteFileService {
     }
 
     getFile(fileName: string): Promise<string> {
-        return this.getStore().get(fileName);
+        return this.getStoreFor(fileName).get(fileName);
     }
 
     async getStream(fileName: string): Promise<ServiceResponse<Readable | null>> {
         try {
-            const body = await this.getStore().getStream(fileName);
+            const body = await this.getStoreFor(fileName).getStream(fileName);
 
             if (body) {
                 return { success: true, error: null, response: body };

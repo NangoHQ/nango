@@ -643,6 +643,10 @@ const ENVS_SHAPE = z.object({
     AWS_INTEGRATIONS_REGION: z.string().optional(),
     AWS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
 
+    // Optional separate S3 bucket for integration templates (templates-zero/). Unset: templates are read from the integrations bucket.
+    AWS_TEMPLATES_BUCKET_NAME: z.string().optional(),
+    AWS_TEMPLATES_REGION: z.string().optional(),
+
     GCS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
 
     AZURE_INTEGRATIONS_ACCOUNT_NAME: z.string().optional(),
