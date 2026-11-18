@@ -25,7 +25,7 @@ function text(value: string): Part {
 }
 
 function shape(parts: Part[], stopped?: DynamicToolUIPart) {
-    return groupReplyParts(parts, stopped).map((item) => (item.kind === 'group' ? item.parts.map((part) => part.toolCallId) : item.key));
+    return groupReplyParts(parts, stopped).map((item) => (item.kind === 'group' ? item.entries.map((entry) => entry.key) : item.key));
 }
 
 describe('groupReplyParts', () => {
@@ -40,8 +40,21 @@ describe('groupReplyParts', () => {
         expect(shape([call('a'), text('Done')])).toEqual(['a', 'text-1']);
     });
 
-    it('splits groups at text', () => {
-        expect(shape([call('a'), call('b'), text('Now the calendar'), call('c'), call('d')])).toEqual([['a', 'b'], 'text-2', ['c', 'd']]);
+    it('keeps text between calls inside the group', () => {
+        expect(shape([text('Checking each one'), call('a'), text('Now the calendar'), call('b'), text('Here it is')])).toEqual([
+            ['text-0', 'a', 'text-2', 'b'],
+            'text-4'
+        ]);
+    });
+
+    it('leaves text and a single call ungrouped', () => {
+        expect(shape([text('Checking'), call('a'), text('Done')])).toEqual(['text-0', 'a', 'text-2']);
+    });
+
+    it('counts only calls toward a group', () => {
+        const [group] = groupReplyParts([call('a'), text('Next'), call('b')], undefined);
+
+        expect(group?.kind === 'group' && group.calls.map((part) => part.toolCallId)).toEqual(['a', 'b']);
     });
 
     it('ignores blank text between calls', () => {

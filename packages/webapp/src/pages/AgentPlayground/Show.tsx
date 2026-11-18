@@ -52,9 +52,9 @@ import { groupReplyParts } from './toolGroups';
 
 import type { PendingApproval } from './approvalTracking';
 import type { IntegrationLabels } from './toolDisplay';
+import type { ReplyEntry } from './toolGroups';
 import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundReplyOutcome, AgentPlaygroundSessionCreated } from '@nangohq/types';
-import type { DynamicToolUIPart } from 'ai';
 
 const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
     { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
@@ -419,10 +419,6 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
                                 <SessionNotice created={message.metadata.sessionCreated} replaced={message.id !== firstSessionMessageId} />
                             )}
                             {groupReplyParts(message.parts, stoppedToolCall).map((item) => {
-                                if (item.kind === 'text') {
-                                    const { text, state } = item.part;
-                                    return <Markdown key={item.key}>{state === 'streaming' ? hideTrailingLink(text) : text}</Markdown>;
-                                }
                                 if (item.kind === 'tool' && isSetUpPart(item.part)) {
                                     const part = item.part;
                                     return setUpResults(part).map((setup) => (
@@ -436,25 +432,41 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
                                     ));
                                 }
                                 const chatActive = message === lastMessage && busy;
-                                const renderCall = (part: DynamicToolUIPart) => (
-                                    <ToolCallCard
-                                        key={part.toolCallId}
-                                        part={part}
+                                const renderEntry = (entry: ReplyEntry) => {
+                                    if (entry.kind === 'text') {
+                                        const { text, state } = entry.part;
+                                        return <Markdown key={entry.key}>{state === 'streaming' ? hideTrailingLink(text) : text}</Markdown>;
+                                    }
+                                    const part = entry.part;
+                                    return (
+                                        <ToolCallCard
+                                            key={entry.key}
+                                            part={part}
+                                            labels={labels}
+                                            chatActive={chatActive}
+                                            approvalSending={message === lastMessage && status === 'ready'}
+                                            connectedIntegrations={connectedIntegrations}
+                                            onConnected={onConnected}
+                                            onRequestNewLink={onRequestNewLink}
+                                            onApprove={onApprove}
+                                            onRetryInterrupted={message === lastMessage ? onRetryInterrupted : undefined}
+                                            onTryAgain={part === stoppedToolCall ? onRetry : undefined}
+                                        />
+                                    );
+                                };
+                                if (item.kind !== 'group') {
+                                    return renderEntry(item);
+                                }
+                                return (
+                                    <ToolCallGroup
+                                        key={item.key}
+                                        calls={item.calls}
+                                        entries={item.entries}
                                         labels={labels}
                                         chatActive={chatActive}
-                                        approvalSending={message === lastMessage && status === 'ready'}
-                                        connectedIntegrations={connectedIntegrations}
-                                        onConnected={onConnected}
-                                        onRequestNewLink={onRequestNewLink}
-                                        onApprove={onApprove}
-                                        onRetryInterrupted={message === lastMessage ? onRetryInterrupted : undefined}
-                                        onTryAgain={part === stoppedToolCall ? onRetry : undefined}
+                                        renderEntry={renderEntry}
                                     />
                                 );
-                                if (item.kind === 'tool') {
-                                    return renderCall(item.part);
-                                }
-                                return <ToolCallGroup key={item.key} parts={item.parts} labels={labels} chatActive={chatActive} renderCall={renderCall} />;
                             })}
                             {outcome}
                         </div>

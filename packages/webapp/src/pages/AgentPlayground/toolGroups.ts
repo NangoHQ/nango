@@ -1,14 +1,12 @@
-import { INTERRUPTED_CALL } from '../../store/agentPlaygroundChat';
-import { isShown } from './replyOutcome';
+import { isInterrupted, isShown } from './replyOutcome';
 import { isSetUpPart } from './setUpTool';
 
 import type { PlaygroundMessage } from '../../store/agentPlaygroundChat';
 import type { DynamicToolUIPart, TextUIPart } from 'ai';
 
-export type ReplyItem =
-    | { kind: 'text'; key: string; part: TextUIPart }
-    | { kind: 'tool'; key: string; part: DynamicToolUIPart }
-    | { kind: 'group'; key: string; parts: DynamicToolUIPart[] };
+export type ReplyEntry = { kind: 'text'; key: string; part: TextUIPart } | { kind: 'tool'; key: string; part: DynamicToolUIPart };
+
+export type ReplyItem = ReplyEntry | { kind: 'group'; key: string; calls: DynamicToolUIPart[]; entries: ReplyEntry[] };
 
 // A call the user has to act on, or acted on, stays on its own row.
 export function needsOwnRow(part: DynamicToolUIPart, stoppedToolCall: DynamicToolUIPart | undefined): boolean {
@@ -17,17 +15,23 @@ export function needsOwnRow(part: DynamicToolUIPart, stoppedToolCall: DynamicToo
         part.toolName === 'nango_create_connection' ||
         isSetUpPart(part) ||
         (part.approval !== undefined && !part.approval.isAutomatic) ||
-        (part.state === 'output-error' && part.errorText === INTERRUPTED_CALL)
+        isInterrupted(part)
     );
 }
 
 export function groupReplyParts(parts: PlaygroundMessage['parts'], stoppedToolCall: DynamicToolUIPart | undefined): ReplyItem[] {
     const items: ReplyItem[] = [];
-    let run: DynamicToolUIPart[] = [];
+    let run: ReplyEntry[] = [];
     const flush = () => {
-        const [first] = run;
-        if (first) {
-            items.push(run.length === 1 ? { kind: 'tool', key: first.toolCallId, part: first } : { kind: 'group', key: first.toolCallId, parts: run });
+        const calls = run.flatMap((entry) => (entry.kind === 'tool' ? [entry.part] : []));
+        const lastCall = run.map((entry) => entry.kind).lastIndexOf('tool');
+        const [firstCall] = calls;
+        if (calls.length > 1 && firstCall) {
+            // Text after the last call is the answer, so it stays outside the group.
+            items.push({ kind: 'group', key: firstCall.toolCallId, calls, entries: run.slice(0, lastCall + 1) });
+            items.push(...run.slice(lastCall + 1));
+        } else {
+            items.push(...run);
         }
         run = [];
     };
@@ -35,8 +39,7 @@ export function groupReplyParts(parts: PlaygroundMessage['parts'], stoppedToolCa
     parts.forEach((part, index) => {
         if (part.type === 'text') {
             if (isShown(part)) {
-                flush();
-                items.push({ kind: 'text', key: `text-${index}`, part });
+                run.push({ kind: 'text', key: `text-${index}`, part });
             }
             return;
         }
@@ -48,7 +51,7 @@ export function groupReplyParts(parts: PlaygroundMessage['parts'], stoppedToolCa
             items.push({ kind: 'tool', key: part.toolCallId, part });
             return;
         }
-        run.push(part);
+        run.push({ kind: 'tool', key: part.toolCallId, part });
     });
     flush();
     return items;
