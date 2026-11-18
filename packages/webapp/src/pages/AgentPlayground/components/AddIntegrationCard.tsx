@@ -3,8 +3,10 @@ import { Zap } from 'lucide-react';
 import { Button } from '@nangohq/design-system';
 
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { usePostIntegration } from '@/hooks/useIntegration';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useProvider } from '@/hooks/useProvider';
 import { useToast } from '@/hooks/useToast';
 import { getOneClickSetupBody } from '@/pages/Catalog/catalog.utils';
@@ -53,11 +55,12 @@ export const AddIntegrationCard: React.FC<AddIntegrationCardProps> = ({ provider
 const OneClickAddButton: React.FC<{ provider: string; name: string; href: string }> = ({ provider, name, href }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
-    const { data: providerData } = useProvider(env, provider);
+    const { can } = usePermissions();
+    const { data: providerData, isError } = useProvider(env, provider);
     const { mutateAsync: postIntegration, isPending } = usePostIntegration(env);
     const body = providerData ? getOneClickSetupBody(providerData.data) : null;
 
-    if (providerData && !body) {
+    if (isError || (providerData && !body)) {
         return (
             <ButtonLink to={href} state={returnToPlaygroundState()} size="sm">
                 Add integration
@@ -77,9 +80,13 @@ const OneClickAddButton: React.FC<{ provider: string; name: string; href: string
     };
 
     return (
-        <Button size="sm" loading={isPending || !providerData} onClick={() => void add()}>
-            <Zap className="fill-current stroke-none" />
-            Add integration
-        </Button>
+        <PermissionGate asChild condition={can('environment:integrations:update')}>
+            {(allowed) => (
+                <Button size="sm" disabled={!allowed} loading={isPending || !providerData} onClick={() => void add()}>
+                    <Zap className="fill-current stroke-none" />
+                    Add integration
+                </Button>
+            )}
+        </PermissionGate>
     );
 };
