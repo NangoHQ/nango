@@ -10,7 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Spinner } from '@/components/ui/Spinner';
 import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
-import { isUnfinished } from '../replyOutcome';
+import { isFailed, isUnfinished } from '../replyOutcome';
 import { describeTool, labelFor, searchSummary, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
@@ -92,7 +92,7 @@ const ToolIcon: React.FC<{ display: ToolDisplay }> = ({ display }) => {
     );
 };
 
-const StatusIcon: React.FC<{ running: boolean; stopped: boolean; failed: boolean }> = ({ running, stopped, failed }) => {
+export const StatusIcon: React.FC<{ running: boolean; stopped: boolean; failed: boolean }> = ({ running, stopped, failed }) => {
     if (running) {
         return <Spinner />;
     }
@@ -124,7 +124,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     const stopped = unfinished && !chatActive && !(part.state === 'approval-responded' && approvalSending);
     const running = unfinished && !stopped;
     const done = part.state === 'output-available' || part.state === 'output-error' || part.state === 'output-denied';
-    const failed = part.state === 'output-error' || part.state === 'output-denied';
+    const failed = isFailed(part);
     const duration = useRunDuration(running, awaitingApproval, done);
 
     if (display.kind === 'connect' && part.state === 'output-available') {
