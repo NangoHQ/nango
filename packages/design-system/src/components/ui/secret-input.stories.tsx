@@ -10,7 +10,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const SECRET = 'nango_sk_live_7f3a9c21d4e8';
+const SECRET = 'example-secret-7f3a9c21d4e8';
 
 const ROWS = [
     { label: 'Read-only', node: <SecretInput value={SECRET} /> },
