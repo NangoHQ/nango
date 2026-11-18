@@ -21,7 +21,7 @@ import { isUsableOutcome, trackIntegrationSetup, trackPlaygroundTurn } from './a
 import * as agentSessionService from './agentSession.service.js';
 import { trackAgentSessionCreated } from './agentSessionAnalytics.service.js';
 import { getInstantSetup, needsSetupFields } from './instantSetup.js';
-import { createIntegration } from './integrationCreate.service.js';
+import { createIntegration, CreateIntegrationError } from './integrationCreate.service.js';
 
 import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
 import type { PlaygroundRequest } from './agentPlaygroundRequest.js';
@@ -39,6 +39,7 @@ import type {
     DBPlan,
     DBTeam,
     DBUser,
+    IntegrationConfig,
     PostAgentSessionsBody,
     Provider,
     Tags
@@ -182,13 +183,19 @@ async function createPlaygroundIntegration({
     useSharedCredentials: boolean;
 }): Promise<{ integrationId: string; inserted: boolean } | null> {
     const integrationId = providerName;
-    const create = (withId: boolean) =>
-        createIntegration({
-            body: { provider: providerName, useSharedCredentials, ...(withId && { integrationId }), displayName: provider.display_name },
-            provider,
-            environment,
-            account
-        });
+    const create = async (withId: boolean): Promise<Result<IntegrationConfig, CreateIntegrationError>> => {
+        try {
+            return await createIntegration({
+                body: { provider: providerName, useSharedCredentials, ...(withId && { integrationId }), displayName: provider.display_name },
+                provider,
+                environment,
+                account
+            });
+        } catch (err) {
+            // The insert throws on a duplicate key rather than returning an error.
+            return Err(new CreateIntegrationError('server_error', stringifyError(err)));
+        }
+    };
     let created = await create(true);
     if (created.isErr()) {
         // A concurrent request that inserted the same key first makes this one fail on the unique constraint.
