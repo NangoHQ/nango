@@ -51,7 +51,7 @@ export const SecretTextArea: React.FC<SecretTextAreaProps> = ({ copy, canRead = 
             <InputGroupAddon align="inline-end" className={isSecretVisible ? 'self-start' : ''}>
                 <PermissionGate condition={canRead}>
                     {(allowed) => (
-                        <InputGroupButton disabled={!allowed} label="Toggle visibility" onClick={toggleSecretVisibility}>
+                        <InputGroupButton disabled={!allowed} label="Toggle visibility" aria-pressed={isSecretVisible} onClick={toggleSecretVisibility}>
                             {isSecretVisible ? <EyeIcon /> : <EyeOff />}
                         </InputGroupButton>
                     )}
