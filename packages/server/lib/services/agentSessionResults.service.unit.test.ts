@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { decodeResultId, encodeResultId, toolResultForAgent } from './agentSessionResults.service.js';
+import { decodeResultId, encodeResultId, formatMegabytes, toolResultForAgent } from './agentSessionResults.service.js';
 
 import type { AgentSession, AgentSessionResolvedConnection } from '@nangohq/types';
 import type * as NangoUtils from '@nangohq/utils';
@@ -101,7 +101,10 @@ describe('toolResultForAgent', () => {
     it('returns the result in full with a notice when it is too large to store', async () => {
         const huge = { text: 'a'.repeat(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES) };
 
-        await expect(resultFor(huge)).resolves.toEqual({ data: huge, notice: expect.stringContaining('2 MB') });
+        await expect(resultFor(huge)).resolves.toEqual({
+            data: huge,
+            notice: expect.stringContaining(formatMegabytes(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES))
+        });
         expect(mocks.upsert).not.toHaveBeenCalled();
     });
 
@@ -111,6 +114,16 @@ describe('toolResultForAgent', () => {
 
         await expect(resultFor(LARGE)).resolves.toBe(LARGE);
         expect(mocks.report).toHaveBeenCalledWith(error);
+    });
+});
+
+describe('formatMegabytes', () => {
+    it.each([
+        [2 * 1024 * 1024, '2 MB'],
+        [2.5 * 1024 * 1024, '2.5 MB'],
+        [512 * 1024, '0.5 MB']
+    ])('formats %d bytes as %s', (bytes, expected) => {
+        expect(formatMegabytes(bytes)).toBe(expected);
     });
 });
 

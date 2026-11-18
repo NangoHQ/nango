@@ -128,6 +128,6 @@ async function storeToolResult({
     return Ok(encodeResultId({ integrationId: connection.integrationId, recordId }));
 }
 
-function formatMegabytes(bytes: number): string {
-    return `${Math.round(bytes / (1024 * 1024))} MB`;
+export function formatMegabytes(bytes: number): string {
+    return `${Number((bytes / (1024 * 1024)).toFixed(2))} MB`;
 }
