@@ -1911,7 +1911,7 @@ function getRecordsToDelete(
  * getRecordsToDeleteSizes
  * @desc returns the size in bytes of each record in the batch to delete
  */
-export function getRecordsToDeleteSizes(
+function getRecordsToDeleteSizes(
     trx: Knex,
     params: {
         connectionId: number;
@@ -1922,7 +1922,7 @@ export function getRecordsToDeleteSizes(
         toCursorIncluded: { sort: string; id: string } | null;
     }
 ): Knex.QueryBuilder<object, { id: string; size_bytes: number }[]> {
-    // LATERAL join on literal values so Postgres looks up each record and prunes records_data to one partition
+    // Start from the batch so Postgres only looks up those records. LATERAL keeps it a per-row lookup if the planner misestimates
     return trx
         .select<{ id: string; size_bytes: number }[]>(
             'r.id',
