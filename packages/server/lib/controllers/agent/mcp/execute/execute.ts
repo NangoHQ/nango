@@ -11,7 +11,7 @@ import { getOrchestrator } from '../../../../utils/utils.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { resolveSessionConnection } from '../sessionConnection.js';
-import { defineAgentSessionMcpTool, RemoteToolResult } from '../sessionTool.js';
+import { defineAgentSessionMcpTool, invalidArgumentsOf, RemoteToolResult } from '../sessionTool.js';
 import { actionExecutionErrorToMcp, functionInvokeErrorToMcp, remoteMcpErrorToMcp, toolUnavailableError } from './errors.js';
 import { executeInputSchema } from './schema.js';
 
@@ -35,8 +35,8 @@ export const executeTool = defineAgentSessionMcpTool({
         openWorldHint: true
     },
     isEnabled: (metaTools) => metaTools.nangoExecute,
-    onInvalidArguments: ({ session }) => {
-        trackAgentSessionToolCall({ metaTool: 'nango_execute', session, errorCode: 'invalid_input' });
+    onInvalidArguments: ({ session }, { error }) => {
+        trackAgentSessionToolCall({ metaTool: 'nango_execute', session, errorCode: 'invalid_input', invalidArguments: invalidArgumentsOf(error) });
     },
     async handler({ args, ...context }) {
         const { session, callable } = context;
@@ -239,6 +239,7 @@ interface ToolCallOutcome {
     underlyingErrorCode?: string | undefined;
     mcpTool?: boolean | undefined;
     functionSource?: FunctionSource | undefined;
+    invalidArguments?: string[] | undefined;
 }
 
 async function executeRemoteTool({
@@ -261,7 +262,7 @@ async function executeRemoteTool({
     const { account, environment, plan, session } = context;
 
     if (input !== undefined && (typeof input !== 'object' || input === null || Array.isArray(input))) {
-        track({ errorCode: 'invalid_input' });
+        track({ errorCode: 'invalid_input', invalidArguments: ['input: invalid_type'] });
         return Err(
             new PublicMcpError(`Tool '${toolName}' takes an object as its input. Correct the input and call it again.`, {
                 code: 'invalid_input',

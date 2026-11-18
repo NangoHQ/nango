@@ -23,8 +23,23 @@ export {
     type IconButtonProps,
     type IconButtonSize,
     type IconButtonVariant,
+    ICON_BUTTON_SIZES,
+    ICON_BUTTON_VARIANTS,
     buttonVariants
 } from './components/ui/button';
+export { COPY_BUTTON_RESET_MS, COPY_BUTTON_SIZES, CopyButton, type CopyButtonProps, type CopyButtonSize } from './components/ui/copy-button';
+export {
+    SplitButton,
+    SplitButtonAction,
+    type SplitButtonActionProps,
+    SplitButtonMenuTrigger,
+    type SplitButtonMenuTriggerProps,
+    type SplitButtonProps,
+    type SplitButtonSize,
+    type SplitButtonVariant,
+    SPLIT_BUTTON_SIZES,
+    SPLIT_BUTTON_VARIANTS
+} from './components/ui/split-button';
 export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card';
 export {
     Dialog,
@@ -57,11 +72,16 @@ export {
     inputGroupAddonVariants,
     InputGroupButton,
     InputGroupInput,
+    type InputGroupInputProps,
+    InputGroupKbd,
+    type InputGroupProps,
+    InputGroupSwatch,
     InputGroupText,
     InputGroupTextarea
 } from './components/ui/input-group';
 export {
     Field,
+    FieldContent,
     FieldDescription,
     FieldError,
     type FieldErrorProps,
@@ -75,6 +95,7 @@ export {
     FieldSet,
     fieldVariants
 } from './components/ui/field';
+export { useFieldControl } from './components/ui/field-context';
 export {
     SegmentedControl,
     SegmentedControlItem,
@@ -92,4 +113,5 @@ export {
     type TooltipProviderProps,
     TooltipTrigger
 } from './components/ui/tooltip';
+export { copyText } from './lib/clipboard';
 export { dsTwMergeConfig } from './lib/twMergeConfig';

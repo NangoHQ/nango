@@ -4,6 +4,34 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="New Catalog page" description="November 17, 2026">
+  Browse supported APIs from the new Catalog page in the dashboard. Filter by category, sort by popularity, and switch on **Instant setup only** to see the APIs your agent can access without registering your own OAuth app. Drill down to see prebuilt tools and syncs for every API.
+
+  [View Nango catalog](https://app.nango.dev/dev/catalog).
+
+  ![The Catalog page with category filters, popularity sort, and the instant setup switch](/images/changelog/catalog.png)
+</Update>
+---
+
+<Update label="Agent sessions updates" description="November 13, 2026">
+  - **Search multiple tools in one call:** `nango_tool_search` now takes up to five queries, so your agent can find all tools related to a task in one round trip. See [nango_tool_search](/guides/agent-sessions#nango-tool-search).
+  - **The agent knows whose account it is using:** Session information now includes the name/email of the connection being used based on the connection tags in Nango.
+</Update>
+---
+
+<Update label="Small improvements" description="November 13, 2026">
+  - **Audit trail records credential reads:** A `credentials_read` event is logged when someone reads a connection, integration, API key, or environment secret through the dashboard or the API. See [what is recorded](/guides/platform/audit-trail#what-is-recorded).
+  - **Webhooks for DocuSign, WooCommerce, and Laylo:** Nango can now receive, verify, and forward webhooks from [DocuSign](/api-integrations/docusign/webhooks), [WooCommerce](/integrations/all/woocommerce/webhooks), and [Laylo](/api-integrations/laylo/webhooks).
+</Update>
+---
+
+<Update label="Connections search parameter deprecation" description="November 12, 2026">
+  The `search` query parameter on [list connections](/reference/backend/http-api/connections/list) is now deprecated.
+
+  Use `connectionId` for an exact match, or filter by connection tags such as `tags[end_user_id]`. We've emailed accounts using the deprecated parameter and are working with them to move to the new behavior.
+</Update>
+---
+
 <Update label="Tools" description="November 9, 2026">
   Tools are the new way to build on-demand functions in Nango. They replace actions.
 

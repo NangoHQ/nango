@@ -2,7 +2,7 @@ import { Ok } from '@nangohq/utils';
 
 import { trackAgentSessionToolSearch } from '../../../../services/agentSessionAnalytics.service.js';
 import { searchSessionTools } from '../../../../services/agentSessionToolSearch.service.js';
-import { defineAgentSessionMcpTool } from '../sessionTool.js';
+import { defineAgentSessionMcpTool, invalidArgumentsOf } from '../sessionTool.js';
 import { toolSearchInputSchema, toolSearchOutputSchema } from './schema.js';
 
 import type { ToolSlugLookup } from '../../../../services/agentSessionToolSearch.service.js';
@@ -16,8 +16,8 @@ export const toolSearchTool = defineAgentSessionMcpTool({
     outputSchema: toolSearchOutputSchema,
     annotations: { readOnlyHint: true },
     isEnabled: (metaTools) => metaTools.nangoToolSearch,
-    onInvalidArguments: ({ session }) => {
-        trackAgentSessionToolSearch({ session, matches: [], related: [], errorCode: 'invalid_input' });
+    onInvalidArguments: ({ session }, { error }) => {
+        trackAgentSessionToolSearch({ session, matches: [], related: [], errorCode: 'invalid_input', invalidArguments: invalidArgumentsOf(error) });
     },
     async handler({ args, account, environment, session, callable }) {
         return Ok(await searchSessionTools({ account, environment, session, queries: args.queries, goal: args.goal, slugOf: slugLookup(callable) }));

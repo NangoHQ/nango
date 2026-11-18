@@ -9,8 +9,9 @@ import ts from 'typescript';
 
 import { printDebug } from '../utils.js';
 import { Spinner } from '../utils/spinner.js';
-import { compileFunction, tsToJsPath } from './compile.js';
+import { compileFunction } from './compile.js';
 import { tsconfig } from './constants.js';
+import { tsToJsPath } from './project-path.js';
 import { CompileError, fileErrorToText, syncTsConfig, tsDiagnosticToText } from './utils.js';
 
 import type { Ora } from 'ora';

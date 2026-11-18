@@ -15,7 +15,8 @@ This guide walks you through finding each of these values.
 
 ### Prerequisites
 
-- A 1Password Business account with admin access
+- A 1Password Business or Enterprise Password Manager account
+- Permission to manage integrations: account owner, administrator, or member of the Security group
 
 ### Instructions
 
@@ -28,10 +29,11 @@ Choose the domain that matches your 1Password account region:
 | US | `api.1password.com` |
 | Canada | `api.1password.ca` |
 | Europe | `api.1password.eu` |
+| Enterprise (`ent.1password.com`) | `api.ent.1password.com` |
 
 #### Step 2: Find your account ID
 
-1. Sign in to your [1Password account](https://my.1password.com).
+1. Sign in to your [1Password account](https://start.1password.com).
 2. Click on your profile, then select **View your vault items**.
 
 <img src="/api-integrations/1password-users/profile.png" />
@@ -41,22 +43,23 @@ Choose the domain that matches your 1Password account region:
 
 #### Step 3: Obtain your client credentials
 
-1. Sign in to your [1Password account](https://my.1password.com).
+1. Sign in to your [1Password account](https://start.1password.com).
 2. Select **Integrations** in the sidebar, and select **Directory** on the Integrations page.
 
 <img src="/api-integrations/1password-users/directory.png" />
 
 3. Select **OAuth Application**.
-4. Fill in the required fields:
+4. Select **Client credentials** as the grant type, then select **Next**.
+5. Fill in the fields:
    - **Application name**: A name to identify this integration
-   - **Redirect URL**: `https://api.nango.dev/oauth/callback` (not needed by nango but required by 1Password to complete the form)
-   - **Scopes**: Select the permissions your integration needs
+   - **Redirect URL**: `https://api.nango.dev/oauth/callback` (not needed by Nango, but required by 1Password to complete the form)
+   - **Scopes**: Select the permissions your integration needs: `users.view` to list and read users, `users.suspend` and `users.reactivate` to suspend and reactivate them. Scopes can't be changed later, so you'd need to create a new application to change them.
 
 <img src="/api-integrations/1password-users/create_integration.png" />
 
 
-5. Select **Generate credentials**. Copy your **Client ID** and **Client Secret**.
-6. Select **Save in 1Password** and choose a vault to store them.
+6. Select **Next** to generate your **Client ID** and **Client Secret**.
+7. Select **Save in 1Password** and choose a vault to store them.
 
 <img src="/api-integrations/1password-users/integration_credentials.png" />
 

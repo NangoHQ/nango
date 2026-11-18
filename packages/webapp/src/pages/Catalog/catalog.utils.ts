@@ -1,4 +1,4 @@
-import type { ApiProviderFunctionCounts, ApiProviderListItem, AuthModeType } from '@nangohq/types';
+import type { ApiProviderFunctionCounts, ApiProviderListItem, AuthModeType, PostIntegration } from '@nangohq/types';
 
 export const POPULAR_CATEGORY = 'popular';
 export const PAGE_SIZE = 48;
@@ -19,6 +19,36 @@ export function getInstantSetup(provider: Pick<ApiProviderListItem, 'preConfigur
         return null;
     }
     return 'no-dev-app';
+}
+
+// The integration form requires fields in these modes, even when no developer app is needed.
+const AUTH_MODES_WITH_REQUIRED_SETUP_FIELDS: AuthModeType[] = ['TBA', 'INSTALL_PLUGIN'];
+
+export function getOneClickSetupBody(
+    provider: Pick<ApiProviderListItem, 'name' | 'preConfigured' | 'authMode' | 'clientRegistration' | 'integration_config'>
+): PostIntegration['Body'] | null {
+    const instantSetup = getInstantSetup(provider);
+    const hasIntegrationConfig = Object.keys(provider.integration_config ?? {}).length > 0;
+    if (hasIntegrationConfig) {
+        return null;
+    }
+    if (instantSetup === 'managed') {
+        return { provider: provider.name, useSharedCredentials: true };
+    }
+    if (instantSetup !== 'no-dev-app' || AUTH_MODES_WITH_REQUIRED_SETUP_FIELDS.includes(provider.authMode)) {
+        return null;
+    }
+    if (provider.authMode === 'MCP_OAUTH2') {
+        return { provider: provider.name, useSharedCredentials: false, auth: { authType: 'MCP_OAUTH2' } };
+    }
+    if (provider.authMode === 'MCP_OAUTH2_GENERIC') {
+        return { provider: provider.name, useSharedCredentials: false, auth: { authType: 'MCP_OAUTH2_GENERIC' } };
+    }
+    return { provider: provider.name, useSharedCredentials: false };
+}
+
+export function hasCustomSetup(provider: Pick<ApiProviderListItem, 'authMode' | 'preConfigured'>): boolean {
+    return provider.preConfigured || provider.authMode === 'MCP_OAUTH2' || provider.authMode === 'MCP_OAUTH2_GENERIC';
 }
 
 export function countIntegrationsByProvider(integrations: { provider: string }[]): Map<string, number> {

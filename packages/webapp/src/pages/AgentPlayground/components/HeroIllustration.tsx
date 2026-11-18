@@ -47,13 +47,13 @@ const GLOW_GRADIENT = `radial-gradient(closest-side, var(--hero-glow), ${glowAt(
 
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
-export const HeroIllustration: React.FC = () => {
+export const HeroIllustration: React.FC<{ animated?: boolean }> = ({ animated = true }) => {
     const rootRef = useRef<HTMLDivElement>(null);
     const maskId = useId().replace(/[^\w-]/g, '');
 
     useEffect(() => {
         const root = rootRef.current;
-        if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        if (!root || !animated || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             return;
         }
         const start = (): (() => void) | undefined => {
@@ -270,12 +270,14 @@ export const HeroIllustration: React.FC = () => {
             clearTimeout(timer);
             stop?.();
         };
-    }, []);
+    }, [animated]);
 
     return (
         <div
             ref={rootRef}
             aria-hidden
+            // Every part starts hidden while this is set. A still illustration must leave it off.
+            data-animated={animated || undefined}
             className="group relative shrink-0 select-none [--hero-accent:var(--color-icon-brand)] [--hero-glow:color-mix(in_srgb,var(--hero-accent)_16%,transparent)] [--hero-line:var(--color-border-default)] dark:[--hero-glow:color-mix(in_srgb,var(--hero-accent)_18%,transparent)] dark:[--hero-line:color-mix(in_srgb,var(--hero-accent)_35%,transparent)]"
             style={{ width: WIDTH, height: HEIGHT }}
         >
@@ -292,7 +294,7 @@ export const HeroIllustration: React.FC = () => {
                                     stroke="white"
                                     strokeWidth={4}
                                     strokeDasharray={1}
-                                    className="motion-safe:[stroke-dashoffset:1]"
+                                    className="motion-safe:group-data-animated:[stroke-dashoffset:1]"
                                 />
                             </mask>
                             <path
@@ -328,7 +330,7 @@ export const HeroIllustration: React.FC = () => {
                 <div
                     key={provider}
                     data-part={`tile-${provider}`}
-                    className="absolute grid place-items-center rounded-ds-sm border border-border-default bg-surface-panel motion-safe:opacity-0"
+                    className="absolute grid place-items-center rounded-ds-sm border border-border-default bg-surface-panel motion-safe:group-data-animated:opacity-0"
                     style={{ left: CENTER.x + x - TILE_SIZE / 2, top: CENTER.y + y - TILE_SIZE / 2, width: TILE_SIZE, height: TILE_SIZE }}
                 >
                     {provider === 'github' ? (
@@ -345,15 +347,18 @@ export const HeroIllustration: React.FC = () => {
 
             <div className="absolute size-14" style={{ left: CENTER.x - 28, top: CENTER.y - 28 }}>
                 <div className="pointer-events-none absolute -inset-16 transition-opacity duration-900 ease-out group-data-idle:opacity-0">
-                    <div data-part="glow" className="size-full rounded-full motion-safe:opacity-0" style={{ background: GLOW_GRADIENT }} />
+                    <div data-part="glow" className="size-full rounded-full motion-safe:group-data-animated:opacity-0" style={{ background: GLOW_GRADIENT }} />
                 </div>
                 <div
                     data-part="box"
-                    className="absolute inset-0 rounded-ds-md border border-[color-mix(in_srgb,var(--hero-accent)_40%,white)] bg-white transition-colors duration-900 ease-out group-data-idle:border-border-default motion-safe:scale-50 motion-safe:opacity-0 dark:border-[color-mix(in_srgb,var(--hero-accent)_55%,black)] dark:bg-black dark:group-data-idle:border-border-default"
+                    className="absolute inset-0 rounded-ds-md border border-[color-mix(in_srgb,var(--hero-accent)_40%,white)] bg-white transition-colors duration-900 ease-out group-data-idle:border-border-default motion-safe:group-data-animated:scale-50 motion-safe:group-data-animated:opacity-0 dark:border-[color-mix(in_srgb,var(--hero-accent)_55%,black)] dark:bg-black dark:group-data-idle:border-border-default"
                 />
-                <div data-part="mark" className="absolute inset-3.5 motion-safe:opacity-0">
+                <div data-part="mark" className="absolute inset-3.5 motion-safe:group-data-animated:opacity-0">
                     <LogoInverted className="absolute inset-0 size-full text-text-strong" />
-                    <LogoInverted data-part="mark-lit" className="absolute inset-0 hidden size-full text-white motion-safe:opacity-0 dark:block" />
+                    <LogoInverted
+                        data-part="mark-lit"
+                        className="absolute inset-0 hidden size-full text-white motion-safe:group-data-animated:opacity-0 dark:block"
+                    />
                 </div>
             </div>
         </div>

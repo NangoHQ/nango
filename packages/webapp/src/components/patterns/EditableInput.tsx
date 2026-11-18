@@ -1,10 +1,9 @@
 import { Check, Loader2, Pencil, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from '@nangohq/design-system';
+import { CopyButton, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { CopyButton } from '../ui/CopyButton';
 import { ConditionalTooltip } from './ConditionalTooltip';
 
 export interface EditableInputProps {
@@ -117,7 +116,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
     return (
         // In read mode the control is editable-looking but not editable, so drop the text caret cursor.
         <div className={`flex flex-col gap-2 ${!editing ? '[&_input]:cursor-default [&_textarea]:cursor-default' : ''}`}>
-            <InputGroup>
+            <InputGroup readOnlyStyle="editable">
                 {textArea && (!secret || editing) ? (
                     <InputGroupTextarea
                         ref={textareaRef}
@@ -168,7 +167,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                         </ConditionalTooltip>
                         <InputGroupAddon align="inline-end">
                             <PermissionGate condition={canRead || !secret} tooltipSide="bottom">
-                                {(allowed) => <CopyButton disabled={!allowed} text={value} className="size-6 p-0" />}
+                                {(allowed) => <CopyButton disabled={!allowed} value={value} size="2xs" />}
                             </PermissionGate>
                         </InputGroupAddon>
                     </>

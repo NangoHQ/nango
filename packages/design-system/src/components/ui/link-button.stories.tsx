@@ -5,7 +5,7 @@ import { LinkButton } from './link-button';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
-    title: 'Design System/Components/LinkButton',
+    title: 'Design System/Components/Buttons/LinkButton',
     parameters: { layout: 'padded' }
 };
 

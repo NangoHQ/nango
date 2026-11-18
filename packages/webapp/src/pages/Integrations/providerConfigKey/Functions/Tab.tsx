@@ -2,11 +2,10 @@ import { Code, Plus, Search } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Button, CopyButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { ButtonLink } from '@/components/ui/ButtonLink';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
@@ -62,10 +61,9 @@ function FunctionNameCell({ name, description }: { name: string; description?: s
             <div className="flex min-w-0 flex-col gap-0.5">
                 <div className="flex min-w-0 items-center gap-1">
                     <span className="truncate type-code-medium-sm text-text-default">{name}</span>
-                    <CopyButton
-                        text={name}
-                        className="size-4 shrink-0 p-0 opacity-0 transition-opacity group-focus-within/function-row:opacity-100 group-hover/function-row:opacity-100"
-                    />
+                    <span className="flex shrink-0 opacity-0 transition-opacity group-focus-within/function-row:opacity-100 group-hover/function-row:opacity-100">
+                        <CopyButton size="2xs" value={name} />
+                    </span>
                 </div>
                 {description && (
                     <span className="truncate text-ds-xs font-ds-regular leading-ds-normal tracking-ds-tight text-text-disabled">{description}</span>
@@ -95,7 +93,7 @@ function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integrat
     return (
         <div className="flex items-center gap-1.5">
             <span className={cn('type-label-sm', fn.enabled ? 'text-text-link-success' : 'text-text-secondary')}>{fn.enabled ? 'Enabled' : 'Disabled'}</span>
-            {isSyncOrAction(fn) && <FunctionSwitch flow={fn} integration={integration} variant="success" />}
+            {isSyncOrAction(fn) && <FunctionSwitch flow={fn} integration={integration} />}
         </div>
     );
 }

@@ -1,0 +1,38 @@
+---
+title: 'FilePost - How do I link my account?'
+sidebarTitle: 'FilePost'
+---
+
+## Overview
+
+To authenticate with FilePost, you need:
+
+1. **API Key** — the key FilePost issues to your account when you sign up with your email address.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A FilePost account. The Free plan is enough and needs no credit card: it gives one provisional upload, then 15 uploads per month once you verify your email.
+
+### Step 1: Get your API key
+
+1. Open the [FilePost API documentation](https://filepost.dev/docs) and click **Get API Key** in the top navigation.
+2. Enter your email address and click **Get API key**.
+3. In the **Your API key is ready** dialog, click **Copy API key** and store the key securely. The key starts with `fh_`.
+
+<img src="/api-integrations/filepost/api_key_created.png" alt="FilePost Your API key is ready dialog with the Copy API key button highlighted" />
+
+4. Optional: verify your email from the [FilePost dashboard](https://filepost.dev/dashboard) to unlock the full free allowance.
+
+If you rotate your key later, FilePost invalidates the old key immediately, so update your connection with the new one.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with FilePost.
+2. Enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/filepost/form.png" alt="FilePost Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to FilePost.
