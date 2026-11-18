@@ -1,0 +1,98 @@
+---
+title: 'Toolsets & tools'
+sidebarTitle: 'Toolsets & tools'
+description: 'Configure tools for an agent session.'
+---
+
+A toolset defines which integrations and tools an agent can use in a session. You build it from the integrations enabled in your Nango environment.
+
+## Select integrations and tools
+
+Set `toolset` when you create the session. Use integration IDs as keys and specify which tools to include for each one.
+
+```json
+{
+  "toolset": {
+    "notion": { "allow": { "tools": ["read_doc", "upsert_doc"] } },
+    "slack": "*"
+  }
+}
+```
+
+You can use the following selectors:
+- `"*"` on an integration means every tool on it (or every tool of its MCP server)
+- `allow` makes the integration an allowlist, where `"*"` means every tool
+- `deny` always subtracts from whatever `allow` gave
+- To deny an integration entirely, leave it out of the toolset
+- `toolset: "*"` at the top level means every integration in the environment
+- Leaving `toolset` out entirely means every integration the tenant resolved a connection for, which is narrower than `"*"`
+
+<Warning>
+Enabling [`nango_proxy`](/guides/agent-sessions/meta-tools#nango_proxy) lets the agent bypass tool-level `allow` and `deny` rules for connected integrations in the toolset.
+</Warning>
+
+Sessions can expose the tools in your integration and [MCP server tools](#mcp-server-tools). Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
+
+## Pinned tools
+
+By default, everything in the toolset is searchable with the [`nango_tool_search`](/guides/agent-sessions/meta-tools#nango_tool_search) meta tool, but none of it is listed in the MCP server's tool list. This keeps a large toolset from filling the agent's context with hundreds of definitions it will never call.
+
+`pinned_tools` exposes specific tools in that list, so they are in context as soon as the agent loads the server:
+
+```json
+{
+  "toolset": { "notion": { "allow": { "tools": ["read_doc", "upsert_doc"] } } },
+  "pinned_tools": { "notion": ["read_doc"] }
+}
+```
+
+A pinned tool must be in the toolset, otherwise creation fails with `tool_not_in_toolset`.
+
+## MCP server tools
+
+Integrations for MCP servers, such as [Notion (MCP)](/api-integrations/notion-mcp) or [Linear (MCP)](/api-integrations/linear-mcp), bring the server's own tools into the session. Include the integration in the toolset like any other and give the [tenant](/guides/agent-sessions/tenant) a connection to it.
+
+When the session is created, Nango lists the tools of each connected MCP server in the toolset and adds them alongside its Nango tools. From then on they work like any other tool:
+
+- `nango_tool_search` finds them, with the input schema the server gave
+- Pinned, they are listed with that input schema and the server's annotations
+- Calling one by its listed name or through `nango_execute` runs it on the server, on the session's connection, and returns the server's result as is
+
+```json
+{
+  "toolset": {
+    "notion-mcp": { "allow": { "tools": ["notion-search", "notion-fetch"] } },
+    "linear-mcp": { "deny": { "tools": ["delete_comment"] } }
+  },
+  "pinned_tools": { "notion-mcp": ["notion-search"] }
+}
+```
+
+`allow`, `deny` and `pinned_tools` name a tool exactly as the server lists it. In the session, the tool gets a name like a Nango tool's, such as `notion-mcp__notion-search`. Agents call it by the name the tool list or `nango_tool_search` gives.
+
+The list is taken once, at creation. Tools the server adds or removes afterwards don't change the session, so create a new one to pick them up.
+
+### When a server can't be listed
+
+A server that fails or does not answer `tools/list` within 10 seconds does not fail session creation. The session is created without that server's tools, and the toolset summary says so with `mcp_server`:
+
+```json
+{
+  "toolset": {
+    "notion-mcp": { "connected": true, "tools_pinned": 0, "tools_searchable": 0, "mcp_server": "unavailable" },
+    "linear-mcp": { "connected": true, "tools_pinned": 1, "tools_searchable": 23, "mcp_server": "available" }
+  }
+}
+```
+
+`mcp_server` is only present for integrations with a connected MCP server.
+
+### Running MCP server tools
+
+Every call goes through the [Nango proxy](/guides/auth/proxy-requests), so Nango applies and refreshes the connection's credentials, and the call shows up in Nango logs as a proxy operation.
+
+A result the server marks with `isError` reaches the agent unchanged. When the call itself fails, the agent gets an error that says what to do next:
+
+- **Timeout:** a tool has 60 seconds to answer. The agent is told it may still have run, so it checks before calling again.
+- **Too large:** results are capped at 5 MB. The agent is told to narrow its input.
+- **Refused:** a `403` on one tool, for example a missing OAuth scope, fails that tool only. A `401`, or a `403` before any tool runs, means the connection needs reconnecting, see [reconnecting a connection](/guides/agent-sessions/meta-tools#reconnecting-a-connection).

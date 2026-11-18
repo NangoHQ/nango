@@ -20,7 +20,10 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## Guides
 
-- [Agent sessions](https://nango.dev/docs/guides/agent-sessions.md): Optimized interface for AI agents to use integrations
+- [Agent sessions: Agent sessions](https://nango.dev/docs/guides/agent-sessions.md): Connect your AI agent to 1,300+ APIs.
+- [Agent sessions: Tenant](https://nango.dev/docs/guides/agent-sessions/tenant.md): Choose on whose behalf an agent session acts
+- [Agent sessions: Toolsets & tools](https://nango.dev/docs/guides/agent-sessions/toolsets.md): Configure tools for an agent session.
+- [Agent sessions: Meta tools](https://nango.dev/docs/guides/agent-sessions/meta-tools.md): Built-in tools for agent sessions.
 - [Auth: Auth guide](https://nango.dev/docs/guides/auth/overview.md): Let your users connect external APIs to your agents & apps.
 - [Auth: Customize Connect UI](https://nango.dev/docs/guides/auth/customize-connect-ui.md): Guide to branding Nango Connect UI, overriding setup links, or building a headless auth flow with your own UI.
 - [Auth: Share a connect link](https://nango.dev/docs/guides/auth/share-connect-link.md): Generate a short-lived connect link and share it with your end user.

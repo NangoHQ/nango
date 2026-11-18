@@ -307,7 +307,16 @@
           {
             "group": "Guides",
             "pages": [
-              "guides/agent-sessions",
+              {
+                "group": "Agent sessions",
+                "expanded": false,
+                "pages": [
+                  "guides/agent-sessions",
+                  "guides/agent-sessions/tenant",
+                  "guides/agent-sessions/toolsets",
+                  "guides/agent-sessions/meta-tools"
+                ]
+              },
               {
                 "group": "Auth",
                 "expanded": false,
