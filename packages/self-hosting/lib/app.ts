@@ -1,5 +1,8 @@
 import './tracer.js';
 
+import { setTimeout } from 'node:timers/promises';
+
+import { destroyHostedTelemetryDb } from '@nangohq/hosted-telemetry';
 import { metrics, once, report } from '@nangohq/utils';
 
 import { boot as bootCloud } from './cloud/boot.js';
@@ -27,6 +30,8 @@ process.on('uncaughtException', (err) => {
 
 let api: Server;
 let clickhouse: ClickHouseClient | undefined;
+let uploadTelemetry: { abort: () => Promise<void> } | undefined;
+const UPLOAD_TELEMETRY_STOP_TIMEOUT_MS = 5_000;
 
 try {
     let server: Express;
@@ -35,7 +40,7 @@ try {
         clickhouse = cloud.clickhouse;
         server = createCloudServer(cloud);
     } else {
-        await bootInstallation();
+        ({ uploadTelemetry } = await bootInstallation());
         server = createInstallationServer();
     }
 
@@ -57,10 +62,14 @@ try {
 
 const close = once(() => {
     logger.info('Closing...');
+    const uploadTelemetryStopped = uploadTelemetry?.abort();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     api.close(async () => {
+        // A page being sent can take minutes when Nango is slow. It is sent again later, so we do not wait for it.
+        await Promise.race([uploadTelemetryStopped, setTimeout(UPLOAD_TELEMETRY_STOP_TIMEOUT_MS, undefined, { ref: false })]);
         await destroyCloudDb();
         await clickhouse?.close();
+        await destroyHostedTelemetryDb();
 
         logger.close();
 
