@@ -13179,6 +13179,54 @@ epic-games:
         base_url: https://api.epicgames.dev
     docs: https://nango.dev/docs/integrations/all/epic-games
 
+epicor-prophet-21:
+    display_name: Epicor Prophet 21
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.hostname}/api/security/token/v2
+    token_params:
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: AccessToken
+        token_expiration: ExpiresInSeconds
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            accept: application/json
+    docs: https://nango.dev/docs/api-integrations/epicor-prophet-21
+    docs_connect: https://nango.dev/docs/api-integrations/epicor-prophet-21/connect
+    connection_config:
+        hostname:
+            type: string
+            title: P21 Server Hostname
+            description: The hostname of your Prophet 21 API server.
+            example: play.example.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-p21-server-hostname'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: The username of the P21 user the integration acts as.
+            example: api_user
+            order: 1
+            doc_section: '#step-2-set-up-a-p21-api-user'
+        password:
+            type: string
+            title: Password
+            description: That P21 user's password.
+            secret: true
+            order: 2
+            doc_section: '#step-2-set-up-a-p21-api-user'
+
 epost-klara:
     display_name: ePost (KLARA)
     categories:
