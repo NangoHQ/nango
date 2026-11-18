@@ -33,6 +33,11 @@ describe('describeShape', () => {
         const wide = Object.fromEntries(Array.from({ length: 50 }, (_, i) => [`k${i}`, i]));
         expect(describeShape(wide)).toContain('/* 10 more keys */');
     });
+
+    it('marks objects past the depth limit instead of showing them as empty', () => {
+        expect(describeShape(nested(9, { a: 1 }))).toContain('{ /* too deep to outline */ }');
+        expect(describeShape({ a: {} })).toBe('{\n  a: {};\n}');
+    });
 });
 
 describe('describeResult', () => {
@@ -42,4 +47,23 @@ describe('describeResult', () => {
             items: [{ i: 0, text: `${'z'.repeat(120)}… (500 chars)` }, { i: 1, text: `${'z'.repeat(120)}… (500 chars)` }, '… 8 more items']
         });
     });
+
+    it('stays structured past the depth limit', () => {
+        const { sample } = describeResult(nested(8, { rows: Array.from({ length: 500 }, (_, i) => ({ i, text: 'z'.repeat(500) })) }));
+
+        expect(typeof sample).toBe('object');
+        expect(JSON.stringify(sample)).toContain('"… object with 1 keys"');
+    });
+
+    it('caps the keys of very wide objects so the sample stays structured', () => {
+        const wide = Object.fromEntries(Array.from({ length: 5_000 }, (_, i) => [`id_${i}`, { i }]));
+        const { sample } = describeResult(wide) as { sample: Record<string, unknown> };
+
+        expect(Object.keys(sample)).toHaveLength(41);
+        expect(sample['…']).toBe('4960 more keys');
+    });
 });
+
+function nested(levels: number, leaf: unknown): unknown {
+    return levels === 0 ? leaf : { child: nested(levels - 1, leaf) };
+}

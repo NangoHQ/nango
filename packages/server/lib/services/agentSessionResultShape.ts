@@ -14,7 +14,7 @@ interface Shape {
     booleans: number;
     numbers: number;
     strings: { count: number; totalChars: number; dates: number };
-    object: { count: number; keys: Map<string, Shape> } | null;
+    object: { count: number; keys: Map<string, Shape>; unexpanded: number } | null;
     array: { count: number; minLength: number; maxLength: number; items: Shape } | null;
 }
 
@@ -37,14 +37,22 @@ export function sampleValue(value: unknown, depth = 0): unknown {
     if (typeof value === 'string') {
         return value.length > SAMPLE_STRING_CHARS ? `${value.slice(0, SAMPLE_STRING_CHARS)}… (${value.length} chars)` : value;
     }
-    if (depth >= MAX_DEPTH || value === null || typeof value !== 'object') {
+    if (value === null || typeof value !== 'object') {
         return value;
     }
     if (Array.isArray(value)) {
+        if (depth >= MAX_DEPTH) {
+            return `… array of ${value.length} items`;
+        }
         const kept = value.slice(0, SAMPLE_ARRAY_ITEMS).map((item) => sampleValue(item, depth + 1));
         return value.length > SAMPLE_ARRAY_ITEMS ? [...kept, `… ${value.length - SAMPLE_ARRAY_ITEMS} more items`] : kept;
     }
-    return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, sampleValue(child, depth + 1)]));
+    const entries = Object.entries(value);
+    if (depth >= MAX_DEPTH) {
+        return `… object with ${entries.length} keys`;
+    }
+    const kept = entries.slice(0, MAX_KEYS).map(([key, child]) => [key, sampleValue(child, depth + 1)]);
+    return Object.fromEntries(entries.length > MAX_KEYS ? [...kept, ['…', `${entries.length - MAX_KEYS} more keys`]] : kept);
 }
 
 function emptyShape(): Shape {
@@ -76,9 +84,11 @@ function collect(shape: Shape, value: unknown, depth: number): Shape {
             }
         }
     } else if (typeof value === 'object') {
-        shape.object ??= { count: 0, keys: new Map() };
+        shape.object ??= { count: 0, keys: new Map(), unexpanded: 0 };
         shape.object.count += 1;
-        if (depth < MAX_DEPTH) {
+        if (depth >= MAX_DEPTH) {
+            shape.object.unexpanded += 1;
+        } else {
             for (const [key, child] of Object.entries(value)) {
                 let childShape = shape.object.keys.get(key);
                 if (!childShape) {
@@ -129,7 +139,7 @@ function render(shape: Shape, indent: number): string {
 
 function renderObject(object: NonNullable<Shape['object']>, indent: number): string {
     if (object.keys.size === 0) {
-        return '{}';
+        return object.unexpanded > 0 ? '{ /* too deep to outline */ }' : '{}';
     }
     const pad = '  '.repeat(indent + 1);
     const entries = [...object.keys.entries()];

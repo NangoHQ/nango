@@ -4,15 +4,11 @@ import { records, format as recordsFormatter } from '@nangohq/records';
 import { agentSessionResultModel } from '@nangohq/shared';
 import { Err, Ok, report } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { describeResult } from './agentSessionResultShape.js';
 
 import type { AgentSession, AgentSessionResolvedConnection, DBPlan } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-
-export const INLINE_RESULT_MAX_BYTES = 8 * 1024;
-export const MAX_STORED_RESULT_BYTES = 10 * 1024 * 1024;
-export const MAX_STORED_RESULTS_PER_SESSION = 200;
-export const MAX_STORED_BYTES_PER_SESSION = 200 * 1024 * 1024;
 
 // Records belong to a sync, and a stored result has none. No records code reads or deletes by sync id.
 const STORED_RESULT_SYNC_ID = '00000000-0000-4000-8000-00000000a9e7';
@@ -61,32 +57,14 @@ export async function toolResultForAgent({
     data: unknown;
 }): Promise<unknown> {
     const bytes = Buffer.byteLength(JSON.stringify(data ?? null), 'utf8');
-    if (!session.metaTools.nangoRunCode || bytes <= INLINE_RESULT_MAX_BYTES) {
+    if (!session.metaTools.nangoRunCode || bytes <= envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES) {
         return data;
     }
 
-    if (bytes > MAX_STORED_RESULT_BYTES) {
+    if (bytes > envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES) {
         return {
             data,
-            notice: `This result is over the ${formatMegabytes(MAX_STORED_RESULT_BYTES)} that can be stored, so it is returned in full.`
-        } satisfies UnstoredToolResult;
-    }
-
-    const usage = await getSessionUsage({ session, environmentId, connection });
-    if (usage.isErr()) {
-        report(usage.error);
-        return data;
-    }
-    if (usage.value.count >= MAX_STORED_RESULTS_PER_SESSION) {
-        return {
-            data,
-            notice: `This session already stores ${MAX_STORED_RESULTS_PER_SESSION} results, the most it can, so this one is returned in full.`
-        } satisfies UnstoredToolResult;
-    }
-    if (usage.value.bytes + bytes > MAX_STORED_BYTES_PER_SESSION) {
-        return {
-            data,
-            notice: `This session already stores close to ${formatMegabytes(MAX_STORED_BYTES_PER_SESSION)} of results, the most it can, so this one is returned in full.`
+            notice: `This result is over the ${formatMegabytes(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES)} that can be stored, so it is returned in full.`
         } satisfies UnstoredToolResult;
     }
 
@@ -152,32 +130,6 @@ async function storeToolResult({
     }
 
     return Ok(encodeResultId({ integrationId: connection.integrationId, recordId }));
-}
-
-/** Across every connection of the session, since each stores its own results under the same model. */
-async function getSessionUsage({
-    session,
-    environmentId,
-    connection
-}: {
-    session: AgentSession;
-    environmentId: number;
-    connection: AgentSessionResolvedConnection;
-}): Promise<Result<{ count: number; bytes: number }>> {
-    const model = agentSessionResultModel(session.id);
-    const connectionIds = new Set([connection.internalConnectionId, ...Object.values(session.resolvedConnections).map((c) => c.internalConnectionId)]);
-
-    let count = 0;
-    let bytes = 0;
-    for (const connectionId of connectionIds) {
-        const counts = await records.getCountsByModel({ connectionId, environmentId, models: [model] });
-        if (counts.isErr()) {
-            return Err(counts.error);
-        }
-        count += counts.value[model]?.count ?? 0;
-        bytes += counts.value[model]?.size_bytes ?? 0;
-    }
-    return Ok({ count, bytes });
 }
 
 function formatMegabytes(bytes: number): string {
