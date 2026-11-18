@@ -198,7 +198,7 @@ export const TeamMembers: React.FC = () => {
                                                 <div className="flex items-start justify-between gap-3">
                                                     <p className="text-body-medium-medium text-text-strong">Role access changed</p>
                                                     <PopoverClose asChild>
-                                                        <IconButton variant="ghost" size="sm" label="Close role access warning">
+                                                        <IconButton variant="ghost" size="sm" inline label="Close role access warning">
                                                             <X />
                                                         </IconButton>
                                                     </PopoverClose>
