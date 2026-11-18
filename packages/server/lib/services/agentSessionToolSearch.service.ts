@@ -123,23 +123,10 @@ export type ToolSlugLookup = (tool: { integration: string; action: string }) => 
  * Searches the session's tools, one ranking per query, and returns each query's matches with
  * their input schema and its related tools by name only.
  *
- * Each query is ranked on its own:
- * 1. Every pinned and searchable tool in the session is a candidate.
- * 2. Stopwords are dropped from the query and each remaining word is fuzzy matched against the
- *    tool's action, description, integration and provider. A tool's score is the share of words
- *    it fails to answer, from 0 (all of them) to 1 (none). Tools above MAX_MATCH_SCORE are dropped.
- * 3. A tool is a match when it scores within the cutting line. The line is BEST_MATCH_SCORE, or
- *    a margin behind the top tool when that tool scores within LEADING_MATCH_SCORE, so a tool a
- *    long query clearly leads with is not lost to the words around it.
- * 4. When several tools share the top score, the one whose name and description hold the most
- *    query words exactly, stopwords included, is the only match. If the words cannot tell them
- *    apart either, none is a match and the agent is told to search again by tool name.
- * 5. Anything that is not a match is related, up to MAX_BEST_MATCHES matches and
- *    MAX_RELATED_CANDIDATES related tools.
- *
- * Then across the queries in the call, related tools are trimmed: each is listed once, under the
- * query it scores best on, and not at all when another query matches it. A query keeps fewer
- * when it already has a match.
+ * Each query is scored word by word against every tool in the session (scoreCandidates), cut
+ * into matches and related tools at a line that follows the top score (bestMatchScoreFor), with
+ * a tie for the top broken or left unpromoted (breakLeadingTie). Related tools are then trimmed
+ * across the queries in the call, so each is listed once (trimRelated).
  */
 export async function searchSessionTools({
     account,
@@ -223,6 +210,7 @@ export async function searchSessionTools({
     }
 }
 
+/** Keeps at most MAX_BEST_MATCHES matches, and MAX_RELATED_CANDIDATES related tools for trimRelated to pick from. */
 export function rankSessionTools({ session, query, slugOf }: { session: AgentSession; query: string; slugOf: ToolSlugLookup }): {
     best: ScoredCandidate[];
     related: ScoredCandidate[];
@@ -248,7 +236,11 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
     return { best, related, tied: lead === 'tied' && (scored[0]?.score ?? 1) <= bestMatchScore };
 }
 
-// Exact words, not fuzzy ones, since a fuzzy 'get' also hits 'delete' and would break the tie wrongly.
+/**
+ * When several tools share the top score, the one whose name and description hold the most query
+ * words, stopwords included, is the only match. If the words cannot tell them apart either, none is
+ * a match. Words are compared exactly, since a fuzzy 'get' also hits 'delete'.
+ */
 function breakLeadingTie({ scored, query }: { scored: { candidate: SearchCandidate; score: number }[]; query: string }): {
     scored: { candidate: SearchCandidate; score: number }[];
     lead: 'single' | 'tie_broken' | 'tied';
@@ -283,6 +275,11 @@ function singular(word: string): string {
     return word.length > 3 && word.endsWith('s') ? word.slice(0, -1) : word;
 }
 
+/**
+ * Unmatched query words can give even a well-fitting top tool a high score, so the line follows the
+ * top result: a margin behind it when it scores within LEADING_MATCH_SCORE, never stricter than
+ * BEST_MATCH_SCORE, and BEST_MATCH_SCORE alone otherwise. Lower scores are better.
+ */
 function bestMatchScoreFor(topScore: number | undefined): number {
     if (topScore === undefined || topScore > LEADING_MATCH_SCORE) {
         return BEST_MATCH_SCORE;
@@ -292,8 +289,10 @@ function bestMatchScoreFor(topScore: number | undefined): number {
 }
 
 /**
- * A query that is full passes a tool on to its next closest query rather than dropping it.
- * Matches are never trimmed, so every query keeps its own answer.
+ * A related tool is listed once per call, under the closest query that still has room, and not at
+ * all when another query returns it as a match. A query keeps at most MAX_RELATED_WITH_MATCH related
+ * tools when it has a match, and MAX_RELATED_WITHOUT_MATCH otherwise. Matches are never trimmed, so
+ * every query keeps its own answer.
  */
 export function trimRelated<T extends { best: ScoredCandidate[]; related: ScoredCandidate[] }>(rankings: T[]): (T & { relatedElsewhere: boolean })[] {
     const matched = new Set(rankings.flatMap(({ best }) => best.map((candidate) => candidate.slug)));
@@ -321,7 +320,12 @@ export function trimRelated<T extends { best: ScoredCandidate[]; related: Scored
     }));
 }
 
-// A word at a time, because Fuse matches the query as one pattern and a sentence then matches nothing.
+/**
+ * Each word is fuzzy matched on its own against the tool's action, description, integration and
+ * provider, because Fuse matches a query as one pattern and a sentence then matches nothing. A
+ * tool's score is the share of words it fails to answer, from 0 (all) to 1 (none), and a tool
+ * above MAX_MATCH_SCORE is dropped.
+ */
 function scoreCandidates({ candidates, terms }: { candidates: SearchCandidate[]; terms: string[] }): { candidate: SearchCandidate; score: number }[] {
     if (terms.length === 0) {
         return [];
@@ -349,7 +353,7 @@ function scoreCandidates({ candidates, terms }: { candidates: SearchCandidate[];
         );
 }
 
-// A query of only stopwords, like 'how to', is searched as written rather than returning nothing.
+// Stopwords are dropped, unless nothing else is left: a query like 'how to' is searched as written.
 function queryTerms(query: string): string[] {
     const words = queryWords(query);
     const meaningful = words.filter((word) => word.length > 1 && !STOPWORDS.has(word));
