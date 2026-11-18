@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import yaml from 'js-yaml';
 
-import type { Provider } from '@nangohq/types';
+import type { FlowsZeroJson, Provider } from '@nangohq/types';
 
 const prettyAuthModes: Record<string, string> = {
     OAUTH1: 'OAuth',
@@ -30,7 +30,7 @@ const snippetsPath = 'docs/snippets/generated';
 const snippetSkipList = new Set(['confluence']);
 
 const flowsString = await fs.readFile(flowsPath, 'utf-8');
-const flows = JSON.parse(flowsString);
+const flows = JSON.parse(flowsString) as FlowsZeroJson;
 const providers = yaml.load(await fs.readFile(providersPath, 'utf-8')) as Record<string, Provider>;
 
 const useCases: Record<string, any> = {};
@@ -38,7 +38,8 @@ for (const flow of flows) {
     const integration = flow.providerConfigKey;
     const actions = flow.actions;
     const syncs = flow.syncs;
-    useCases[integration] = buildEndpoints('action', actions).concat(buildEndpoints('sync', syncs));
+    const tools = flow.functions?.filter((fn) => fn.type === 'tool');
+    useCases[integration] = buildEndpoints('action', actions).concat(buildEndpoints('sync', syncs), buildEndpoints('tool', tools));
 }
 
 const providersHandled: string[] = [];
