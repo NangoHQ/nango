@@ -11,8 +11,8 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## Getting started
 
-- [Introduction](https://nango.dev/docs/getting-started/intro-to-nango.md): The tool calling layer for AI agents: 1,300+ APIs and 10,000+ pre-built tools, on an execution engine that improves with every run.
-- [Quickstart](https://nango.dev/docs/getting-started/quickstart.md): Give your AI agent access to Gmail, Slack, Notion, and 1,000+ other APIs
+- [Introduction](https://nango.dev/docs/getting-started/intro-to-nango.md): The tool calling layer for AI agents across 1,300+ APIs.
+- [Quickstart](https://nango.dev/docs/getting-started/quickstart.md): Give your AI agent access to Gmail, Slack, Notion, and 1,300+ other APIs
 - [Coding agent setup](https://nango.dev/docs/getting-started/coding-agent-setup.md): Connect your coding agent to Nango
 - [Use cases: Tool calling for AI agents](https://nango.dev/docs/getting-started/use-cases/tool-calling.md): Give agents scoped, observable access to external APIs through Nango tools.
 - [Use cases: Sync external API data](https://nango.dev/docs/getting-started/use-cases/syncs.md): Keep external API data fresh for your product, RAG pipeline, or change-detection workflow.

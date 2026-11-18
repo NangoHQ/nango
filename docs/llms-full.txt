@@ -5,19 +5,23 @@
 ## Introduction
 
 Source: https://nango.dev/docs/getting-started/intro-to-nango.md
-Description: The tool calling layer for AI agents: 1,300+ APIs and 10,000+ pre-built tools, on an execution engine that improves with every run.
+Description: The tool calling layer for AI agents across 1,300+ APIs.
 
 ## What is Nango?
 
-Nango is the tool calling layer for AI agents. It makes your agents powerful with actions and smart with context across [1,300+ APIs](/integrations/overview).
+Nango is the tool calling layer for AI agents.
 
-Your agent gets a catalog of 10,000+ pre-built tools, with auth and Nango-managed OAuth apps for every API. Tool calls run on Nango's execution engine: token-efficient, fast, secure, and governed, with every call observable.
+It makes your agents powerful with actions, and smart with context, across [1,300+ APIs](/integrations/overview).
+
+Your agent gets a catalog of 10,000+ pre-built tools with built-in auth, Nango-managed OAuth apps, a token-efficient execution engine for fast and secure tool calls, and built-in governance, observability, and audit logs for every call.
 
 ## Why it matters
 
-Launch hundreds of integrations today, not in weeks. Pre-built tools and auth work out of the box, so you add APIs as your customers ask for them, without building each one.
+**Launch hundreds of integrations today.**  
+Pre-built tools and auth work out of the box, so you add APIs as your customers ask for them, without building each one.
 
-Your agents are only as good as their tools. Nango tunes its tools on production runs: they return only what the task needs instead of a 150 KB email thread, and they handle undocumented API quirks before your agent hits them. Official MCP servers and hand-rolled tools don't learn from production.
+**Your agents are only as good as their tools.**  
+Nango tunes its tools on hundreds of millions of production runs. It learns which tasks agents actually run, then shapes the tools, their inputs and their responses around those tasks. It adds plans for multi-step work and instructions for undocumented API quirks. Your agents complete more tasks with fewer tokens and errors, and they get better with every run. Official MCP servers and hand-rolled tools don’t learn from production.
 
 Nango runs on Nango Cloud, in your own cloud account (BYOC), or self-hosted.
 
@@ -25,15 +29,15 @@ Nango runs on Nango Cloud, in your own cloud account (BYOC), or self-hosted.
 
 <Steps>
   <Step id="add-nango" title="Add Nango to your agent">
-    Create an agent session from your backend and connect your agent to it over MCP. One integration gives your agent access to every API in Nango.
+    One integration gives your agent access to every API in Nango: [Quickstart](/getting-started/quickstart)
   </Step>
 
-  <Step id="access-apis" title="Your agent accesses 1,300+ APIs">
+  <Step id="access-apis" title="Your agent acts across 1,300+ APIs">
     Your users connect their accounts through Nango Auth. Your agent searches the catalog, finds the right tools, and calls them on the user's behalf, without ever seeing credentials.
   </Step>
 
-  <Step id="observe-control" title="You observe and control every call">
-    Scope what each agent can do for each user. See logs and a full audit trail for every tool call, across all APIs, in one dashboard.
+  <Step id="observe-control" title="You control and observe every call">
+    Scope what each agent can see and do for each user. See logs and a full audit trail for every tool call, across all APIs, in one dashboard.
   </Step>
 </Steps>
 
@@ -49,11 +53,11 @@ Nango runs on Nango Cloud, in your own cloud account (BYOC), or self-hosted.
   </Card>
 
   <Card title="Triggers" icon="bolt" href="/getting-started/use-cases/webhooks-from-external-apis">
-    React to changes in external APIs and wake up your agents, through webhooks or polling.
+    React to changes in external APIs and wake your agents up, through webhooks or polling.
   </Card>
 
   <Card title="Custom tools" icon="sliders" href="/getting-started/use-cases/customer-configuration">
-    Add your own tools in TypeScript and adapt them per customer without forking code.
+    Add your own tools in TypeScript and add customer-specific config.
   </Card>
 
   <Card title="Two-way data sync" icon="arrows-rotate" href="/getting-started/use-cases/syncs">
@@ -68,8 +72,8 @@ Nango runs on Nango Cloud, in your own cloud account (BYOC), or self-hosted.
     10,000+ tools, auth flows, and Nango-managed OAuth apps, updated automatically.
   </Card>
 
-  <Card title="Agent runtime" icon="server" href="/guides/agent-sessions">
-    Tool search, compact responses, retries, rate-limit backoff, and tenant isolation.
+  <Card title="Efficient tool runtime" icon="server" href="/guides/agent-sessions">
+    Tool search, token-efficient responses, fine-grained governance, retries, and tenant isolation.
   </Card>
 
   <Card title="Self-improving tools" icon="arrows-spin">
@@ -92,7 +96,7 @@ Nango runs on Nango Cloud, in your own cloud account (BYOC), or self-hosted.
 ## Quickstart
 
 Source: https://nango.dev/docs/getting-started/quickstart.md
-Description: Give your AI agent access to Gmail, Slack, Notion, and 1,000+ other APIs
+Description: Give your AI agent access to Gmail, Slack, Notion, and 1,300+ other APIs
 
 This quickstart adds Nango [agent sessions](/guides/agent-sessions) to your own agent. Your agent gets one MCP server with tools for every API you enable, and asks your users to connect their accounts when it needs them.
 
@@ -1169,7 +1173,7 @@ Description: Let your users connect external APIs to your agents & apps.
 
 ## Overview
 
-Nango Auth lets your users connect 1,000+ external APIs to your product. You embed a Nango-managed auth flow in your application, and Nango handles authorization, credential storage, refresh, and validation.
+Nango Auth lets your users connect 1,300+ external APIs to your product. You embed a Nango-managed auth flow in your application, and Nango handles authorization, credential storage, refresh, and validation.
 
 A **Connection** is created after each successful authorization. It stores one user's credentials for one external API and keeps them valid over time. Credentials can be retrieved at scale or used directly by other Nango primitives — without ever passing through your codebase.
 
@@ -1200,7 +1204,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
 ## Capabilities
 
-- **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 1,000+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
+- **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 1,300+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
 - **Pre-built UI** — Embedded Connect UI with API-specific guidance, input validation, and your branding. Or [customize Connect UI or build a custom UI](/guides/auth/customize-connect-ui).
 - **Credential management** — Encrypted storage, automatic refresh, retrieval at scale. Combine with [Proxy](/guides/platform/proxy-requests) or [Functions](/guides/functions/functions-guide) to avoid handling credentials directly.
 - **Observability** — Failure detection, reconnect flow, and per-connection logs.
@@ -15250,7 +15254,7 @@ Nango is the leading provider of **API access for AI agents & apps**. It is desi
 
 <CardGroup cols={1}>
 <Card title="All APIs & integrations" icon="list" href="https://www.nango.dev/api-integrations">
-1,000+ APIs & 10,000+ pre-built tools.
+1,300+ APIs & 10,000+ pre-built tools.
 </Card>
 <Card title="Request or contribute a new API" icon="circle-question" href="/integrations/contribute-or-request-api">
 We deliver them in &lt;48h.
@@ -15848,7 +15852,7 @@ If all goes well, you should see your new connection in the _Connections_ tab. C
 
 Add a `<api>.mdx` file (e.g. `github.mdx`) for your API to the `docs/integrations/all` folder. Check out [other examples](/integrations/overview) to fill out the content of the documentation page.
 
-Reference the page in the `docs/docs.json` file in the `1,000+ APIs & Integrations` group in alphabetical order.
+Reference the page in the `docs/docs.json` file in the `1,300+ APIs & Integrations` group in alphabetical order.
 
 ### Submit a pull request
 
