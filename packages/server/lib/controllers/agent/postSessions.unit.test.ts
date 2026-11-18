@@ -149,6 +149,11 @@ describe('agentSessionMetaToolsSchema', () => {
         });
     });
 
+    it('maps nango_run_code like the other on and off meta tools', () => {
+        expect(agentSessionMetaToolsSchema.parse({ nango_run_code: true }).metaTools).toStrictEqual({ nangoRunCode: true });
+        expect(agentSessionMetaToolsSchema.parse({ nango_run_code: { enabled: false } }).metaTools).toStrictEqual({ nangoRunCode: false });
+    });
+
     it('keeps the tags nango_create_connection was configured with', () => {
         expect(agentSessionMetaToolsSchema.parse({ nango_create_connection: { enabled: true, tags: { enduser: '74' } } }).metaTools).toStrictEqual({
             nangoCreateConnection: { enabled: true, tags: { enduser: '74' } }
