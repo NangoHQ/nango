@@ -32,8 +32,12 @@ export async function resolveLegacyAction({
         return { kind: 'deployed', config: deployed };
     }
 
+    if (!(await getFlags().hasCatalogTools(accountUuid))) {
+        return { kind: 'missing' };
+    }
+
     const tool = getCatalogTool(integration.provider, name);
-    if (!tool || !(await getFlags().hasCatalogTools(accountUuid))) {
+    if (!tool) {
         return { kind: 'missing' };
     }
 

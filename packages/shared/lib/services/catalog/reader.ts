@@ -75,7 +75,8 @@ export class CatalogReader {
             if (!integration.functions?.length) {
                 continue;
             }
-            for (const uuid of this.load(integration.providerConfigKey).byUuid.keys()) {
+            for (const entry of integration.functions) {
+                const uuid = resolveFunctionUuid(integration.providerConfigKey, entry);
                 if (providersByUuid.has(uuid)) {
                     throw new Error(`Duplicate catalog function UUID '${uuid}' across the catalog`);
                 }

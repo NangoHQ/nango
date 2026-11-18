@@ -19,7 +19,10 @@ describe('pull → compile', () => {
         vi.mocked(cliFetch).mockReset();
     });
 
-    it.each([pullFunction, pullFromCatalog])('compiles a tool pulled by its public name rather than its original filename', async (pull) => {
+    it.each([
+        ['pullFunction', pullFunction],
+        ['pullFromCatalog', pullFromCatalog]
+    ] as const)('compiles a tool pulled by its public name rather than its original filename via %s', async (_label, pull) => {
         const fullPath = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-pull-tool-'));
         try {
             vi.stubEnv('NANGO_SECRET_KEY_DEV', 'secret-dev');
