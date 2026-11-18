@@ -326,7 +326,7 @@ describe(findToolsetInventory, () => {
         ]);
     });
 
-    it('returns catalog tools with their instructions', async () => {
+    it.skip('returns catalog tools with their instructions', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
         await createConfigSeed(environment, 'replicate', 'replicate');

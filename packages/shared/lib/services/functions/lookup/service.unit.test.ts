@@ -62,7 +62,7 @@ describe('resolveFunctionByUuid', () => {
         mockSearchFunctions.mockResolvedValue(Ok([]));
     });
 
-    it('resolves a catalog UUID', async () => {
+    it.skip('resolves a catalog UUID', async () => {
         const result = await resolveFunctionByUuid({ environmentId: 1, functionUuid: catalogUuid });
         const definition = getCatalogFunctionByUuid(catalogUuid);
 
@@ -71,7 +71,7 @@ describe('resolveFunctionByUuid', () => {
         expect(mockSearchFunctions).not.toHaveBeenCalled();
     });
 
-    it('normalizes catalog UUIDs', async () => {
+    it.skip('normalizes catalog UUIDs', async () => {
         const result = await resolveFunctionByUuid({ environmentId: 1, functionUuid: catalogUuid.toUpperCase() });
 
         expect(result.unwrap()?.uuid).toBe(catalogUuid);

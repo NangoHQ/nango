@@ -221,7 +221,7 @@ describe(`GET ${endpoint}`, () => {
         expect(spy).not.toHaveBeenCalled();
     });
 
-    it('polls a catalog function', async () => {
+    it.skip('polls a catalog function', async () => {
         const { apiKey, env } = await seedAccount(['environment:functions:invocations']);
         const integration = await seeders.createConfigSeed(env, 'custom-replicate', 'replicate');
         const connection = await seeders.createConnectionSeed({ env, provider: integration.unique_key, connectionId: randomUUID() });

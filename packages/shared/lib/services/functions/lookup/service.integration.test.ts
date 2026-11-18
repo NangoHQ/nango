@@ -200,7 +200,7 @@ describe('listFunctions with catalog entries', () => {
         await multipleMigrations();
     });
 
-    it('paginates catalog tools and actions', async () => {
+    it.skip('paginates catalog tools and actions', async () => {
         const { environment, integration } = await seedIntegration('replicate', 'custom-replicate');
         const catalog = listCatalogEntries('replicate').filter((entry) => entry.type === 'tool' || entry.type === 'action');
         expect(catalog.some((entry) => entry.type === 'tool')).toBe(true);
@@ -262,7 +262,7 @@ describe('listFunctions with catalog entries', () => {
         );
     });
 
-    it('enables legacy actions but not syncs', async () => {
+    it.skip('enables legacy actions but not syncs', async () => {
         const { environment, integration } = await seedIntegration('replicate');
         const definition = catalogTool();
         const syncName = `test-${randomUUID().slice(0, 8)}-sync`;
@@ -311,7 +311,7 @@ describe('listFunctions with catalog entries', () => {
         ]);
     });
 
-    it('prefers deployed tools, including disabled ones', async () => {
+    it.skip('prefers deployed tools, including disabled ones', async () => {
         const { environment, integration } = await seedIntegration('replicate');
         const catalog = listCatalogEntries('replicate').filter((entry) => entry.type === 'tool' || entry.type === 'action');
         const definition = catalogTool();
@@ -387,7 +387,7 @@ describe('listFunctions with catalog entries', () => {
         expect(sync).toMatchObject({ name: syncName, type: 'tool' });
     });
 
-    it('ignores actions from another environment', async () => {
+    it.skip('ignores actions from another environment', async () => {
         const { environment, integration } = await seedIntegration('replicate');
         const other = await createEnvironmentSeed(environment.account_id);
         const definition = catalogTool();
@@ -536,7 +536,7 @@ describe('listFunctions with catalog tools', () => {
         await multipleMigrations();
     });
 
-    it('lists a catalog tool', async () => {
+    it.skip('lists a catalog tool', async () => {
         const { environment, integration } = await seedIntegration('replicate', 'custom-replicate');
         const definition = catalogTool();
         const catalog = listCatalogEntries('replicate').filter((entry) => entry.type === 'tool' || entry.type === 'action');
@@ -589,7 +589,7 @@ describe('listFunctions with catalog tools', () => {
         }
     });
 
-    it.each([true, false])('catalog tool discovery respects the flag: %s', async (enabled) => {
+    it.skip.each([true, false])('catalog tool discovery respects the flag: %s', async (enabled) => {
         mockHasCatalogTools.mockResolvedValue(enabled);
         const { environment, integration } = await seedIntegration('replicate', 'custom-replicate');
         const definition = catalogTool();

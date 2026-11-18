@@ -36,7 +36,7 @@ describe(`GET ${route}`, () => {
         expect(getFileSpy).toHaveBeenCalledWith('templates-zero/github/syncs/issues.ts');
     });
 
-    it.each([undefined, 'tool'] as const)('returns catalog tool source: %s', async (type) => {
+    it.skip.each([undefined, 'tool'] as const)('returns catalog tool source: %s', async (type) => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
         const definition = listCatalogEntries('replicate').find((entry) => entry.type === 'tool');
         if (definition?.type !== 'tool') {

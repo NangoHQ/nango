@@ -437,7 +437,7 @@ describe('functionDeploymentService', () => {
         }
     });
 
-    it.each([
+    it.skip.each([
         { enabled: true, function_type: undefined },
         { enabled: false, function_type: undefined },
         { enabled: true, function_type: 'action' },

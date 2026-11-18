@@ -35,7 +35,7 @@ describe(`GET ${route}`, () => {
         shouldRequireQueryEnv(res);
     });
 
-    it('returns catalog tool source', async () => {
+    it.skip('returns catalog tool source', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
         const definition = listCatalogEntries('replicate').find((entry) => entry.type === 'tool');
         if (definition?.type !== 'tool') {

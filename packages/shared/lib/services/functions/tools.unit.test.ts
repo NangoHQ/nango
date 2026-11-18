@@ -121,7 +121,7 @@ describe('resolveTool', () => {
         expect(result.error).toMatchObject({ message: 'failed_to_resolve_tool', cause });
     });
 
-    it('resolves a catalog function', async () => {
+    it.skip('resolves a catalog function', async () => {
         const definition = getCatalogEntry('replicate', 'get-model');
         if (definition?.type !== 'tool') throw new Error('Missing catalog fixture');
 

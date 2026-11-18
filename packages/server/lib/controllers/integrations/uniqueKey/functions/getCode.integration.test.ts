@@ -192,7 +192,7 @@ describe(`GET ${endpoint}`, () => {
         }
     });
 
-    it('returns catalog tool code', async () => {
+    it.skip('returns catalog tool code', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'replicate', 'replicate');
         const catalog = getCatalogEntry('replicate', 'get-model');

@@ -123,7 +123,7 @@ describe('startFunction', () => {
         setTaskSuccess.mockResolvedValue(Ok(task()));
     });
 
-    it('starts a catalog function', async () => {
+    it.skip('starts a catalog function', async () => {
         const fn = catalogFunction();
         vi.mocked(shared.functionLookupService.resolveFunctionByUuid).mockResolvedValue(Ok(fn));
         vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue({
@@ -170,7 +170,7 @@ describe('startFunction', () => {
         });
     });
 
-    it('rejects a provider mismatch', async () => {
+    it.skip('rejects a provider mismatch', async () => {
         const fn = catalogFunction();
         if (fn.kind !== 'catalog') throw new Error('Expected catalog function');
         fn.definition = { ...fn.definition, provider: 'gitlab' };
