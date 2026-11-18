@@ -19,7 +19,7 @@ export const fieldVariants = cva('group/field w-full', {
                 '[&>:first-child]:row-span-2 [&>:first-child]:pt-1.5',
                 '[&>:not(:first-child)]:col-start-2'
             ],
-            inline: 'flex flex-row items-center gap-2'
+            inline: ['flex flex-row items-start gap-2', '[&>[data-slot=checkbox]]:mt-0.5 [&>[data-slot=switch]]:mt-px']
         }
     },
     defaultVariants: {
@@ -143,6 +143,10 @@ const FieldLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>
                     'flex min-w-0 flex-wrap items-baseline gap-1.5 wrap-break-word select-none',
                     'font-sans text-ds-sm font-ds-medium leading-ds-snug tracking-ds-tight text-text-default',
                     'group-data-[disabled=true]/field:text-text-disabled group-data-[disabled=true]/field:pointer-events-none peer-disabled:cursor-not-allowed',
+                    'group-data-[orientation=inline]/field:font-ds-regular group-data-[orientation=inline]/field:leading-ds-normal group-data-[orientation=inline]/field:tracking-ds-normal',
+                    'group-has-[>[data-slot=checkbox][data-size=sm]]/field:text-ds-xs group-has-[>[data-slot=switch][data-size=sm]]/field:text-ds-xs',
+                    'group-has-[>[data-slot=checkbox]:enabled]/field:cursor-pointer group-has-[>[data-slot=switch]:enabled]/field:cursor-pointer',
+                    'group-has-[>[data-slot=checkbox]:disabled]/field:text-text-disabled group-has-[>[data-slot=switch]:disabled]/field:text-text-disabled',
                     className
                 )}
                 {...props}
