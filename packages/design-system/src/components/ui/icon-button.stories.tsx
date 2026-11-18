@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { Copy, Plus } from 'lucide-react';
 
 import { ICON_BUTTON_SIZES, IconButton } from './button';
 
@@ -67,3 +67,25 @@ export const Outline = matrixStory('outline');
 export const Ghost = matrixStory('ghost');
 export const DangerGhost = matrixStory('danger-ghost');
 export const Danger = matrixStory('danger');
+
+const INLINE_STATES = STATES.filter((state) => ['Default', 'Hover', 'Focus'].includes(state.label));
+
+export const Inline: Story = {
+    render: () => (
+        <div className="grid grid-cols-[repeat(3,max-content)] items-center gap-x-12 gap-y-4">
+            {INLINE_STATES.map((state) => (
+                <span key={state.label} className="story-section-heading">
+                    {state.label}
+                </span>
+            ))}
+            {INLINE_STATES.map((state) => (
+                <div key={state.label} className="flex items-center gap-1.5">
+                    <span className="text-ds-xs font-ds-medium text-text-secondary">acme-prod-7f3c2a</span>
+                    <IconButton variant="ghost" size="sm" inline label={`Copy connection ID (${state.label})`} {...state.props}>
+                        <Copy />
+                    </IconButton>
+                </div>
+            ))}
+        </div>
+    )
+};
