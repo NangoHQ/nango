@@ -8,9 +8,8 @@ import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { Spinner } from '@/components/ui/Spinner';
-import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
-import { isFailed, isUnfinished } from '../replyOutcome';
+import { isFailed, isInterrupted, isUnfinished } from '../replyOutcome';
 import { describeTool, labelFor, searchSummary, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
@@ -146,7 +145,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
         }
     }
 
-    if (part.state === 'output-error' && part.errorText === INTERRUPTED_CALL) {
+    if (isInterrupted(part)) {
         return <InterruptedCard display={display} onRetry={onRetryInterrupted} />;
     }
 
