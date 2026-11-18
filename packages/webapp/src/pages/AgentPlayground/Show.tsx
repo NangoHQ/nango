@@ -44,7 +44,7 @@ import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
 import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
-import { continuesAfterSetUp, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults } from './setUpTool';
+import { continuesAfterSetUp, createdIntegrationIds, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults } from './setUpTool';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize, integrationLabels, labelFor } from './toolDisplay';
 
@@ -245,8 +245,16 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
     };
 
     const isAwaitingSetUp = providersToAdd(messages.at(-1)).length > 0;
-    const { data: integrations, dataUpdatedAt: integrationsUpdatedAt } = useListIntegrations(env, { watch: isAwaitingSetUp });
+    const { data: integrations, dataUpdatedAt: integrationsUpdatedAt, refetch: refetchIntegrations } = useListIntegrations(env, { watch: isAwaitingSetUp });
     const labels = useMemo(() => (integrations ? integrationLabels(integrations.data) : undefined), [integrations]);
+    const refetchedFor = useRef(new Set<string>());
+    useEffect(() => {
+        const unlabelled = createdIntegrationIds(messages).filter((id) => labels && !labels.has(id) && !refetchedFor.current.has(id));
+        if (unlabelled.length > 0) {
+            unlabelled.forEach((id) => refetchedFor.current.add(id));
+            void refetchIntegrations();
+        }
+    }, [messages, labels, refetchIntegrations]);
     const addedIntegrations = useMemo(
         () =>
             new Map(

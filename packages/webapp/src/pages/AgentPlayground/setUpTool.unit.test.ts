@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { continuesAfterSetUp, providersToAdd } from './setUpTool';
+import { continuesAfterSetUp, createdIntegrationIds, providersToAdd } from './setUpTool';
 
 import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
 import type { AgentPlaygroundIntegrationSetup } from '@nangohq/types';
@@ -91,5 +91,19 @@ describe('continuesAfterSetUp', () => {
         ]);
 
         expect(continuesAfterSetUp({ messages })).toBe(false);
+    });
+});
+
+describe('createdIntegrationIds', () => {
+    it('lists only the integrations a setup created', () => {
+        const messages = reply([
+            setUpPart([
+                { provider: 'google-mail', integrationId: 'pg-google-mail', outcome: 'created' },
+                { provider: 'resend', integrationId: 'pg-resend', outcome: 'existing' },
+                { provider: 'outlook', outcome: 'needs_developer_app' }
+            ])
+        ]);
+
+        expect(createdIntegrationIds(messages)).toEqual(['pg-google-mail']);
     });
 });
