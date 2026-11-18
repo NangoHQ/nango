@@ -42,12 +42,14 @@ import { AddIntegrationCard } from './components/AddIntegrationCard';
 import { HeroIllustration } from './components/HeroIllustration';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
+import { ToolCallGroup } from './components/ToolCallGroup';
 import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
 import { continueOncePerSetUp, createdIntegrationIds, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults } from './setUpTool';
 import { STARTER_PROMPTS } from './starterPrompts';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize, integrationLabels, labelFor } from './toolDisplay';
+import { groupReplyParts } from './toolGroups';
 import { useResumeAfterSetUp } from './useResumeAfterSetUp';
 
 import type { PendingApproval } from './approvalTracking';
@@ -55,6 +57,7 @@ import type { PlaygroundDraft } from './draft';
 import type { IntegrationLabels } from './toolDisplay';
 import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundReplyOutcome, AgentPlaygroundSessionCreated } from '@nangohq/types';
+import type { DynamicToolUIPart } from 'ai';
 
 function providerName(provider: string): string {
     return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
@@ -414,13 +417,13 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                             {message.metadata?.sessionCreated && (
                                 <SessionNotice created={message.metadata.sessionCreated} replaced={message.id !== firstSessionMessageId} />
                             )}
-                            {message.parts.map((part, index) => {
-                                if (part.type === 'text') {
-                                    return part.text ? (
-                                        <Markdown key={index}>{part.state === 'streaming' ? hideTrailingLink(part.text) : part.text}</Markdown>
-                                    ) : null;
+                            {groupReplyParts(message.parts, stoppedToolCall).map((item) => {
+                                if (item.kind === 'text') {
+                                    const { text, state } = item.part;
+                                    return <Markdown key={item.key}>{state === 'streaming' ? hideTrailingLink(text) : text}</Markdown>;
                                 }
-                                if (part.type === 'dynamic-tool' && isSetUpPart(part)) {
+                                if (item.kind === 'tool' && isSetUpPart(item.part)) {
+                                    const part = item.part;
                                     return setUpResults(part).map((setup) => (
                                         <IntegrationSetupNotice
                                             key={`${part.toolCallId}-${setup.provider}`}
@@ -431,24 +434,26 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                                         />
                                     ));
                                 }
-                                if (part.type === 'dynamic-tool') {
-                                    return (
-                                        <ToolCallCard
-                                            key={part.toolCallId}
-                                            part={part}
-                                            labels={labels}
-                                            chatActive={message === lastMessage && busy}
-                                            approvalSending={message === lastMessage && status === 'ready'}
-                                            connectedIntegrations={connectedIntegrations}
-                                            onConnected={onConnected}
-                                            onRequestNewLink={onRequestNewLink}
-                                            onApprove={onApprove}
-                                            onRetryInterrupted={message === lastMessage ? onRetryInterrupted : undefined}
-                                            onTryAgain={part === stoppedToolCall ? onRetry : undefined}
-                                        />
-                                    );
+                                const chatActive = message === lastMessage && busy;
+                                const renderCall = (part: DynamicToolUIPart) => (
+                                    <ToolCallCard
+                                        key={part.toolCallId}
+                                        part={part}
+                                        labels={labels}
+                                        chatActive={chatActive}
+                                        approvalSending={message === lastMessage && status === 'ready'}
+                                        connectedIntegrations={connectedIntegrations}
+                                        onConnected={onConnected}
+                                        onRequestNewLink={onRequestNewLink}
+                                        onApprove={onApprove}
+                                        onRetryInterrupted={message === lastMessage ? onRetryInterrupted : undefined}
+                                        onTryAgain={part === stoppedToolCall ? onRetry : undefined}
+                                    />
+                                );
+                                if (item.kind === 'tool') {
+                                    return renderCall(item.part);
                                 }
-                                return null;
+                                return <ToolCallGroup key={item.key} parts={item.parts} labels={labels} chatActive={chatActive} renderCall={renderCall} />;
                             })}
                             {outcome}
                         </div>

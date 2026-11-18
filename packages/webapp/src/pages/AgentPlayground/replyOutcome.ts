@@ -16,7 +16,11 @@ export function setReplyOutcome(messages: PlaygroundMessage[], outcome: AgentPla
     return [...messages.slice(0, -1), { ...last, metadata }];
 }
 
-function isShown(part: PlaygroundMessage['parts'][number]): boolean {
+export function isFailed(part: DynamicToolUIPart): boolean {
+    return part.state === 'output-error' || part.state === 'output-denied';
+}
+
+export function isShown(part: PlaygroundMessage['parts'][number]): boolean {
     return (part.type === 'text' && part.text.trim() !== '') || part.type === 'dynamic-tool';
 }
 
