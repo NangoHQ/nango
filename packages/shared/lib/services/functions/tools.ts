@@ -3,7 +3,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { getCatalogEntry } from '../catalog/actions.js';
 import { resolveLegacyAction } from '../catalog/resolveLegacyAction.js';
-import { search } from './models/functions.js';
+import { isTool, search } from './models/functions.js';
 
 import type { ResolvedLegacyAction } from '../catalog/resolveLegacyAction.js';
 import type { FunctionSource, IntegrationConfig } from '@nangohq/types';
@@ -60,7 +60,7 @@ export async function resolveTool({
         }
 
         const definition = getCatalogEntry(integration.provider, name);
-        if (definition?.type === 'action' || definition?.trigger.kind !== 'http' || definition.trigger.subscriptions?.length) {
+        if (!definition || !('trigger' in definition) || !isTool(definition)) {
             return Ok({ kind: 'missing' });
         }
         return Ok({ kind: 'function', uuid: definition.uuid, source: definition.source, inputSchemaRef: definition.input_schema_ref });

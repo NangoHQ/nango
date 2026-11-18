@@ -7,9 +7,11 @@ import configService from '../../config.service.js';
 import * as functionConfigService from '../models/functions.js';
 import { toListedNangoFunction } from './mappers.js';
 import * as functionsModel from './models/functions.js';
+import * as legacyModel from './models/legacy.js';
+import * as templatesModel from './models/templates.js';
 
 import type { CatalogFunctionDefinition } from '../../catalog/reader.js';
-import type { FunctionRow } from './models/functions.js';
+import type { FunctionRow } from './models/listing.js';
 import type {
     DBFunctionConfigVersion,
     FunctionListType,
@@ -52,7 +54,7 @@ export async function listTemplates({
     templates: NangoFunctionTemplate[];
 }): Promise<Result<NangoFunctionTemplate[]>> {
     try {
-        const availability = await functionsModel.findActiveFunctionAvailability({ environmentId, providerConfigKey });
+        const availability = await templatesModel.findActiveFunctionAvailability({ environmentId, providerConfigKey });
         const hiddenByTool = new Set(availability.toolNames);
         const deployedByKey = new Map(availability.deployed.map((row) => [`${row.type}:${row.name}`, row]));
         return Ok(
@@ -146,7 +148,7 @@ export async function listActions({
             );
         }
 
-        const rows = await functionsModel.findActiveActions({ environmentId, providerConfigKey });
+        const rows = await legacyModel.findActiveActions({ environmentId, providerConfigKey });
         const mapped = mapListingRows(rows);
         if (mapped.isErr()) {
             return Err(mapped.error);

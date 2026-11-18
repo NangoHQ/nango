@@ -6,6 +6,7 @@ import { getCatalogEntry } from '../catalog/actions.js';
 import { resolveTool } from './tools.js';
 
 import type { getSyncConfigRaw } from '../sync/config/config.service.js';
+import type * as functionsModel from './models/functions.js';
 import type { CurrentFunctionConfig, search } from './models/functions.js';
 import type { DBSyncConfig } from '@nangohq/types';
 
@@ -15,7 +16,7 @@ const { searchFunctions, getAction, hasCatalogTools } = vi.hoisted(() => ({
     hasCatalogTools: vi.fn<() => Promise<boolean>>()
 }));
 
-vi.mock('./models/functions.js', () => ({ search: searchFunctions }));
+vi.mock('./models/functions.js', async (importOriginal) => ({ ...(await importOriginal<typeof functionsModel>()), search: searchFunctions }));
 vi.mock('../sync/config/config.service.js', () => ({ getSyncConfigRaw: getAction }));
 vi.mock('@nangohq/feature-flags', () => ({ getFlags: () => ({ hasCatalogTools }) }));
 

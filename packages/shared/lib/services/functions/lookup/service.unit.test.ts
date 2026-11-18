@@ -6,7 +6,7 @@ import { getCatalogFunctionByUuid } from '../../catalog/actions.js';
 import { generateCatalogFunctionUuid } from '../../catalog/uuid.js';
 import { getFunction, listFunctions, ListFunctionsError, listTemplates, resolveFunctionByUuid } from './service.js';
 
-import type { FunctionRow } from './models/functions.js';
+import type { FunctionRow } from './models/listing.js';
 
 const { mockFindActiveByEnvironment, mockFindActiveByName, mockFindActiveFunctionAvailability, mockGetIdByProviderConfigKey, mockSearchFunctions } = vi.hoisted(
     () => {
@@ -28,7 +28,10 @@ vi.mock('../models/functions.js', () => ({ search: mockSearchFunctions }));
 
 vi.mock('./models/functions.js', () => ({
     findActiveByEnvironment: mockFindActiveByEnvironment,
-    findActiveByName: mockFindActiveByName,
+    findActiveByName: mockFindActiveByName
+}));
+
+vi.mock('./models/templates.js', () => ({
     findActiveFunctionAvailability: mockFindActiveFunctionAvailability
 }));
 

@@ -3,7 +3,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import type { McpServerDiscovery } from './agentSessionMcpDiscovery.service.js';
 import type { RemoteMcpTool } from './remoteMcp.service.js';
-import type { IntegrationFunctionRow } from '@nangohq/shared';
+import type { ToolsetInventoryRow } from '@nangohq/shared';
 import type {
     AgentSessionCompiledIntegration,
     AgentSessionCompiledTool,
@@ -18,7 +18,8 @@ import type {
     AgentSessionToolsNotInToolsetPayload,
     AgentSessionUnknownIntegrationsPayload,
     AgentSessionUnknownToolsPayload,
-    AgentSessionUnsupportedFunctionTypesPayload
+    AgentSessionUnsupportedFunctionTypesPayload,
+    ToolTags
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -63,7 +64,7 @@ export async function compileToolset({
     mcpServers?: Map<string, McpServerDiscovery> | undefined;
 }): Promise<Result<AgentSessionCompiledToolset, AgentSessionToolsetCompilationError>> {
     const named = namedIntegrations({ toolset, pinnedTools, connectedIntegrations });
-    const functions = await functionLookupService.findIntegrationFunctions({ environmentId, providerConfigKeys: named });
+    const functions = await functionLookupService.findToolsetInventory({ environmentId, providerConfigKeys: named });
 
     return compileToolsetFromFunctions({
         toolset,
@@ -109,7 +110,7 @@ export function compileToolsetFromFunctions({
     toolset: AgentSessionToolsetPolicy | undefined;
     pinnedTools: AgentSessionPinnedTools | undefined;
     connectedIntegrations: string[];
-    functions: IntegrationFunctionRow[];
+    functions: ToolsetInventoryRow[];
     mcpServers?: Map<string, McpServerDiscovery> | undefined;
     hasMcpServer?: ((provider: string) => boolean) | undefined;
 }): Result<AgentSessionCompiledToolset, AgentSessionToolsetCompilationError> {
@@ -227,6 +228,8 @@ type IntegrationMcpServerStatus = AgentSessionMcpServerStatus | 'pending';
 interface IntegrationTool {
     name: string;
     description: string;
+    instructions?: string;
+    tags?: ToolTags;
     mcp?: AgentSessionMcpToolDefinition;
 }
 
@@ -363,7 +366,7 @@ function isAllowed(name: string, policy: AgentSessionIntegrationPolicy): boolean
     return policy.allow === ALLOW_ALL || policy.allow.includes(name);
 }
 
-function groupFunctionsByIntegration(functions: IntegrationFunctionRow[]): Map<string, IntegrationFunctions> {
+function groupFunctionsByIntegration(functions: ToolsetInventoryRow[]): Map<string, IntegrationFunctions> {
     const integrations = new Map<string, IntegrationFunctions>();
 
     for (const row of functions) {
@@ -380,7 +383,12 @@ function groupFunctionsByIntegration(functions: IntegrationFunctionRow[]): Map<s
         integration.functionTypesByName.set(row.name, row.type);
 
         if ((row.type === 'action' || row.type === 'tool') && row.enabled) {
-            integration.actions.push({ name: row.name, description: row.description ?? row.name });
+            integration.actions.push({
+                name: row.name,
+                description: row.description ?? row.name,
+                ...(row.instructions && { instructions: row.instructions }),
+                ...(row.tags && { tags: row.tags })
+            });
         }
     }
 
@@ -458,7 +466,13 @@ function toIntegrationTool(tool: RemoteMcpTool): IntegrationTool {
 }
 
 function toCompiledTool(tool: IntegrationTool): AgentSessionCompiledTool {
-    return { name: tool.name, description: tool.description, ...(tool.mcp ? { mcp: tool.mcp } : {}) };
+    return {
+        name: tool.name,
+        description: tool.description,
+        ...(tool.instructions ? { instructions: tool.instructions } : {}),
+        ...(tool.tags ? { tags: tool.tags } : {}),
+        ...(tool.mcp ? { mcp: tool.mcp } : {})
+    };
 }
 
 function unknownIntegrationError(rejected: string[]): AgentSessionToolsetCompilationError {

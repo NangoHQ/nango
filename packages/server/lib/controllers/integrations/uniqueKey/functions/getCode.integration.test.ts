@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
-import { functionConfigService, localFileService, remoteFileService, seeders } from '@nangohq/shared';
+import { functionConfigService, getCatalogEntry, localFileService, remoteFileService, seeders } from '@nangohq/shared';
 
 import { isError, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -186,6 +186,33 @@ describe(`GET ${endpoint}`, () => {
             expect(res.res.status).toBe(200);
             expect(res.json).toEqual({ type: 'action', code: 'catalog source' });
             expect(getFileSpy).toHaveBeenCalledWith('templates-zero/aircall/actions/create-contact.ts');
+        } finally {
+            getFileSpy.mockRestore();
+            catalogSpy.mockRestore();
+        }
+    });
+
+    it('returns catalog tool code', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'replicate', 'replicate');
+        const catalog = getCatalogEntry('replicate', 'get-model');
+        if (catalog?.type !== 'tool') {
+            throw new Error('Expected a catalog tool');
+        }
+
+        const catalogSpy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
+        const getFileSpy = vi.spyOn(remoteFileService, 'getFile').mockResolvedValue('catalog tool source');
+        try {
+            const res = await api.fetch(endpoint, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'replicate', name: 'get-model' },
+                query: { type: 'tool' }
+            });
+
+            expect(res.res.status).toBe(200);
+            expect(res.json).toEqual({ type: 'tool', code: 'catalog tool source' });
+            expect(getFileSpy).toHaveBeenCalledWith(catalog.location.ts);
         } finally {
             getFileSpy.mockRestore();
             catalogSpy.mockRestore();
