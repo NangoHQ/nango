@@ -1,0 +1,47 @@
+---
+title: Okta (OIN API service) - How do I link my account?
+sidebarTitle: Okta (OIN API service)
+---
+
+## Overview
+
+To connect an Okta Integration Network (OIN) API service integration, you need:
+
+1. **Client ID** issued for the installation.
+2. **Client Secret** shown once during installation.
+3. **Okta Domain** of the org where the integration is installed.
+4. **Scopes** authorized during installation.
+
+## Prerequisites
+
+- An Okta admin account with permission to install API service integrations.
+- A published OIN API service integration or an OIN Wizard test instance.
+
+<Note>
+For an unpublished integration, [generate a test instance in the OIN Wizard](https://developer.okta.com/docs/guides/submit-apiservice-app/main/#generate-an-instance-for-api-service) instead of selecting it from the catalog. Continue with **Install & Authorize** in Step 1.
+</Note>
+
+## Instructions
+
+### Step 1: Install the API service integration
+
+1. Sign in to your Okta Admin Console.
+2. Go to **Applications and Resources** > **API Service Integrations** and click **Add Integration**.
+3. Select the integration you want to connect and click **Next**.
+4. Note the requested scopes for the Connect UI, then click **Install & Authorize**.
+
+### Step 2: Copy the installation credentials
+
+1. Copy the **Client Secret** from the installation dialog and store it securely. It is shown only once and cannot be retrieved later.
+2. Click **Done**.
+3. On the integration's **General** tab, copy the **Client ID** and **Okta Domain**.
+
+Use the Okta Domain as a hostname, such as `dev-12345678.okta.com`, without `https://` or a path. Use the org domain shown on the General tab, rather than the Admin Console hostname containing `-admin`.
+
+### Step 3: Enter credentials in Connect UI
+
+1. Open the form to connect to **Okta (OIN API service)**.
+2. Enter the installation's **Client ID** and **Client Secret**.
+3. Enter the **Okta Domain** as the full hostname.
+4. Enter the authorized **Scopes** as a space-separated list, such as `okta.users.read`.
+5. Submit the form to connect.
