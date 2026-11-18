@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { request } from 'node:http';
 
+import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
@@ -222,6 +223,26 @@ async function listTools({ token, mcpPath, cursor }: { token: string; mcpPath: s
         method: 'POST',
         body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: cursor ? { cursor } : {} }
     });
+}
+
+/** Connects through the SDK client, keeping every response body as sent so a test can check fields the client drops. */
+async function connectClient({ token, mcpPath, era }: { token: string; mcpPath: string; era: 'legacy' | 'modern' }) {
+    const responses: any[] = [];
+    const client = new Client(
+        { name: 'agent-session-integration-test', version: '1.0.0' },
+        { versionNegotiation: { mode: era === 'modern' ? { pin: '2026-07-28' } : 'legacy' } }
+    );
+    const transport = new StreamableHTTPClientTransport(new URL(mcpPath, api.url), {
+        requestInit: { headers: { Authorization: `Bearer ${token}` } },
+        fetch: async (input, init) => {
+            const res = await fetch(input, init);
+            responses.push(parseMcpResponse(await res.clone().text()));
+            return res;
+        }
+    });
+    await client.connect(transport);
+
+    return { client, responses };
 }
 
 const GOAL = 'update the roadmap page in Notion';
@@ -699,6 +720,62 @@ describe('/session/:sessionId/mcp', () => {
         const on = await call('nango_execute');
         expect(on.json.result.isError).toBe(true);
         expect(on.json.result.content[0].text).toContain('Invalid nango_execute arguments');
+    });
+
+    describe.each([
+        { era: 'legacy', version: '2025-11-25' },
+        { era: 'modern', version: '2026-07-28' }
+    ] as const)('a $version client', ({ era }) => {
+        it('lists and runs tools', async () => {
+            const { apiKey, env } = await seedTenant();
+            const { token, mcpPath } = await createSession(apiKey);
+            await disableAction({ environmentId: env.id, name: 'read_doc' });
+            const { client } = await connectClient({ token, mcpPath, era });
+
+            const { tools } = await client.listTools();
+            expect(tools.map((tool) => tool.name)).toStrictEqual(['nango_tool_search', 'nango_execute', 'notion__read_doc', 'slack__send_message']);
+
+            const res = await client.callTool({ name: 'notion__read_doc' });
+            expect(res.content).toStrictEqual([
+                {
+                    type: 'text',
+                    text: "Tool 'read_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
+                }
+            ]);
+
+            await client.close();
+        });
+
+        it('says in its instructions what the agent connected mid-session', async () => {
+            const { env, apiKey } = await seedTenant();
+            const { sessionId, token, mcpPath } = await createSession(apiKey, {
+                toolset: '*',
+                pinned_tools: {},
+                meta_tools: { nango_create_connection: true }
+            });
+            await seeders.createConnectionSeed({ env, provider: 'zendesk', connectionId: 'zendesk-acme', tags: { [AGENT_SESSION_TAG_KEY]: sessionId } });
+
+            const { client } = await connectClient({ token, mcpPath, era });
+
+            expect(client.getInstructions()).toContain('- zendesk (zendesk): connected');
+
+            await client.close();
+        });
+    });
+
+    // Tool definitions change without notice, so a client must not cache them.
+    it('tells a 2026-07-28 client not to cache the tool list', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+        const { client, responses } = await connectClient({ token, mcpPath, era: 'modern' });
+
+        await client.listTools();
+
+        const listed = responses.at(-1).result;
+        expect(listed).toMatchObject({ ttlMs: 0, cacheScope: 'private' });
+        expect(listed.tools.every((tool: object) => !('execution' in tool))).toBe(true);
+
+        await client.close();
     });
 
     it('does not support SSE on GET', async () => {
