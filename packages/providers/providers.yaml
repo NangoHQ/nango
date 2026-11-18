@@ -22434,6 +22434,10 @@ microsoft:
             after:
                 - 'retry-after'
         decompress: true
+    webhook_routing_script: microsoftWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - validationToken
     docs: https://nango.dev/docs/api-integrations/microsoft
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app
 

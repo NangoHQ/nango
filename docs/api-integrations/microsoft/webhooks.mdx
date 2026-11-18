@@ -1,0 +1,102 @@
+---
+title: 'How to set up webhooks with Microsoft on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive Microsoft Graph change notifications, such as Outlook mail and calendar events, in your app using Nango webhooks'
+---
+
+## How it works
+
+1. You create a [Microsoft Graph subscription](https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks) for each resource you want to watch, for example `me/messages` and `me/events`, with your Nango webhook URL as the `notificationUrl`.
+2. Graph sends a POST request to that URL when the resource changes. Every notification carries the subscription's `clientState` and `subscriptionId`.
+3. Nango drops notifications whose `clientState` does not match the integration's webhook secret, and removes `clientState` before routing.
+4. Nango routes each notification to the connection whose `metadata.subscriptionIds` contains its `subscriptionId`, using `changeType` (or `lifecycleEvent`) as the webhook type.
+
+One Microsoft integration has one webhook URL. Mail, calendar, and other Graph subscriptions all use it, and are told apart by their `subscriptionId`.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Microsoft integration and copy the **Webhook URL**.
+
+### 2. Set the webhook secret in Nango
+
+On the same page, set a **Webhook secret**, for example generated with `openssl rand -hex 32`. Nango requires it and rejects every notification while it is empty. You pass the same value as `clientState` in the next step.
+
+### 3. Create the subscriptions
+
+Create one subscription per resource with the Microsoft Graph API, through Nango's proxy:
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/v1.0/subscriptions" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "changeType": "created,updated,deleted",
+    "resource": "me/messages",
+    "notificationUrl": "<NANGO-WEBHOOK-URL>",
+    "lifecycleNotificationUrl": "<NANGO-WEBHOOK-URL>",
+    "expirationDateTime": "<ISO-8601-DATETIME>",
+    "clientState": "<WEBHOOK-SECRET>"
+  }'
+```
+
+Repeat with `"resource": "me/events"` for calendar events. Graph validates the URL with a `validationToken` request when you create the subscription, and Nango answers it automatically. The connection needs the matching read permission, for example `Mail.Read` or `Calendars.Read`.
+
+Subscriptions expire. Check the maximum `expirationDateTime` per resource in [Microsoft's docs](https://learn.microsoft.com/en-us/graph/api/resources/subscription#subscription-lifetime), and renew them before then through Nango's proxy, with the same headers:
+
+```bash
+curl -X PATCH "https://api.nango.dev/proxy/v1.0/subscriptions/<SUBSCRIPTION-ID>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Content-Type: application/json" \
+  -d '{ "expirationDateTime": "<ISO-8601-DATETIME>" }'
+```
+
+### 4. Store the subscription IDs in Nango
+
+Save the `id` from each response in the connection's `metadata.subscriptionIds`:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "subscriptionIds": ["<MAIL-SUBSCRIPTION-ID>", "<CALENDAR-SUBSCRIPTION-ID>"] }
+  }'
+```
+
+See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+<Warning>
+Setting `subscriptionIds` replaces the whole array. Include every active subscription ID for the connection, or notifications for the missing ones stop matching it.
+</Warning>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the notification to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to `created`, `updated` or `deleted`, and to lifecycle events such as `reauthorizationRequired` to renew subscriptions. For change notifications, use the `resource` field, for example `Users/<id>/Messages/<id>` or `Users/<id>/Events/<id>`, to tell mail and calendar apart. Lifecycle notifications have no `resource`: use their `subscriptionId` to find the subscription. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+Graph can batch notifications from several subscriptions into one request. Nango forwards each connection only its own notifications. If no connection lists a notification's `subscriptionId`, Nango still forwards it, but separately and without a `connectionId`. Subscription validation requests are answered but never forwarded.
+
+## Rollback strategy
+
+Delete each subscription with the API:
+
+```bash
+curl -X DELETE "https://api.nango.dev/proxy/v1.0/subscriptions/<SUBSCRIPTION-ID>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>"
+```
+
+Then remove its ID from the connection's `metadata.subscriptionIds`.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
