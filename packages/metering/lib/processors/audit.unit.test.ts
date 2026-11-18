@@ -51,13 +51,19 @@ function sqsServing(receives: unknown[][], failDeletes: string[] = []) {
     const deleted: string[] = [];
     const deleteBatches: number[] = [];
     const pending = [...receives];
-    const send = vi.fn().mockImplementation((command: unknown) => {
+    const send = vi.fn().mockImplementation((command: unknown, opts?: { abortSignal?: AbortSignal }) => {
         if (command instanceof ReceiveMessageCommand) {
             const next = pending.shift();
             if (!next) {
                 // Stands in for long polling: without a macrotask the loop would spin on microtasks and
-                // starve the test's timers.
-                return new Promise((resolve) => setTimeout(() => resolve({}), 5));
+                // starve the test's timers. Aborting rejects at once, as the SDK does.
+                return new Promise((resolve, reject) => {
+                    const timer = setTimeout(() => resolve({}), 5);
+                    opts?.abortSignal?.addEventListener('abort', () => {
+                        clearTimeout(timer);
+                        reject(Object.assign(new Error('aborted'), { name: 'AbortError' }));
+                    });
+                });
             }
             return Promise.resolve({ Messages: next });
         }
@@ -276,6 +282,7 @@ describe('AuditProcessor batching', () => {
         vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
         const stopping = proc.stop();
         await vi.advanceTimersByTimeAsync(9_999);
+        expect(recordMany).toHaveBeenCalledTimes(1);
         expect(warning).not.toHaveBeenCalled();
         await vi.advanceTimersByTimeAsync(1);
         await stopping;
