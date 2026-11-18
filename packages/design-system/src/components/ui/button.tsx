@@ -219,6 +219,8 @@ export type IconButtonSize = (typeof ICON_BUTTON_SIZES)[number];
 export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label'> {
     variant?: ButtonVariant | null;
     size?: ButtonSize | null;
+    /** 20px box with the size's icon, for a button in a line of text. Only `xs` and `sm` icons fit it. */
+    inline?: boolean;
     asChild?: boolean;
     loading?: boolean;
     /** Accessible name, applied as `aria-label`, and as the `title` tooltip unless one is passed. */
@@ -226,7 +228,7 @@ export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLBut
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, label, title, children, onClickCapture, ...props }, ref) => {
+    ({ className, variant, size, inline = false, asChild = false, loading = false, disabled, label, title, children, onClickCapture, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
         const renderChildren = (icon: React.ReactNode) => (loading ? <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} /> : icon);
@@ -239,7 +241,13 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
-                className={cn(buttonVariants({ variant, size }), 'aspect-square px-0', isDisabled && asChild && 'pointer-events-none', className)}
+                className={cn(
+                    buttonVariants({ variant, size }),
+                    'aspect-square px-0',
+                    inline && 'size-5',
+                    isDisabled && asChild && 'pointer-events-none',
+                    className
+                )}
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}
