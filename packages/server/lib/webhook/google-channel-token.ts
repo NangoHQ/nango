@@ -2,6 +2,7 @@ import { NangoError } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { countUnverifiedWebhook } from './missing-secret.js';
+import { verifyNangoWebhookSecret } from './nango-webhook-secret.js';
 import { safeCompare } from './signature.js';
 
 import type { InternalNango } from './internal-nango.js';
@@ -44,6 +45,38 @@ export function validateGoogleChannelToken(nango: InternalNango, headers: Record
 
     if (!safeCompare(expected, received)) {
         return reject(integration, 'google_invalid_channel_token', 'webhook_invalid_signature');
+    }
+
+    return Ok(undefined);
+}
+
+/**
+ * Pub/Sub's OIDC token proves Google signed the push, not whose subscription sent it: any service
+ * account can mint one for any audience. So a push must carry both the token and the integration's
+ * webhook secret. Pub/Sub can't set headers, so the secret goes in the push endpoint as
+ * `?nangoWebhookSecret=`.
+ *
+ * Unlike `google-mail`, there are no legacy unsigned setups to migrate on this route, so neither
+ * check can be bypassed with "Allow unverified webhooks". The JWT itself is verified by the Gmail route.
+ */
+export function validateGooglePubSubPush(nango: InternalNango, headers: Record<string, string>, query: Record<string, string> | undefined): Result<void> {
+    const { integration } = nango;
+
+    const secretResult = verifyNangoWebhookSecret({ secret: integration.custom?.['webhookSecret'], headers, query });
+    if (secretResult.isErr()) {
+        switch (secretResult.error.type) {
+            case 'webhook_invalid_secret':
+                // Unset, or shorter than 16 characters.
+                return reject(integration, 'google_missing_pubsub_webhook_secret', 'webhook_missing_token');
+            case 'webhook_missing_signature':
+                return reject(integration, 'google_pubsub_missing_webhook_secret', 'webhook_missing_token');
+            default:
+                return reject(integration, 'google_pubsub_invalid_webhook_secret', 'webhook_invalid_signature');
+        }
+    }
+
+    if (!headers['authorization']) {
+        return reject(integration, 'google_pubsub_missing_authorization', 'webhook_invalid_signature');
     }
 
     return Ok(undefined);

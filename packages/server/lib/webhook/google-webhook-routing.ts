@@ -1,14 +1,29 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import { validateGoogleChannelToken } from './google-channel-token.js';
+import gmailWebhookRouting from './gmail-webhook-routing.js';
+import { validateGoogleChannelToken, validateGooglePubSubPush } from './google-channel-token.js';
 
 import type { WebhookHandler } from './types.js';
 
-/**
- * Calendar push routing for the base `google` integration: metadata URI list only
- * (no email / emailAddressHash fallbacks).
- */
-const route: WebhookHandler = async (nango, headers) => {
+// Gmail pushes come via Pub/Sub (`{ message: { data } }`); Calendar pushes have an empty body.
+function isPubSubPush(body: unknown): boolean {
+    if (!body || typeof body !== 'object') {
+        return false;
+    }
+    const message = (body as { message?: unknown }).message;
+    return !!message && typeof message === 'object' && 'data' in message;
+}
+
+// Base `google` integration: Gmail and Calendar share one webhook URL.
+const route: WebhookHandler = async (nango, headers, body, rawBody, query) => {
+    if (isPubSubPush(body)) {
+        const pushResult = validateGooglePubSubPush(nango, headers, query);
+        if (pushResult.isErr()) {
+            return Err(pushResult.error);
+        }
+        return gmailWebhookRouting(nango, headers, body, rawBody, query);
+    }
+
     const tokenResult = validateGoogleChannelToken(nango, headers);
     if (tokenResult.isErr()) {
         return Err(tokenResult.error);
