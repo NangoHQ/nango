@@ -516,15 +516,15 @@ export type GetPublicProviderTemplates = ApiEndpoint<{
 type ProviderTemplateCodeError =
     | ApiError<'unknown_function'>
     | ApiError<'source_unavailable'>
-    | ApiError<'ambiguous_function', undefined, { matches: { type: FunctionType; name: string }[] }>;
+    | ApiError<'ambiguous_function', undefined, { matches: { type: FunctionListType; name: string }[] }>;
 
 export type GetPublicProviderTemplateCode = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/providers/:provider/templates/:name/code';
     Params: { provider: string; name: string };
-    Querystring: { type?: FunctionType | undefined };
-    Success: { type: FunctionType; code: string };
+    Querystring: { type?: FunctionListType | undefined };
+    Success: { type: FunctionListType; code: string };
     Error: ProviderTemplateCodeError;
 }>;
 
@@ -533,8 +533,8 @@ export type GetProviderTemplateCode = ApiEndpoint<{
     Method: 'GET';
     Path: '/api/v1/providers/:providerConfigKey/templates/:name/code';
     Params: { providerConfigKey: string; name: string };
-    Querystring: { env: string; type?: FunctionType | undefined };
-    Success: { type: FunctionType; code: string };
+    Querystring: { env: string; type?: FunctionListType | undefined };
+    Success: { type: FunctionListType; code: string };
     Error: ProviderTemplateCodeError;
 }>;
 

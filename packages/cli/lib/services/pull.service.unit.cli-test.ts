@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fixturesPath } from '../tests/helpers.js';
 import { cliFetch } from '../tls.js';
 import { compileAllFunctions } from '../zeroYaml/compile.js';
-import { pullFunction } from './pull.service.js';
+import { pullFromCatalog, pullFunction } from './pull.service.js';
 
 vi.mock('../tls.js', () => ({ cliFetch: vi.fn() }));
 
@@ -19,7 +19,7 @@ describe('pull → compile', () => {
         vi.mocked(cliFetch).mockReset();
     });
 
-    it('compiles a tool pulled by its public name rather than its original filename', async () => {
+    it.each([pullFunction, pullFromCatalog])('compiles a tool pulled by its public name rather than its original filename', async (pull) => {
         const fullPath = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-pull-tool-'));
         try {
             vi.stubEnv('NANGO_SECRET_KEY_DEV', 'secret-dev');
@@ -34,7 +34,7 @@ describe('pull → compile', () => {
             await fs.symlink(path.dirname(fileURLToPath(import.meta.resolve('zod'))), path.join(fullPath, 'node_modules', 'zod'), 'dir');
             await fs.writeFile(path.join(fullPath, 'package.json'), JSON.stringify({ type: 'module' }));
 
-            const success = await pullFunction({
+            const success = await pull({
                 fullPath,
                 integrationId: 'github',
                 name: 'get_issue',
