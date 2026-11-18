@@ -221,6 +221,10 @@ function internalAuthPublicKeysSchema(varName: string) {
         );
 }
 
+// The audit consumer's ClickHouse write may use this share of the SQS visibility timeout; the rest covers the
+// batch window and the delete.
+export const AUDIT_CONSUMER_WRITE_TIMEOUT_FRACTION_OF_VISIBILITY = 2 / 3;
+
 const ENVS_SHAPE = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -246,6 +250,9 @@ const ENVS_SHAPE = z.object({
     // changes stay visible until it elapses. Avoid raising it beyond 1 minute unless strictly
     // necessary — a larger TTL widens that eventual-consistency window. Read once at startup.
     AUTH_PERSIST_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().max(60_000).optional().default(60_000), // 1 minute
+    // In-process cache of the account context loaded for a task capability token. Separate from the
+    // persist cache so the two lookups can be toggled independently. Uses the persist TTL.
+    AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED: z.stringbool().optional().default(false),
 
     // License configuration options
     NANGO_LICENSE: z.string().optional(),
@@ -652,6 +659,7 @@ const ENVS_SHAPE = z.object({
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
     FLAG_HOSTED_TELEMETRY_ENABLED: z.stringbool().optional().default(true),
+    FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
@@ -886,6 +894,13 @@ const ENVS_SHAPE = z.object({
         .positive()
         .max(6 * 3600 * 1000) // capped so tomorrow's partition is always created before midnight reaches it
         .default(1 * 3600 * 1000),
+    // Sending the stored telemetry to Nango.
+    NANGO_INSTALLATION_PRIVATE_KEY: z.string().optional(),
+    NANGO_INSTALLATIONS_API_URL: z.url().optional(),
+    // We only upload the most recent days. Older data has to be requested manually.
+    NANGO_HOSTED_TELEMETRY_UPLOAD_BACKFILL_DAYS: z.coerce.number().int().positive().optional().default(30),
+    // Internal auth key used for the manual export endpoint.
+    NANGO_HOSTED_TELEMETRY_MANUAL_EXPORT_KEY: z.string().optional(),
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
@@ -908,9 +923,12 @@ const ENVS_SHAPE = z.object({
     NANGO_AUDIT_CONSUMER_MAX_MESSAGES: z.coerce.number().int().min(1).max(10).optional().default(10),
     NANGO_AUDIT_CONSUMER_WAIT_TIME_SECONDS: z.coerce.number().int().min(0).max(20).optional().default(20),
     NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().int().min(10).max(43200).optional().default(30),
+    NANGO_AUDIT_CONSUMER_BATCH_MAX_EVENTS: z.coerce.number().int().min(1).max(1000).optional().default(100),
+    NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS: z.coerce.number().int().min(0).optional().default(5000),
 
     // PubSub
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),
+    NANGO_PUBSUB_SNS_PUBLISH_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).optional().default(6),
     NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_PUBSUB_SNS_SQS_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
     NANGO_PUBSUB_SNS_SQS_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
@@ -1206,6 +1224,19 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
             message: 'EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set',
             path: ['EMAIL_HTTP_BODY'],
             input: ctx.value.EMAIL_HTTP_BODY
+        });
+    }
+
+    // The oldest buffered audit event waits up to the batch window and then for the write, and must still be
+    // invisible when both are done. Half of what the write timeout leaves is kept for the delete.
+    const auditBatchWaitBudgetMs =
+        (ctx.value.NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS * 1000 * (1 - AUDIT_CONSUMER_WRITE_TIMEOUT_FRACTION_OF_VISIBILITY)) / 2;
+    if (ctx.value.NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS > auditBatchWaitBudgetMs) {
+        ctx.issues.push({
+            code: 'custom',
+            message: `NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS must be at most ${auditBatchWaitBudgetMs}ms with the current NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS`,
+            path: ['NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS'],
+            input: ctx.value.NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS
         });
     }
 

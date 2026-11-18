@@ -100,7 +100,7 @@ export const McpOAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSub
 
                     <div>
                         <Button type="submit" loading={loading}>
-                            Create
+                            Add integration
                         </Button>
                     </div>
                 </form>

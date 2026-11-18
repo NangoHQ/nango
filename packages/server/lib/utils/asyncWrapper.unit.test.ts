@@ -31,6 +31,18 @@ describe('asyncWrapperWithEnvironment', () => {
         expect(spies.status).not.toHaveBeenCalled();
     });
 
+    it('does NOT run the handler and returns 500 for a task token', async () => {
+        const environment = { id: 42, name: 'dev' } as DBEnvironment;
+        const { req, res, spies } = mockReqRes({ authType: 'taskToken', environment });
+        const handler = vi.fn();
+
+        await asyncWrapperWithEnvironment<AnyEndpoint>(handler)(req, res, (() => undefined) as NextFunction);
+
+        expect(handler).not.toHaveBeenCalled();
+        expect(spies.status).toHaveBeenCalledWith(500);
+        expect(spies.send).toHaveBeenCalledWith({ error: { code: 'server_error' } });
+    });
+
     it('does NOT run the handler and returns 500 when the environment is missing', async () => {
         const { req, res, spies } = mockReqRes({});
         const handler = vi.fn();
@@ -59,6 +71,15 @@ describe('requireEnvironment', () => {
 
         expect(requireEnvironment(req, res)).toBe(environment);
         expect(spies.status).not.toHaveBeenCalled();
+    });
+
+    it('responds 500 and returns null for a task token', () => {
+        const environment = { id: 7 } as DBEnvironment;
+        const { req, res, spies } = mockReqRes({ authType: 'taskToken', environment });
+
+        expect(requireEnvironment(req, res)).toBeNull();
+        expect(spies.status).toHaveBeenCalledWith(500);
+        expect(spies.send).toHaveBeenCalledWith({ error: { code: 'server_error' } });
     });
 
     it('responds 500 and returns null when absent', () => {

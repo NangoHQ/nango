@@ -75,9 +75,7 @@ export const InstallPluginAuthCreateForm: React.FC<{ provider: ApiProviderListIt
                                 <FormItem>
                                     <FormLabel>Username</FormLabel>
                                     <FormControl>
-                                        <InputGroup>
-                                            <SecretInput {...field} aria-invalid={!!fieldState.error} />
-                                        </InputGroup>
+                                        <SecretInput {...field} aria-invalid={!!fieldState.error} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -91,9 +89,7 @@ export const InstallPluginAuthCreateForm: React.FC<{ provider: ApiProviderListIt
                                 <FormItem>
                                     <FormLabel>Password</FormLabel>
                                     <FormControl>
-                                        <InputGroup>
-                                            <SecretInput {...field} aria-invalid={!!fieldState.error} />
-                                        </InputGroup>
+                                        <SecretInput {...field} aria-invalid={!!fieldState.error} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -103,7 +99,7 @@ export const InstallPluginAuthCreateForm: React.FC<{ provider: ApiProviderListIt
 
                     <div>
                         <Button type="submit" loading={loading}>
-                            Create
+                            Add integration
                         </Button>
                     </div>
                 </form>

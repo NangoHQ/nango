@@ -6,7 +6,7 @@ import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnal
 import { AGENT_SESSION_TAG_KEY } from '../../../../services/agentSessionConnections.service.js';
 import * as connectSessionService from '../../../../services/connectSession.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
-import { resolveSessionConnection } from '../sessionConnection.js';
+import { connectionDeletedError, resolveSessionConnection } from '../sessionConnection.js';
 import { defineAgentSessionMcpTool, invalidArgumentsOf } from '../sessionTool.js';
 import { createConnectionInputSchema, createConnectionOutputSchema } from './schema.js';
 
@@ -86,10 +86,15 @@ export const createConnectionTool = defineAgentSessionMcpTool({
 
             if (created.isErr() && created.error.code === 'connection_not_found') {
                 track('connection_deleted');
+                return Err(connectionDeletedError(integrationId));
+            }
+
+            if (created.isErr() && created.error.code === 'resource_capped') {
+                track('resource_capped');
                 return Err(
                     new PublicMcpError(
-                        `The connection this session uses for '${integrationId}' was deleted, so it cannot be reconnected here. Tell the user a new session is needed to use it again.`,
-                        { code: 'connection_deleted', integrationId }
+                        `Integration '${integrationId}' cannot be connected because the account has reached the connection limit of its plan. Trying again will not help, so tell the user.`,
+                        { code: 'resource_capped', integrationId }
                     )
                 );
             }
