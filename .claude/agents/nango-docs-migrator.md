@@ -406,7 +406,7 @@ Official docs: [[Integration] API docs]([API_DOCS_URL])
 ```markdown
 ## 🧩 Pre-built syncs & tools for [Integration Name]
 
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+Enable them in your dashboard. [Extend and customize](/guides/functions/functions-guide) to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/[integration-slug]/PreBuiltUseCases.mdx"
 
@@ -725,7 +725,7 @@ Official docs: [[Integration] API docs]([API_DOCS_URL])
 
 ## 🧩 Pre-built syncs & tools for [Integration]
 
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+Enable them in your dashboard. [Extend and customize](/guides/functions/functions-guide) to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/[integration-slug]/PreBuiltUseCases.mdx"
 
