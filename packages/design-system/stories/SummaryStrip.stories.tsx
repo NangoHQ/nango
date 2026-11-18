@@ -25,7 +25,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const editCard = (
-    <IconButton variant="ghost" size="xs" label="Edit payment method">
+    <IconButton variant="ghost" size="sm" inline label="Edit payment method">
         <Pencil />
     </IconButton>
 );
