@@ -173,7 +173,7 @@ describe('createManagementMcpServer', () => {
             const result = await client.callTool({ name: 'providers_get', arguments: { provider: 'github', include_templates: true } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();
@@ -240,7 +240,7 @@ describe('createManagementMcpServer', () => {
             const result = await client.callTool({ name: 'connect_session_create', arguments: { end_user: { id: 'end-user-id' } } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
         } finally {
@@ -408,7 +408,7 @@ describe('createManagementMcpServer', () => {
             const result = await client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(elicitationHandler).toHaveBeenCalledWith(
@@ -588,7 +588,7 @@ describe('createManagementMcpServer', () => {
             });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();
@@ -656,7 +656,7 @@ describe('createManagementMcpServer', () => {
             });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
         } finally {
@@ -703,7 +703,7 @@ describe('createManagementMcpServer', () => {
             const result = await client.callTool({ name: 'connections_list', arguments: { integration_id: 'github' } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();
@@ -827,7 +827,7 @@ describe('createManagementMcpServer', () => {
             const result = await client.callTool({ name: 'functions_list', arguments: { integration_id: 'github' } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();
@@ -935,7 +935,7 @@ describe('createManagementMcpServer', () => {
             });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();
@@ -973,7 +973,7 @@ describe('createManagementMcpServer', () => {
             });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();
@@ -1002,7 +1002,7 @@ describe('createManagementMcpServer', () => {
             });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();
@@ -1098,7 +1098,7 @@ describe('createManagementMcpServer', () => {
             });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();
@@ -1126,7 +1126,7 @@ describe('createManagementMcpServer', () => {
             });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(elicitationHandler).toHaveBeenCalledWith(
@@ -1161,7 +1161,7 @@ describe('createManagementMcpServer', () => {
             const result = await client.callTool({ name: 'get_deployment_status', arguments: { id: response.id } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();
@@ -1378,7 +1378,7 @@ describe('createManagementMcpServer', () => {
             });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();
@@ -1421,7 +1421,7 @@ describe('createManagementMcpServer', () => {
             });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();

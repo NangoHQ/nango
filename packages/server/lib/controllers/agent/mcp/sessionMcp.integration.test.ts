@@ -455,8 +455,8 @@ describe('/session/:sessionId/mcp', () => {
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { queries: ['create or update a page'], goal: GOAL } });
 
         expect(res.json.result.isError).toBeUndefined();
-        expect(searchResult(res).matches.map((match) => [match.integration, match.action])).toContainEqual(['notion', 'upsert_doc']);
-        expect(searchResult(res).guidance).toContain('nango_execute');
+        expect(searchResult(res).matches.map((match) => match.tool)).toContain('notion__upsert_doc');
+        expect(searchResults(res).guidance).toContain('nango_execute');
     });
 
     it('searches several queries in one call and groups the matches by query, in order', async () => {
@@ -472,8 +472,8 @@ describe('/session/:sessionId/mcp', () => {
         const { results } = searchResults(res);
 
         expect(results.map((result) => result.query)).toStrictEqual(['create or update a page', 'open a support ticket']);
-        expect(results[0]?.matches.map((match) => match.action)).toContain('upsert_doc');
-        expect(results[1]?.matches.find((match) => match.action === 'create_ticket')?.input).toStrictEqual({ kind: 'none' });
+        expect(results[0]?.matches.map((match) => match.tool)).toContain('notion__upsert_doc');
+        expect(results[1]?.matches.find((match) => match.tool === 'zendesk__create_ticket')?.input).toStrictEqual({ kind: 'none' });
     });
 
     it('rejects a search without a query, or with more queries than it takes', async () => {
@@ -518,17 +518,16 @@ describe('/session/:sessionId/mcp', () => {
         const { token, mcpPath } = await createSession(apiKey);
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { queries: ['create or update a page'], goal: GOAL } });
-        const match = searchResult(res).matches.find((match) => match.action === 'upsert_doc');
+        const match = searchResult(res).matches.find((match) => match.tool === 'notion__upsert_doc');
 
         expect(match?.input).toStrictEqual({
             kind: 'schema',
             schema: {
-                $schema: 'http://json-schema.org/draft-07/schema#',
                 definitions: { UpsertDocInput: { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] } },
                 $ref: '#/definitions/UpsertDocInput'
             }
         });
-        expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'notion-acme' });
+        expect(searchResults(res).integrations['notion']).toBe('connected');
     });
 
     /**
@@ -545,11 +544,11 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { queries: ['read a doc'], goal: GOAL } });
         const result = searchResult(res);
-        const match = result.matches.find((match) => match.action === 'read_doc');
+        const match = result.matches.find((match) => match.tool === 'notion__read_doc');
 
         expect(match?.input).toStrictEqual({ kind: 'unavailable' });
         expect(result.guidance).toContain('could not be read');
-        expect(result.guidance).not.toContain("'read_doc' takes no arguments");
+        expect(result.guidance).not.toContain('`notion__read_doc` takes no arguments');
     });
 
     it('says plainly when a tool takes no arguments', async () => {
@@ -558,7 +557,7 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { queries: ['open a support ticket'], goal: GOAL } });
         const result = searchResult(res);
-        const match = result.matches.find((match) => match.action === 'create_ticket');
+        const match = result.matches.find((match) => match.tool === 'zendesk__create_ticket');
 
         expect(match?.input).toStrictEqual({ kind: 'none' });
         expect(result.guidance).toContain('no arguments');
@@ -570,11 +569,9 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { queries: ['send a message'], goal: GOAL } });
         const result = searchResult(res);
-        const match = [...result.matches, ...result.related].find((match) => match.action === 'send_message');
 
-        expect(match?.tool).toBe('slack__send_message');
-        expect(match?.listed).toBe(true);
-        expect(result.guidance).toContain('also in your tool list');
+        expect([...result.matches, ...result.related].map((match) => match.tool)).toContain('slack__send_message');
+        expect(searchResults(res).guidance).toContain('`slack__send_message` is also in your tool list');
     });
 
     it('lists a tool on an unconnected integration and says what to do about it', async () => {
@@ -583,11 +580,11 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { queries: ['open a support ticket'], goal: GOAL } });
         const result = searchResult(res);
-        const match = [...result.matches, ...result.related].find((match) => match.action === 'create_ticket');
 
-        expect(match?.connection).toStrictEqual({ status: 'not_connected' });
-        expect(result.guidance).toContain(
-            "'zendesk' has no connection in this session. Their tools are listed for completeness and will fail if you call them. Tell the user they need to connect it, and carry on with the tools you do have."
+        expect([...result.matches, ...result.related].map((match) => match.tool)).toContain('zendesk__create_ticket');
+        expect(searchResults(res).integrations['zendesk']).toBe('not_connected');
+        expect(searchResults(res).guidance).toContain(
+            '`zendesk` has no connection in this session, so its tools will fail. Tell the user they need to connect it, and carry on with the tools you do have.'
         );
     });
 
@@ -597,8 +594,8 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { queries: ['open a support ticket'], goal: GOAL } });
 
-        expect(searchResult(res).guidance).toContain(
-            "'zendesk' has no connection in this session. Their tools are listed for completeness and will fail if you call them. Call nango_create_connection with integration 'zendesk' to get a link the user can follow, then try again once they tell you they are done."
+        expect(searchResults(res).guidance).toContain(
+            "`zendesk` has no connection in this session, so its tools will fail. Call nango_create_connection with integration 'zendesk' to get a link the user can follow, then try again once they tell you they are done."
         );
     });
 
@@ -609,11 +606,8 @@ describe('/session/:sessionId/mcp', () => {
         await seeders.createConnectionSeed({ env, provider: 'zendesk', connectionId: 'zendesk-acme', tags: { [AGENT_SESSION_TAG_KEY]: sessionId } });
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { queries: ['open a support ticket'], goal: GOAL } });
-        const result = searchResult(res);
-        const match = [...result.matches, ...result.related].find((match) => match.action === 'create_ticket');
-
-        expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'zendesk-acme' });
-        expect(result.guidance).not.toContain('nango_create_connection');
+        expect(searchResults(res).integrations['zendesk']).toBe('connected');
+        expect(searchResults(res).guidance).not.toContain('nango_create_connection');
     });
 
     describe('an MCP server the agent connects mid-session', () => {
@@ -656,11 +650,13 @@ describe('/session/:sessionId/mcp', () => {
                 expect.objectContaining({ name: 'notion-mcp__notion-search', _meta: { 'nango/integration': 'notion-mcp', 'nango/tool': 'notion-search' } })
             );
 
-            const search = searchResult(
+            const search = searchResults(
                 await callTool({ token, mcpPath, name: 'nango_tool_search', args: { queries: ['fetch a notion page by its id'], goal: GOAL } })
             );
-            const match = [...search.matches, ...search.related].find((match) => match.action === 'notion-fetch');
-            expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'notion-mcp-acme' });
+            expect([...(search.results[0]?.matches ?? []), ...(search.results[0]?.related ?? [])].map((match) => match.tool)).toContain(
+                'notion-mcp__notion-fetch'
+            );
+            expect(search.integrations['notion-mcp']).toBe('connected');
 
             expect(
                 discoverMcpTools.mock.calls.filter(([{ connections }]) => connections.some((connection) => connection.integrationId === 'notion-mcp'))

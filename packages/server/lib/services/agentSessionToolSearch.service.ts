@@ -14,7 +14,9 @@ import type {
     AgentSessionToolConnectionState,
     AgentSessionToolInput,
     AgentSessionToolMatch,
+    AgentSessionToolRelated,
     AgentSessionToolSearchHit,
+    AgentSessionToolSearchIntegrationState,
     AgentSessionToolSearchQueryResult,
     AgentSessionToolSearchResult,
     DBEnvironment,
@@ -93,7 +95,10 @@ const LEADING_MATCH_SCORE = 0.65;
 const LEADING_MATCH_MARGIN = 0.1;
 
 const MAX_BEST_MATCHES = 5;
-const MAX_RELATED_MATCHES = 15;
+const MAX_RELATED_WITH_MATCH = 3;
+const MAX_RELATED_WITHOUT_MATCH = 5;
+// Kept deeper than either cap, so a query that loses tools to another query in the same call still has some left.
+const MAX_RELATED_CANDIDATES = 15;
 
 interface SearchCandidate {
     slug: string;
@@ -142,18 +147,20 @@ export async function searchSessionTools({
             void logCtx.warn('Could not look up connections created in this session', { error: err });
             return session;
         });
-        const ranked = queries.map((query) => ({ query, ...rankSessionTools({ session: current, query, slugOf }) }));
+        const ranked = trimRelated(queries.map((query) => ({ query, ...rankSessionTools({ session: current, query, slugOf }) })));
         const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.flatMap(({ best }) => best) });
 
-        const results = ranked.map(({ query, best, related: weaker }): AgentSessionToolSearchQueryResult => {
+        const results = ranked.map(({ query, best, related: weaker, relatedElsewhere }): AgentSessionToolSearchQueryResult => {
             // It's possible a tool was removed after the session compiled, so we set input as unavailable.
             const matches = best.map((candidate) =>
                 toMatch(candidate, candidate.input ?? inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' })
             );
-            const related = weaker.map((candidate) => toMatch(candidate, undefined));
+            const related = weaker.map(toRelated);
+            const guidance = queryGuidance({ matches, related, relatedElsewhere });
 
-            return { query, guidance: guidanceFor({ session, query, matches, related }), matches, related };
+            return { query, ...(guidance ? { guidance } : {}), matches, related };
         });
+        const returned = ranked.flatMap(({ best, related }) => [...best, ...related]);
 
         await logCtx.enrichOperation({ meta: searchOperationMeta({ goal, results }) });
         for (const { query, matches } of results) {
@@ -173,7 +180,7 @@ export async function searchSessionTools({
             });
         }
 
-        return { results };
+        return { guidance: searchGuidance({ session, results, returned }), integrations: integrationStates(returned), results };
     } catch (err) {
         void logCtx.error('Failed to search the session tools', { error: err });
         await logCtx.failed();
@@ -209,7 +216,7 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
     for (const { candidate, score } of scored) {
         if (score <= bestMatchScore && best.length < MAX_BEST_MATCHES) {
             best.push({ ...candidate, score });
-        } else if (related.length < MAX_RELATED_MATCHES) {
+        } else if (related.length < MAX_RELATED_CANDIDATES) {
             related.push({ ...candidate, score });
         }
     }
@@ -226,6 +233,38 @@ function bestMatchScoreFor(topScore: number | undefined): number {
     }
 
     return Math.max(BEST_MATCH_SCORE, topScore + LEADING_MATCH_MARGIN);
+}
+
+/**
+ * A related tool is listed once per call, and not at all when another query already returns it as a
+ * match. Tools are placed best score first, each under the closest query that still has room, so a
+ * query that is full passes a tool on rather than dropping it. A query with a match gets fewer, since
+ * the agent already has a tool to call. Matches are left alone, so every query keeps its own answer.
+ */
+export function trimRelated<T extends { best: ScoredCandidate[]; related: ScoredCandidate[] }>(rankings: T[]): (T & { relatedElsewhere: boolean })[] {
+    const matched = new Set(rankings.flatMap(({ best }) => best.map((candidate) => candidate.slug)));
+    const kept = rankings.map(({ best }) => ({ max: best.length > 0 ? MAX_RELATED_WITH_MATCH : MAX_RELATED_WITHOUT_MATCH, tools: [] as ScoredCandidate[] }));
+    const placedIn = new Map<string, number>();
+
+    const offers = rankings
+        .flatMap(({ related }, index) => related.map((candidate) => ({ index, candidate })))
+        .sort((a, b) => a.candidate.score - b.candidate.score || a.index - b.index);
+
+    for (const { index, candidate } of offers) {
+        const query = kept[index];
+        if (!query || matched.has(candidate.slug) || placedIn.has(candidate.slug) || query.tools.length >= query.max) {
+            continue;
+        }
+
+        query.tools.push(candidate);
+        placedIn.set(candidate.slug, index);
+    }
+
+    return rankings.map((ranking, index) => ({
+        ...ranking,
+        related: kept[index]?.tools ?? [],
+        relatedElsewhere: ranking.related.some(({ slug }) => matched.has(slug) || (placedIn.get(slug) ?? index) !== index)
+    }));
 }
 
 /**
@@ -408,82 +447,101 @@ export function searchOperationMeta({ goal, results }: { goal: string; results: 
     };
 }
 
-function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | undefined): AgentSessionToolMatch {
-    return {
-        tool: candidate.slug,
-        integration: candidate.integration,
-        action: candidate.action,
-        provider: candidate.provider,
-        description: candidate.description,
-        listed: candidate.listed,
-        connection: candidate.connection,
-        ...(input ? { input } : {})
-    };
+function toRelated(candidate: SearchCandidate): AgentSessionToolRelated {
+    return { tool: candidate.slug, integration: candidate.integration, description: candidate.description };
 }
 
-function guidanceFor({
+// The dialect URL would repeat on every match, and the guidance already says what the schemas are.
+function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput): AgentSessionToolMatch {
+    if (input.kind !== 'schema') {
+        return { ...toRelated(candidate), input };
+    }
+
+    const schema = { ...input.schema };
+    delete schema.$schema;
+    return { ...toRelated(candidate), input: { kind: 'schema', schema } };
+}
+
+function integrationStates(candidates: SearchCandidate[]): Record<string, AgentSessionToolSearchIntegrationState> {
+    return Object.fromEntries(candidates.map(({ integration, connection }) => [integration, connection.status]));
+}
+
+/** What holds for the whole call, said once rather than under every query it applies to. */
+function searchGuidance({
     session,
-    query,
-    matches,
-    related
+    results,
+    returned
 }: {
     session: AgentSession;
-    query: string;
-    matches: AgentSessionToolMatch[];
-    related: AgentSessionToolMatch[];
+    results: AgentSessionToolSearchQueryResult[];
+    returned: SearchCandidate[];
 }): string {
-    if (matches.length === 0 && related.length === 0) {
-        return `No tool in this session matches '${query}'. Try a shorter query, or words describing the operation rather than the product, and note that this session may simply not carry a tool for it.`;
+    if (returned.length === 0) {
+        return 'No query matched a tool in this session.';
     }
 
     const lines: string[] = [];
 
-    if (matches.length > 0) {
+    if (results.some(({ matches }) => matches.length > 0)) {
         lines.push(
-            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the tool of the one you want, exactly as given, and the input its schema describes. A schema is a JSON Schema document, rooted at its \`$ref\` when it has one.`
-        );
-
-        const takesNothing = matches.filter((match) => match.input?.kind === 'none');
-        if (takesNothing.length > 0) {
-            lines.push(`${toolNames(takesNothing)} ${takesNothing.length === 1 ? 'takes' : 'take'} no arguments.`);
-        }
-
-        const unreadable = matches.filter((match) => match.input?.kind === 'unavailable');
-        if (unreadable.length > 0) {
-            lines.push(
-                `The arguments of ${toolNames(unreadable)} could not be read, so ${unreadable.length === 1 ? 'it has' : 'they have'} to be called on a guess at the shape, and may fail.`
-            );
-        }
-    } else {
-        lines.push(
-            `No tool closely matches '${query}', but ${related.length} ${related.length === 1 ? 'is' : 'are'} related. Search again with wording closer to one of them to get its input schema.`
+            "Call `nango_execute` with a match's `tool`, exactly as given, and an input that fits its schema.",
+            'Schemas are JSON Schema, rooted at their `$ref` when they have one.'
         );
     }
 
-    if (matches.length > 0 && related.length > 0) {
-        lines.push(
-            `${related.length} more ${related.length === 1 ? 'tool is' : 'tools are'} loosely related, listed without their input schemas. Search again to pull one up.`
-        );
+    if (results.some(({ related }) => related.length > 0)) {
+        lines.push('Related tools come without a schema. Search again with wording closer to one to get it.');
     }
 
-    const alreadyListed = [...matches, ...related].filter((match) => match.listed);
-    if (alreadyListed.length > 0) {
-        lines.push(`${toolNames(alreadyListed)} ${alreadyListed.length === 1 ? 'is' : 'are'} also in your tool list under the same name.`);
+    const listed = [...new Set(returned.filter((candidate) => candidate.listed).map(({ slug }) => slug))];
+    if (listed.length > 0) {
+        lines.push(`${codeList(listed)} ${listed.length === 1 ? 'is' : 'are'} also in your tool list under the same name.`);
     }
 
-    const unconnected = [...new Set([...matches, ...related].filter((match) => match.connection.status === 'not_connected').map((match) => match.integration))];
-    if (unconnected.length > 0) {
-        lines.push(
-            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has no connection' : 'have no connections'} in this session. Their tools are listed for completeness and will fail if you call them.`,
-            ...new Set(unconnected.map((integration) => notConnectedGuidance(integration, session)))
-        );
+    const unconnected = [...new Set(returned.filter(({ connection }) => connection.status === 'not_connected').map(({ integration }) => integration))];
+    for (const integration of unconnected) {
+        lines.push(`\`${integration}\` has no connection in this session, so its tools will fail. ${notConnectedGuidance(integration, session)}`);
     }
 
-    return lines.join(' ');
+    return lines.join('\n');
 }
 
-function toolNames(matches: AgentSessionToolMatch[]): string {
-    return matches.map((match) => `'${match.tool}'`).join(', ');
+function queryGuidance({
+    matches,
+    related,
+    relatedElsewhere
+}: {
+    matches: AgentSessionToolMatch[];
+    related: AgentSessionToolRelated[];
+    relatedElsewhere: boolean;
+}): string | undefined {
+    if (matches.length === 0 && related.length === 0) {
+        return relatedElsewhere
+            ? 'No close match. The closest tools are listed under another query.'
+            : 'No tool in this session matches. Try a shorter query, or words for the operation rather than the product. This session may not carry a tool for it.';
+    }
+
+    const lines: string[] = [];
+
+    if (matches.length === 0) {
+        lines.push('No close match, only related tools.');
+    }
+
+    const takesNothing = matches.filter(({ input }) => input.kind === 'none').map(({ tool }) => tool);
+    if (takesNothing.length > 0) {
+        lines.push(`${codeList(takesNothing)} ${takesNothing.length === 1 ? 'takes' : 'take'} no arguments.`);
+    }
+
+    const unreadable = matches.filter(({ input }) => input.kind === 'unavailable').map(({ tool }) => tool);
+    if (unreadable.length > 0) {
+        lines.push(`The arguments of ${codeList(unreadable)} could not be read. Guess the shape, and expect the call may fail.`);
+    }
+
+    return lines.length > 0 ? lines.join('\n') : undefined;
+}
+
+function codeList(names: string[]): string {
+    return names.map((name) => `\`${name}\``).join(', ');
 }
 
 /** Scores run from 0, everything matched, to 1, nothing matched, and the event reports the other way round. */
