@@ -2626,7 +2626,7 @@ async function insertLegacyRecords({
         .merge(['count', 'size_bytes']);
 }
 
-// size of each record in deletion order, computed independently of deleteRecords
+// size of each record in deletion order, using the same size expression as deleteRecords with a plain join
 async function recordSizes(connectionId: number, model: string): Promise<{ id: string; size: number }[]> {
     const res = await db.raw<{ rows: { id: string; size: number }[] }>(
         `SELECT r.id, COALESCE(pg_column_size(r.json), r.size_bytes, pg_column_size(d.data), 0)::int AS size
