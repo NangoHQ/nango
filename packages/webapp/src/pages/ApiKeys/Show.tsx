@@ -161,7 +161,7 @@ const DeleteAccountApiKeyButton: React.FC<{
             confirmationKeyword={apiKey.display_name}
             confirmButtonText="Delete Account API key"
             trigger={
-                <IconButton label={`Delete Account API key ${apiKey.display_name}`} variant="danger-ghost" size="xs" disabled={disabled}>
+                <IconButton label={`Delete Account API key ${apiKey.display_name}`} variant="danger-ghost" size="sm" disabled={disabled}>
                     <Trash2 />
                 </IconButton>
             }
@@ -302,7 +302,7 @@ export const AccountApiKeysShow: React.FC = () => {
                                         <div className="flex items-center gap-1">
                                             <CopyButton
                                                 value={apiKey.secret}
-                                                size="xs"
+                                                size="sm"
                                                 onCopy={() => track('auth:copy_button_click', { copied_item: 'api_key_secret' })}
                                             />
                                             <DeleteAccountApiKeyButton apiKey={apiKey} disabled={isDeleting || !canDeleteAccountKeys} onDelete={handleDelete} />

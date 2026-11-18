@@ -114,11 +114,7 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions, 
                                 // changes the row's width — otherwise, in this content-sized wrap layout, the row would
                                 // grow on hover and reflow the wrapped rows below it.
                                 <div className="flex shrink-0 items-center gap-0.5 text-text-secondary opacity-0 transition-opacity duration-150 group-hover/row:opacity-100 group-focus-within/row:opacity-100">
-                                    {copyValue && (
-                                        <span className="-my-0.5 inline-flex">
-                                            <CopyButton value={copyValue} size="xs" onCopy={() => onSeriesCopy?.(s)} />
-                                        </span>
-                                    )}
+                                    {copyValue && <CopyButton value={copyValue} size="sm" inline onCopy={() => onSeriesCopy?.(s)} />}
                                     {href && (
                                         <Link
                                             to={href}

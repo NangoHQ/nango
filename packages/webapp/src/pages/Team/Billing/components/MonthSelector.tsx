@@ -34,7 +34,7 @@ export const MonthSelector: React.FC = () => {
     };
 
     const previousButton = (
-        <IconButton variant="ghost" size="xs" onClick={() => step(-1)} disabled={!canGoPrevious} label="Previous month">
+        <IconButton variant="ghost" size="sm" onClick={() => step(-1)} disabled={!canGoPrevious} label="Previous month">
             <ChevronLeft />
         </IconButton>
     );
@@ -55,7 +55,7 @@ export const MonthSelector: React.FC = () => {
                 </Tooltip>
             )}
             <span className="text-text-strong text-body-medium-medium min-w-28 text-center">{monthDisplay}</span>
-            <IconButton variant="ghost" size="xs" onClick={() => step(1)} disabled={!canGoNext} label="Next month">
+            <IconButton variant="ghost" size="sm" onClick={() => step(1)} disabled={!canGoNext} label="Next month">
                 <ChevronRight />
             </IconButton>
         </div>

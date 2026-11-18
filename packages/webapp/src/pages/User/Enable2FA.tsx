@@ -115,9 +115,7 @@ export const Enable2FA: React.FC = () => {
                                                     data-ph-mask
                                                 >
                                                     <span>{secret}</span>
-                                                    <span className="-my-0.5 inline-flex">
-                                                        <CopyButton value={secret.replace(/\s/g, '')} size="xs" />
-                                                    </span>
+                                                    <CopyButton value={secret.replace(/\s/g, '')} size="sm" inline />
                                                 </div>
                                             )}
                                         </div>

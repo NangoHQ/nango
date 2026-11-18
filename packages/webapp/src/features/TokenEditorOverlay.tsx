@@ -780,7 +780,7 @@ function TokenRow({ entry, override, refOverride, linked, onCommit, onReset, onT
                     <TooltipTrigger asChild>
                         <IconButton
                             variant="ghost"
-                            size="xs"
+                            size="sm"
                             label={linked ? 'Unlink from source primitive' : 'Link to source primitive'}
                             title=""
                             onClick={() => onToggleLink(entry.cssVar)}
@@ -803,7 +803,7 @@ function TokenRow({ entry, override, refOverride, linked, onCommit, onReset, onT
                     <TooltipTrigger asChild>
                         <IconButton
                             variant="ghost"
-                            size="xs"
+                            size="sm"
                             label="Reset to default"
                             title=""
                             onClick={() => onReset(entry.cssVar)}
@@ -1122,7 +1122,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                         <TooltipTrigger asChild>
                             <IconButton
                                 variant="ghost"
-                                size="xs"
+                                size="sm"
                                 label="Back to Dev Tools"
                                 title=""
                                 onClick={onBack}
@@ -1140,7 +1140,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                 </div>
                 <Tooltip delayDuration={500}>
                     <TooltipTrigger asChild>
-                        <IconButton variant="ghost" size="xs" label="Close" title="" onClick={onClose} className="text-text-muted hover:text-text-default">
+                        <IconButton variant="ghost" size="sm" label="Close" title="" onClick={onClose} className="text-text-muted hover:text-text-default">
                             <X />
                         </IconButton>
                     </TooltipTrigger>

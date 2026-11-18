@@ -563,7 +563,7 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
             className={cn(
                 // cursor-default/select-none: the label is an atomic token, so don't show an I-beam
                 // promising a text selection that Base UI's mousedown handler prevents.
-                'focus-default inline-flex min-h-[21px] max-w-full min-w-0 cursor-default items-center justify-center gap-[2px] rounded bg-surface-page border border-border-default px-[6px] text-sm font-normal text-text-secondary select-none outline-none has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
+                'focus-default inline-flex h-[21px]max-w-full min-w-0 cursor-default items-center justify-center gap-[2px] rounded bg-surface-page border border-border-default px-[6px] text-sm font-normal text-text-secondary select-none outline-none has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
                 className
             )}
             {...props}
@@ -571,7 +571,7 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
             <span className="min-w-0 truncate">{children}</span>
             {showRemove && (
                 <ComboboxPrimitive.ChipRemove
-                    render={<IconButton variant="ghost" size="xs" label="Remove" />}
+                    render={<IconButton variant="ghost" size="sm" inline label="Remove" />}
                     className="flex items-center justify-center rounded-sm text-text-muted hover:text-text-strong hover:bg-state-hover"
                     data-slot="combobox-chip-remove"
                 >

@@ -399,7 +399,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                     <div className="relative">
                         <Input value={apiKey.uuid} disabled className="font-mono bg-surface-canvas text-text-muted pr-10" />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                            <CopyButton size="xs" value={apiKey.uuid} />
+                            <CopyButton size="sm" value={apiKey.uuid} />
                         </div>
                     </div>
 
@@ -415,13 +415,13 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                                 <IconButton
                                     label="Toggle visibility"
                                     variant="ghost"
-                                    size="xs"
+                                    size="sm"
                                     onClick={() => setSecretRevealed((r) => !r)}
                                     className="text-text-muted hover:text-text-strong"
                                 >
                                     {secretRevealed ? <EyeOff strokeWidth={1} /> : <Eye strokeWidth={1} />}
                                 </IconButton>
-                                <CopyButton size="xs" value={apiKey.secret} />
+                                <CopyButton size="sm" value={apiKey.secret} />
                             </div>
                         )}
                     </div>
@@ -462,7 +462,7 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
             confirmationKeyword={displayName}
             confirmButtonText="Delete API Key"
             trigger={
-                <IconButton label="Delete API key" variant="danger-ghost" size="xs">
+                <IconButton label="Delete API key" variant="danger-ghost" size="sm">
                     <Trash2 />
                 </IconButton>
             }
@@ -493,13 +493,13 @@ const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ se
                             <IconButton
                                 label="Toggle visibility"
                                 variant="ghost"
-                                size="xs"
+                                size="sm"
                                 onClick={() => setRevealed((r) => !r)}
                                 className="text-text-muted hover:text-text-strong"
                             >
                                 {revealed ? <EyeOff strokeWidth={1} /> : <Eye strokeWidth={1} />}
                             </IconButton>
-                            <CopyButton size="xs" value={secretKey} />
+                            <CopyButton size="sm" value={secretKey} />
                         </div>
                     </div>
                 </div>
@@ -595,12 +595,12 @@ export const ApiKeys: React.FC = () => {
                                 {canMakeActions && (
                                     <TableCell>
                                         <div className="flex items-center gap-1">
-                                            {canReadSecret && <CopyButton size="xs" value={key.secret} />}
+                                            {canReadSecret && <CopyButton size="sm" value={key.secret} />}
                                             {canManageKeys && (
                                                 <IconButton
                                                     label="Edit"
                                                     variant="ghost"
-                                                    size="xs"
+                                                    size="sm"
                                                     onClick={() => setSelectedKeyId(key.id)}
                                                     className="text-text-muted hover:text-text-strong"
                                                 >

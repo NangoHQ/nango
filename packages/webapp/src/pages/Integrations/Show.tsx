@@ -211,9 +211,7 @@ export const IntegrationsList = () => {
                                 <TableCell className="text-text-secondary !text-body-small-regular">
                                     <div className="flex gap-1.5 items-center">
                                         {integration.unique_key}
-                                        <span className="-my-0.5 inline-flex">
-                                            <CopyButton size="xs" value={integration.unique_key} />
-                                        </span>
+                                        <CopyButton size="sm" inline value={integration.unique_key} />
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-text-strong text-body-small-semi text-center">{integration.meta.connectionCount}</TableCell>
