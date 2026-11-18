@@ -22,6 +22,16 @@ export function isAdded(setup: AgentPlaygroundIntegrationSetup): boolean {
     return setup.outcome === 'created' || setup.outcome === 'existing';
 }
 
+export function createdIntegrationIds(messages: PlaygroundMessage[]): string[] {
+    return messages.flatMap((message) =>
+        message.parts.flatMap((part) =>
+            part.type === 'dynamic-tool' && isSetUpPart(part)
+                ? setUpResults(part).flatMap((setup) => (setup.outcome === 'created' && setup.integrationId ? [setup.integrationId] : []))
+                : []
+        )
+    );
+}
+
 export function providersToAdd(message: PlaygroundMessage | undefined): string[] {
     if (message?.role !== 'assistant') {
         return [];
