@@ -146,7 +146,7 @@ async function renderLlmsTxt(documentation: NavGroup, apiOverview: NavGroup, cha
     const lines = [
         '# Nango Docs',
         '',
-        '> Nango is the integration layer for AI-built, code-owned product integrations. These files are curated for agents: core docs are listed directly, while provider-specific API pages live in a compact catalog.',
+        '> Nango is the tool calling layer for AI agents to act across 1,300+ APIs. These files are curated for agents: core docs are listed directly, while provider-specific API pages live in a compact catalog.',
         '',
         `Full core-docs context: ${baseUrl}/llms-full.txt`,
         `API and integration catalog: ${baseUrl}/api-catalog.txt`,
