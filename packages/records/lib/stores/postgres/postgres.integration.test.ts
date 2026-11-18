@@ -1806,6 +1806,87 @@ describe('PostgresStore', () => {
             expect(deleted.count).toBe(0);
             expect(progressUpdates).toEqual([{ deleted: 0, page: 1 }]);
         });
+
+        it('should subtract the exact size of hard deleted records across batches', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe', role: 'admin' },
+                { id: '3', name: 'Max Doe', tags: ['a', 'b', 'c'] },
+                { id: '4', name: 'Mike Doe' },
+                { id: '5', name: 'Alice Doe', bio: 'x'.repeat(200) }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const sizes = await recordSizes(connectionId, model);
+            const initialStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const initialSize = initialStats[model]?.size_bytes || 0;
+
+            const deleted = (await store.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 4, batchSize: 2 })).unwrap();
+            expect(deleted.count).toBe(4);
+
+            const deletedSize = sizes.slice(0, 4).reduce((acc, r) => acc + r.size, 0);
+            const finalStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(finalStats[model]?.count).toBe(1);
+            expect(finalStats[model]?.size_bytes).toBe(initialSize - deletedSize);
+        });
+
+        it('should subtract the exact size of hard deleted legacy records', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe', role: 'admin' },
+                { id: '3', name: 'Max Doe' }
+            ];
+            await insertLegacyRecords({ records, connectionId, environmentId, model, syncId });
+
+            const sizes = await recordSizes(connectionId, model);
+            const initialStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const initialSize = initialStats[model]?.size_bytes || 0;
+
+            const deleted = (await store.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 2, batchSize: 1 })).unwrap();
+            expect(deleted.count).toBe(2);
+
+            const deletedSize = sizes.slice(0, 2).reduce((acc, r) => acc + r.size, 0);
+            const finalStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(finalStats[model]?.count).toBe(1);
+            expect(finalStats[model]?.size_bytes).toBe(initialSize - deletedSize);
+        });
+
+        it('should subtract the exact size of pruned records and keep the count', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = [
+                { id: '1', name: 'John Doe' },
+                { id: '2', name: 'Jane Doe', role: 'admin' },
+                { id: '3', name: 'Max Doe', tags: ['a', 'b', 'c'] },
+                { id: '4', name: 'Mike Doe' }
+            ];
+            await upsertRecords({ records, connectionId, environmentId, model, syncId });
+
+            const sizes = await recordSizes(connectionId, model);
+            const initialStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const initialSize = initialStats[model]?.size_bytes || 0;
+
+            const pruned = (await store.deleteRecords({ connectionId, environmentId, model, mode: 'prune', limit: 3, batchSize: 2 })).unwrap();
+            expect(pruned.count).toBe(3);
+
+            const prunedSize = sizes.slice(0, 3).reduce((acc, r) => acc + r.size, 0);
+            const finalStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
+            expect(finalStats[model]?.count).toBe(records.length);
+            expect(finalStats[model]?.size_bytes).toBe(initialSize - prunedSize);
+        });
     });
 
     describe('incrCount', () => {
@@ -2543,6 +2624,19 @@ async function insertLegacyRecords({
         .insert({ connection_id: connectionId, environment_id: environmentId, model, count: encrypted.length, size_bytes: parseInt(total_size) })
         .onConflict(['environment_id', 'connection_id', 'model'])
         .merge(['count', 'size_bytes']);
+}
+
+// size of each record in deletion order, computed independently of deleteRecords
+async function recordSizes(connectionId: number, model: string): Promise<{ id: string; size: number }[]> {
+    const res = await db.raw<{ rows: { id: string; size: number }[] }>(
+        `SELECT r.id, COALESCE(pg_column_size(r.json), r.size_bytes, pg_column_size(d.data), 0)::int AS size
+         FROM ?? r
+         LEFT JOIN ?? d ON d.connection_id = r.connection_id AND d.model = r.model AND d.id = r.id
+         WHERE r.connection_id = ? AND r.model = ?
+         ORDER BY r.updated_at ASC, r.id ASC`,
+        [RECORDS_TABLE, RECORDS_DATA_TABLE, connectionId, model]
+    );
+    return res.rows;
 }
 
 async function fromDbLegacy(
