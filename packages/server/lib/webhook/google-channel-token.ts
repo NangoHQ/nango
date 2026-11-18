@@ -67,7 +67,7 @@ export function validateGooglePubSubPush(nango: InternalNango, headers: Record<s
         switch (secretResult.error.type) {
             case 'webhook_invalid_secret':
                 // Unset, or shorter than 16 characters.
-                return reject(integration, 'google_missing_pubsub_webhook_secret', 'webhook_missing_token');
+                return reject(integration, 'google_pubsub_webhook_secret_not_configured', 'webhook_missing_token');
             case 'webhook_missing_signature':
                 return reject(integration, 'google_pubsub_missing_webhook_secret', 'webhook_missing_token');
             default:
@@ -76,7 +76,7 @@ export function validateGooglePubSubPush(nango: InternalNango, headers: Record<s
     }
 
     if (!headers['authorization']) {
-        return reject(integration, 'google_pubsub_missing_authorization', 'webhook_invalid_signature');
+        return reject(integration, 'google_pubsub_missing_authorization', 'webhook_missing_token');
     }
 
     return Ok(undefined);
