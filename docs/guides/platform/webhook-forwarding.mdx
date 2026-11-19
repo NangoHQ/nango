@@ -103,7 +103,7 @@ Use [webhook functions](/guides/functions/webhook-functions) when Nango should u
 
 ## Providers that do not sign webhooks
 
-Affinity, Command Alkon, Fillout, Okta and ShipStation do not sign their webhooks, so Nango checks a secret you choose for each connection instead. Nango rejects a webhook unless it carries the secret of the connection it is routed to, or the connection has no secret and the integration [allows unverified webhooks](#unverified-webhooks). Okta always requires the secret, so unverified webhooks never apply to it.
+Affinity, Command Alkon, Fillout, Okta and ShipStation do not sign their webhooks, so Nango checks a secret you choose for each connection instead. Nango rejects a webhook unless it carries the secret of the connection it is routed to, or the connection has no secret and the integration [allows unverified webhooks](#unverified-webhooks). Okta requires the secret for event deliveries, so unverified webhooks never apply to them. Its one-time verification request is answered without a secret.
 
 1. Generate a random secret of at least 16 characters per connection and store it as `webhookSecret` in that connection's [metadata](/reference/backend/http-api/connections/update-metadata).
 2. Send that connection's secret with every webhook registered for it, in the `X-Nango-Webhook-Secret` header or, when the provider only lets you set a URL, as a `nangoWebhookSecret` query param on the Nango webhook URL.
