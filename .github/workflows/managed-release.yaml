@@ -36,7 +36,7 @@ jobs:
             - name: Require master for releases
               if: ${{ !env.ACT && !inputs.dry_run && github.ref != 'refs/heads/master' }}
               run: |
-                  echo "Releases must be run from master, not ${{ github.ref }}"
+                  echo "Releases must be run from master, not ${GITHUB_REF}"
                   exit 1
 
             - name: Get versions
