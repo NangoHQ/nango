@@ -41,21 +41,11 @@ import { ToolCallCard } from './components/ToolCallCard';
 import { ToolCallGroup } from './components/ToolCallGroup';
 import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
-import {
-    continuesAfterSetUp,
-    createdIntegrationIds,
-    isAdded,
-    isSetUpPart,
-    lastSetUpPartIndex,
-    providersToAdd,
-    setUpApps,
-    setUpResults,
-    setupsSinceLastSession
-} from './setUpTool';
+import { continuesAfterSetUp, createdIntegrationIds, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults, setupsSinceLastSession } from './setUpTool';
 import { providerName, STARTER_PROMPTS } from './starterPrompts';
 import { hideTrailingLink } from './streamingMarkdown';
 import { integrationLabels, labelFor } from './toolDisplay';
-import { groupReplyParts, isSessionItem } from './toolGroups';
+import { groupReplyParts } from './toolGroups';
 
 import type { PendingApproval } from './approvalTracking';
 import type { ReplyEntry, ReplyItem } from './toolGroups';
@@ -407,12 +397,6 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
                     const sessionNotice = sessionCreated && (
                         <SessionNotice created={sessionCreated} replaced={message.id !== firstSessionMessageId} newIntegrations={newIntegrationNames(index)} />
                     );
-                    // A setup mid-reply starts its session in a follow-up request, whose metadata merges into this same message.
-                    const sessionAfterPart = sessionCreated?.reason === 'integrations_changed' ? message.parts[lastSetUpPartIndex(message)] : undefined;
-                    const items = groupReplyParts(message.parts, stoppedToolCall);
-                    const startIndex = items.findIndex((item) => item.kind === 'tool' && item.part === sessionAfterPart);
-                    const firstSessionIndex = sessionCreated ? items.findIndex((item, i) => i > startIndex && isSessionItem(item)) : -1;
-                    const lonelyNotice = firstSessionIndex === -1 && sessionNotice;
                     const chatActive = message === lastMessage && busy;
                     const renderEntry = (entry: ReplyEntry) => {
                         if (entry.kind === 'text') {
@@ -462,16 +446,8 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
                                     onTryAgain={message.id === lastMessage?.id && !busy ? () => void regenerate() : undefined}
                                 />
                             )}
-                            {startIndex === -1 && lonelyNotice}
-                            {items.map((item, i) => {
-                                if (i === firstSessionIndex) {
-                                    return (
-                                        <Fragment key={item.key}>
-                                            {sessionNotice}
-                                            {renderItem(item)}
-                                        </Fragment>
-                                    );
-                                }
+                            {sessionNotice}
+                            {groupReplyParts(message.parts, stoppedToolCall).map((item) => {
                                 if (item.kind === 'tool' && isSetUpPart(item.part)) {
                                     const part = item.part;
                                     return (
@@ -485,7 +461,6 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
                                                     addedIntegrations={addedIntegrations}
                                                 />
                                             ))}
-                                            {i === startIndex && lonelyNotice}
                                         </Fragment>
                                     );
                                 }

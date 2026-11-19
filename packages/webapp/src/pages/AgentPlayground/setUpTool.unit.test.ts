@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { continuesAfterSetUp, createdIntegrationIds, lastSetUpPartIndex, providersToAdd, setupsSinceLastSession } from './setUpTool';
+import { continuesAfterSetUp, createdIntegrationIds, providersToAdd, setupsSinceLastSession } from './setUpTool';
 
 import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundSessionCreated } from '@nangohq/types';
@@ -143,24 +143,5 @@ describe('setupsSinceLastSession', () => {
         ];
 
         expect(setupsSinceLastSession(messages, 0).map((setup) => setup.provider)).toEqual(['github']);
-    });
-});
-
-const assistant = (parts: PlaygroundMessage['parts']): PlaygroundMessage => ({ id: 'reply', role: 'assistant', parts });
-
-describe('lastSetUpPartIndex', () => {
-    it('points at the last set-up step that returned results', () => {
-        const message = assistant([
-            setUpPart([{ provider: 'resend', integrationId: 'pg-resend', outcome: 'created' }]),
-            { type: 'text', text: 'Resend is ready.' },
-            setUpPart([]),
-            { type: 'step-start' }
-        ]);
-
-        expect(lastSetUpPartIndex(message)).toBe(0);
-    });
-
-    it('returns -1 without a set-up step', () => {
-        expect(lastSetUpPartIndex(assistant([{ type: 'text', text: 'Hello' }]))).toBe(-1);
     });
 });
