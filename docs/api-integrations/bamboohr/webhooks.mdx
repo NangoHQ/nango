@@ -39,7 +39,7 @@ In the Nango dashboard, open your BambooHR integration and copy the **Webhook UR
       -H "Content-Type: application/json" \
       -d '{
         "name": "Nango",
-        "url": "<NANGO-WEBHOOK-URL>?nangoConnectionId=<CONNECTION-ID>",
+        "url": "<NANGO-WEBHOOK-URL>?nangoConnectionId=<URL-ENCODED-CONNECTION-ID>",
         "format": "json",
         "events": ["employee.created", "employee.updated", "employee.deleted"],
         "monitorFields": ["firstName", "lastName", "jobTitle"]

@@ -13,8 +13,8 @@ import type { BambooHrWebhookPayload } from './types.js';
 
 const CONNECTION_ID = 'my-connection-id';
 const OTHER_CONNECTION_ID = 'someone-elses-connection-id';
-const CONNECTION_SECRET = '37b26dc8cf1f08435fd0d08779268d77';
-const OTHER_CONNECTION_SECRET = '0f1e2d3c4b5a69788796a5b4c3d2e1f0';
+const CONNECTION_SECRET = 'bamboohr-test-webhook-private-key';
+const OTHER_CONNECTION_SECRET = 'another-bamboohr-test-private-key';
 const QUERY = { nangoConnectionId: CONNECTION_ID };
 const TIMESTAMP = '2026-01-31T18:42:00+0000';
 // BambooHR sends the signature timestamp in Unix seconds
@@ -102,7 +102,7 @@ describe('BambooHR webhook routing', () => {
 
         const result = await BambooHrWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, {});
 
-        expect(result.isErr() && result.error.type).toBe('webhook_missing_connection_id');
+        expect(result.isErr() && result.error).toMatchObject({ type: 'webhook_missing_connection_id' });
         expect(getConnection).not.toHaveBeenCalled();
         expect(execute).not.toHaveBeenCalled();
     });
@@ -114,7 +114,7 @@ describe('BambooHR webhook routing', () => {
 
         const result = await BambooHrWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: OTHER_CONNECTION_ID });
 
-        expect(result.isErr() && result.error.type).toBe('webhook_invalid_signature');
+        expect(result.isErr() && result.error).toMatchObject({ type: 'webhook_invalid_signature' });
         expect(execute).not.toHaveBeenCalled();
     });
 
@@ -126,7 +126,7 @@ describe('BambooHR webhook routing', () => {
         const result = await BambooHrWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, QUERY);
 
         // Same error as a wrong signature, so the endpoint doesn't reveal which connections exist or have a secret.
-        expect(result.isErr() && result.error.type).toBe('webhook_invalid_signature');
+        expect(result.isErr() && result.error).toMatchObject({ type: 'webhook_invalid_signature' });
         expect(execute).not.toHaveBeenCalled();
     });
 
@@ -137,7 +137,7 @@ describe('BambooHR webhook routing', () => {
 
         const result = await BambooHrWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, QUERY);
 
-        expect(result.isErr() && result.error.type).toBe('webhook_invalid_signature');
+        expect(result.isErr() && result.error).toMatchObject({ type: 'webhook_invalid_signature' });
         expect(execute).not.toHaveBeenCalled();
     });
 
@@ -147,7 +147,7 @@ describe('BambooHR webhook routing', () => {
 
         const result = await BambooHrWebhookRouting.default(nango, {}, body, JSON.stringify(body), QUERY);
 
-        expect(result.isErr() && result.error.type).toBe('webhook_missing_signature');
+        expect(result.isErr() && result.error).toMatchObject({ type: 'webhook_missing_signature' });
         expect(getConnection).not.toHaveBeenCalled();
         expect(execute).not.toHaveBeenCalled();
     });
