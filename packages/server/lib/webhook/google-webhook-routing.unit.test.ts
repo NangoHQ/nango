@@ -342,6 +342,33 @@ describe('googleWebhookRouting', () => {
             expect(execute).not.toHaveBeenCalled();
         });
 
+        describe('on an alias that inherits this script', () => {
+            it('forwards a pub/sub push unverified and unattributed when no webhook secret is set, as before', async () => {
+                const { nango, execute } = getNango(getTestConfig({ provider: 'google-chat' }));
+                const markUnverified = vi.spyOn(nango, 'markUnverified');
+                const body = gmailPubSubBody();
+
+                const result = await GoogleWebhookRouting.default(nango, {}, body, '', {});
+
+                expect(result.isOk()).toBe(true);
+                expect(result.unwrap()).toMatchObject({ connectionIds: [] });
+                expect(execute).not.toHaveBeenCalled();
+                expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'google_missing_channel_token_secret' }));
+            });
+
+            it('rejects a pub/sub push without a channel token when a webhook secret is set, as before', async () => {
+                const integration = getTestConfig({ provider: 'google-chat', custom: { webhookSecret: SECRET } });
+                const { nango, execute } = getNango(integration);
+
+                const result = await GoogleWebhookRouting.default(nango, signedAuthorization(integration), gmailPubSubBody(), '', {
+                    nangoWebhookSecret: SECRET
+                });
+
+                expect(result.isErr()).toBe(true);
+                expect(execute).not.toHaveBeenCalled();
+            });
+        });
+
         it('still treats an empty body with calendar headers as a calendar push', async () => {
             const { nango, execute } = getNango(getTestConfig({ provider: 'google' }));
 

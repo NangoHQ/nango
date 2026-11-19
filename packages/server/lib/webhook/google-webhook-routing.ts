@@ -16,7 +16,7 @@ function isPubSubPush(body: unknown): boolean {
 
 // Base `google` integration: Gmail and Calendar share one webhook URL.
 const route: WebhookHandler = async (nango, headers, body, rawBody, query) => {
-    if (isPubSubPush(body)) {
+    if (nango.integration.provider === 'google' && isPubSubPush(body)) {
         const pushResult = validateGooglePubSubPush(nango, headers, query);
         if (pushResult.isErr()) {
             return Err(pushResult.error);
