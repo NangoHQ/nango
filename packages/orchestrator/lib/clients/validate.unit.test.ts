@@ -166,4 +166,65 @@ describe('validateTask', () => {
             });
         }
     });
+
+    describe('function source', () => {
+        const inlineTask = (payload: Record<string, unknown>) =>
+            validateTask({
+                id: '4a14038c-3a57-4a4d-bb9e-c8a5e85474ae',
+                name: 'inline-function-task',
+                groupKey: 'function:environment:2:connection:1:inline',
+                groupMaxConcurrency: 5,
+                state: 'STARTED',
+                retryKey: 'retry-key',
+                retryCount: 0,
+                retryMax: 0,
+                ownerKey: 'environment:2',
+                heartbeatTimeoutSecs: 60,
+                startsAfter: new Date(),
+                createdToStartedTimeoutSecs: 30,
+                startedToCompletedTimeoutSecs: 30,
+                createdAt: new Date(),
+                lastStateTransitionAt: new Date(),
+                lastHeartbeatAt: new Date(),
+                output: null,
+                terminated: false,
+                scheduleId: null,
+                payload: {
+                    type: 'function',
+                    activityLogId: 'activity-log-id',
+                    trigger: { kind: 'invoke', input: { value: 42 }, connection: { connectionId: 'connection-id', integrationId: 'integration-id' } },
+                    async: false,
+                    connection: { id: 1, connection_id: 'connection-id', provider_config_key: 'integration-id', environment_id: 2 },
+                    ...payload
+                }
+            } as Task);
+
+        it('deserializes a function task that carries its source', () => {
+            const task = inlineTask({ source: { kind: 'inline', code: 'return record.value;' } }).unwrap();
+
+            expect(task.isFunction()).toBe(true);
+            if (task.isFunction()) {
+                expect(task.source).toStrictEqual({ kind: 'inline', code: 'return record.value;' });
+                expect(task.functionUuid).toBeUndefined();
+                expect('functionUuid' in task).toBe(false);
+            }
+        });
+
+        it('keeps the description of the source', () => {
+            const source = { kind: 'inline', code: 'return record.value;', description: 'Names of the unread emails' };
+            const task = inlineTask({ source }).unwrap();
+
+            expect(task.isFunction() && task.source).toStrictEqual(source);
+        });
+
+        it.each([
+            ['both a functionUuid and a source', { functionUuid: '11111111-1111-4111-8111-111111111111', source: { kind: 'inline', code: 'return 1;' } }],
+            ['neither a functionUuid nor a source', {}],
+            ['an empty source', { source: { kind: 'inline', code: '' } }],
+            ['an empty source description', { source: { kind: 'inline', code: 'return 1;', description: '' } }],
+            ['an unknown source kind', { source: { kind: 'remote', code: 'return 1;' } }]
+        ])('rejects a function task with %s', (_name, payload) => {
+            expect(inlineTask(payload).isErr()).toBe(true);
+        });
+    });
 });

@@ -76,7 +76,12 @@ export const onEventArgsSchema = z.object({
 
 const functionBaseFields = {
     type: z.literal('function'),
-    functionUuid: z.uuid()
+    functionUuid: z.uuid().optional(),
+    source: z
+        .object({ kind: z.literal('inline'), code: z.string().min(1), description: z.string().min(1).max(1024).optional() })
+        .strict()
+        .transform(({ description, ...source }) => ({ ...source, ...(description !== undefined && { description }) }))
+        .optional()
 };
 
 const functionTriggerConnectionSchema = z.object({
@@ -128,11 +133,15 @@ const functionArgsObjectSchema = z
     })
     .strict();
 
-export const functionArgsSchema = functionArgsObjectSchema.transform(({ activityLogId, variant, ...args }) => ({
-    ...args,
-    ...(activityLogId !== undefined && { activityLogId }),
-    ...(variant !== undefined && { variant })
-}));
+export const functionArgsSchema = functionArgsObjectSchema
+    .refine((args) => (args.functionUuid === undefined) !== (args.source === undefined), 'A function runs from either a functionUuid or a source')
+    .transform(({ functionUuid, source, activityLogId, variant, ...args }) => ({
+        ...args,
+        ...(functionUuid !== undefined && { functionUuid }),
+        ...(source !== undefined && { source }),
+        ...(activityLogId !== undefined && { activityLogId }),
+        ...(variant !== undefined && { variant })
+    }));
 
 const commonSchemaFields = {
     id: z.string().uuid(),
@@ -299,7 +308,8 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 name: func.data.name,
                 attempt: func.data.retryCount + 1,
                 attemptMax: func.data.retryMax + 1,
-                functionUuid: func.data.payload.functionUuid,
+                ...(func.data.payload.functionUuid !== undefined && { functionUuid: func.data.payload.functionUuid }),
+                ...(func.data.payload.source !== undefined && { source: func.data.payload.source }),
                 ...(func.data.payload.variant !== undefined && { variant: func.data.payload.variant }),
                 connection: func.data.payload.connection,
                 ...(func.data.payload.activityLogId !== undefined && { activityLogId: func.data.payload.activityLogId }),

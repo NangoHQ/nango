@@ -30,6 +30,12 @@ const syncConfig = {
 };
 
 describe('nangoPropsSchema syncConfig', () => {
+    it('should accept a function that runs from inline source and has no deployed file', () => {
+        const result = syncConfigSchema.safeParse({ ...syncConfig, id: 0, sync_name: 'inline', file_location: '', version: '0.0.0', source: 'standalone' });
+
+        expect(result.success).toBe(true);
+    });
+
     it('should default models_json_schema to null when it is missing', () => {
         const result = syncConfigSchema.safeParse(syncConfig);
 
