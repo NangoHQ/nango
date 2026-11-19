@@ -1,3 +1,5 @@
+import { humanize } from './toolDisplay';
+
 // The server only sets up integrations for these providers (PLAYGROUND_PROVIDERS in agentPlayground.service.ts).
 export const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
     { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
@@ -171,3 +173,7 @@ export const PROVIDER_STARTER_PROMPTS: Record<string, string> = {
     zoom: 'What Zoom meetings do I have coming up?',
     'zoom-cc': 'What plan is my Zoom account on?'
 };
+
+export function providerName(provider: string): string {
+    return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
+}

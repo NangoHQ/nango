@@ -32,15 +32,38 @@ export function createdIntegrationIds(messages: PlaygroundMessage[]): string[] {
     );
 }
 
+function messageSetups(message: PlaygroundMessage): AgentPlaygroundIntegrationSetup[] {
+    const starter = message.metadata?.integrationSetup;
+    return [...(starter ? [starter] : []), ...message.parts.flatMap((part) => (part.type === 'dynamic-tool' && isSetUpPart(part) ? setUpResults(part) : []))];
+}
+
+export function setupsSinceLastSession(messages: PlaygroundMessage[], index: number): AgentPlaygroundIntegrationSetup[] {
+    const setups: AgentPlaygroundIntegrationSetup[] = [];
+    for (let i = index; i >= 0; i--) {
+        const message = messages[i];
+        if (!message || (i < index && message.metadata?.sessionCreated)) {
+            break;
+        }
+        setups.unshift(...messageSetups(message));
+    }
+    return setups;
+}
+
+export function lastSetUpPartIndex(message: PlaygroundMessage): number {
+    for (let i = message.parts.length - 1; i >= 0; i--) {
+        const part = message.parts[i];
+        if (part?.type === 'dynamic-tool' && isSetUpPart(part) && setUpResults(part).length > 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 export function providersToAdd(message: PlaygroundMessage | undefined): string[] {
     if (message?.role !== 'assistant') {
         return [];
     }
-    const starter = message.metadata?.integrationSetup;
-    const setups = [
-        ...(starter ? [starter] : []),
-        ...message.parts.flatMap((part) => (part.type === 'dynamic-tool' && isSetUpPart(part) ? setUpResults(part) : []))
-    ];
+    const setups = messageSetups(message);
     return [...new Set(setups.filter((setup) => !isAdded(setup)).map((setup) => setup.provider))];
 }
 

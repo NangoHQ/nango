@@ -1,10 +1,10 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
-import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
+import { ArrowUp, CircleAlert, Plus, RotateCcw, Square } from 'lucide-react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
     Alert,
@@ -19,13 +19,8 @@ import {
     InputGroupTextarea
 } from '@nangohq/design-system';
 
-import { LogoInverted } from '@/assets/LogoInverted';
 import { OpenAIIcon } from '@/assets/OpenAIIcon';
-import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PromptCard } from '@/components/patterns/PromptCard';
-import { ButtonLink } from '@/components/ui/ButtonLink';
-import { CodeBlock } from '@/components/ui/CodeBlock';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -38,30 +33,36 @@ import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
 import { approvalProperties, pendingApprovals } from './approvalTracking';
 import { describeChatError } from './chatError';
-import { AddIntegrationCard } from './components/AddIntegrationCard';
 import { HeroIllustration } from './components/HeroIllustration';
+import { IntegrationSetupNotice } from './components/IntegrationSetupNotice';
 import { Markdown } from './components/Markdown';
-import { StatusIcon, ToolCallCard } from './components/ToolCallCard';
+import { SessionNotice } from './components/SessionNotice';
+import { ToolCallCard } from './components/ToolCallCard';
 import { ToolCallGroup } from './components/ToolCallGroup';
 import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
-import { continueOncePerSetUp, createdIntegrationIds, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults } from './setUpTool';
-import { STARTER_PROMPTS } from './starterPrompts';
+import {
+    continueOncePerSetUp,
+    createdIntegrationIds,
+    isAdded,
+    isSetUpPart,
+    lastSetUpPartIndex,
+    providersToAdd,
+    setUpApps,
+    setUpResults,
+    setupsSinceLastSession
+} from './setUpTool';
+import { providerName, STARTER_PROMPTS } from './starterPrompts';
 import { hideTrailingLink } from './streamingMarkdown';
-import { humanize, integrationLabels, labelFor } from './toolDisplay';
-import { groupReplyParts } from './toolGroups';
+import { integrationLabels, labelFor } from './toolDisplay';
+import { groupReplyParts, isSessionItem } from './toolGroups';
 import { useResumeAfterSetUp } from './useResumeAfterSetUp';
 
 import type { PendingApproval } from './approvalTracking';
 import type { PlaygroundDraft } from './draft';
-import type { IntegrationLabels } from './toolDisplay';
-import type { ReplyEntry } from './toolGroups';
+import type { ReplyEntry, ReplyItem } from './toolGroups';
 import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
-import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundReplyOutcome, AgentPlaygroundSessionCreated } from '@nangohq/types';
-
-function providerName(provider: string): string {
-    return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
-}
+import type { AgentPlaygroundReplyOutcome } from '@nangohq/types';
 
 export const AgentPlayground: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -254,21 +255,15 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
             void refetchIntegrations();
         }
     }, [messages, labels, refetchIntegrations]);
-    const addedIntegrations = useMemo(() => {
-        // Matches the server's existingIntegrationFor, so the notice links to the integration the agent uses.
-        const rank = (key: string, provider: string) => [provider, `pg-${provider}`].indexOf(key) >>> 0;
-        const added = new Map<string, string>();
-        for (const integration of integrations?.data ?? []) {
-            const current = added.get(integration.provider);
-            if (
-                integration.missing_fields.length === 0 &&
-                (!current || rank(integration.unique_key, integration.provider) < rank(current, integration.provider))
-            ) {
-                added.set(integration.provider, integration.unique_key);
-            }
-        }
-        return added;
-    }, [integrations]);
+    const addedIntegrations = useMemo(
+        () =>
+            new Map(
+                (integrations?.data ?? [])
+                    .filter((integration) => integration.missing_fields.length === 0)
+                    .map((integration) => [integration.provider, integration.unique_key])
+            ),
+        [integrations]
+    );
     const integrationNames = useCallback((ids: string[]) => ids.map((id) => labelFor(id, labels).integrationName).join(' and '), [labels]);
 
     const [pendingConnections, setPendingConnections] = useState<string[]>([]);
@@ -344,6 +339,13 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
     }, [messages]);
 
     const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
+    const newIntegrationNames = (index: number): string => {
+        const setups = setupsSinceLastSession(messages, index).filter(
+            (setup) => setup.outcome === 'created' || (!isAdded(setup) && addedIntegrations.has(setup.provider))
+        );
+        const names = setups.map((setup) => setup.displayName || providerName(setup.provider));
+        return [...new Set(names)].join(' and ');
+    };
 
     const sendFromComposer = (text: string): boolean => {
         // An edited draft may ask about another app. Only an unedited one sets up its starter's integration.
@@ -403,6 +405,54 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                     if (!hasVisibleContent(message)) {
                         return null;
                     }
+                    const sessionCreated = message.metadata?.sessionCreated;
+                    const sessionNotice = sessionCreated && (
+                        <SessionNotice created={sessionCreated} replaced={message.id !== firstSessionMessageId} newIntegrations={newIntegrationNames(index)} />
+                    );
+                    // A setup mid-reply starts its session in a follow-up request, whose metadata merges into this same message.
+                    const sessionAfterPart = sessionCreated?.reason === 'integrations_changed' ? message.parts[lastSetUpPartIndex(message)] : undefined;
+                    const items = groupReplyParts(message.parts, stoppedToolCall);
+                    const startIndex = items.findIndex((item) => item.kind === 'tool' && item.part === sessionAfterPart);
+                    const firstSessionIndex = sessionCreated ? items.findIndex((item, i) => i > startIndex && isSessionItem(item)) : -1;
+                    const lonelyNotice = firstSessionIndex === -1 && sessionNotice;
+                    const chatActive = message === lastMessage && busy;
+                    const renderEntry = (entry: ReplyEntry) => {
+                        if (entry.kind === 'text') {
+                            const { text, state } = entry.part;
+                            return <Markdown key={entry.key}>{state === 'streaming' ? hideTrailingLink(text) : text}</Markdown>;
+                        }
+                        const part = entry.part;
+                        return (
+                            <ToolCallCard
+                                key={entry.key}
+                                part={part}
+                                labels={labels}
+                                chatActive={chatActive}
+                                approvalSending={message === lastMessage && status === 'ready'}
+                                connectedIntegrations={connectedIntegrations}
+                                onConnected={onConnected}
+                                onRequestNewLink={onRequestNewLink}
+                                onApprove={onApprove}
+                                onRetryInterrupted={message === lastMessage ? onRetryInterrupted : undefined}
+                                onTryAgain={part === stoppedToolCall ? onRetry : undefined}
+                            />
+                        );
+                    };
+                    const renderItem = (item: ReplyItem) => {
+                        if (item.kind !== 'group') {
+                            return renderEntry(item);
+                        }
+                        return (
+                            <ToolCallGroup
+                                key={item.key}
+                                calls={item.calls}
+                                entries={item.entries}
+                                labels={labels}
+                                chatActive={chatActive}
+                                renderEntry={renderEntry}
+                            />
+                        );
+                    };
                     return (
                         <div key={message.id} className={cn('flex flex-col gap-5', messages[index - 1]?.metadata?.hidden && '-mt-3')}>
                             {message.metadata?.integrationSetup && (
@@ -414,60 +464,34 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                                     onTryAgain={message.id === lastMessage?.id && !busy ? () => void regenerate() : undefined}
                                 />
                             )}
-                            {message.metadata?.sessionCreated && (
-                                <SessionNotice created={message.metadata.sessionCreated} replaced={message.id !== firstSessionMessageId} />
-                            )}
-                            {groupReplyParts(message.parts, stoppedToolCall).map((item) => {
+                            {startIndex === -1 && lonelyNotice}
+                            {items.map((item, i) => {
+                                if (i === firstSessionIndex) {
+                                    return (
+                                        <Fragment key={item.key}>
+                                            {sessionNotice}
+                                            {renderItem(item)}
+                                        </Fragment>
+                                    );
+                                }
                                 if (item.kind === 'tool' && isSetUpPart(item.part)) {
                                     const part = item.part;
-                                    return setUpResults(part).map((setup) => (
-                                        <IntegrationSetupNotice
-                                            key={`${part.toolCallId}-${setup.provider}`}
-                                            env={env}
-                                            setup={setup}
-                                            labels={labels}
-                                            addedIntegrations={addedIntegrations}
-                                        />
-                                    ));
-                                }
-                                const chatActive = message === lastMessage && busy;
-                                const approvalSending = message === lastMessage && status === 'ready';
-                                const renderEntry = (entry: ReplyEntry) => {
-                                    if (entry.kind === 'text') {
-                                        const { text, state } = entry.part;
-                                        return <Markdown key={entry.key}>{state === 'streaming' ? hideTrailingLink(text) : text}</Markdown>;
-                                    }
-                                    const part = entry.part;
                                     return (
-                                        <ToolCallCard
-                                            key={entry.key}
-                                            part={part}
-                                            labels={labels}
-                                            chatActive={chatActive}
-                                            approvalSending={approvalSending}
-                                            connectedIntegrations={connectedIntegrations}
-                                            onConnected={onConnected}
-                                            onRequestNewLink={onRequestNewLink}
-                                            onApprove={onApprove}
-                                            onRetryInterrupted={message === lastMessage ? onRetryInterrupted : undefined}
-                                            onTryAgain={part === stoppedToolCall ? onRetry : undefined}
-                                        />
+                                        <Fragment key={part.toolCallId}>
+                                            {setUpResults(part).map((setup) => (
+                                                <IntegrationSetupNotice
+                                                    key={setup.provider}
+                                                    env={env}
+                                                    setup={setup}
+                                                    labels={labels}
+                                                    addedIntegrations={addedIntegrations}
+                                                />
+                                            ))}
+                                            {i === startIndex && lonelyNotice}
+                                        </Fragment>
                                     );
-                                };
-                                if (item.kind !== 'group') {
-                                    return renderEntry(item);
                                 }
-                                return (
-                                    <ToolCallGroup
-                                        key={item.key}
-                                        calls={item.calls}
-                                        entries={item.entries}
-                                        labels={labels}
-                                        chatActive={chatActive}
-                                        approvalSending={approvalSending}
-                                        renderEntry={renderEntry}
-                                    />
-                                );
+                                return renderItem(item);
                             })}
                             {outcome}
                         </div>
@@ -668,119 +692,6 @@ const WorkingIndicator: React.FC<{ messages: PlaygroundMessage[] }> = ({ message
             </span>
             <span className="animate-pulse">{label}</span>
         </div>
-    );
-};
-
-const IntegrationSetupNotice: React.FC<{
-    env: string;
-    setup: AgentPlaygroundIntegrationSetup;
-    labels: IntegrationLabels | undefined;
-    addedIntegrations: Map<string, string>;
-    onTryAgain?: (() => void) | undefined;
-}> = ({ env, setup, labels, addedIntegrations, onTryAgain }) => {
-    const addedSince = isAdded(setup) ? undefined : addedIntegrations.get(setup.provider);
-    const integrationId = addedSince ?? setup.integrationId;
-    const name = (integrationId && labels?.get(integrationId)?.integrationName) || setup.displayName || providerName(setup.provider);
-    const href = integrationId ? `/${env}/integrations/${integrationId}` : `/${env}/catalog/${setup.provider}/add`;
-
-    if (addedSince) {
-        return <AddedIntegrationRow provider={setup.provider} text={`Using your ${name} integration`} href={href} />;
-    }
-
-    if (setup.outcome === 'missing_credentials') {
-        return (
-            <Alert variant="warning">
-                <CircleAlert />
-                <AlertTitle>{`Finish setting up your ${name} integration`}</AlertTitle>
-                <AlertDescription>It&apos;s missing its client ID or secret. Add them, then try again.</AlertDescription>
-                <AlertActions>
-                    <AlertButton asChild>
-                        <Link to={href}>
-                            <Settings2 /> Open integration
-                        </Link>
-                    </AlertButton>
-                    {onTryAgain && (
-                        <AlertButton onClick={onTryAgain}>
-                            <RotateCcw /> Try again
-                        </AlertButton>
-                    )}
-                </AlertActions>
-            </Alert>
-        );
-    }
-
-    if (!isAdded(setup)) {
-        return <AddIntegrationCard provider={setup.provider} name={name} outcome={setup.outcome} href={href} />;
-    }
-
-    return (
-        <AddedIntegrationRow
-            provider={setup.provider}
-            text={setup.outcome === 'created' ? `Created the ${name} integration` : `Using your ${name} integration`}
-            href={href}
-        />
-    );
-};
-
-const AddedIntegrationRow: React.FC<{ provider: string; text: string; href: string }> = ({ provider, text, href }) => (
-    <div className="flex min-h-7 items-center gap-2 pr-[17px] text-body-medium-regular text-text-secondary" role="status">
-        <IntegrationLogo provider={provider} className="-mx-0.5 size-5 shrink-0 border-0 bg-transparent p-0" />
-        <span className="min-w-0 truncate">{text}</span>
-        <span className="ml-auto flex shrink-0 items-center gap-2 pl-2">
-            <ButtonLink to={href} variant="outline" size="sm">
-                View integration
-            </ButtonLink>
-        </span>
-    </div>
-);
-
-function sessionNoticeText(reason: AgentPlaygroundSessionCreated['reason'], replaced: boolean): string {
-    switch (reason) {
-        case 'integrations_changed':
-            return 'restarted to pick up your integration changes';
-        case 'connections_changed':
-            return 'restarted to pick up your new connections';
-        case 'expired':
-            return 'restarted because the last one expired';
-        default:
-            return replaced ? 'restarted' : 'started';
-    }
-}
-
-const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced: boolean }> = ({ created, replaced }) => {
-    return (
-        <Collapsible className="group/session flex flex-col gap-3">
-            <CollapsibleTrigger className="mr-[17px] flex min-h-7 items-center gap-2 rounded-ds-xs text-left focus-visible:outline-offset-4 text-body-medium-regular text-text-secondary hover:text-text-default">
-                <LogoInverted className="size-4 shrink-0 text-text-strong" />
-                <span className="min-w-0 truncate">
-                    <span className="text-body-medium-medium text-text-default">Session</span> {sessionNoticeText(created.reason, replaced)}
-                </span>
-                <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
-                    <StatusIcon running={false} stopped={false} failed={false} />
-                    <ChevronDown className="size-4 transition-transform group-data-[state=open]/session:rotate-180" />
-                </span>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-                <CodeBlock
-                    title="POST /sessions"
-                    language="json"
-                    code={JSON.stringify(created.request, null, 2)}
-                    constrainHeight={false}
-                    headerElement={
-                        <a
-                            href="https://nango.dev/docs/guides/agent-sessions"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center gap-1 text-s text-text-muted hover:text-text-default"
-                        >
-                            <BookOpen className="size-3.5" />
-                            Agent sessions docs
-                            <ArrowUpRight className="size-3.5" />
-                        </a>
-                    }
-                />
-            </CollapsibleContent>
-        </Collapsible>
     );
 };
 

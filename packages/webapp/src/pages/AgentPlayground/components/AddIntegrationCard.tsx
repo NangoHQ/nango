@@ -2,7 +2,6 @@ import { Zap } from 'lucide-react';
 
 import { Button } from '@nangohq/design-system';
 
-import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { usePostIntegration } from '@/hooks/useIntegration';
@@ -12,6 +11,7 @@ import { useToast } from '@/hooks/useToast';
 import { getOneClickSetupBody } from '@/pages/Catalog/catalog.utils';
 import { useStore } from '@/store';
 import { returnToPlaygroundState } from '../returnToPlayground';
+import { PlaygroundIcons } from './PlaygroundEvent';
 
 import type { AgentPlaygroundIntegrationSetup } from '@nangohq/types';
 
@@ -25,9 +25,9 @@ interface AddIntegrationCardProps {
 function reason(outcome: AgentPlaygroundIntegrationSetup['outcome'], name: string): string {
     switch (outcome) {
         case 'needs_developer_app':
-            return `${name} needs your own developer app.`;
+            return `${name} needs your own developer app. The agent needs it to continue.`;
         case 'needs_setup':
-            return `${name} needs a few settings first.`;
+            return `${name} needs a few settings first. The agent needs it to continue.`;
         default:
             return 'The agent needs it to continue.';
     }
@@ -36,7 +36,7 @@ function reason(outcome: AgentPlaygroundIntegrationSetup['outcome'], name: strin
 export const AddIntegrationCard: React.FC<AddIntegrationCardProps> = ({ provider, name, outcome, href }) => {
     return (
         <div className="flex items-center gap-3 rounded-ds-xs border border-border-muted bg-surface-panel px-4 py-3">
-            <IntegrationLogo provider={provider} className="size-6 shrink-0 border-0 bg-transparent p-0" />
+            <PlaygroundIcons provider={provider} />
             <div className="flex min-w-0 flex-1 flex-col">
                 <span className="text-body-medium-medium text-text-strong">Add the {name} integration</span>
                 <span className="text-body-small-regular text-text-secondary">{reason(outcome, name)}</span>
