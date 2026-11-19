@@ -76,10 +76,10 @@
     @keyframes spiral-shimmer {
         0%,
         100% {
-            stroke: color-mix(in oklab, var(--color-icon-brand), black 30%);
+            stroke: var(--color-icon-brand);
         }
         50% {
-            stroke: color-mix(in oklab, var(--color-icon-brand), white 70%);
+            stroke: color-mix(in oklab, var(--color-icon-brand), white 65%);
         }
     }
 
