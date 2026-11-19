@@ -8,12 +8,19 @@ import { StatusIcon } from './ToolCallCard';
 
 import type { AgentPlaygroundSessionCreated } from '@nangohq/types';
 
-function sessionExplanation(reason: AgentPlaygroundSessionCreated['reason'], newIntegrations: string): string {
+function integrationList(names: string[]): string {
+    if (names.length === 0) {
+        return 'your current integrations';
+    }
+    return `the ${names.join(' and ')} ${names.length === 1 ? 'integration' : 'integrations'}`;
+}
+
+function sessionExplanation(reason: AgentPlaygroundSessionCreated['reason'], newIntegrations: string[]): string {
     switch (reason) {
         case 'integrations_changed':
-            return `Agent sessions fix their tools when they start, so the playground started a new session that includes ${newIntegrations ? `the ${newIntegrations} integration` : 'your current integrations'}.`;
+            return `A session's integrations are set when it starts, so the playground started a new session that includes ${integrationList(newIntegrations)}.`;
         case 'connections_changed':
-            return 'Agent sessions fix their connections when they start, so the playground started a new session that uses your new connection.';
+            return 'Your connections changed since the last session started, so the playground started a new session that uses your current connections.';
         case 'expired':
             return 'The last session expired. Playground sessions last an hour.';
         default:
@@ -21,7 +28,7 @@ function sessionExplanation(reason: AgentPlaygroundSessionCreated['reason'], new
     }
 }
 
-export const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced: boolean; newIntegrations: string }> = ({
+export const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced: boolean; newIntegrations: string[] }> = ({
     created,
     replaced,
     newIntegrations

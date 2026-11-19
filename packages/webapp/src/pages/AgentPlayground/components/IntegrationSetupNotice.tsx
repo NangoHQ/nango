@@ -1,8 +1,8 @@
 import { CircleAlert, RotateCcw, Settings2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { isAdded } from '../setUpTool';
 import { providerName } from '../starterPrompts';
 import { AddIntegrationCard } from './AddIntegrationCard';
@@ -34,11 +34,9 @@ export const IntegrationSetupNotice: React.FC<{
                 <AlertTitle>{`Finish setting up your ${name} integration`}</AlertTitle>
                 <AlertDescription>It&apos;s missing its client ID or secret. Add them, then try again.</AlertDescription>
                 <AlertActions>
-                    <AlertButton asChild>
-                        <Link to={href}>
-                            <Settings2 /> Open integration
-                        </Link>
-                    </AlertButton>
+                    <AlertButtonLink to={href}>
+                        <Settings2 /> Open integration
+                    </AlertButtonLink>
                     {onTryAgain && (
                         <AlertButton onClick={onTryAgain}>
                             <RotateCcw /> Try again

@@ -339,12 +339,11 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
     }, [messages]);
 
     const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
-    const newIntegrationNames = (index: number): string => {
+    const newIntegrationNames = (index: number): string[] => {
         const setups = setupsSinceLastSession(messages, index).filter(
             (setup) => setup.outcome === 'created' || (!isAdded(setup) && addedIntegrations.has(setup.provider))
         );
-        const names = setups.map((setup) => setup.displayName || providerName(setup.provider));
-        return [...new Set(names)].join(' and ');
+        return [...new Set(setups.map((setup) => setup.displayName || providerName(setup.provider)))];
     };
 
     const sendFromComposer = (text: string): boolean => {
