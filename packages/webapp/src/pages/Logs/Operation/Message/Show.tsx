@@ -91,7 +91,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
             </div>
             <div>
                 <h4 className="font-semibold text-sm mb-2">Message</h4>
-                <div className="text-text-muted text-sm bg-surface-panel-muted border border-border-muted rounded py-2 max-h-36 overflow-y-scroll">
+                <div className="text-text-muted text-sm bg-surface-code border border-border-muted rounded py-2 max-h-36 overflow-y-scroll">
                     <Prism
                         language="json"
                         className="transparent-code"
@@ -109,7 +109,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
 
                 {payload ? (
-                    <div className="text-text-muted text-sm bg-surface-panel-muted border border-border-muted rounded py-2 min-h-0 overflow-y-scroll">
+                    <div className="text-text-muted text-sm bg-surface-code border border-border-muted rounded py-2 min-h-0 overflow-y-scroll">
                         <Prism
                             language="json"
                             className="transparent-code"
@@ -122,7 +122,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                         </Prism>
                     </div>
                 ) : (
-                    <div className="text-text-muted text-xs bg-surface-panel-muted border border-border-muted rounded py-4 px-4">No payload.</div>
+                    <div className="text-text-muted text-xs bg-surface-code border border-border-muted rounded py-4 px-4">No payload.</div>
                 )}
             </div>
         </div>

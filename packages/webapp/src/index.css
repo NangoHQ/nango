@@ -290,7 +290,26 @@
     white-space: 'normal';
 }
 
+:root {
+    --surface-code: var(--surface-canvas);
+}
+
+[data-theme='dark'] {
+    --surface-code: var(--surface-panel-muted);
+}
+
+/* Code on a white surface takes this lighter tint; removing it makes those blocks read as heavy grey. */
+.bg-surface-panel,
+.bg-surface-raised,
+.bg-surface-overlay {
+    --surface-code: var(--surface-panel-muted);
+}
+
+@theme inline {
+    --color-surface-code: var(--surface-code);
+}
+
 .mantine-Prism-code {
     font-family: 'Geist Mono';
-    background-color: var(--surface-panel-muted) !important;
+    background-color: var(--surface-code) !important;
 }
