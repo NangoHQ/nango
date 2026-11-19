@@ -83,8 +83,8 @@ function s3Config(envs: ObjectStoreEnvs): S3ObjectStoreConfig {
 
 /**
  * A separate S3 bucket for integration templates (`templates-zero/`), or `null` to read them from the
- * integrations bucket as before. Credentials come from the default AWS chain (for example EKS Pod Identity),
- * never from the integrations bucket's keys, which may only grant access to that bucket.
+ * integrations bucket as before. No credentials are set, so the SDK's default chain applies: the
+ * AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars if present, otherwise e.g. EKS Pod Identity.
  */
 export function resolveTemplatesObjectStoreConfig(envs: TemplatesObjectStoreEnvs): S3ObjectStoreConfig | null {
     if (!envs.AWS_TEMPLATES_BUCKET_NAME) {
