@@ -1,7 +1,7 @@
 ---
 title: "Token refreshing & validity"
 sidebarTitle: "Token refreshing & validity"
-description: "How Nango handles OAuth token refresh and what to do when tokens are revoked."
+description: "How Nango handles OAuth token refresh and what to do when tokens are revoked"
 ---
 
 ## Automatic token refresh
@@ -10,31 +10,67 @@ Nango automatically refreshes OAuth access tokens before they expire. You don't 
 
 To prevent token revocation due to inactivity (some APIs revoke unused refresh tokens), Nango refreshes each access token at least once every 24 hours.
 
-## Handling refresh failures
+<a id="handling-refresh-failures"></a>
 
-Token refresh can fail for various reasons:
-- The user revoked access in the external application
-- The external API revoked the refresh token
-- The external API experienced an outage
+## What happens when refresh fails
 
-When a refresh fails, Nango can [notify your app via webhook](/guides/platform/webhooks-from-nango) so you can prompt the user to reconnect.
+A refresh can fail when:
 
-Nango automatically retries failed refreshes on its periodic cycle, so a single failure doesn't necessarily mean the connection is broken — transient provider outages often resolve on the next retry. When a connection recovers, Nango sends a follow-up webhook with `"success": true` so you know it's healthy again without having to poll the connection. Nango only gives up on a connection (and stops retrying) after several consecutive days of failed refreshes.
+- The user revokes access in the external app
+- The provider revokes the refresh token
+- The provider has an outage
 
-## Best practices
+Enable [auth webhooks](/guides/platform/webhooks-from-nango#auth-webhooks) to get notified when a refresh fails. Nango retries on its regular refresh cycle, and a temporary outage can resolve on the next attempt. Give those retries a chance to succeed before prompting the user to reconnect.
 
-Revoked access tokens and refresh failures happen to all integrations. To handle them gracefully:
+When a connection recovers, Nango sends a follow-up webhook with `"success": true` so your app can detect recovery without polling. After several consecutive days of failed refreshes, Nango stops retrying.
 
-1. **Monitor for failures and recoveries**: Set up [webhooks from Nango](/guides/platform/webhooks-from-nango) to receive notifications when token refresh fails, and again if/when it later recovers
-2. **Handle revoked tokens**: Follow our [guide on handling revoked access tokens](/guides/platform/common-issues#token-refresh-error-from-the-external-api)
-3. **Implement re-authorization**: Make sure you have the [re-authorization flow](/guides/auth/overview#build-reauthorization) in place so users can easily reconnect broken connections
+## Detect invalid credentials
+
+### Auth webhooks
+
+Enable **Auth: token refresh webhooks** under **Environment Settings > Webhooks**. An [auth webhook](/guides/platform/webhooks-from-nango#auth-webhooks) with `operation: "refresh"` and `success: false` tells your app which connection failed to refresh. Use `connectionId` to identify the connection and `error` to see what happened before deciding whether to prompt the user to reconnect.
+
+### Nango API
+
+When Nango reaches its refresh retry limit, [Get a connection](/reference/backend/http-api/connections/get) can return HTTP `424` with `invalid_credentials`. The same error can appear in Nango logs.
+
+```json
+{
+  "error": {
+    "code": "invalid_credentials",
+    "message": "The refresh limit has been reached for this connection."
+  }
+}
+```
+
+### Provider logs
+
+In **Logs**, look for a **Token refresh** operation. A provider that rejects an expired or revoked refresh token may return `invalid_grant`. The error code and description vary by provider.
+
+```json
+{
+  "payload": {
+    "dataMessage": {
+      "error_description": "Token has been expired or revoked.",
+      "error": "invalid_grant"
+    }
+  },
+  "type": "refresh_token_external_error",
+  "status": 400
+}
+```
+
+<a id="best-practices"></a>
+
+## Reconnect the user
+
+1. **Monitor failures and recoveries** — Enable [auth webhooks](/guides/platform/webhooks-from-nango#auth-webhooks) so your app knows when refresh fails and when it recovers.
+2. **Handle revoked credentials** — If credentials remain invalid, show a reconnect prompt so the user can authorize again.
+3. **Implement reauthorization** — Follow [Add re-authorization](/guides/auth/setup#build-reauthorization) to let users reconnect an existing connection.
+
+Refresh token revocation is a normal part of integrations, and providers can revoke tokens unexpectedly. Investigate if you see an unusual increase in revocations for a provider.
 
 ## Related guides
 
-- [Auth guide](/guides/auth/overview#build-reauthorization) - implement reconnect sessions for invalid credentials.
-- [Webhooks from Nango](/guides/platform/webhooks-from-nango) - receive refresh failure and recovery notifications.
-- [Common issues](/guides/platform/common-issues#token-refresh-error-from-the-external-api) - troubleshoot revoked tokens.
-
-<Tip>
-**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
-</Tip>
+- [Setup guide](/guides/auth/setup#build-reauthorization) - implement reconnect sessions for invalid credentials
+- [Webhooks from Nango](/guides/platform/webhooks-from-nango#auth-webhooks) - receive refresh failure and recovery notifications

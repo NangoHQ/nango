@@ -14,7 +14,7 @@ This guide shows you how to get the OAuth credentials (client ID & secret) for y
     Sign in to Dash as an account admin, go to **Admin** → **Integrations**, open the **REST API** tab and switch **Enable API** on. Copy the **Client ID** and **Secret key** that appear.
   </Step>
   <Step title="Add Nango's callback URL">
-    On the same page, add `https://api.nango.dev/oauth/callback` to the allowed callback URLs (or your own [custom callback URL](/guides/auth/overview#custom-oauth-callback-url-optional)).
+    On the same page, add `https://api.nango.dev/oauth/callback` to the allowed callback URLs (or your own [custom callback URL](/guides/auth/setup#custom-oauth-callback-url-optional)).
   </Step>
   <Step title="Add the credentials in Nango">
     In your Dash integration in Nango, paste the client ID and secret. You don't need to add scopes: when a user connects, Nango asks for their Dash subdomain (`my-account` for `https://my-account.dash.app`) and requests the `subdomain:<subdomain>` scope Dash needs to know which account the token is for, plus `offline_access` for a refresh token.

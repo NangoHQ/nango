@@ -2930,12 +2930,12 @@ paths:
                                 hmac_key:
                                     type: string
                                     deprecated: true
-                                    description: Legacy public-key authorization HMAC key. Use [Connect sessions](/guides/auth/overview#guide) instead.
+                                    description: Legacy public-key authorization HMAC key. Use [Connect sessions](/guides/auth/setup#generate-session-token) instead.
                                     maxLength: 1000
                                 hmac_enabled:
                                     type: boolean
                                     deprecated: true
-                                    description: Whether legacy public-key authorization HMAC verification is enabled. Use [Connect sessions](/guides/auth/overview#guide) instead.
+                                    description: Whether legacy public-key authorization HMAC verification is enabled. Use [Connect sessions](/guides/auth/setup#generate-session-token) instead.
                                 slack_notifications:
                                     type: boolean
                                     description: Whether Slack notifications are enabled for this environment.
