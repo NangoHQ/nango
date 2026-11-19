@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { NangoError, productTracking, toolService } from '@nangohq/shared';
+import { connectionService, NangoError, productTracking, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { ActionExecutionError } from '../../../../services/action.service.js';
-import * as agentSessionConnectionsService from '../../../../services/agentSessionConnections.service.js';
 import { buildSessionTools, executeInputSchema } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { InternalMcpError, PublicMcpError } from '../../../mcp/utils.js';
 
@@ -248,7 +247,7 @@ describe('executeSessionTool', () => {
     });
 
     it('points a session that can connect at nango_create_connection', async () => {
-        vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(null);
+        vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([]);
 
         const result = await execute('read_doc', { context: context({ resolvedConnections: {}, createConnection: { enabled: true, tags: {} } }) });
 
