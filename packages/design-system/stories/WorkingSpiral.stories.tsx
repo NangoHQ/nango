@@ -6,11 +6,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 const meta: Meta<typeof WorkingSpiral> = {
     component: WorkingSpiral,
     title: 'Features/Agent Playground/WorkingSpiral',
-    parameters: { layout: 'padded' },
-    argTypes: {
-        pulse: { control: 'inline-radio', options: ['ripple', 'gather', 'shimmer'] },
-        size: { control: 'inline-radio', options: ['sm', 'lg'] }
-    }
+    parameters: { layout: 'padded' }
 };
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -21,16 +17,16 @@ const PULSES: { pulse: SpiralPulse; name: string }[] = [
     { pulse: 'shimmer', name: '3. Shimmer' }
 ];
 
-const Indicator: React.FC<{ pulse: SpiralPulse; label: string }> = ({ pulse, label }) => (
+const Indicator: React.FC<{ pulse: SpiralPulse }> = ({ pulse }) => (
     <div className="flex items-center gap-2 text-body-medium-regular text-text-secondary" role="status">
         <WorkingSpiral pulse={pulse} />
-        <span className="animate-pulse">{label}</span>
+        <span className="animate-pulse">Thinking…</span>
     </div>
 );
 
 const BothSizes: React.FC<{ pulse: SpiralPulse }> = ({ pulse }) => (
     <div className="flex items-center gap-10">
-        <Indicator pulse={pulse} label="Thinking…" />
+        <Indicator pulse={pulse} />
         <WorkingSpiral pulse={pulse} size="lg" />
     </div>
 );
@@ -48,19 +44,18 @@ export const Compare: Story = {
     )
 };
 
-export const Ripple: Story = { render: () => <BothSizes pulse="ripple" /> };
-export const Gather: Story = { render: () => <BothSizes pulse="gather" /> };
-export const Shimmer: Story = { render: () => <BothSizes pulse="shimmer" /> };
-
 const EASINGS = ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out', 'custom'] as const;
+type Easing = (typeof EASINGS)[number];
 
 interface TunerProps {
+    pulse: SpiralPulse;
     durationMs: number;
     holdUntil: number;
     peakAt: number;
     peakUntil: number;
     backAt: number;
-    easing: (typeof EASINGS)[number];
+    riseEasing: Easing;
+    fallEasing: Easing;
     bezierX1: number;
     bezierY1: number;
     bezierX2: number;
@@ -69,92 +64,146 @@ interface TunerProps {
     staggerMs: number;
     lightModeWhite: number;
     darkModeFade: number;
+    darkRestFade: number;
 }
 
 const tunerCss = (p: TunerProps) => {
-    const easing = p.easing === 'custom' ? `cubic-bezier(${p.bezierX1}, ${p.bezierY1}, ${p.bezierX2}, ${p.bezierY2})` : p.easing;
-    const stops = [...new Set([0, p.holdUntil, p.backAt, 100])].sort((a, b) => a - b);
-    const peaks = [...new Set([p.peakAt, p.peakUntil])].sort((a, b) => a - b);
-    const keyframes = `@keyframes spiral-tuned {
-    ${stops.join('%, ')}% { stroke: var(--color-icon-brand); animation-timing-function: ${easing}; }
-    ${peaks.join('%, ')}% { stroke: var(--tuned-lit); animation-timing-function: ${easing}; }
+    const curve = (easing: Easing) => (easing === 'custom' ? `cubic-bezier(${p.bezierX1}, ${p.bezierY1}, ${p.bezierX2}, ${p.bezierY2})` : easing);
+    const rest = [...new Set([0, p.holdUntil, p.backAt, 100])].sort((a, b) => a - b);
+    const lit = [...new Set([p.peakAt, p.peakUntil])].sort((a, b) => a - b);
+    const name = `spiral-tuned-${p.pulse}`;
+    const scope = `tuner-${p.pulse}`;
+    const keyframes = `@keyframes ${name} {
+    ${rest.join('%, ')}% { stroke: var(--tuned-rest); animation-timing-function: ${curve(p.riseEasing)}; }
+    ${lit.join('%, ')}% { stroke: var(--tuned-lit); animation-timing-function: ${curve(p.fallEasing)}; }
 }`;
-    const delays = (scope: string, count: number) =>
+    const colours = `.${scope} { --tuned-rest: var(--color-icon-brand); --tuned-lit: color-mix(in oklab, var(--color-icon-brand), white ${p.lightModeWhite}%); }
+[data-theme='dark'] .${scope} { --tuned-rest: color-mix(in oklab, var(--color-icon-brand), transparent ${p.darkRestFade}%); --tuned-lit: color-mix(in oklab, var(--color-icon-brand), transparent ${p.darkModeFade}%); }`;
+    const delays = (count: number) =>
         Array.from({ length: count }, (_, i) => {
-            const delay = (i % 2) * -p.oddOffset * p.durationMs - (i * p.staggerMs) / count;
-            return `.${scope} path:nth-child(${i + 1}) { animation-delay: ${Math.round(delay)}ms !important; }`;
+            const delay = (i % 2) * -p.oddOffset * p.durationMs + (i * p.staggerMs) / count - Math.max(p.staggerMs, 0);
+            return `.${scope} .tuner-${count} path:nth-child(${i + 1}) { animation-delay: ${Math.round(delay)}ms !important; }`;
         }).join('\n');
-    return `${keyframes}
-.spiral-tuner { --tuned-lit: color-mix(in oklab, var(--color-icon-brand), white ${p.lightModeWhite}%); }
-[data-theme='dark'] .spiral-tuner { --tuned-lit: color-mix(in oklab, var(--color-icon-brand), transparent ${p.darkModeFade}%); }
-.spiral-tuner path { animation: spiral-tuned ${p.durationMs}ms infinite !important; }
-${delays('tuner-sm', 12)}
-${delays('tuner-lg', 20)}`;
+    const readout = `${keyframes}
+${colours}
+animation: ${p.durationMs}ms infinite
+delay(i, count) = (i % 2) * -${p.oddOffset * p.durationMs} + i * ${p.staggerMs} / count`;
+    const css = `${keyframes}
+${colours}
+.${scope} path { animation: ${name} ${p.durationMs}ms infinite !important; }
+${delays(12)}
+${delays(20)}`;
+    return { css, readout };
 };
 
 const Tuner: React.FC<TunerProps> = (props) => {
-    const css = tunerCss(props);
+    const { css, readout } = tunerCss(props);
     return (
-        <div className="spiral-tuner flex flex-col gap-8">
+        <div className={`tuner-${props.pulse} flex flex-col gap-8`}>
             <style>{css}</style>
             <div className="flex items-center gap-10">
-                <div className="tuner-sm flex items-center gap-2 text-body-medium-regular text-text-secondary">
-                    <WorkingSpiral pulse="shimmer" />
-                    <span>Thinking…</span>
+                <div className="tuner-12">
+                    <Indicator pulse={props.pulse} />
                 </div>
-                <div className="tuner-lg">
-                    <WorkingSpiral pulse="shimmer" size="lg" />
+                <div className="tuner-20">
+                    <WorkingSpiral pulse={props.pulse} size="lg" />
                 </div>
             </div>
-            <pre className="max-w-2xl overflow-x-auto text-body-small-regular whitespace-pre-wrap text-text-tertiary">{css.split('\n.tuner-sm')[0]}</pre>
+            <details className="max-w-2xl text-body-small-regular text-text-tertiary">
+                <summary className="cursor-pointer">Animation CSS</summary>
+                <pre className="mt-2 overflow-x-auto whitespace-pre-wrap">{readout}</pre>
+            </details>
         </div>
     );
 };
 
 const percent = { control: { type: 'range', min: 0, max: 100, step: 1 } } as const;
-const bezier = (min: number) => ({ control: { type: 'range', min, max: 1.5, step: 0.01 }, if: { arg: 'easing', eq: 'custom' } }) as const;
+const easing = { control: 'select', options: EASINGS } as const;
+const bezier = (min: number) => ({ control: { type: 'range', min, max: 1.5, step: 0.01 } }) as const;
 
-export const ShimmerTuner: StoryObj<typeof Tuner> = {
+const tunerArgTypes = {
+    pulse: { table: { disable: true } },
+    durationMs: { name: 'Cycle (ms)', control: { type: 'range', min: 600, max: 6000, step: 100 } },
+    holdUntil: { name: 'Full colour until (%)', ...percent },
+    peakAt: { name: 'Light peak at (%)', ...percent },
+    peakUntil: { name: 'Light hold until (%)', ...percent },
+    backAt: { name: 'Back to full colour at (%)', ...percent },
+    riseEasing: { name: 'Easing into the light colour', ...easing },
+    fallEasing: { name: 'Easing back to full colour', ...easing },
+    bezierX1: { name: 'Custom bezier x1', ...bezier(0) },
+    bezierY1: { name: 'Custom bezier y1', ...bezier(-0.5) },
+    bezierX2: { name: 'Custom bezier x2', ...bezier(0) },
+    bezierY2: { name: 'Custom bezier y2', ...bezier(-0.5) },
+    oddOffset: { name: 'Alternate-line offset (cycles)', control: { type: 'range', min: 0, max: 1, step: 0.05 } },
+    staggerMs: { name: 'Stagger, + outward / − inward (ms)', control: { type: 'range', min: -2400, max: 2400, step: 50 } },
+    lightModeWhite: { name: 'Light mode: light colour white mix (%)', ...percent },
+    darkModeFade: { name: 'Dark mode: light colour fade (%)', ...percent },
+    darkRestFade: { name: 'Dark mode: full colour fade (%)', ...percent }
+} as const;
+
+const BEZIER = { bezierX1: 0.42, bezierY1: 0, bezierX2: 0.58, bezierY2: 1 };
+
+type TunerStory = StoryObj<typeof Tuner>;
+
+export const Ripple: TunerStory = {
     render: (args) => <Tuner {...args} />,
+    argTypes: tunerArgTypes,
     args: {
+        pulse: 'ripple',
+        durationMs: 2200,
+        holdUntil: 0,
+        peakAt: 15,
+        peakUntil: 15,
+        backAt: 70,
+        riseEasing: 'ease-out',
+        fallEasing: 'ease-in-out',
+        ...BEZIER,
+        oddOffset: 0,
+        staggerMs: 1440,
+        lightModeWhite: 78,
+        darkModeFade: 88,
+        darkRestFade: 15
+    }
+};
+
+export const Gather: TunerStory = {
+    render: (args) => <Tuner {...args} />,
+    argTypes: tunerArgTypes,
+    args: {
+        pulse: 'gather',
+        durationMs: 2000,
+        holdUntil: 0,
+        peakAt: 10,
+        peakUntil: 10,
+        backAt: 45,
+        riseEasing: 'ease-out',
+        fallEasing: 'ease-in-out',
+        ...BEZIER,
+        oddOffset: 0,
+        staggerMs: -900,
+        lightModeWhite: 60,
+        darkModeFade: 70,
+        darkRestFade: 15
+    }
+};
+
+export const Shimmer: TunerStory = {
+    render: (args) => <Tuner {...args} />,
+    argTypes: tunerArgTypes,
+    args: {
+        pulse: 'shimmer',
         durationMs: 2400,
         holdUntil: 45,
         peakAt: 62,
         peakUntil: 80,
         backAt: 100,
-        easing: 'ease-in-out',
-        bezierX1: 0.42,
-        bezierY1: 0,
-        bezierX2: 0.58,
-        bezierY2: 1,
+        riseEasing: 'ease-in-out',
+        fallEasing: 'ease-in-out',
+        ...BEZIER,
         oddOffset: 0.25,
-        staggerMs: 300,
+        staggerMs: -300,
         lightModeWhite: 90,
-        darkModeFade: 94
-    },
-    argTypes: {
-        durationMs: { name: 'Cycle (ms)', control: { type: 'range', min: 600, max: 6000, step: 100 } },
-        holdUntil: { name: 'Full colour until (%)', ...percent },
-        peakAt: { name: 'Light peak at (%)', ...percent },
-        peakUntil: { name: 'Light hold until (%)', ...percent },
-        backAt: { name: 'Back to full colour at (%)', ...percent },
-        easing: { name: 'Easing', control: 'select', options: EASINGS },
-        bezierX1: { name: 'Bezier x1', ...bezier(0) },
-        bezierY1: { name: 'Bezier y1', ...bezier(-0.5) },
-        bezierX2: { name: 'Bezier x2', ...bezier(0) },
-        bezierY2: { name: 'Bezier y2', ...bezier(-0.5) },
-        oddOffset: { name: 'Alternate-line offset (cycles)', control: { type: 'range', min: 0, max: 1, step: 0.05 } },
-        staggerMs: { name: 'Stagger across spiral (ms)', control: { type: 'range', min: 0, max: 2400, step: 50 } },
-        lightModeWhite: { name: 'Light mode: white mix (%)', ...percent },
-        darkModeFade: { name: 'Dark mode: fade (%)', ...percent }
+        darkModeFade: 94,
+        darkRestFade: 0
     }
-};
-
-export const WithStatus: Story = {
-    render: () => (
-        <div className="flex flex-col gap-4">
-            <Indicator pulse="ripple" label="Thinking…" />
-            <Indicator pulse="ripple" label="Adding Linear…" />
-        </div>
-    )
 };
