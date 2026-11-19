@@ -44,50 +44,45 @@ export const Compare: Story = {
     )
 };
 
-const EASINGS = ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out', 'custom'] as const;
-type Easing = (typeof EASINGS)[number];
+const FIXED: Record<SpiralPulse, { riseEasing: string; fallEasing: string; lightHold: number; darkRestFade: number }> = {
+    ripple: { riseEasing: 'ease-out', fallEasing: 'ease-in-out', lightHold: 0, darkRestFade: 15 },
+    gather: { riseEasing: 'ease-out', fallEasing: 'ease-in-out', lightHold: 0, darkRestFade: 15 },
+    shimmer: { riseEasing: 'ease-in-out', fallEasing: 'ease-in-out', lightHold: 18, darkRestFade: 0 }
+};
 
 interface TunerProps {
     pulse: SpiralPulse;
     durationMs: number;
-    holdUntil: number;
-    peakAt: number;
-    peakUntil: number;
+    lightStart: number;
+    lightestAt: number;
     backAt: number;
-    riseEasing: Easing;
-    fallEasing: Easing;
-    bezierX1: number;
-    bezierY1: number;
-    bezierX2: number;
-    bezierY2: number;
-    oddOffset: number;
+    strength: number;
     staggerMs: number;
-    lightModeWhite: number;
-    darkModeFade: number;
-    darkRestFade: number;
+    lineOffset: number;
 }
 
 const tunerCss = (p: TunerProps) => {
-    const curve = (easing: Easing) => (easing === 'custom' ? `cubic-bezier(${p.bezierX1}, ${p.bezierY1}, ${p.bezierX2}, ${p.bezierY2})` : easing);
-    const rest = [...new Set([0, p.holdUntil, p.backAt, 100])].sort((a, b) => a - b);
-    const lit = [...new Set([p.peakAt, p.peakUntil])].sort((a, b) => a - b);
+    const fixed = FIXED[p.pulse];
+    const rest = [...new Set([0, p.lightStart, p.backAt, 100])].sort((a, b) => a - b);
+    const lit = [...new Set([p.lightestAt, Math.min(p.lightestAt + fixed.lightHold, p.backAt)])].sort((a, b) => a - b);
+    const darkFade = Math.min(p.strength + 10, 94);
     const name = `spiral-tuned-${p.pulse}`;
     const scope = `tuner-${p.pulse}`;
     const keyframes = `@keyframes ${name} {
-    ${rest.join('%, ')}% { stroke: var(--tuned-rest); animation-timing-function: ${curve(p.riseEasing)}; }
-    ${lit.join('%, ')}% { stroke: var(--tuned-lit); animation-timing-function: ${curve(p.fallEasing)}; }
+    ${rest.join('%, ')}% { stroke: var(--tuned-rest); animation-timing-function: ${fixed.riseEasing}; }
+    ${lit.join('%, ')}% { stroke: var(--tuned-lit); animation-timing-function: ${fixed.fallEasing}; }
 }`;
-    const colours = `.${scope} { --tuned-rest: var(--color-icon-brand); --tuned-lit: color-mix(in oklab, var(--color-icon-brand), white ${p.lightModeWhite}%); }
-[data-theme='dark'] .${scope} { --tuned-rest: color-mix(in oklab, var(--color-icon-brand), transparent ${p.darkRestFade}%); --tuned-lit: color-mix(in oklab, var(--color-icon-brand), transparent ${p.darkModeFade}%); }`;
+    const colours = `.${scope} { --tuned-rest: var(--color-icon-brand); --tuned-lit: color-mix(in oklab, var(--color-icon-brand), white ${p.strength}%); }
+[data-theme='dark'] .${scope} { --tuned-rest: color-mix(in oklab, var(--color-icon-brand), transparent ${fixed.darkRestFade}%); --tuned-lit: color-mix(in oklab, var(--color-icon-brand), transparent ${darkFade}%); }`;
     const delays = (count: number) =>
         Array.from({ length: count }, (_, i) => {
-            const delay = (i % 2) * -p.oddOffset * p.durationMs + (i * p.staggerMs) / count - Math.max(p.staggerMs, 0);
+            const delay = (i % 2) * -p.lineOffset * p.durationMs + (i * p.staggerMs) / count - Math.max(p.staggerMs, 0);
             return `.${scope} .tuner-${count} path:nth-child(${i + 1}) { animation-delay: ${Math.round(delay)}ms !important; }`;
         }).join('\n');
     const readout = `${keyframes}
 ${colours}
 animation: ${p.durationMs}ms infinite
-delay(i, count) = (i % 2) * -${p.oddOffset * p.durationMs} + i * ${p.staggerMs} / count`;
+delay(i, count) = (i % 2) * -${p.lineOffset * p.durationMs} + i * ${p.staggerMs} / count`;
     const css = `${keyframes}
 ${colours}
 .${scope} path { animation: ${name} ${p.durationMs}ms infinite !important; }
@@ -118,92 +113,36 @@ const Tuner: React.FC<TunerProps> = (props) => {
 };
 
 const percent = { control: { type: 'range', min: 0, max: 100, step: 1 } } as const;
-const easing = { control: 'select', options: EASINGS } as const;
-const bezier = (min: number) => ({ control: { type: 'range', min, max: 1.5, step: 0.01 } }) as const;
 
 const tunerArgTypes = {
     pulse: { table: { disable: true } },
     durationMs: { name: 'Cycle (ms)', control: { type: 'range', min: 600, max: 6000, step: 100 } },
-    holdUntil: { name: 'Full colour until (%)', ...percent },
-    peakAt: { name: 'Light peak at (%)', ...percent },
-    peakUntil: { name: 'Light hold until (%)', ...percent },
+    lightStart: { name: 'Light starts at (%)', ...percent },
+    lightestAt: { name: 'Lightest at (%)', ...percent },
     backAt: { name: 'Back to full colour at (%)', ...percent },
-    riseEasing: { name: 'Easing into the light colour', ...easing },
-    fallEasing: { name: 'Easing back to full colour', ...easing },
-    bezierX1: { name: 'Custom bezier x1', ...bezier(0) },
-    bezierY1: { name: 'Custom bezier y1', ...bezier(-0.5) },
-    bezierX2: { name: 'Custom bezier x2', ...bezier(0) },
-    bezierY2: { name: 'Custom bezier y2', ...bezier(-0.5) },
-    oddOffset: { name: 'Alternate-line offset (cycles)', control: { type: 'range', min: 0, max: 1, step: 0.05 } },
+    strength: { name: 'Light colour strength (%)', ...percent },
     staggerMs: { name: 'Stagger, + outward / − inward (ms)', control: { type: 'range', min: -2400, max: 2400, step: 50 } },
-    lightModeWhite: { name: 'Light mode: light colour white mix (%)', ...percent },
-    darkModeFade: { name: 'Dark mode: light colour fade (%)', ...percent },
-    darkRestFade: { name: 'Dark mode: full colour fade (%)', ...percent }
+    lineOffset: { name: 'Alternate-line offset (cycles)', control: { type: 'range', min: 0, max: 1, step: 0.05 } }
 } as const;
 
-const BEZIER = { bezierX1: 0.42, bezierY1: 0, bezierX2: 0.58, bezierY2: 1 };
+const withoutLineOffset = { ...tunerArgTypes, lineOffset: { table: { disable: true } } } as const;
 
 type TunerStory = StoryObj<typeof Tuner>;
 
 export const Ripple: TunerStory = {
     render: (args) => <Tuner {...args} />,
-    argTypes: tunerArgTypes,
-    args: {
-        pulse: 'ripple',
-        durationMs: 2200,
-        holdUntil: 0,
-        peakAt: 15,
-        peakUntil: 15,
-        backAt: 70,
-        riseEasing: 'ease-out',
-        fallEasing: 'ease-in-out',
-        ...BEZIER,
-        oddOffset: 0,
-        staggerMs: 1440,
-        lightModeWhite: 78,
-        darkModeFade: 88,
-        darkRestFade: 15
-    }
+    argTypes: withoutLineOffset,
+    args: { pulse: 'ripple', durationMs: 2200, lightStart: 0, lightestAt: 15, backAt: 70, strength: 78, staggerMs: 1440, lineOffset: 0 }
 };
 
 export const Gather: TunerStory = {
     render: (args) => <Tuner {...args} />,
-    argTypes: tunerArgTypes,
-    args: {
-        pulse: 'gather',
-        durationMs: 2000,
-        holdUntil: 0,
-        peakAt: 10,
-        peakUntil: 10,
-        backAt: 45,
-        riseEasing: 'ease-out',
-        fallEasing: 'ease-in-out',
-        ...BEZIER,
-        oddOffset: 0,
-        staggerMs: -900,
-        lightModeWhite: 60,
-        darkModeFade: 70,
-        darkRestFade: 15
-    }
+    argTypes: withoutLineOffset,
+    args: { pulse: 'gather', durationMs: 2000, lightStart: 0, lightestAt: 10, backAt: 45, strength: 60, staggerMs: -900, lineOffset: 0 }
 };
 
 export const Shimmer: TunerStory = {
     render: (args) => <Tuner {...args} />,
     argTypes: tunerArgTypes,
-    args: {
-        pulse: 'shimmer',
-        durationMs: 2000,
-        holdUntil: 52,
-        peakAt: 79,
-        peakUntil: 81,
-        backAt: 100,
-        riseEasing: 'ease-in-out',
-        fallEasing: 'ease-in-out',
-        ...BEZIER,
-        oddOffset: 0.5,
-        staggerMs: -2400,
-        lightModeWhite: 100,
-        darkModeFade: 94,
-        darkRestFade: 0
-    }
+    args: { pulse: 'shimmer', durationMs: 2400, lightStart: 45, lightestAt: 62, backAt: 100, strength: 90, staggerMs: -300, lineOffset: 0.25 }
 };
