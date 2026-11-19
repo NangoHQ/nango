@@ -154,11 +154,13 @@ describe('audit trail entitlement', () => {
             expect(rolloutMock).not.toHaveBeenCalled();
         });
 
-        it('without plans, stays off when the deployment disables the scope', async () => {
+        it('without plans, stays off when the deployment disables the scope, whatever the rollout says', async () => {
             setup({ optIn: true, hasPlan: false });
             envs.FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES = [];
+            rolloutMock.mockResolvedValue(true);
 
             await expect(canRecordAuditTrail(null, dataPlane)).resolves.toBe(false);
+            expect(rolloutMock).not.toHaveBeenCalled();
         });
 
         it('without plans, stays off when the audit trail itself is off', async () => {
