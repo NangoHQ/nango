@@ -1,0 +1,96 @@
+---
+title: 'How to set up webhooks with BambooHR on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time BambooHR employee events in your app using Nango webhooks'
+---
+
+## How it works
+
+1. BambooHR sends a POST request to your Nango webhook URL when a monitored employee record changes, for example `employee.updated`.
+2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's `X-BambooHR-Signature` against that connection's own webhook secret. The signature covers the request body followed by `X-BambooHR-Timestamp`.
+3. Nango routes the event to that connection, using the payload's `type` field as the webhook type.
+
+BambooHR payloads don't say which company they come from, and every BambooHR webhook has its own private key. So each connection needs its own webhook in BambooHR and its own `webhookSecret` in Nango. Deliveries without a valid signature, or with an `X-BambooHR-Timestamp` older than 5 minutes, are rejected.
+
+This applies to both the **BambooHR (OAuth)** and **BambooHR (Basic Auth)** integrations.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your BambooHR integration and copy the **Webhook URL**. Append `?nangoConnectionId=<CONNECTION-ID>` for the connection you are registering the webhook for. URL-encode the connection ID if it contains characters like `+`, `/` or spaces.
+
+### 2. Register the webhook in BambooHR
+
+<Tabs>
+  <Tab title="BambooHR settings">
+    1. In BambooHR, go to **Account Settings → Webhooks** and add a webhook.
+    2. Set the **URL** to the URL from step 1, and pick the events and fields to monitor.
+    3. Save. BambooHR shows the webhook's **private key** once. Copy it for step 3.
+  </Tab>
+  <Tab title="BambooHR API">
+    Create the webhook with [Create webhook](https://documentation.bamboohr.com/reference/create-webhook), through Nango's proxy:
+
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/v1/webhooks" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Nango",
+        "url": "<NANGO-WEBHOOK-URL>?nangoConnectionId=<CONNECTION-ID>",
+        "format": "json",
+        "events": ["employee.created", "employee.updated", "employee.deleted"],
+        "monitorFields": ["firstName", "lastName", "jobTitle"]
+      }'
+    ```
+
+    The response includes the webhook's `privateKey`, returned only once, and its `id`. Save both: the key for step 3, the `id` to delete the webhook later. OAuth connections need the `webhooks.write` scope.
+
+    To do this for every new connection, use a [post-connection-creation function](/guides/functions/event-functions). Build the URL as `` `${await nango.getWebhookURL()}?nangoConnectionId=${encodeURIComponent(nango.connectionId)}` ``, create the webhook with `nango.post()`, then store the `privateKey` with `nango.updateMetadata({ webhookSecret })`. `nango.getWebhookURL()` alone returns the URL without `nangoConnectionId`, and Nango rejects every event sent to it.
+  </Tab>
+</Tabs>
+
+### 3. Set the webhook secret in Nango
+
+Store the webhook's private key as `webhookSecret` in the connection's metadata:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<BAMBOOHR-PRIVATE-KEY>" }
+  }'
+```
+
+See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+<Note>
+The webhook secret on the integration's Settings page is not used for BambooHR. Nango only verifies against the connection's `webhookSecret`.
+</Note>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to event types like `employee.updated`. Field-based webhooks (BambooHR's global webhooks) send an `employees` array with no `type`, so subscribe to `*` for those. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+## Rollback strategy
+
+Delete the webhook in **Account Settings → Webhooks**, or with the API:
+
+```bash
+curl -X DELETE "https://api.nango.dev/proxy/v1/webhooks/<WEBHOOK-ID>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>"
+```
+
+Then clear `webhookSecret` from the connection's metadata.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
