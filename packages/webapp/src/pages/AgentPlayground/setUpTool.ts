@@ -49,16 +49,6 @@ export function setupsSinceLastSession(messages: PlaygroundMessage[], index: num
     return setups;
 }
 
-export function lastSetUpPartIndex(message: PlaygroundMessage): number {
-    for (let i = message.parts.length - 1; i >= 0; i--) {
-        const part = message.parts[i];
-        if (part?.type === 'dynamic-tool' && isSetUpPart(part) && setUpResults(part).length > 0) {
-            return i;
-        }
-    }
-    return -1;
-}
-
 export function providersToAdd(message: PlaygroundMessage | undefined): string[] {
     if (message?.role !== 'assistant') {
         return [];

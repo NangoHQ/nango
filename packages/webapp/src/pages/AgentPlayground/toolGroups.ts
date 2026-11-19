@@ -8,10 +8,6 @@ export type ReplyEntry = { kind: 'text'; key: string; part: TextUIPart } | { kin
 
 export type ReplyItem = ReplyEntry | { kind: 'group'; key: string; calls: DynamicToolUIPart[]; entries: ReplyEntry[] };
 
-export function isSessionItem(item: ReplyItem): boolean {
-    return item.kind === 'group' || (item.kind === 'tool' && !isSetUpPart(item.part));
-}
-
 // A call the user has to act on, or acted on, stays on its own row.
 export function needsOwnRow(part: DynamicToolUIPart, stoppedToolCall: DynamicToolUIPart | undefined): boolean {
     return (
