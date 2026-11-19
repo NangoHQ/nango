@@ -395,6 +395,32 @@ export interface FathomWebhookResponse {
     crm_matches?: CRMMatches;
 }
 
+/** https://developer.okta.com/docs/concepts/event-hooks/#sample-event-delivery-payload */
+export interface OktaEventHookPayload {
+    eventType: 'com.okta.event_hook' | (string & {});
+    eventTypeVersion?: string;
+    cloudEventsVersion?: string;
+    /** `https://{oktaDomain}/api/v1/eventHooks/{eventHookId}` */
+    source: string;
+    eventId?: string;
+    eventTime?: string;
+    contentType?: string;
+    data?: {
+        events?: OktaLogEvent[];
+    };
+}
+
+export interface OktaLogEvent {
+    uuid: string;
+    published: string;
+    eventType: string;
+    displayMessage?: string;
+    severity?: string;
+    actor?: { id: string; type: string; alternateId?: string; displayName?: string };
+    target?: { id: string; type: string; alternateId?: string; displayName?: string }[];
+    [key: string]: unknown;
+}
+
 export interface LayloWebhookPayload {
     type: 'rsvp' | 'opt_out' | (string & {});
     email?: string;

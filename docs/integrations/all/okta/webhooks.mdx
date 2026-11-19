@@ -1,0 +1,132 @@
+---
+title: 'How to set up webhooks with Okta on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Okta events in your app using Nango webhooks'
+---
+
+## How it works
+
+1. Okta sends a POST request to your Nango webhook URL when a subscribed System Log event occurs, for example `user.lifecycle.deactivate`. These are [event hooks](https://developer.okta.com/docs/concepts/event-hooks/).
+2. Nango reads the org from the payload's `source` field, for example `https://acme.okta.com/api/v1/eventHooks/<HOOK-ID>`, and matches it against each connection's Okta `hostname` or `subdomain`. It then checks the `X-Nango-Webhook-Secret` header against that connection's own webhook secret.
+3. Nango routes each event in `data.events` to that connection, using its `eventType` as the webhook type.
+
+Okta doesn't sign event hooks, so every connection sets its own secret, sent by Okta as the hook's authentication header. Each connection needs its own event hook in its Okta org and its own `webhookSecret` in Nango. Deliveries with a missing or wrong secret are rejected.
+
+This applies to the **Okta**, **Okta (Preview)**, **Okta (API Token)** and **Okta (Client Credentials)** integrations.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Okta integration and copy the **Webhook URL**.
+
+### 2. Pick a webhook secret
+
+Generate a random secret of at least 16 characters for the connection, for example with `openssl rand -hex 32`. You use the same value in Nango and in Okta.
+
+Use a different secret for each connection. Admins of an Okta org can see its hook configuration, so a shared secret would let one org send events as another.
+
+### 3. Set the webhook secret in Nango
+
+Store the secret as `webhookSecret` in the connection's metadata. Do this before creating the hook, so the first events aren't rejected:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<WEBHOOK-SECRET>" }
+  }'
+```
+
+See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+<Note>
+The webhook secret on the integration's Settings page is not used for Okta. Nango only verifies against the connection's `webhookSecret`.
+</Note>
+
+### 4. Register the event hook in Okta
+
+<Tabs>
+  <Tab title="Okta Admin Console">
+    1. In the Okta Admin Console, go to **Workflow → Event Hooks** and select **Create Event Hook**.
+    2. Set the **Endpoint URL** to the URL from step 1.
+    3. Set **Authentication field** to `X-Nango-Webhook-Secret` and **Authentication secret** to the secret from step 2.
+    4. Pick the events to subscribe to, and save.
+    5. Select **Verify**. Okta sends a one-time GET challenge, and Nango answers it without routing anything.
+  </Tab>
+  <Tab title="Okta API">
+    Create the hook with the [Event Hooks API](https://developer.okta.com/docs/api/openapi/okta-management/management/tag/EventHook/), through Nango's proxy:
+
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/api/v1/eventHooks" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Nango",
+        "events": {
+          "type": "EVENT_TYPE",
+          "items": ["user.lifecycle.create", "user.lifecycle.deactivate", "group.user_membership.add"]
+        },
+        "channel": {
+          "type": "HTTP",
+          "version": "1.0.0",
+          "config": {
+            "uri": "<NANGO-WEBHOOK-URL>",
+            "authScheme": { "type": "HEADER", "key": "X-Nango-Webhook-Secret", "value": "<WEBHOOK-SECRET>" }
+          }
+        }
+      }'
+    ```
+
+    Then verify it with the `id` from the response. Okta doesn't deliver events to an unverified hook:
+
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/api/v1/eventHooks/<EVENT-HOOK-ID>/lifecycle/verify" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>"
+    ```
+
+    Save the `id` to delete the hook later. Managing event hooks needs the `okta.eventHooks.manage` scope, or an API token from a super admin.
+
+    To do this for every new connection, use a [post-connection-creation function](/guides/functions/event-functions): generate the secret, store it with `nango.updateMetadata({ webhookSecret })`, then create and verify the hook with `nango.post()`.
+  </Tab>
+</Tabs>
+
+<Warning>
+Okta retries a failed delivery only once. If the secrets don't match, or the connection has no `webhookSecret`, events are rejected and lost. **Allow unverified webhooks** doesn't apply to Okta: every connection needs its own `webhookSecret`.
+</Warning>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the whole delivery to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to event types like `user.lifecycle.deactivate` or `group.user_membership.add`. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+Okta delivers at least once and may deliver out of order. Deduplicate on each event's `uuid` and order by `published`. See [Event types](https://developer.okta.com/docs/reference/api/event-types/?q=event-hook-eligible) for the events you can subscribe to.
+
+## Rollback strategy
+
+Deactivate and delete the hook in **Workflow → Event Hooks**, or with the API:
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/api/v1/eventHooks/<EVENT-HOOK-ID>/lifecycle/deactivate" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>"
+
+curl -X DELETE "https://api.nango.dev/proxy/api/v1/eventHooks/<EVENT-HOOK-ID>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>"
+```
+
+Then clear `webhookSecret` from the connection's metadata.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
