@@ -7585,15 +7585,17 @@ Pin your CLI version to the `application-version` specified in the tag for compa
 
 Managed images are signed with [cosign](https://docs.sigstore.dev/cosign/) by Nango's release workflow on GitHub Actions, using keyless signing. There's no public key to download or rotate: the signature is tied to the workflow that built the image and recorded in Sigstore's public transparency log.
 
-Verifying is optional, and pulling an image works the same whether or not you verify it. To check that an image was built and published by Nango and hasn't been changed since, run:
+Verifying is optional, and pulling an image works the same whether or not you verify it. To check that an image was built and published by Nango and hasn't been changed since, run this with the image digest from the release notes:
 
 ```bash
-cosign verify nangohq/nango:<managed-image-tag> \
+cosign verify nangohq/nango@<image-digest> \
   --certificate-identity https://github.com/NangoHQ/nango/.github/workflows/managed-release.yaml@refs/heads/master \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
-The command fails if the image has no valid signature from that workflow. Each release's notes include this command with the release's own tag. Releases published before signing was introduced aren't signed.
+The command fails if the image has no valid signature from Nango's release workflow, which only publishes releases from `master`. Each release's notes include this command with the release's own digest. To deploy exactly the image you verified, pull it by the same digest: `nangohq/nango@<image-digest>`.
+
+Releases published before signing was introduced aren't signed.
 
 ### Versions and policy
 

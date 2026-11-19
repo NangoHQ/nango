@@ -182,18 +182,18 @@ function generateCliffNotes(prevCommit, commitHash) {
     }
 }
 
-function buildVerifySection({ tagName, certIdentity, certOidcIssuer }) {
-    if (!certIdentity || !certOidcIssuer) {
+function buildVerifySection({ imageDigest, certIdentity, certOidcIssuer }) {
+    if (!imageDigest || !certIdentity || !certOidcIssuer) {
         return [];
     }
 
     return [
         '### Verify the image',
         '',
-        "The image is signed with [cosign](https://docs.sigstore.dev/cosign/) by Nango's release workflow. To check the signature:",
+        "The image is signed with [cosign](https://docs.sigstore.dev/cosign/) by Nango's release workflow. To check the signature of this release's exact image:",
         '',
         '```bash',
-        `cosign verify nangohq/nango:${tagName} \\`,
+        `cosign verify nangohq/nango@${imageDigest} \\`,
         `  --certificate-identity ${certIdentity} \\`,
         `  --certificate-oidc-issuer ${certOidcIssuer}`,
         '```',
@@ -227,7 +227,7 @@ function buildReleaseNotes({
         comparisonUrl ? `- **Compare:** ${comparisonUrl}` : null,
         '- **Public changelog:** https://nango.dev/docs/updates/changelog',
         '',
-        ...buildVerifySection({ tagName, certIdentity, certOidcIssuer }),
+        ...buildVerifySection({ imageDigest, certIdentity, certOidcIssuer }),
         '### Changes',
         '',
         cliffNotes || '_No changelog entries were generated for this release._'

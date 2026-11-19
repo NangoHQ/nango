@@ -87,12 +87,18 @@ describe('buildReleaseNotes', () => {
         expect(notes).toContain(`- **Image digest:** \`${DIGEST}\``);
         expect(notes).toContain(
             [
-                `cosign verify nangohq/nango:${TAG_NAME} \\`,
+                `cosign verify nangohq/nango@${DIGEST} \\`,
                 `  --certificate-identity ${CERT_IDENTITY} \\`,
                 `  --certificate-oidc-issuer ${CERT_OIDC_ISSUER}`
             ].join('\n')
         );
         expect(notes.indexOf('### Verify the image')).toBeLessThan(notes.indexOf('### Changes'));
+    });
+
+    it('leaves out the verify section when there is no digest to verify', () => {
+        const notes = buildReleaseNotes({ ...baseInput, certIdentity: CERT_IDENTITY, certOidcIssuer: CERT_OIDC_ISSUER });
+
+        expect(notes).not.toContain('cosign verify');
     });
 
     it('leaves out the digest and verify section when the image was not signed', () => {

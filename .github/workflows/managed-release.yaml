@@ -31,6 +31,14 @@ jobs:
             app_version: ${{ steps.version-script.outputs.app_version }}
             commit_hash: ${{ inputs.commit_hash }}
         steps:
+            # The image signature is bound to the workflow's branch, and customers verify against
+            # master. Dry runs can still run from other branches to test changes to this workflow.
+            - name: Require master for releases
+              if: ${{ !env.ACT && !inputs.dry_run && github.ref != 'refs/heads/master' }}
+              run: |
+                  echo "Releases must be run from master, not ${{ github.ref }}"
+                  exit 1
+
             - name: Get versions
               id: versions
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -539,16 +547,19 @@ jobs:
                           exit 1
                       fi
 
-                      # Sign before tagging so the tag never points at an unsigned image.
+                      # Sign before tagging, so the tag is only pushed once the image is signed.
                       # --recursive also signs each platform's manifest, not just the index.
                       cosign sign --yes --recursive "nangohq/nango@${DIGEST}"
                       cosign verify "nangohq/nango@${DIGEST}" \
                           --certificate-identity "$CERT_IDENTITY" \
                           --certificate-oidc-issuer "$CERT_OIDC_ISSUER" > /dev/null
 
-                      docker buildx imagetools create -t "nangohq/nango:${PUSH_TAG}" "nangohq/nango@${DIGEST}"
+                      # --prefer-index=false copies the manifest byte for byte, so the tag points at
+                      # the signed digest. Without it, an amd64-only build (a single manifest, not an
+                      # index) gets wrapped in a new index with a different, unsigned digest.
+                      docker buildx imagetools create --prefer-index=false -t "nangohq/nango:${PUSH_TAG}" "nangohq/nango@${DIGEST}"
 
-                      # The signature is attached to DIGEST, so the tag must resolve to it
+                      # Safety net: buildx copies a single source as-is, so this should never fire
                       TAG_DIGEST=$(docker buildx imagetools inspect "nangohq/nango:${PUSH_TAG}" --format '{{json .Manifest}}' | jq -r '.digest')
                       if [ "$TAG_DIGEST" != "$DIGEST" ]; then
                           echo "nangohq/nango:${PUSH_TAG} resolves to $TAG_DIGEST, but $DIGEST was signed"
