@@ -1,8 +1,11 @@
 import * as z from 'zod/v4';
 
-import { providerConfigKeySchema } from '../../../../helpers/validation.js';
-import { proxyHeadersSchema, proxyMethodSchema, proxyPathSchema, proxyQueryParamsSchema } from '../../../../services/mcpProxySchema.js';
+import { providerConfigKeySchema } from '../../../helpers/validation.js';
+import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../mcpProxyResponse.js';
+import { proxyHeadersSchema, proxyMethodSchema, proxyPathSchema, proxyQueryParamsSchema, proxyRequestOutputSchema } from '../../mcpProxySchema.js';
 import { goalSchema, proxyIntentSchema } from '../purposeSchema.js';
+
+import type { AgentSessionToolDefinition } from '../types.js';
 
 /**
  * The connection is the session's, so the agent names an integration and never a connection. No
@@ -26,3 +29,17 @@ export const proxyInputSchema = z
         intent: proxyIntentSchema
     })
     .strict();
+
+export const proxyToolDefinition = {
+    name: 'nango_proxy',
+    description: `Make an authenticated HTTP request to a provider API, on the connection this session resolved for the integration. The escape hatch for when no tool covers what you need, so search with nango_tool_search first and use this only if nothing fits. Returns JSON or UTF-8 text responses up to ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL}.`,
+    inputSchema: proxyInputSchema,
+    outputSchema: proxyRequestOutputSchema,
+    annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: false,
+        openWorldHint: true
+    },
+    isEnabled: (metaTools) => metaTools.nangoProxy
+} satisfies AgentSessionToolDefinition;
