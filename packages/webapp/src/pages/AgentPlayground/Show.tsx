@@ -349,12 +349,11 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
     }, [messages]);
 
     const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
-    const newIntegrationNames = (index: number): string => {
+    const newIntegrationNames = (index: number): string[] => {
         const setups = setupsSinceLastSession(messages, index).filter(
             (setup) => setup.outcome === 'created' || (!isAdded(setup) && addedIntegrations.has(setup.provider))
         );
-        const names = setups.map((setup) => setup.displayName || providerName(setup.provider));
-        return [...new Set(names)].join(' and ');
+        return [...new Set(setups.map((setup) => setup.displayName || providerName(setup.provider)))];
     };
 
     // The composer remounts when the first message appears, so passing the draft after that would refill it.
