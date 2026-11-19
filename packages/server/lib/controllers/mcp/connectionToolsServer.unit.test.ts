@@ -68,6 +68,24 @@ describe('createConnectionToolsMcpServer', () => {
         }
     });
 
+    it('returns invalid action input as a correctable tool error', async () => {
+        vi.spyOn(shared.functionLookupService, 'listActions').mockResolvedValue(Ok({ actions: [actionFixture({ enabled: true })], provider: 'github' }));
+        mocks.executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(Object.assign(new Error('Invalid action input: input must be object'), { code: 'invalid_input' }))
+        });
+        const { client, server } = await createTestClient();
+        try {
+            const result = await client.callTool({ name: 'delete-repository', arguments: {} });
+            expect(result.isError).toBe(true);
+            expect(result.content).toEqual([{ type: 'text', text: 'Invalid action input: input must be object' }]);
+            expect(result._meta).toEqual({ 'nango/error_code': 'invalid_input', 'nango/integration_id': 'github' });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('continues to advertise and execute an enabled action', async () => {
         const action = actionFixture({ enabled: true });
         vi.spyOn(shared.functionLookupService, 'listActions').mockResolvedValue(Ok({ actions: [action], provider: 'github' }));

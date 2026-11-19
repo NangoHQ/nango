@@ -9,6 +9,8 @@ const logger = getLogger('Server.MCP.Actions');
 export function actionExecutionErrorToMcp(error: ActionExecutionError): Error {
     const code = error.code;
     switch (code) {
+        case 'invalid_input':
+            return new PublicMcpError(error.message, { code: 'invalid_input' });
         case 'unknown_connection':
         case 'unknown_provider':
         case 'unknown_action':

@@ -13,7 +13,7 @@ import type { DBConnectionDecrypted, DBEnvironment, DBTeam, ListedNangoActionFun
 import type { Span } from 'dd-trace';
 import type { JSONSchema7 } from 'json-schema';
 
-type ConnectionToolErrorCode = 'tool_not_available' | 'tool_failed' | 'internal_error';
+type ConnectionToolErrorCode = 'invalid_input' | 'tool_not_available' | 'tool_failed' | 'internal_error';
 
 function connectionToolError(message: string, code: ConnectionToolErrorCode, integrationId: string): CallToolResult {
     return mcpToolError(message, { code, integrationId });
@@ -175,6 +175,8 @@ function callToolRequestHandler(
                         'tool_not_available',
                         providerConfig.unique_key
                     );
+                case 'invalid_input':
+                    return connectionToolError(actionResponse.error.message, 'invalid_input', providerConfig.unique_key);
                 case 'action_failed': {
                     const detail = actionResponse.error.nangoError ? safeFailureDetail(actionResponse.error.nangoError) : actionResponse.error.message;
                     return connectionToolError(

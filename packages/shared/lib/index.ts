@@ -84,6 +84,7 @@ export { findCatalogFunctions } from './services/catalog/functions.js';
 export type { CatalogFunction } from './services/catalog/functions.js';
 export { resolveLegacyAction } from './services/catalog/resolveLegacyAction.js';
 export type { ResolvedLegacyAction } from './services/catalog/resolveLegacyAction.js';
+export { validateActionInput } from './services/catalog/validateActionInput.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 export * as mcpClient from './clients/mcp.client.js';

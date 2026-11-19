@@ -44,6 +44,11 @@ export function actionExecutionErrorToMcp({ error, integrationId, toolName }: { 
         case 'unknown_action':
         case 'disabled_action':
             return toolUnavailableError({ integrationId, toolName });
+        case 'invalid_input':
+            return new PublicMcpError(
+                `Tool '${toolName}' on integration '${integrationId}' rejected its input: ${error.message}. Correct the input and call it again.`,
+                { code: 'invalid_input', integrationId }
+            );
         case 'action_failed':
             return toolFailedError({ integrationId, toolName, detail: error.nangoError ? safeFailureDetail(error.nangoError) : error.message });
         case 'internal_error':

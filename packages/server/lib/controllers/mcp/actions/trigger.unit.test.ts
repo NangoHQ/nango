@@ -121,6 +121,21 @@ describe('triggerActionTool', () => {
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(PublicMcpError);
             expect(result.error.message).toBe('Action not found');
+            expect((result.error as PublicMcpError).code).toBeUndefined();
+        }
+    });
+
+    it('returns a schema validation error that the agent can correct', async () => {
+        vi.spyOn(actionService, 'executeAction').mockResolvedValue({
+            logCtx: undefined,
+            result: Err(new ActionExecutionError({ code: 'invalid_input', message: 'Invalid action input: input must be object' }))
+        });
+        const result = await triggerActionTool.handler(validArguments, context);
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toContain('input must be object');
+            expect((result.error as PublicMcpError).code).toBe('invalid_input');
         }
     });
 

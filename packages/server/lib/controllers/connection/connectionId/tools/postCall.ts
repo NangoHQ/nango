@@ -134,6 +134,8 @@ export const postToolCall = asyncWrapperWithEnvironment<PostToolCall>(async (req
                 res.status(404).send({ error: { code: 'function_not_found', message } });
             } else if (code === 'disabled_action') {
                 res.status(403).send({ error: { code: 'function_disabled', message } });
+            } else if (code === 'invalid_input') {
+                res.status(400).send({ error: { code, message } });
             } else if (code === 'action_failed' && nangoError && nangoError.type !== 'action_script_failure' && nangoError.type !== 'action_failure') {
                 errorManager.errResFromNangoErr(res, nangoError);
             } else if (code === 'action_failed' && nangoError?.type === 'action_script_failure') {
