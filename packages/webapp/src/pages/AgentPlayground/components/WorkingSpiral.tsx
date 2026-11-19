@@ -22,7 +22,7 @@ export type SpiralPulse = 'ripple' | 'gather' | 'shimmer';
 const PULSES: Record<SpiralPulse, { className: string; delay: (i: number, count: number) => number }> = {
     ripple: { className: 'animate-spiral-wave', delay: (i, count) => ((i - count) * 1440) / count },
     gather: { className: 'animate-spiral-band', delay: (i, count) => (-i * 900) / count },
-    shimmer: { className: 'animate-spiral-shimmer', delay: (i, count) => (Math.floor((i * 4) / count) % 2) * -1200 - (i * 300) / count }
+    shimmer: { className: 'animate-spiral-shimmer', delay: (i, count) => (i % 2) * -1200 - (i * 300) / count }
 };
 
 export const WorkingSpiral: React.FC<{ pulse?: SpiralPulse; size?: SpiralSize }> = ({ pulse = 'ripple', size = 'sm' }) => {
@@ -31,7 +31,7 @@ export const WorkingSpiral: React.FC<{ pulse?: SpiralPulse; size?: SpiralSize }>
     return (
         <svg
             viewBox="-10.5 -10.5 21 21"
-            className={`${sizeClassName} shrink-0 overflow-visible text-icon-brand [--spiral-lit:color-mix(in_oklab,var(--color-icon-brand),white_60%)] [--spiral-lit-strong:color-mix(in_oklab,var(--color-icon-brand),white_78%)] [--spiral-rest:var(--color-icon-brand)] dark:[--spiral-lit:color-mix(in_oklab,var(--color-icon-brand),transparent_70%)] dark:[--spiral-lit-strong:color-mix(in_oklab,var(--color-icon-brand),transparent_88%)] dark:[--spiral-rest:color-mix(in_oklab,var(--color-icon-brand),transparent_15%)]`}
+            className={`${sizeClassName} shrink-0 overflow-visible text-icon-brand [--spiral-lit:color-mix(in_oklab,var(--color-icon-brand),white_60%)] [--spiral-lit-strong:color-mix(in_oklab,var(--color-icon-brand),white_78%)] [--spiral-rest:var(--color-icon-brand)] [--spiral-shimmer-lit:color-mix(in_oklab,var(--color-icon-brand),white_90%)] [--spiral-shimmer-rest:var(--color-icon-brand)] dark:[--spiral-shimmer-lit:color-mix(in_oklab,var(--color-icon-brand),transparent_94%)] dark:[--spiral-lit:color-mix(in_oklab,var(--color-icon-brand),transparent_70%)] dark:[--spiral-lit-strong:color-mix(in_oklab,var(--color-icon-brand),transparent_88%)] dark:[--spiral-rest:color-mix(in_oklab,var(--color-icon-brand),transparent_15%)]`}
             aria-hidden="true"
         >
             {squares.map(({ i, r, angle }) => (
