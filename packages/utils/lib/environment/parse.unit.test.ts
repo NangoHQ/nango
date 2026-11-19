@@ -67,6 +67,18 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '-1' })).toThrowError();
     });
 
+    it('accepts the templates bucket settings unset or non-empty, and rejects empty or blank strings', () => {
+        expect(parseEnvs(ENVS, {}).AWS_TEMPLATES_BUCKET_NAME).toBeUndefined();
+        expect(parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: 'templates', AWS_TEMPLATES_REGION: 'us-west-2' })).toMatchObject({
+            AWS_TEMPLATES_BUCKET_NAME: 'templates',
+            AWS_TEMPLATES_REGION: 'us-west-2'
+        });
+        expect(() => parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: '' })).toThrowError(/AWS_TEMPLATES_BUCKET_NAME/);
+        expect(() => parseEnvs(ENVS, { AWS_TEMPLATES_REGION: '' })).toThrowError(/AWS_TEMPLATES_REGION/);
+        expect(() => parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: '  ' })).toThrowError(/AWS_TEMPLATES_BUCKET_NAME/);
+        expect(parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: ' templates ' }).AWS_TEMPLATES_BUCKET_NAME).toBe('templates');
+    });
+
     it('rejects NANGO_INTERNAL_AUTH_REQUIRED=1', () => {
         expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_REQUIRED: '1' })).toThrowError(/NANGO_INTERNAL_AUTH_REQUIRED/);
     });
