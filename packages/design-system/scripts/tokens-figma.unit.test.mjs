@@ -3,7 +3,6 @@ import { readFileSync } from 'fs';
 import { describe, expect, it } from 'vitest';
 
 import {
-    applyResults,
     buildApplyPayloads,
     buildDesiredState,
     buildReadPayload,
@@ -15,7 +14,6 @@ import {
     parseCssShadows,
     parseDimension,
     parseDuration,
-    staleReferences,
     toVariableValue
 } from './tokens-figma.mjs';
 
@@ -68,30 +66,7 @@ function fixture() {
                     }
                 }
             }
-        },
-        $themes: [
-            {
-                name: 'Primitives',
-                $figmaCollectionId: 'C:1',
-                $figmaModeId: 'm1',
-                $figmaVariableReferences: { 'color.neutral.0': 'k-neutral-0' },
-                $figmaStyleReferences: {}
-            },
-            {
-                name: 'Dark',
-                $figmaCollectionId: 'C:2',
-                $figmaModeId: 'm2',
-                $figmaVariableReferences: { 'surface.canvas': 'k-canvas' },
-                $figmaStyleReferences: {}
-            },
-            {
-                name: 'Light',
-                $figmaCollectionId: 'C:2',
-                $figmaModeId: 'm3',
-                $figmaVariableReferences: { 'surface.canvas': 'k-canvas', 'gone.token': 'k-gone' },
-                $figmaStyleReferences: { 'elevation.1': 'S:stale' }
-            }
-        ]
+        }
     };
 }
 
@@ -130,7 +105,7 @@ describe('buildDesiredState', () => {
 
     it('puts semantic tokens in one collection with a mode per theme', () => {
         const canvas = desired.variables.find((v) => v.name === 'surface/canvas');
-        expect(canvas).toMatchObject({ collection: 'Colors', key: 'k-canvas', description: 'App shell' });
+        expect(canvas).toMatchObject({ collection: 'Colors', description: 'App shell' });
         expect(canvas.valuesByMode).toEqual({ Dark: { alias: 'color/neutral/975' }, Light: { alias: 'color/neutral/0' } });
     });
 
@@ -189,20 +164,5 @@ describe('payloads', () => {
             { kind: 'variable', name: 'surface/canvas', current: 'description', description: true }
         ];
         expect(describeDiff(desired, { changed })).toEqual(['~ text text/md: s 13 → 14; description', '~ variable surface/canvas: description']);
-    });
-});
-
-describe('writing keys back', () => {
-    it('adds created keys to every theme that owns the token and drops stale ones', () => {
-        const tokens = fixture();
-        const desired = buildDesiredState(tokens);
-        const stale = staleReferences(tokens, desired);
-        expect(stale.map((s) => `${s.theme}:${s.path}`)).toEqual(['Light:gone.token', 'Light:elevation.1']);
-
-        const next = applyResults(tokens, [{ created: { variables: [{ collection: 'Colors', name: 'surface/page', key: 'k-page' }], styles: [] } }], stale);
-        const light = next.$themes.find((t) => t.name === 'Light');
-        expect(light.$figmaVariableReferences).toEqual({ 'surface.canvas': 'k-canvas', 'surface.page': 'k-page' });
-        expect(light.$figmaStyleReferences).toEqual({});
-        expect(next.$themes.find((t) => t.name === 'Dark').$figmaVariableReferences['surface.page']).toBe('k-page');
     });
 });

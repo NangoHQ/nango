@@ -19,42 +19,36 @@ async function loadFigmaState(desiredCollections) {
     const collectionByName = new Map();
     const modeIds = new Map();
     for (const want of desiredCollections) {
-        const collection = collections.find((c) => c.id === want.id) || collections.find((c) => c.name === want.name);
+        const collection = collections.find((c) => c.name === want.name);
         if (!collection) continue;
         collectionByName.set(want.name, collection);
-        for (const mode of want.modes) {
-            const found = collection.modes.find((m) => m.modeId === mode.id) || collection.modes.find((m) => m.name === mode.name);
-            if (found) modeIds.set(`${want.name}|${mode.name}`, found.modeId);
+        for (const modeName of want.modes) {
+            const found = collection.modes.find((m) => m.name === modeName);
+            if (found) modeIds.set(`${want.name}|${modeName}`, found.modeId);
         }
     }
     const collectionOf = new Map([...collectionByName].map(([name, c]) => [c.id, name]));
     const variables = (await figma.variables.getLocalVariablesAsync()).filter((v) => collectionOf.has(v.variableCollectionId));
-    const byKey = new Map(
-        variables.flatMap((v) => [
-            [v.key, v],
-            [v.key.slice(0, 12), v]
-        ])
-    );
     const byName = new Map(variables.map((v) => [`${collectionOf.get(v.variableCollectionId)}|${v.name}`, v]));
     const byId = new Map(variables.map((v) => [v.id, v]));
     const effectStyles = await figma.getLocalEffectStylesAsync();
     const textStyles = await figma.getLocalTextStylesAsync();
-    return { collectionByName, modeIds, collectionOf, variables, byKey, byName, byId, effectStyles, textStyles };
+    return { collectionByName, modeIds, collectionOf, variables, byName, byId, effectStyles, textStyles };
 }
 
 function canonicalFigmaVariable(state, variable, collectionName, desiredCollections) {
     const modes = desiredCollections.find((c) => c.name === collectionName).modes;
     const values = {};
     for (const mode of modes) {
-        const raw = variable.valuesByMode[state.modeIds.get(`${collectionName}|${mode.name}`)];
+        const raw = variable.valuesByMode[state.modeIds.get(`${collectionName}|${mode}`)];
         if (raw === undefined) continue;
-        if (raw && raw.type === 'VARIABLE_ALIAS') values[mode.name] = `@${state.byId.get(raw.id) ? state.byId.get(raw.id).name : raw.id}`;
-        else if (variable.resolvedType === 'COLOR') values[mode.name] = hexOf(raw);
-        else if (variable.resolvedType === 'STRING') values[mode.name] = raw;
+        if (raw && raw.type === 'VARIABLE_ALIAS') values[mode] = `@${state.byId.get(raw.id) ? state.byId.get(raw.id).name : raw.id}`;
+        else if (variable.resolvedType === 'COLOR') values[mode] = hexOf(raw);
+        else if (variable.resolvedType === 'STRING') values[mode] = raw;
         else if (variable.resolvedType === 'EASING') {
             const b = raw.easingFunctionCubicBezier || {};
-            values[mode.name] = [b.x1, b.y1, b.x2, b.y2].map(num).join(',');
-        } else values[mode.name] = num(raw);
+            values[mode] = [b.x1, b.y1, b.x2, b.y2].map(num).join(',');
+        } else values[mode] = num(raw);
     }
     return { n: variable.name, t: variable.resolvedType, v: values };
 }
@@ -93,9 +87,8 @@ function canonicalFigmaStyle(state, kind, style) {
     };
 }
 
-function findStyle(state, kind, name, id) {
-    const list = kind === 'effect' ? state.effectStyles : state.textStyles;
-    return list.find((s) => s.id === id) || list.find((s) => s.name === name);
+function findStyle(state, kind, name) {
+    return (kind === 'effect' ? state.effectStyles : state.textStyles).find((s) => s.name === name);
 }
 
 async function readFigma(input) {
@@ -112,8 +105,8 @@ async function readFigma(input) {
         changed.push({ kind, name, current: valueChanged ? current : 'description', description: descriptionChanged });
     };
     const seenVariables = new Set();
-    for (const [collectionName, name, key, hash, descriptionHash] of input.variables) {
-        const variable = (key && state.byKey.get(key)) || state.byName.get(`${collectionName}|${name}`);
+    for (const [collectionName, name, hash, descriptionHash] of input.variables) {
+        const variable = state.byName.get(`${collectionName}|${name}`);
         if (!variable) {
             changed.push({ kind: 'variable', name, current: null });
             continue;
@@ -122,8 +115,8 @@ async function readFigma(input) {
         compare('variable', name, variable, canonicalFigmaVariable(state, variable, collectionName, input.collections), hash, descriptionHash);
     }
     const seenStyles = new Set();
-    for (const [kind, name, id, hash, descriptionHash] of input.styles) {
-        const style = findStyle(state, kind, name, id);
+    for (const [kind, name, hash, descriptionHash] of input.styles) {
+        const style = findStyle(state, kind, name);
         if (!style) {
             changed.push({ kind, name, current: null });
             continue;
@@ -143,7 +136,7 @@ async function readFigma(input) {
 async function applyTokens(input) {
     const state = await loadFigmaState(input.collections);
     const errors = [];
-    const created = { variables: [], styles: [] };
+    const created = [];
     const findVariable = (name) => state.byName.get(`Colors|${name}`) || state.byName.get(`Primitives|${name}`);
     const hexToColor = (hex) => {
         const n = (i) => parseInt(hex.slice(i, i + 2), 16) / 255;
@@ -153,7 +146,7 @@ async function applyTokens(input) {
     const pending = [];
     for (const want of input.variables) {
         const collection = state.collectionByName.get(want.collection);
-        let variable = (want.key && state.byKey.get(want.key)) || state.byName.get(`${want.collection}|${want.name}`);
+        let variable = state.byName.get(`${want.collection}|${want.name}`);
         if (!variable) {
             if (!collection) {
                 errors.push(`${want.name}: collection ${want.collection} is missing; create it by hand first`);
@@ -162,13 +155,11 @@ async function applyTokens(input) {
             variable = figma.variables.createVariable(want.name, collection, want.type);
             variable.scopes = ['ALL_SCOPES'];
             state.byName.set(`${want.collection}|${want.name}`, variable);
-            created.variables.push({ collection: want.collection, name: want.name, key: variable.key });
+            created.push(want.name);
         } else if (variable.resolvedType !== want.type) {
             errors.push(`${want.name}: Figma type ${variable.resolvedType}, token type ${want.type}. Change it by hand.`);
             continue;
         }
-        variable.name = want.name;
-        state.byName.set(`${want.collection}|${want.name}`, variable);
         variable.description = want.description;
         pending.push([variable, want]);
     }
@@ -194,13 +185,13 @@ async function applyTokens(input) {
 
     const fonts = input.styles.some((s) => s.kind === 'text') ? await figma.listAvailableFontsAsync() : [];
     for (const want of input.styles) {
-        let style = findStyle(state, want.kind, want.name, want.id);
+        let style = findStyle(state, want.kind, want.name);
         if (want.kind === 'effect') {
             if (!style) {
                 style = figma.createEffectStyle();
-                created.styles.push({ theme: want.theme, path: want.path, id: style.id });
+                style.name = want.name;
+                created.push(want.name);
             }
-            style.name = want.name;
             style.description = want.description;
             style.effects = want.effects.map((e) => {
                 const effect = {
@@ -227,10 +218,10 @@ async function applyTokens(input) {
         }
         if (!style) {
             style = figma.createTextStyle();
-            created.styles.push({ theme: want.theme, path: want.path, id: style.id });
+            style.name = want.name;
+            created.push(want.name);
         }
         await figma.loadFontAsync({ family: want.fontFamily.value, style: fontStyle });
-        style.name = want.name;
         style.description = want.description;
         style.fontName = { family: want.fontFamily.value, style: fontStyle };
         style.fontSize = want.fontSize.value;

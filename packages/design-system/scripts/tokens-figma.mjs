@@ -5,8 +5,6 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import * as prettier from 'prettier';
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TOKENS_PATH = path.resolve(__dirname, '../tokens/tokens.json');
 const RUNTIME_PATH = path.resolve(__dirname, 'tokens-figma-runtime.js');
@@ -15,7 +13,6 @@ const OUT_DIR = path.join(os.tmpdir(), 'ds-figma-sync');
 export const FIGMA_FILE_KEY = 'T8aoiWC73uCiM5eucb0syk';
 // use_figma rejects code over 50,000 characters.
 const CHUNK_BUDGET = 49000;
-const KEY_PREFIX = 12;
 const EM_PX = 16;
 
 const PRIMITIVES = 'Primitives';
@@ -32,10 +29,6 @@ export function aliasTarget(value) {
 
 export function toFigmaName(tokenPath) {
     return tokenPath.split('.').join('/');
-}
-
-export function toTokenPath(figmaName) {
-    return figmaName.split('/').join('.');
 }
 
 const round = (n) => Math.round(n * 10000) / 10000;
@@ -173,12 +166,6 @@ function makeResolver(sets) {
     return { resolve, has: (p) => index.has(p) };
 }
 
-function themeByName(tokens, name) {
-    const theme = (tokens.$themes ?? []).find((t) => t.name === name);
-    if (!theme) throw new Error(`tokens.json has no '${name}' theme in $themes`);
-    return theme;
-}
-
 function modeValue(token, resolver) {
     const target = aliasTarget(token.value);
     if (target) {
@@ -245,26 +232,23 @@ export function buildDesiredState(tokens) {
     const typography = tokens.Typography;
     if (!primitives || !typography) throw new Error('tokens.json needs Primitives and Typography sets');
 
-    const primitiveTheme = themeByName(tokens, PRIMITIVES);
     const errors = [];
     const variables = [];
     const effectStyles = [];
-    const variable = (collection, token, key, valuesByMode) => ({
+    const variable = (collection, token, valuesByMode) => ({
         collection,
         name: toFigmaName(token.path),
         type: VARIABLE_TYPE_BY_TOKEN_TYPE[token.type],
         description: token.description,
-        key: key ?? null,
         valuesByMode
     });
-    const effectStyle = (theme, token, id, resolver) => {
+    const effectStyle = (theme, token, resolver) => {
         try {
             return {
                 kind: 'effect',
                 theme,
                 path: token.path,
                 name: `${theme}/${lastSegment(token.path)}`,
-                id: id ?? null,
                 description: token.description,
                 effects: toShadowList(token.value, resolver)
             };
@@ -277,11 +261,9 @@ export function buildDesiredState(tokens) {
     for (const token of flattenTokens(primitives)) {
         try {
             if (token.type === 'boxShadow') {
-                effectStyles.push(effectStyle(PRIMITIVES, token, primitiveTheme.$figmaStyleReferences?.[token.path], primitiveResolver));
+                effectStyles.push(effectStyle(PRIMITIVES, token, primitiveResolver));
             } else {
-                variables.push(
-                    variable(PRIMITIVES, token, primitiveTheme.$figmaVariableReferences?.[token.path], { [PRIMITIVES]: modeValue(token, primitiveResolver) })
-                );
+                variables.push(variable(PRIMITIVES, token, { [PRIMITIVES]: modeValue(token, primitiveResolver) }));
             }
         } catch (err) {
             errors.push(err.message);
@@ -292,15 +274,14 @@ export function buildDesiredState(tokens) {
     for (const themeName of THEMES) {
         const set = tokens[`Semantic/${themeName}`];
         if (!set) throw new Error(`tokens.json needs a Semantic/${themeName} set`);
-        const theme = themeByName(tokens, themeName);
         const resolver = makeResolver([set, primitives]);
         for (const token of flattenTokens(set)) {
             try {
                 if (token.type === 'boxShadow') {
-                    effectStyles.push(effectStyle(themeName, token, theme.$figmaStyleReferences?.[token.path], resolver));
+                    effectStyles.push(effectStyle(themeName, token, resolver));
                     continue;
                 }
-                const entry = semantic.get(token.path) ?? { token, modes: {}, key: theme.$figmaVariableReferences?.[token.path] };
+                const entry = semantic.get(token.path) ?? { token, modes: {} };
                 entry.modes[themeName] = modeValue(token, resolver);
                 if (themeName === TEXT_STYLE_THEME) entry.token = token;
                 semantic.set(token.path, entry);
@@ -315,10 +296,9 @@ export function buildDesiredState(tokens) {
             errors.push(`${tokenPath} is missing from Semantic/${missing.join(', Semantic/')}`);
             continue;
         }
-        variables.push(variable(SEMANTIC_COLLECTION, entry.token, entry.key, entry.modes));
+        variables.push(variable(SEMANTIC_COLLECTION, entry.token, entry.modes));
     }
 
-    const textTheme = themeByName(tokens, TEXT_STYLE_THEME);
     const typographyResolver = makeResolver([typography, primitives]);
     const textStyles = [];
     for (const token of flattenTokens(typography)) {
@@ -338,7 +318,6 @@ export function buildDesiredState(tokens) {
                 theme: TEXT_STYLE_THEME,
                 path: token.path,
                 name: toFigmaName(token.path),
-                id: textTheme.$figmaStyleReferences?.[token.path] ?? null,
                 description: token.description,
                 fontFamily: { value: firstFontFamily(fontFamily.value), alias: fontFamily.alias },
                 fontWeight: { value: Number(fontWeight.value), alias: fontWeight.alias },
@@ -351,14 +330,9 @@ export function buildDesiredState(tokens) {
         }
     }
 
-    const semanticTheme = themeByName(tokens, THEMES[0]);
     const collections = [
-        { name: PRIMITIVES, id: primitiveTheme.$figmaCollectionId ?? null, modes: [{ name: PRIMITIVES, id: primitiveTheme.$figmaModeId ?? null }] },
-        {
-            name: SEMANTIC_COLLECTION,
-            id: semanticTheme.$figmaCollectionId ?? null,
-            modes: THEMES.map((t) => ({ name: t, id: themeByName(tokens, t).$figmaModeId ?? null }))
-        }
+        { name: PRIMITIVES, modes: [PRIMITIVES] },
+        { name: SEMANTIC_COLLECTION, modes: THEMES }
     ];
 
     return { collections, variables, styles: [...effectStyles, ...textStyles], errors };
@@ -393,27 +367,6 @@ export function canonicalStyle(s) {
     };
 }
 
-export function staleReferences(tokens, desired) {
-    const owned = new Set();
-    for (const v of desired.variables) {
-        for (const theme of v.collection === PRIMITIVES ? [PRIMITIVES] : THEMES) owned.add(`${theme}|vars|${toTokenPath(v.name)}`);
-    }
-    for (const s of desired.styles) owned.add(`${s.theme}|styles|${s.path}`);
-
-    const stale = [];
-    for (const theme of tokens.$themes ?? []) {
-        for (const [kind, field] of [
-            ['vars', '$figmaVariableReferences'],
-            ['styles', '$figmaStyleReferences']
-        ]) {
-            for (const tokenPath of Object.keys(theme[field] ?? {})) {
-                if (!owned.has(`${theme.name}|${kind}|${tokenPath}`)) stale.push({ theme: theme.name, field, path: tokenPath });
-            }
-        }
-    }
-    return stale;
-}
-
 function payload(runtime, call) {
     return `${SHARED_HELPERS}\n${runtime}\nreturn await ${call};\n`;
 }
@@ -421,14 +374,8 @@ function payload(runtime, call) {
 export function buildReadPayload(desired, runtime) {
     const input = {
         collections: desired.collections,
-        variables: desired.variables.map((v) => [
-            v.collection,
-            v.name,
-            v.key ? v.key.slice(0, KEY_PREFIX) : null,
-            hashOf(canonicalVariable(v)),
-            hashOf(v.description)
-        ]),
-        styles: desired.styles.map((s) => [s.kind, s.name, s.id, hashOf(canonicalStyle(s)), hashOf(s.description)])
+        variables: desired.variables.map((v) => [v.collection, v.name, hashOf(canonicalVariable(v)), hashOf(v.description)]),
+        styles: desired.styles.map((s) => [s.kind, s.name, hashOf(canonicalStyle(s)), hashOf(s.description)])
     };
     const code = payload(runtime, `readFigma(${JSON.stringify(input)})`);
     if (code.length > CHUNK_BUDGET) throw new Error(`Read payload is ${code.length} characters, over the ${CHUNK_BUDGET} limit`);
@@ -482,38 +429,10 @@ export function describeDiff(desired, figmaState) {
     return lines;
 }
 
-export function applyResults(tokens, results, stale = []) {
-    const next = structuredClone(tokens);
-    const theme = (name) => next.$themes.find((t) => t.name === name);
-    for (const result of results) {
-        for (const created of result.created?.variables ?? []) {
-            for (const name of created.collection === PRIMITIVES ? [PRIMITIVES] : THEMES) {
-                const t = theme(name);
-                t.$figmaVariableReferences = { ...t.$figmaVariableReferences, [toTokenPath(created.name)]: created.key };
-            }
-        }
-        for (const created of result.created?.styles ?? []) {
-            const t = theme(created.theme);
-            t.$figmaStyleReferences = { ...t.$figmaStyleReferences, [created.path]: created.id };
-        }
-    }
-    for (const ref of stale) {
-        const t = theme(ref.theme);
-        if (t?.[ref.field]) delete t[ref.field][ref.path];
-    }
-    return next;
-}
-
-async function writeTokens(tokens) {
-    const prettierConfig = await prettier.resolveConfig(TOKENS_PATH);
-    writeFileSync(TOKENS_PATH, await prettier.format(JSON.stringify(tokens), { ...prettierConfig, filepath: TOKENS_PATH }));
-}
-
 function loadDesired() {
-    const tokens = JSON.parse(readFileSync(TOKENS_PATH, 'utf8'));
-    const desired = buildDesiredState(tokens);
+    const desired = buildDesiredState(JSON.parse(readFileSync(TOKENS_PATH, 'utf8')));
     if (desired.errors.length > 0) throw new Error(`tokens.json can't be synced:\n  ${desired.errors.join('\n  ')}`);
-    return { tokens, desired, runtime: readFileSync(RUNTIME_PATH, 'utf8') };
+    return { desired, runtime: readFileSync(RUNTIME_PATH, 'utf8') };
 }
 
 function readFigma() {
@@ -529,40 +448,27 @@ function readFigma() {
 
 function diff([resultFile]) {
     if (!resultFile) throw new Error('Pass the file holding the prepare-figma-diff result.');
-    const { tokens, desired, runtime } = loadDesired();
+    const { desired, runtime } = loadDesired();
     const result = JSON.parse(readFileSync(resultFile, 'utf8'));
     const lines = describeDiff(desired, result);
-    const stale = staleReferences(tokens, desired);
-    if (lines.length === 0 && stale.length === 0) {
+    if (lines.length === 0) {
         console.log('✓ Figma matches tokens.json');
         return;
     }
     console.log(lines.join('\n'));
-    if (stale.length > 0) console.log(`\n${stale.length} stale Figma references in tokens.json; pull-new-figma-keys removes them.`);
     const files = buildApplyPayloads(desired, runtime, result.changed ?? []).map((code, i) => {
         const file = path.join(OUT_DIR, `apply-${i + 1}.js`);
         writeFileSync(file, code);
         return file;
     });
     if (files.length > 0) console.log(`\nAfter approval, run in order with use_figma:\n  ${files.join('\n  ')}`);
-    console.log(`Save each JSON result, then run: npm run tokens:figma -- pull-new-figma-keys <files>`);
-}
-
-async function pullNewFigmaKeys(resultFiles) {
-    const { tokens, desired } = loadDesired();
-    const results = resultFiles.map((f) => JSON.parse(readFileSync(f, 'utf8')));
-    const errors = results.flatMap((r) => r.errors ?? []);
-    if (errors.length > 0) throw new Error(`The apply reported errors; fix them and sync again:\n  ${errors.join('\n  ')}`);
-    await writeTokens(applyResults(tokens, results, staleReferences(tokens, desired)));
-    const created = results.reduce((n, r) => n + (r.created?.variables?.length ?? 0) + (r.created?.styles?.length ?? 0), 0);
-    console.log(`✓ tokens.json updated with ${created} new Figma references`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const [command, ...args] = process.argv.slice(2);
-    const commands = { 'prepare-figma-diff': async () => readFigma(), diff: async () => diff(args), 'pull-new-figma-keys': () => pullNewFigmaKeys(args) };
+    const commands = { 'prepare-figma-diff': async () => readFigma(), diff: async () => diff(args) };
     if (!commands[command]) {
-        console.error('Usage: tokens-figma.mjs prepare-figma-diff | diff <figma-state.json> | pull-new-figma-keys <apply-result.json>...');
+        console.error('Usage: tokens-figma.mjs prepare-figma-diff | diff <figma-state.json>');
         process.exit(1);
     }
     commands[command]().catch((err) => {

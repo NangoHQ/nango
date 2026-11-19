@@ -71,7 +71,7 @@ Designers and developers change tokens the same way, in a PR:
     npm run tokens:build --workspace=@nangohq/design-system
     ```
 
-3. Sync Dharma from the same branch. An agent with the Figma MCP does this with the `syncing-tokens-to-figma` skill: it shows what differs, applies the changes after you approve them, and pulls the keys of new variables into `tokens.json`.
+3. Sync Dharma from the same branch. An agent with the Figma MCP does this with the `syncing-tokens-to-figma` skill: it shows what differs and applies the changes after you approve them.
 4. Commit `tokens.json` and `tokens.generated.css` in the same PR.
 
 The build fails if an alias doesn't resolve. CI also rebuilds the CSS and fails if it differs from the committed file, or if a token you removed is still used in the webapp.
