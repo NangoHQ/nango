@@ -60,12 +60,12 @@ describe('toolArguments', () => {
 });
 
 describe('describeTool', () => {
-    it('names a proxy call after the provider, not the integration id', () => {
+    it('labels a proxy call with the provider, not the integration id', () => {
         const display = describeTool('nango_proxy', { integration: 'github-getting-started', method: 'get', path: '/user' }, labels);
 
         expect(display).toEqual({
             kind: 'proxy',
-            title: 'Calling the GitHub API directly',
+            title: 'Call API',
             method: 'GET',
             path: '/user',
             integrationId: 'github-getting-started',
@@ -91,13 +91,17 @@ describe('describeTool', () => {
     it('quotes every query of a search', () => {
         expect(describeTool('nango_tool_search', { queries: ['list calendar events', 'send an email'], goal: 'invite the team' })).toEqual({
             kind: 'search',
-            title: 'Searching for the right tools',
+            title: 'Search Tools',
             subtitle: '“list calendar events”, “send an email”'
         });
     });
 
-    it('reads a search for one exact tool name as checking how to use it', () => {
-        expect(describeTool('nango_tool_search', { queries: ['github__list-repos'], goal: 'list my repos' }).title).toBe('Checking how to use List Repos');
+    it('reads a search for one exact tool name as looking that tool up', () => {
+        expect(describeTool('nango_tool_search', { queries: ['github__list-repos'], goal: 'list my repos' })).toEqual({
+            kind: 'search',
+            title: 'Look Up Tool',
+            subtitle: '“List Repos”'
+        });
     });
 
     it('quotes the single query of a search saved before searches took several', () => {
