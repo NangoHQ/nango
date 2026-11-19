@@ -100,7 +100,7 @@ const auditTrailDataPlaneScopesSchema = z
     .transform((s, ctx): AuditTrailDataPlaneScope[] => {
         const value = s?.trim() ?? '';
         if (value === '' || value === 'all') {
-            return Object.keys(AUDIT_TRAIL_DATA_PLANE_SCOPES).filter(isAuditTrailDataPlaneScope);
+            return Object.keys(AUDIT_TRAIL_DATA_PLANE_SCOPES) as AuditTrailDataPlaneScope[];
         }
         if (value === 'none') {
             return [];
