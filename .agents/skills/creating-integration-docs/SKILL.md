@@ -133,7 +133,7 @@ Official docs: [[Integration Name] API docs]([API_DOCS_URL])
 
 ## 🧩 Pre-built syncs & tools for [Integration Name]
 
-Enable them in your dashboard. [Extend and customize](/guides/platform/functions/functions-guide) to fit your needs.
+Enable them in your dashboard. [Extend and customize](/guides/platform/functions/functions-guide#extend-a-template) to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/[slug]/PreBuiltUseCases.mdx"
 
