@@ -10,7 +10,7 @@ See [Self-Hosting overview](/guides/platform/self-hosting) for the architecture,
 
 ## Quickstart
 
-<CardGroup cols={3}>
+<CardGroup cols={2}>
   <Card title="Helm chart" icon="dharmachakra" href="https://github.com/NangoHQ/nango-helm-charts">
     Deploy to your Kubernetes cluster.
   </Card>
@@ -19,6 +19,9 @@ See [Self-Hosting overview](/guides/platform/self-hosting) for the architecture,
   </Card>
   <Card title="nangoctl" icon="flask" href="https://github.com/NangoHQ/nangoctl">
     Try Nango locally in a `kind` cluster first.
+  </Card>
+  <Card title="License and usage reporting" icon="key" href="/guides/platform/self-hosting/license-and-usage-reporting">
+    Install your license and report usage to Nango.
   </Card>
 </CardGroup>
 
@@ -47,6 +50,7 @@ See [Data storage](/guides/platform/self-hosting#data-storage) on the overview p
 | --- | --- | --- |
 | Managed image releases | Publishes them, on a two-week cadence plus hotfixes | Pull and apply them |
 | Helm chart | Maintains it | Deploy and configure it |
+| License | Issues and renews it | Install it and keep usage reporting on |
 | Infrastructure provisioning | — | Provision it — VPC, database, cache, cluster, on any cloud or on-prem |
 | Application deployment & updates | — | Deploy and update it yourself |
 | Scaling | Advises on request | Handle it |
@@ -167,6 +171,12 @@ Set one object store. On AWS, set `AWS_INTEGRATIONS_BUCKET_NAME`. On Google Clou
 <Tip>
 This is the *minimum* set to get a production instance running. The sections below cover what each optional subsystem (logs, encryption, audit trail, Redis, hardening) additionally needs.
 </Tip>
+
+### License
+
+Nango sends you a license when your instance is registered. The server reads it from `NANGO_LICENSE` and checks it every time it starts.
+
+See [License and usage reporting](/guides/platform/self-hosting/license-and-usage-reporting) to install it and to report your usage to Nango.
 
 ### First administrator
 
@@ -372,6 +382,8 @@ To keep the metrics in a separate database, set `NANGO_HOSTED_TELEMETRY_POSTGRES
 NANGO_HOSTED_TELEMETRY_POSTGRES_DATABASE_URL=postgresql://user:password@host:port/dbname
 NANGO_HOSTED_TELEMETRY_POSTGRES_SSL=true
 ```
+
+To set up automatic uploads or export the metrics as a file, see [License and usage reporting](/guides/platform/self-hosting/license-and-usage-reporting).
 
 Contact us if this telemetry is an issue for your organization.
 
