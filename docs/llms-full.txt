@@ -2269,11 +2269,11 @@ Revoked access tokens and refresh failures happen to all integrations. To handle
 
 1. **Monitor for failures and recoveries**: Set up [webhooks from Nango](/guides/platform/webhooks-from-nango) to receive notifications when token refresh fails, and again if/when it later recovers
 2. **Handle revoked tokens**: Follow our [guide on handling revoked access tokens](/guides/platform/common-issues#token-refresh-error-from-the-external-api)
-3. **Implement re-authorization**: Make sure you have the [re-authorization flow](/guides/auth/overview#re-authorize-an-existing-connection) in place so users can easily reconnect broken connections
+3. **Implement re-authorization**: Make sure you have the [re-authorization flow](/guides/auth/overview#build-reauthorization) in place so users can easily reconnect broken connections
 
 ## Related guides
 
-- [Auth guide](/guides/auth/overview#re-authorize-an-existing-connection) - implement reconnect sessions for invalid credentials.
+- [Auth guide](/guides/auth/overview#build-reauthorization) - implement reconnect sessions for invalid credentials.
 - [Webhooks from Nango](/guides/platform/webhooks-from-nango) - receive refresh failure and recovery notifications.
 - [Common issues](/guides/platform/common-issues#token-refresh-error-from-the-external-api) - troubleshoot revoked tokens.
 
@@ -7121,7 +7121,7 @@ The `error` and `error_description` fields may differ by API, but typically incl
 ### How to debug
 
 - This error means the external API (e.g., Google, Salesforce) rejected the refresh token as expired or revoked. Nango retries several times, but if the error persists, the credentials are considered permanently broken.
-- The only solution is to ask the user to re-authenticate. See: [How to trigger a re-authorization flow in Nango](/guides/auth/overview#re-authorize-an-existing-connection)
+- The only solution is to ask the user to re-authenticate. See: [How to trigger a re-authorization flow in Nango](/guides/auth/overview#build-reauthorization)
 - We recommend enabling [Nango's revoked token webhooks](/guides/platform/webhooks-from-nango#auth-webhooks) for real-time notifications.
 
 Revoked refresh tokens are a normal part of integrations. Ensure your app provides a good re-authorization experience for users.
@@ -7171,7 +7171,7 @@ Indications of the error:
 ## Related guides
 
 - [Observability](/guides/platform/observability) - inspect logs and exported traces.
-- [Auth guide](/guides/auth/overview#re-authorize-an-existing-connection) - repair broken connections with re-authorization.
+- [Auth guide](/guides/auth/overview#build-reauthorization) - repair broken connections with re-authorization.
 - [Token refreshing and validity](/guides/auth/token-refreshing) - understand refresh failures.
 - [Webhooks from Nango](/guides/platform/webhooks-from-nango) - receive failure notifications.
 
