@@ -1,12 +1,11 @@
-import { ChevronDown, Wrench } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 import { LogoInverted } from '@/assets/LogoInverted';
-import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { cn } from '@/utils/utils';
 import { isFailed, isUnfinished } from '../replyOutcome';
 import { describeTool } from '../toolDisplay';
-import { StatusIcon } from './ToolCallCard';
+import { RowLogo, StatusIcon } from './ToolCallCard';
 
 import type { IntegrationLabels, ToolDisplay } from '../toolDisplay';
 import type { ReplyEntry } from '../toolGroups';
@@ -34,7 +33,7 @@ export const ToolCallGroup: React.FC<{
 
     return (
         <Collapsible className="group/tools flex flex-col gap-3">
-            <CollapsibleTrigger className="flex min-h-7 w-full items-center gap-2 pr-[17px] text-left text-body-medium-regular text-text-secondary hover:text-text-default">
+            <CollapsibleTrigger className="mr-[17px] flex min-h-7 items-center gap-2 rounded-ds-xs text-left focus-visible:outline-offset-4 text-body-medium-regular text-text-secondary hover:text-text-default">
                 <span className="flex shrink-0 items-center gap-1">
                     {icons.map((icon) => (
                         <GroupIcon key={icon} icon={icon} />
@@ -49,7 +48,7 @@ export const ToolCallGroup: React.FC<{
                 </span>
             </CollapsibleTrigger>
             {/* Mounted while closed, so each card still times its run. */}
-            <CollapsibleContent forceMount className="ml-2.5 flex flex-col gap-3 border-l border-border-muted pl-4 data-[state=closed]:hidden">
+            <CollapsibleContent forceMount className="flex flex-col gap-3 pl-6 data-[state=closed]:hidden">
                 {entries.map(renderEntry)}
             </CollapsibleContent>
         </Collapsible>
@@ -64,14 +63,8 @@ function iconFor(display: ToolDisplay): string {
 }
 
 const GroupIcon: React.FC<{ icon: string }> = ({ icon }) => {
-    let content: React.ReactNode;
     if (icon === NANGO) {
-        content = <LogoInverted className="size-4 shrink-0 text-text-strong" />;
-    } else if (icon === OTHER) {
-        content = <Wrench className="size-4 shrink-0 text-icon-secondary" />;
-    } else {
-        // Larger than its 16px slot, because integration logo artwork has built-in padding.
-        content = <IntegrationLogo provider={icon} className="size-5.5 shrink-0 border-0 bg-transparent p-0" />;
+        return <LogoInverted className="size-4 shrink-0 text-text-strong" />;
     }
-    return <span className="flex size-4 items-center justify-center">{content}</span>;
+    return <RowLogo provider={icon === OTHER ? undefined : icon} />;
 };

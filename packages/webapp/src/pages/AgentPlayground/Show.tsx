@@ -41,7 +41,7 @@ import { describeChatError } from './chatError';
 import { AddIntegrationCard } from './components/AddIntegrationCard';
 import { HeroIllustration } from './components/HeroIllustration';
 import { Markdown } from './components/Markdown';
-import { ToolCallCard } from './components/ToolCallCard';
+import { StatusIcon, ToolCallCard } from './components/ToolCallCard';
 import { ToolCallGroup } from './components/ToolCallGroup';
 import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
@@ -383,7 +383,7 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
             <div
                 ref={scroller}
                 onScroll={onScroll}
-                className="flex min-h-0 flex-1 flex-col gap-8 overflow-auto pt-4 pb-6 [mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)]"
+                className="-mx-4 flex min-h-0 flex-1 flex-col gap-8 overflow-auto px-4 pt-4 pb-6 [mask-image:linear-gradient(to_bottom,transparent,black_16px,black_calc(100%-16px),transparent)]"
             >
                 {messages.map((message, index) => {
                     const onRetry = message.id === lastMessage?.id && !busy ? retry : undefined;
@@ -736,24 +736,26 @@ const AddedIntegrationRow: React.FC<{ provider: string; text: string; href: stri
 function sessionNoticeText(reason: AgentPlaygroundSessionCreated['reason'], replaced: boolean): string {
     switch (reason) {
         case 'integrations_changed':
-            return 'Started a new agent session to pick up your integration changes';
+            return 'restarted to pick up your integration changes';
         case 'connections_changed':
-            return 'Started a new agent session to pick up your new connections';
+            return 'restarted to pick up your new connections';
         case 'expired':
-            return 'Started a new agent session because the last one expired';
+            return 'restarted because the last one expired';
         default:
-            return replaced ? 'Started a new agent session' : 'Started an agent session';
+            return replaced ? 'restarted' : 'started';
     }
 }
 
 const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced: boolean }> = ({ created, replaced }) => {
     return (
         <Collapsible className="group/session flex flex-col gap-3">
-            <CollapsibleTrigger className="flex min-h-7 w-full items-center gap-2 pr-[17px] text-left text-body-medium-regular text-text-secondary hover:text-text-default">
+            <CollapsibleTrigger className="mr-[17px] flex min-h-7 items-center gap-2 rounded-ds-xs text-left focus-visible:outline-offset-4 text-body-medium-regular text-text-secondary hover:text-text-default">
                 <LogoInverted className="size-4 shrink-0 text-text-strong" />
-                <span className="min-w-0 truncate">{sessionNoticeText(created.reason, replaced)}</span>
+                <span className="min-w-0 truncate">
+                    <span className="text-body-medium-medium text-text-default">Session</span> {sessionNoticeText(created.reason, replaced)}
+                </span>
                 <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
-                    <span className="group-data-[state=open]/session:hidden">POST /sessions</span>
+                    <StatusIcon running={false} stopped={false} failed={false} />
                     <ChevronDown className="size-4 transition-transform group-data-[state=open]/session:rotate-180" />
                 </span>
             </CollapsibleTrigger>
