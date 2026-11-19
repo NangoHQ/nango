@@ -18,7 +18,7 @@ type Story = StoryObj<typeof meta>;
 const PULSES: { pulse: SpiralPulse; name: string }[] = [
     { pulse: 'ripple', name: '1. Ripple' },
     { pulse: 'gather', name: '2. Gather' },
-    { pulse: 'shimmer', name: '5. Shimmer' }
+    { pulse: 'shimmer', name: '3. Shimmer' }
 ];
 
 const Indicator: React.FC<{ pulse: SpiralPulse; label: string }> = ({ pulse, label }) => (
