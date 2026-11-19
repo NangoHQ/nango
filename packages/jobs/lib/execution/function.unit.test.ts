@@ -97,6 +97,11 @@ function task(functionUuid = deployedFunction().uuid, input: Record<string, stri
     });
 }
 
+function inlineTask(code: string): TaskFunction {
+    const { functionUuid: _functionUuid, ...deployedTask } = task();
+    return TaskFunction({ ...deployedTask, source: { kind: 'inline', code, description: 'Names of the open issues' } });
+}
+
 beforeEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
@@ -200,6 +205,27 @@ describe('startFunction', () => {
         vi.mocked(shared.functionLookupService.resolveFunctionByUuid).mockResolvedValue(Ok(undefined));
 
         expect((await startFunction(task())).isErr()).toBe(true);
+        expect(startScript).not.toHaveBeenCalled();
+    });
+
+    it('starts an inline function without looking up a deployed one', async () => {
+        const code = 'return record.issueNumber;';
+
+        expect((await startFunction(inlineTask(code))).isOk()).toBe(true);
+        expect(shared.functionLookupService.resolveFunctionByUuid).not.toHaveBeenCalled();
+        const args = startScript.mock.calls[0]?.[0];
+        if (!args) throw new Error('Missing script invocation');
+        expect(args.code).toContain(code);
+        expect(args.nangoProps.scriptType).toBe('function');
+        expect(args.nangoProps.syncConfig).toMatchObject({ id: 0, sync_name: 'inline', nango_config_id: 9, file_location: '', source: 'standalone' });
+        expect(logCtx.info).toHaveBeenCalledWith(
+            "Starting function 'inline'",
+            expect.objectContaining({ function: 'inline', source: 'inline', description: 'Names of the open issues' })
+        );
+    });
+
+    it('rejects an inline source that does not parse', async () => {
+        expect((await startFunction(inlineTask('return record.'))).isErr()).toBe(true);
         expect(startScript).not.toHaveBeenCalled();
     });
 
