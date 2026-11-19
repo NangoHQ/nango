@@ -82,6 +82,7 @@ export const nangoPropsSchema = z.object({
         .nullable(),
     heartbeatTimeoutSecs: z.number().optional(),
     isCLI: z.boolean().optional(),
+    agentSessionResult: z.object({ sessionId: z.uuid(), recordId: z.uuid() }).optional(),
     lifecycle: z
         .object({
             killAfterMs: z.number(),

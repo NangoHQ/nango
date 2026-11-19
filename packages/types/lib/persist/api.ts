@@ -75,6 +75,10 @@ export interface GetRecordsSuccess {
     nextCursor?: string;
 }
 
+export interface GetAgentSessionResultSuccess {
+    record: NangoRecord | null;
+}
+
 export interface GetCheckpointSuccess {
     checkpoint: Checkpoint;
     version: number;

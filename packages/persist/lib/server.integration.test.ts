@@ -567,6 +567,62 @@ describe('Persist API', () => {
         });
     });
 
+    describe('getAgentSessionResult', () => {
+        const sessionId = '0b5ff4f1-8d3b-4e0a-9d4c-3f0d6c1b2a10';
+        const recordId = '5c1f7c0e-2f3a-4c59-8f0b-7a6f1d2e3b4c';
+        const getResult = async (query: Record<string, string>, connectionId = seed.connection.id) =>
+            fetch(`${serverUrl}/environment/${seed.env.id}/connection/${connectionId}/agent-session-result?${new URLSearchParams(query).toString()}`, {
+                method: 'GET',
+                headers: { Authorization: `Bearer ${mockSecretKey}`, 'Content-Type': 'application/json' }
+            });
+
+        beforeAll(async () => {
+            await insertRecords(seed, agentSessionResultModel(sessionId), [
+                { id: recordId, tool: 'list-emails', data: { emails: ['a', 'b'] } },
+                { id: '9d8c7b6a-5e4f-4a3b-9c2d-1e0f9a8b7c6d', tool: 'list-contacts', data: { contacts: [] } }
+            ]);
+        });
+
+        it('should return the stored result', async () => {
+            const response = await getResult({ sessionId, recordId });
+
+            expect(response.status).toEqual(200);
+            expect(await response.json()).toMatchObject({ record: { id: recordId, tool: 'list-emails', data: { emails: ['a', 'b'] } } });
+        });
+
+        it('should return null for a result of another session', async () => {
+            const response = await getResult({ sessionId: '11111111-2222-4333-8444-555555555555', recordId });
+
+            expect(response.status).toEqual(200);
+            expect(await response.json()).toEqual({ record: null });
+        });
+
+        it('should return null for an unknown record', async () => {
+            const response = await getResult({ sessionId, recordId: '11111111-2222-4333-8444-555555555555' });
+
+            expect(response.status).toEqual(200);
+            expect(await response.json()).toEqual({ record: null });
+        });
+
+        it('should 400 when given a model', async () => {
+            const response = await getResult({ sessionId, recordId, model: 'GetRecordsModel' });
+
+            expect(response.status).toEqual(400);
+        });
+
+        it('should 400 when the session id is not a uuid', async () => {
+            const response = await getResult({ sessionId: 'GetRecordsModel', recordId });
+
+            expect(response.status).toEqual(400);
+        });
+
+        it('should 404 for a connection outside the environment', async () => {
+            const response = await getResult({ sessionId, recordId }, 999999);
+
+            expect(response.status).toEqual(404);
+        });
+    });
+
     describe('deleteOutdatedRecords', () => {
         describe('streaming client (Accept: application/x-ndjson)', () => {
             it('should delete outdated records', async () => {
@@ -1175,7 +1231,7 @@ describe('Persist API', () => {
 
         it('rejects every connection route when the connection belongs to another environment', async () => {
             const routes = connectionRoutes();
-            expect(routes).toHaveLength(10);
+            expect(routes).toHaveLength(11);
             for (const route of routes) {
                 const path = route.path
                     .replace(':environmentId', String(seed.env.id))

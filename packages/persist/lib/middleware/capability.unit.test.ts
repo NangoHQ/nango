@@ -104,7 +104,7 @@ describe('persist task capability', () => {
 
     it('every route is authenticated, and a matching task token is not rejected as unauthorized', async () => {
         const routes = registeredRoutes();
-        expect(routes).toHaveLength(21);
+        expect(routes).toHaveLength(22);
 
         const syncId = '11111111-1111-4111-8111-111111111111';
         const otherSyncId = '22222222-2222-4222-8222-222222222222';
@@ -447,6 +447,9 @@ function scopeFor(path: string): TaskCapabilityScope {
     }
     if (path.includes('/locks')) {
         return 'persist:locks';
+    }
+    if (path.endsWith('/agent-session-result')) {
+        return 'persist:agent-session-result';
     }
     if (path.includes('/records') || path.includes('/outdated')) {
         return 'persist:records';
