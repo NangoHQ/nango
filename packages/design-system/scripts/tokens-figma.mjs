@@ -465,7 +465,6 @@ export function describeDiff(desired, checkResult) {
         ...desired.variables.map((v) => [`variable|${v.name}`, canonicalVariable(v)]),
         ...desired.styles.map((s) => [`${s.kind}|${s.name}`, canonicalStyle(s)])
     ]);
-    const descriptions = new Set((checkResult.descriptions ?? []).map((d) => `${d.kind}|${d.name}`));
     for (const item of checkResult.changed ?? []) {
         const desiredCanon = want.get(`${item.kind}|${item.name}`);
         if (!item.current) {
@@ -475,7 +474,7 @@ export function describeDiff(desired, checkResult) {
         const fields =
             item.current === 'description' ? [] : Object.keys(desiredCanon).filter((k) => JSON.stringify(desiredCanon[k]) !== JSON.stringify(item.current[k]));
         const parts = fields.map((k) => `${k} ${JSON.stringify(item.current[k])} → ${JSON.stringify(desiredCanon[k])}`);
-        if (descriptions.has(`${item.kind}|${item.name}`)) parts.push('description');
+        if (item.description) parts.push('description');
         lines.push(`~ ${item.kind} ${item.name}: ${parts.join('; ')}`);
     }
     for (const orphan of checkResult.orphans ?? []) lines.push(`? ${orphan.kind} ${orphan.name} is in Figma but not in tokens.json`);
@@ -503,43 +502,6 @@ export function applyResults(tokens, results, stale = []) {
         if (t?.[ref.field]) delete t[ref.field][ref.path];
     }
     return next;
-}
-
-function tokenNode(set, tokenPath) {
-    return tokenPath.split('.').reduce((node, key) => node?.[key], set);
-}
-
-function setsOwning(item, desired) {
-    if (item.kind === 'variable') {
-        const variable = desired.variables.find((v) => v.name === item.name);
-        if (!variable) return [];
-        const sets = variable.collection === PRIMITIVES ? [PRIMITIVES] : THEMES.map((t) => `Semantic/${t}`);
-        return sets.map((set) => [set, toTokenPath(variable.name)]);
-    }
-    const style = desired.styles.find((s) => s.kind === item.kind && s.name === item.name);
-    if (!style) return [];
-    if (style.kind === 'text') return [['Typography', style.path]];
-    return [[style.theme === PRIMITIVES ? PRIMITIVES : `Semantic/${style.theme}`, style.path]];
-}
-
-export function pullDescriptions(tokens, desired, checkResult) {
-    const next = structuredClone(tokens);
-    const pulled = [];
-    const conflicts = [];
-    for (const item of checkResult.descriptions ?? []) {
-        if (!item.text) continue;
-        for (const [set, tokenPath] of setsOwning(item, desired)) {
-            const node = tokenNode(next[set], tokenPath);
-            if (!node) continue;
-            if (node.$description) {
-                conflicts.push(`${set} ${tokenPath}`);
-                continue;
-            }
-            node.$description = item.text;
-            pulled.push(`${set} ${tokenPath}`);
-        }
-    }
-    return { tokens: next, pulled, conflicts };
 }
 
 async function writeTokens(tokens) {
@@ -596,20 +558,11 @@ async function writeKeys(resultFiles) {
     console.log(`✓ tokens.json updated with ${created} new Figma references`);
 }
 
-async function pull([resultFile]) {
-    if (!resultFile) throw new Error('Pass the file holding the check result.');
-    const { tokens, desired } = loadDesired();
-    const { tokens: next, pulled, conflicts } = pullDescriptions(tokens, desired, JSON.parse(readFileSync(resultFile, 'utf8')));
-    await writeTokens(next);
-    console.log(`✓ Copied ${pulled.length} Figma descriptions into tokens.json`);
-    if (conflicts.length > 0) console.log(`Kept the repo's description where both have one:\n  ${conflicts.join('\n  ')}`);
-}
-
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const [command, ...args] = process.argv.slice(2);
-    const commands = { check: async () => check(), diff: async () => diff(args), 'write-keys': () => writeKeys(args), 'pull-descriptions': () => pull(args) };
+    const commands = { check: async () => check(), diff: async () => diff(args), 'write-keys': () => writeKeys(args) };
     if (!commands[command]) {
-        console.error('Usage: tokens-figma.mjs check | diff <check-result.json> | write-keys <apply-result.json>... | pull-descriptions <check-result.json>');
+        console.error('Usage: tokens-figma.mjs check | diff <check-result.json> | write-keys <apply-result.json>...');
         process.exit(1);
     }
     commands[command]().catch((err) => {

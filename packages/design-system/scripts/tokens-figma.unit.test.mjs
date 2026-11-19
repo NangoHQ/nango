@@ -15,7 +15,6 @@ import {
     parseCssShadows,
     parseDimension,
     parseDuration,
-    pullDescriptions,
     staleReferences,
     toVariableValue
 } from './tokens-figma.mjs';
@@ -182,23 +181,14 @@ describe('payloads', () => {
         const current = { ...canonicalStyle(text), s: 13 };
         expect(describeDiff(desired, { changed: [{ kind: 'text', name: 'text/md', current }] })).toEqual(['~ text text/md: s 13 → 14']);
     });
-});
 
-describe('pullDescriptions', () => {
-    it('fills empty descriptions in every set that owns the token and keeps the repo ones', () => {
-        const tokens = fixture();
-        const descriptions = [
-            { kind: 'variable', name: 'surface/canvas', text: 'From Figma' },
-            { kind: 'text', name: 'text/md', text: 'Body text' },
-            { kind: 'variable', name: 'color/neutral/0', text: '' }
+    it('flags a description change with or without a value change', () => {
+        const text = desired.styles.find((s) => s.name === 'text/md');
+        const changed = [
+            { kind: 'text', name: 'text/md', current: { ...canonicalStyle(text), s: 13 }, description: true },
+            { kind: 'variable', name: 'surface/canvas', current: 'description', description: true }
         ];
-        const { tokens: next, pulled, conflicts } = pullDescriptions(tokens, buildDesiredState(tokens), { descriptions });
-        expect(next['Semantic/Dark'].surface.canvas.$description).toBe('From Figma');
-        expect(next['Semantic/Light'].surface.canvas.$description).toBe('App shell');
-        expect(next.Typography.text.md.$description).toBe('Body text');
-        expect(next.Primitives.color.neutral[0].$description).toBeUndefined();
-        expect(pulled).toEqual(['Semantic/Dark surface.canvas', 'Typography text.md']);
-        expect(conflicts).toEqual(['Semantic/Light surface.canvas']);
+        expect(describeDiff(desired, { changed })).toEqual(['~ text text/md: s 13 → 14; description', '~ variable surface/canvas: description']);
     });
 });
 

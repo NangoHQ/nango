@@ -105,15 +105,11 @@ async function checkTokens(input) {
     for (const collection of input.collections) {
         if (!state.collectionByName.has(collection.name)) errors.push(`collection ${collection.name} is missing; create it by hand first`);
     }
-    const descriptions = [];
     const compare = (kind, name, node, current, hash, descriptionHash) => {
         const valueChanged = hashOf(current) !== hash;
-        if (valueChanged) changed.push({ kind, name, current });
-        const description = plainDescription(node.description);
-        if (hashOf(description) !== descriptionHash) {
-            if (!valueChanged) changed.push({ kind, name, current: 'description' });
-            descriptions.push({ kind, name, text: description });
-        }
+        const descriptionChanged = hashOf(plainDescription(node.description)) !== descriptionHash;
+        if (!valueChanged && !descriptionChanged) return;
+        changed.push({ kind, name, current: valueChanged ? current : 'description', description: descriptionChanged });
     };
     const seenVariables = new Set();
     for (const [collectionName, name, key, hash, descriptionHash] of input.variables) {
@@ -141,7 +137,7 @@ async function checkTokens(input) {
             .map((v) => ({ kind: 'variable', name: `${state.collectionOf.get(v.variableCollectionId)}/${v.name}` })),
         ...[...state.effectStyles, ...state.textStyles].filter((s) => !seenStyles.has(s.id)).map((s) => ({ kind: 'style', name: s.name }))
     ];
-    return { changed, descriptions, orphans, errors };
+    return { changed, orphans, errors };
 }
 
 async function applyTokens(input) {

@@ -5,7 +5,7 @@ description: Use after changing packages/design-system/tokens/tokens.json, or wh
 
 # Syncing design tokens to Figma
 
-`packages/design-system/tokens/tokens.json` is the only source of design tokens. The Dharma Figma library mirrors it. Token values never flow from Figma back to the repo. Only two things do: the Figma keys of variables and styles the sync creates, and, once, the descriptions Dharma already had (step 5).
+`packages/design-system/tokens/tokens.json` is the only source of design tokens. The Dharma Figma library mirrors it. Nothing flows from Figma back to the repo except the Figma keys of variables and styles the sync creates.
 
 Run the sync from the branch that changes the tokens, before the PR merges, so the new keys land in the same PR. Only run it if you have edit access to Dharma through the Figma MCP. If you don't, tell the user the tokens changed and still need syncing.
 
@@ -29,17 +29,9 @@ Run the sync from the branch that changes the tokens, before the PR merges, so t
 
     It prints what would change and writes `apply-N.js` files. `✓ Figma matches tokens.json` means you're done.
 
-5. **First sync only:** if `tokens.json` has no `$description` on most tokens, copy Dharma's descriptions in, or the apply erases them. Then go back to step 2: `diff` reuses the old check result, so it still lists the copied descriptions.
+5. Show the user the diff and wait for a yes. Then run each `apply-N.js` with `use_figma`, in order, and save each JSON result.
 
-    ```bash
-    npm run tokens:figma --workspace=@nangohq/design-system -- pull-descriptions <check-result.json>
-    ```
-
-    It fills only empty descriptions. Where both sides have one, it keeps the repo's and lists the token.
-
-6. Show the user the diff and wait for a yes. Then run each `apply-N.js` with `use_figma`, in order, and save each JSON result.
-
-7. Record the keys of anything created, and drop stale ones. With no `apply-N.js` files, run it with no arguments:
+6. Save the Figma keys of anything created into `tokens.json`, and drop stale ones. With no `apply-N.js` files, run it with no arguments:
 
     ```bash
     npm run tokens:figma --workspace=@nangohq/design-system -- write-keys [apply-1.json apply-2.json ...]
@@ -47,7 +39,7 @@ Run the sync from the branch that changes the tokens, before the PR merges, so t
 
     Commit the `tokens.json` change with the token change.
 
-8. Run the check again. It should report nothing changed.
+7. Run the check again. It should report nothing changed.
 
 ## Reading the diff
 
