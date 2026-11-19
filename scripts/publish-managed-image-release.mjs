@@ -9,6 +9,9 @@ const REPO_ROOT = path.resolve(__dirname, '..');
 const {
     GITHUB_TOKEN,
     TAG_NAME,
+    IMAGE_DIGEST,
+    CERT_IDENTITY,
+    CERT_OIDC_ISSUER,
     IMAGE_VERSION,
     APP_VERSION,
     COMMIT_HASH,
@@ -179,7 +182,37 @@ function generateCliffNotes(prevCommit, commitHash) {
     }
 }
 
-function buildReleaseNotes({ manifest, cliffNotes, tagName, imageVersion, appVersion, prevCommit, currentCommitHash }) {
+function buildVerifySection({ tagName, certIdentity, certOidcIssuer }) {
+    if (!certIdentity || !certOidcIssuer) {
+        return [];
+    }
+
+    return [
+        '### Verify the image',
+        '',
+        "The image is signed with [cosign](https://docs.sigstore.dev/cosign/) by Nango's release workflow. To check the signature:",
+        '',
+        '```bash',
+        `cosign verify nangohq/nango:${tagName} \\`,
+        `  --certificate-identity ${certIdentity} \\`,
+        `  --certificate-oidc-issuer ${certOidcIssuer}`,
+        '```',
+        ''
+    ];
+}
+
+function buildReleaseNotes({
+    manifest,
+    cliffNotes,
+    tagName,
+    imageDigest,
+    certIdentity,
+    certOidcIssuer,
+    imageVersion,
+    appVersion,
+    prevCommit,
+    currentCommitHash
+}) {
     const { releaseDate } = manifest.latest;
     const comparisonUrl = resolveComparisonUrl(manifest.latest.comparisonUrl, prevCommit, currentCommitHash);
     const releasedOn = releaseDate ? new Date(releaseDate).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
@@ -189,10 +222,12 @@ function buildReleaseNotes({ manifest, cliffNotes, tagName, imageVersion, appVer
         '',
         `- **Released:** ${releasedOn}`,
         `- **Docker image:** \`nangohq/nango:${tagName}\``,
+        imageDigest ? `- **Image digest:** \`${imageDigest}\`` : null,
         `- **Pin CLI to:** \`${appVersion}\``,
         comparisonUrl ? `- **Compare:** ${comparisonUrl}` : null,
         '- **Public changelog:** https://nango.dev/docs/updates/changelog',
         '',
+        ...buildVerifySection({ tagName, certIdentity, certOidcIssuer }),
         '### Changes',
         '',
         cliffNotes || '_No changelog entries were generated for this release._'
@@ -288,6 +323,9 @@ function main() {
         manifest: publishManifest,
         cliffNotes,
         tagName: TAG_NAME,
+        imageDigest: IMAGE_DIGEST,
+        certIdentity: CERT_IDENTITY,
+        certOidcIssuer: CERT_OIDC_ISSUER,
         imageVersion: IMAGE_VERSION,
         appVersion: APP_VERSION,
         prevCommit,
@@ -320,7 +358,7 @@ function main() {
     console.log(`Published managed release ${TAG_NAME} to ${TARGET_REPO}`);
 }
 
-export { buildGitHubComparisonUrl, normalizeManifestForPublish, parseGitHubCompareUrl, resolveComparisonUrl };
+export { buildGitHubComparisonUrl, buildReleaseNotes, normalizeManifestForPublish, parseGitHubCompareUrl, resolveComparisonUrl };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
     main();
