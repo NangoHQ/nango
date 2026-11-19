@@ -47,7 +47,9 @@ export function parseColor(value) {
     const rgba = /^rgba?\(([^)]+)\)$/i.exec(value);
     if (rgba) {
         const [r, g, b, a = '1'] = rgba[1].split(',').map((s) => s.trim());
-        return { r: round(Number(r) / 255), g: round(Number(g) / 255), b: round(Number(b) / 255), a: round(Number(a)) };
+        const channels = [r, g, b, a].map(Number);
+        if (channels.some((n) => !Number.isFinite(n))) throw new Error(`Unsupported color: ${value}`);
+        return { r: round(channels[0] / 255), g: round(channels[1] / 255), b: round(channels[2] / 255), a: round(channels[3]) };
     }
     throw new Error(`Unsupported color: ${value}`);
 }
@@ -335,7 +337,15 @@ export function buildDesiredState(tokens) {
         { name: SEMANTIC_COLLECTION, modes: THEMES }
     ];
 
-    return { collections, variables, styles: [...effectStyles, ...textStyles], errors };
+    const styles = [...effectStyles, ...textStyles];
+    const seen = new Set();
+    for (const item of [...variables.map((v) => ['variable', v.name]), ...styles.map((s) => [s.kind, s.name])]) {
+        const key = item.join(' ');
+        if (seen.has(key)) errors.push(`Two tokens map to the ${key} in Figma`);
+        seen.add(key);
+    }
+
+    return { collections, variables, styles, errors };
 }
 
 // The runtime builds the same shapes from live Figma objects; a field added here must be added there.

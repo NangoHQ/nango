@@ -74,6 +74,7 @@ describe('value conversion', () => {
     it('parses hex and rgba colors into 0–1 channels', () => {
         expect(parseColor('#ff000080')).toEqual({ r: 1, g: 0, b: 0, a: 0.502 });
         expect(parseColor('rgba(0, 0, 0, 0.08)')).toEqual({ r: 0, g: 0, b: 0, a: 0.08 });
+        expect(() => parseColor('rgba(0, 0, 0, 50%)')).toThrow('Unsupported color');
     });
 
     it('converts em dimensions at a 16px base', () => {
@@ -132,6 +133,16 @@ describe('buildDesiredState', () => {
         const tokens = fixture();
         tokens['Semantic/Light'].surface.page = { $type: 'color', $value: '{color.neutral.0}' };
         expect(buildDesiredState(tokens).errors).toEqual(['surface.page is missing from Semantic/Dark']);
+    });
+
+    it('reports two shadows that map to one Figma style', () => {
+        const tokens = fixture();
+        tokens['Semantic/Dark'].input = { outline: { $type: 'boxShadow', $value: '{elevation.1}' } };
+        tokens['Semantic/Light'].input = { outline: { $type: 'boxShadow', $value: '{elevation.1}' } };
+        expect(buildDesiredState(tokens).errors).toEqual([
+            'Two tokens map to the effect Dark/outline in Figma',
+            'Two tokens map to the effect Light/outline in Figma'
+        ]);
     });
 });
 
