@@ -60,7 +60,7 @@
             stroke: var(--spiral-rest);
         }
         50% {
-            stroke: var(--spiral-lit);
+            stroke: var(--spiral-lit-strong);
         }
     }
     @keyframes spiral-band {
@@ -79,7 +79,7 @@
             stroke: var(--spiral-rest);
         }
         50% {
-            stroke: var(--spiral-lit);
+            stroke: var(--spiral-lit-strong);
         }
     }
 

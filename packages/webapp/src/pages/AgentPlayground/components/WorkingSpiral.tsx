@@ -27,7 +27,7 @@ export const WorkingSpiral: React.FC<{ pulse?: SpiralPulse }> = ({ pulse = 'ripp
     return (
         <svg
             viewBox="-10.5 -10.5 21 21"
-            className="size-6 shrink-0 overflow-visible text-icon-brand [--spiral-lit:color-mix(in_oklab,var(--color-icon-brand),white_60%)] [--spiral-rest:var(--color-icon-brand)] dark:[--spiral-lit:color-mix(in_oklab,var(--color-icon-brand),transparent_70%)] dark:[--spiral-rest:color-mix(in_oklab,var(--color-icon-brand),transparent_15%)]"
+            className="size-6 shrink-0 overflow-visible text-icon-brand [--spiral-lit:color-mix(in_oklab,var(--color-icon-brand),white_60%)] [--spiral-lit-strong:color-mix(in_oklab,var(--color-icon-brand),white_78%)] [--spiral-rest:var(--color-icon-brand)] dark:[--spiral-lit:color-mix(in_oklab,var(--color-icon-brand),transparent_70%)] dark:[--spiral-lit-strong:color-mix(in_oklab,var(--color-icon-brand),transparent_88%)] dark:[--spiral-rest:color-mix(in_oklab,var(--color-icon-brand),transparent_15%)]"
             aria-hidden="true"
         >
             {squares.map(({ i, r, angle }) => (
