@@ -1,4 +1,5 @@
-import { getCatalogEntry, getFlowsJson, TEMPLATES_ZERO_PREFIX } from './actions.js';
+import { getCatalogEntry, TEMPLATES_ZERO_PREFIX } from './actions.js';
+import { catalogStore } from './store.js';
 
 import type { FunctionListType, ScriptTypeLiteral } from '@nangohq/types';
 
@@ -20,7 +21,7 @@ const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-ev
  * Legacy entries use the canonical provider folder; Functions use their published locations.
  */
 export function findCatalogFunctions({ provider, name, type }: { provider: string; name: string; type?: FunctionListType | undefined }): CatalogFunction[] {
-    const integration = getFlowsJson().find((entry) => entry.providerConfigKey === provider);
+    const integration = catalogStore.getEntry(provider);
     if (!integration) {
         return [];
     }

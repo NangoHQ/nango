@@ -1,14 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-    getCatalogEntry,
-    getCatalogFunctionByUuid,
-    getCatalogTool,
-    getFlowsJson,
-    isTemplatesZeroPath,
-    listCatalogEntries,
-    listCatalogTools
-} from './actions.js';
+import { getCatalogEntry, getCatalogFunctionByUuid, getCatalogTool, isTemplatesZeroPath, listCatalogEntries, listCatalogTools } from './actions.js';
+import { catalogStore } from './store.js';
 import { generateCatalogFunctionUuid } from './uuid.js';
 
 describe('catalog tools reader', () => {
@@ -36,19 +29,20 @@ describe('catalog tools reader', () => {
     });
 
     it('keeps every published provider compatible with the mixed reader', () => {
-        for (const integration of getFlowsJson()) {
+        for (const provider of catalogStore.listProviders()) {
+            const integration = catalogStore.getEntry(provider)!;
             const entries = listCatalogEntries(integration.providerConfigKey);
             const actions = listCatalogTools(integration.providerConfigKey);
             expect(actions).toEqual(entries.filter((entry) => entry.type === 'action'));
             expect(actions).toHaveLength(integration.actions.length);
             for (const action of actions) {
-                expect(getCatalogEntry(integration.providerConfigKey, action.name)).toBe(action);
-                expect(getCatalogTool(integration.providerConfigKey, action.name)).toBe(action);
+                expect(getCatalogEntry(integration.providerConfigKey, action.name)).toStrictEqual(action);
+                expect(getCatalogTool(integration.providerConfigKey, action.name)).toStrictEqual(action);
             }
             const functions = entries.filter((entry) => entry.type !== 'action');
             expect(functions).toHaveLength(integration.functions?.length ?? 0);
             for (const definition of functions) {
-                expect(getCatalogFunctionByUuid(definition.uuid)).toBe(definition);
+                expect(getCatalogFunctionByUuid(definition.uuid)).toStrictEqual(definition);
             }
         }
     });
