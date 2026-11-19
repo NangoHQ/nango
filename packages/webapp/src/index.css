@@ -80,10 +80,13 @@
     }
     @keyframes spiral-shimmer {
         0%,
+        15%,
+        85%,
         100% {
             stroke: var(--spiral-rest);
         }
-        50% {
+        35%,
+        65% {
             stroke: var(--spiral-lit-strong);
         }
     }

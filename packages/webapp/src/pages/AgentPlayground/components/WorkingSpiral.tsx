@@ -22,7 +22,7 @@ export type SpiralPulse = 'ripple' | 'gather' | 'shimmer';
 const PULSES: Record<SpiralPulse, { className: string; delay: (i: number, count: number) => number }> = {
     ripple: { className: 'animate-spiral-wave', delay: (i, count) => ((i - count) * 1440) / count },
     gather: { className: 'animate-spiral-band', delay: (i, count) => (-i * 900) / count },
-    shimmer: { className: 'animate-spiral-shimmer', delay: (i, count) => (i % 2) * -1200 - (i * 300) / count }
+    shimmer: { className: 'animate-spiral-shimmer', delay: (i, count) => (Math.floor((i * 4) / count) % 2) * -1200 - (i * 300) / count }
 };
 
 export const WorkingSpiral: React.FC<{ pulse?: SpiralPulse; size?: SpiralSize }> = ({ pulse = 'ripple', size = 'sm' }) => {
