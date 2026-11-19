@@ -125,6 +125,13 @@ export function buildFlags(client: FeatureFlagsClient) {
             return client.isEnabled('github-app-connection-credentials', {}, false);
         },
         /**
+         * Whether the template catalog is read from `catalog.json` and one file per provider, loaded on demand,
+         * instead of loading all of `flows.zero.json`. Global. Default `false`.
+         */
+        isCatalogIndexFileEnabled() {
+            return client.isEnabled('catalog-index-file', {}, false);
+        },
+        /**
          * Whether this data-plane credential read is recorded in the audit trail. Temporary, for the rollout,
          * which uses random stickiness so a percentage applies to requests, not accounts. Default `false`.
          */

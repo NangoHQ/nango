@@ -2,7 +2,7 @@ import { filterJsonSchemaForModels } from '@nangohq/utils';
 
 import { generateCatalogFunctionUuid, isCatalogFunctionUuid } from './uuid.js';
 
-import type { CatalogFunctionManifestEntry, Feature, FlowsZeroJson, FlowZeroJson, FunctionCapabilities } from '@nangohq/types';
+import type { CatalogFunctionManifestEntry, Feature, FlowZeroJson, FunctionCapabilities } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 export const TEMPLATES_ZERO_PREFIX = 'templates-zero';
@@ -43,11 +43,18 @@ type ProviderCatalog = {
     byUuid: Map<string, CatalogFunctionDefinition>;
 };
 
+/** Where the reader gets each provider's catalog entry: the catalog store. */
+export interface CatalogSource {
+    getEntry(provider: string): FlowZeroJson | null;
+    listProvidersWithFunctions(): string[];
+}
+
 export class CatalogReader {
-    private readonly providers = new Map<string, ProviderCatalog>();
+    // Keyed by the source's entry, so a provider's catalog goes away when the catalog store evicts its entry.
+    private readonly providers = new WeakMap<FlowZeroJson, ProviderCatalog>();
     private providersByUuid: Map<string, string> | undefined;
 
-    constructor(private readonly loadManifest: () => FlowsZeroJson) {}
+    constructor(private readonly source: CatalogSource) {}
 
     public listEntries(provider: string): CatalogEntry[] {
         return this.load(provider).entries;
@@ -70,9 +77,11 @@ export class CatalogReader {
         if (this.providersByUuid) {
             return this.providersByUuid;
         }
+        // Reads every provider with functions once.
         const providersByUuid = new Map<string, string>();
-        for (const integration of this.loadManifest()) {
-            if (!integration.functions?.length) {
+        for (const provider of this.source.listProvidersWithFunctions()) {
+            const integration = this.source.getEntry(provider);
+            if (!integration?.functions?.length) {
                 continue;
             }
             for (const entry of integration.functions) {
@@ -97,23 +106,25 @@ export class CatalogReader {
     }
 
     private load(provider: string): ProviderCatalog {
-        const cached = this.providers.get(provider);
+        const integration = this.source.getEntry(provider);
+        if (!integration) {
+            // Not cached: there's no entry to key it on, and callers each get their own lists.
+            return { entries: [], actions: [], byName: new Map(), byUuid: new Map() };
+        }
+        const cached = this.providers.get(integration);
         if (cached) {
             return cached;
         }
 
-        const integration = this.loadManifest().find((entry) => entry.providerConfigKey === provider);
-        const folder = integration?.symLinkTargetName ?? provider;
-        const actions = integration ? loadActions(integration, folder) : [];
-        const functions: CatalogFunctionDefinition[] = integration
-            ? (integration.functions ?? []).map((item) => ({
-                  ...item,
-                  uuid: resolveFunctionUuid(provider, item),
-                  source: 'catalog',
-                  provider,
-                  sdkVersion: integration.sdkVersion
-              }))
-            : [];
+        const folder = integration.symLinkTargetName ?? provider;
+        const actions = loadActions(integration, folder);
+        const functions: CatalogFunctionDefinition[] = (integration.functions ?? []).map((item) => ({
+            ...item,
+            uuid: resolveFunctionUuid(provider, item),
+            source: 'catalog',
+            provider,
+            sdkVersion: integration.sdkVersion
+        }));
         const entries: CatalogEntry[] = [...actions, ...functions];
         const byName = new Map<string, CatalogEntry>();
         for (const entry of entries) {
@@ -132,7 +143,7 @@ export class CatalogReader {
         }
 
         const catalog = { entries, actions, byName, byUuid };
-        this.providers.set(provider, catalog);
+        this.providers.set(integration, catalog);
         return catalog;
     }
 }

@@ -1,14 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-    getCatalogEntry,
-    getCatalogFunctionByUuid,
-    getCatalogTool,
-    getFlowsJson,
-    isTemplatesZeroPath,
-    listCatalogEntries,
-    listCatalogTools
-} from './actions.js';
+import { getCatalogEntry, getCatalogFunctionByUuid, getCatalogTool, isTemplatesZeroPath, listCatalogEntries, listCatalogTools } from './actions.js';
+import { catalogStore } from './store.js';
 import { generateCatalogFunctionUuid } from './uuid.js';
 
 describe('catalog tools reader', () => {
@@ -36,7 +29,8 @@ describe('catalog tools reader', () => {
     });
 
     it('keeps every published provider compatible with the mixed reader', () => {
-        for (const integration of getFlowsJson()) {
+        for (const provider of catalogStore.listProviders()) {
+            const integration = catalogStore.getEntry(provider)!;
             const entries = listCatalogEntries(integration.providerConfigKey);
             const actions = listCatalogTools(integration.providerConfigKey);
             expect(actions).toEqual(entries.filter((entry) => entry.type === 'action'));
