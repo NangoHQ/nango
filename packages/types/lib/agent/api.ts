@@ -150,3 +150,31 @@ export type DeleteAgentSession = ApiEndpoint<{
         data: ApiTerminatedAgentSession;
     };
 }>;
+
+export type GetAgentSessionTools = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'data-plane operation' };
+    Method: 'GET';
+    Path: '/sessions/:sessionId/tools';
+    Params: { sessionId: string };
+    Querystring: { cursor?: string };
+    Error: ApiError<'session_not_found'>;
+    Success: {
+        tools: {
+            name: string;
+            description: string;
+            inputSchema: Record<string, unknown>;
+            outputSchema?: Record<string, unknown> | undefined;
+            annotations?:
+                | {
+                      title?: string | undefined;
+                      readOnlyHint?: boolean | undefined;
+                      destructiveHint?: boolean | undefined;
+                      idempotentHint?: boolean | undefined;
+                      openWorldHint?: boolean | undefined;
+                  }
+                | undefined;
+            _meta?: Record<string, unknown> | undefined;
+        }[];
+        next_cursor?: string;
+    };
+}>;

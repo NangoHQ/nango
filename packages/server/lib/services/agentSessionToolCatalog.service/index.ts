@@ -7,3 +7,5 @@ export { directCallInputSchema, directCallSchema } from './directCallSchema.js';
 
 export type { CreateConnectionOutput } from './metaTools/createConnection.js';
 export type { AgentSessionCallableTool, AgentSessionCallableTools, AgentSessionToolDefinition } from './types.js';
+
+export { TOOLS_PAGE_SIZE } from './types.js';
