@@ -29048,7 +29048,7 @@ redo:
             title: API Secret
             description: Your Redo API secret.
             example: redo_sk_****************************************************************
-            pattern: '^redo_sk_[a-f0-9]{64}$'
+            pattern: '^redo_sk_[A-Za-z0-9]+$'
             doc_section: '#step-1-create-an-api-token'
 
 redtail-crm-sandbox:
