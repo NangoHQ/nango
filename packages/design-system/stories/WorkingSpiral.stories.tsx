@@ -57,7 +57,7 @@ interface TunerProps {
     lightestAt: number;
     backAt: number;
     strength: number;
-    staggerMs: number;
+    stagger: number;
     lineOffset: number;
 }
 
@@ -74,15 +74,17 @@ const tunerCss = (p: TunerProps) => {
 }`;
     const colours = `.${scope} { --tuned-rest: var(--color-icon-brand); --tuned-lit: color-mix(in oklab, var(--color-icon-brand), white ${p.strength}%); }
 [data-theme='dark'] .${scope} { --tuned-rest: color-mix(in oklab, var(--color-icon-brand), transparent ${fixed.darkRestFade}%); --tuned-lit: color-mix(in oklab, var(--color-icon-brand), transparent ${darkFade}%); }`;
+    const staggerMs = Math.round(p.stagger * p.durationMs);
+    const offsetMs = Math.round(p.lineOffset * p.durationMs);
     const delays = (count: number) =>
         Array.from({ length: count }, (_, i) => {
-            const delay = (i % 2) * -p.lineOffset * p.durationMs + (i * p.staggerMs) / count - Math.max(p.staggerMs, 0);
+            const delay = (i % 2) * -offsetMs + (i * staggerMs) / count - Math.max(staggerMs, 0);
             return `.${scope} .tuner-${count} path:nth-child(${i + 1}) { animation-delay: ${Math.round(delay)}ms !important; }`;
         }).join('\n');
     const readout = `${keyframes}
 ${colours}
 animation: ${p.durationMs}ms infinite
-delay(i, count) = (i % 2) * -${p.lineOffset * p.durationMs} + i * ${p.staggerMs} / count`;
+delay(i, count) = (i % 2) * -${offsetMs} + i * ${staggerMs} / count`;
     const css = `${keyframes}
 ${colours}
 .${scope} path { animation: ${name} ${p.durationMs}ms infinite !important; }
@@ -121,7 +123,7 @@ const tunerArgTypes = {
     lightestAt: { name: 'Lightest at (%)', ...percent },
     backAt: { name: 'Back to full colour at (%)', ...percent },
     strength: { name: 'Light colour strength (%)', ...percent },
-    staggerMs: { name: 'Stagger, + outward / − inward (ms)', control: { type: 'range', min: -2400, max: 2400, step: 50 } },
+    stagger: { name: 'Stagger, + outward / − inward (cycles)', control: { type: 'range', min: -1.5, max: 1.5, step: 0.05 } },
     lineOffset: { name: 'Alternate-line offset (cycles)', control: { type: 'range', min: 0, max: 1, step: 0.05 } }
 } as const;
 
@@ -132,17 +134,17 @@ type TunerStory = StoryObj<typeof Tuner>;
 export const Ripple: TunerStory = {
     render: (args) => <Tuner {...args} />,
     argTypes: withoutLineOffset,
-    args: { pulse: 'ripple', durationMs: 2200, lightStart: 0, lightestAt: 15, backAt: 70, strength: 78, staggerMs: 1440, lineOffset: 0 }
+    args: { pulse: 'ripple', durationMs: 2200, lightStart: 0, lightestAt: 15, backAt: 70, strength: 78, stagger: 1440 / 2200, lineOffset: 0 }
 };
 
 export const Gather: TunerStory = {
     render: (args) => <Tuner {...args} />,
     argTypes: withoutLineOffset,
-    args: { pulse: 'gather', durationMs: 2000, lightStart: 0, lightestAt: 10, backAt: 45, strength: 60, staggerMs: -900, lineOffset: 0 }
+    args: { pulse: 'gather', durationMs: 2000, lightStart: 0, lightestAt: 10, backAt: 45, strength: 60, stagger: -900 / 2000, lineOffset: 0 }
 };
 
 export const Shimmer: TunerStory = {
     render: (args) => <Tuner {...args} />,
     argTypes: tunerArgTypes,
-    args: { pulse: 'shimmer', durationMs: 2400, lightStart: 0, lightestAt: 50, backAt: 100, strength: 90, staggerMs: -300, lineOffset: 0.25 }
+    args: { pulse: 'shimmer', durationMs: 2400, lightStart: 0, lightestAt: 50, backAt: 100, strength: 90, stagger: -300 / 2400, lineOffset: 0.25 }
 };
