@@ -3,11 +3,11 @@ import tracer from 'dd-trace';
 import { Err, Ok } from '@nangohq/utils';
 
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
-import { AGENT_SESSION_TAG_KEY } from '../../../../services/agentSessionConnections.service.js';
+import { AGENT_SESSION_TAG_KEY, resolveSessionConnection } from '../../../../services/agentSessionConnections.service.js';
 import { createConnectionToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import * as connectSessionService from '../../../../services/connectSession.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
-import { connectionDeletedError, resolveSessionConnection } from '../sessionConnection.js';
+import { connectionDeletedError } from '../sessionConnectionErrors.js';
 import { invalidArgumentsOf, makeAgentSessionMcpTool } from '../sessionTool.js';
 
 import type { CreateConnectionOutput } from '../../../../services/agentSessionToolCatalog.service/index.js';

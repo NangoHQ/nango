@@ -1,9 +1,15 @@
 import tracer from 'dd-trace';
 
+import db from '@nangohq/database';
+import { report } from '@nangohq/utils';
+
+import * as agentSessionService from './agentSession.service.js';
+import { withAddedToolSlugs } from './agentSessionToolCatalog.service/index.js';
+import * as agentSessionToolsetService from './agentSessionToolset.service.js';
 import { listRemoteTools, mcpEndpointOf, withRemoteMcpSession } from './remoteMcp.service.js';
 
 import type { RemoteMcpTool } from './remoteMcp.service.js';
-import type { AgentSessionResolvedConnection, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { AgentSession, AgentSessionResolvedConnection, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 
 const TOOL_LIST_TIMEOUT_MS = 10_000;
@@ -65,4 +71,58 @@ async function discoverServer({
             return { status: 'unavailable' };
         }
     });
+}
+
+export function hasPendingMcpServers(session: AgentSession): boolean {
+    return Object.values(session.compiledToolset).some((integration) => agentSessionToolsetService.pendingMcpServerOf(integration));
+}
+
+/**
+ * MCP servers are listed when the session is created, so a server the agent connected afterwards is
+ * listed here instead, the first time the session is used once it is connected.
+ */
+export async function withMcpToolsDiscovered({
+    account,
+    environment,
+    plan,
+    session
+}: {
+    account: DBTeam;
+    environment: DBEnvironment;
+    plan: DBPlan | null;
+    session: AgentSession;
+}): Promise<AgentSession> {
+    const pending = Object.keys(session.compiledToolset).filter((integrationId) => {
+        const integration = session.compiledToolset[integrationId];
+        return integration && agentSessionToolsetService.pendingMcpServerOf(integration);
+    });
+    const connections = pending.flatMap((integrationId) =>
+        Object.hasOwn(session.resolvedConnections, integrationId) && session.resolvedConnections[integrationId]
+            ? [session.resolvedConnections[integrationId]]
+            : []
+    );
+    if (connections.length === 0) {
+        return session;
+    }
+
+    const discovered = await discoverMcpTools({ account, environment, plan, connections });
+    const compiled = Object.fromEntries(
+        [...discovered].flatMap(([integrationId, discovery]) => {
+            const integration = session.compiledToolset[integrationId];
+            return integration ? [[integrationId, agentSessionToolsetService.withDiscoveredMcpTools({ integration, discovery })] as const] : [];
+        })
+    );
+
+    const stored = await agentSessionService.fillPendingMcpServers(db.knex, {
+        id: session.id,
+        pending,
+        integrations: withAddedToolSlugs({ session, added: compiled })
+    });
+    if (stored.isErr()) {
+        // Tools that were not stored have no settled names, so they wait for the next listing.
+        report(stored.error);
+        return session;
+    }
+
+    return { ...session, compiledToolset: stored.value };
 }

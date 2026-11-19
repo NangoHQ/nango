@@ -6,12 +6,12 @@ import { Err, Ok } from '@nangohq/utils';
 import { executeAction } from '../../../../services/action.service.js';
 import * as agentGettingStartedService from '../../../../services/agentGettingStarted.service.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
+import { resolveSessionConnection } from '../../../../services/agentSessionConnections.service.js';
 import { executeToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { callRemoteTool, withRemoteMcpSession } from '../../../../services/remoteMcp.service.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
-import { resolveSessionConnection } from '../sessionConnection.js';
 import { invalidArgumentsOf, makeAgentSessionMcpTool, RemoteToolResult } from '../sessionTool.js';
 import { actionExecutionErrorToMcp, functionInvokeErrorToMcp, remoteMcpErrorToMcp, toolUnavailableError } from './errors.js';
 

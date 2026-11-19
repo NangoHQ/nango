@@ -3,8 +3,9 @@ import { isInitializeRequest } from '@modelcontextprotocol/server';
 
 import { report } from '@nangohq/utils';
 
+import { withConnectionsCreatedInSession } from '../../../services/agentSessionConnections.service.js';
+import { hasPendingMcpServers, withMcpToolsDiscovered } from '../../../services/agentSessionMcpDiscovery.service.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
-import { hasPendingMcpServers, withConnectionsCreatedInSession, withMcpToolsDiscovered } from './sessionConnection.js';
 import { createAgentSessionMcpServer } from './sessionServer.js';
 
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from '@nangohq/types';

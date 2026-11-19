@@ -5,8 +5,8 @@ import { functionLookupService } from '@nangohq/shared';
 import { filterJsonSchemaForModels, report } from '@nangohq/utils';
 
 import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
-import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
+import { withConnectionsCreatedInSession } from './agentSessionConnections.service.js';
 
 import type { ActionInputSchemaRow } from '@nangohq/shared';
 import type {

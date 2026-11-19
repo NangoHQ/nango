@@ -1,4 +1,5 @@
-import type { CreatedAgentSession, EndedSession } from '../services/agentSession.service.js';
+import type { EndedSession } from '../services/agentSession.service.js';
+import type { CreatedAgentSession } from '../services/agentSessionCreation.service.js';
 import type {
     AgentSessionCompiledToolset,
     AgentSessionMetaTools,
