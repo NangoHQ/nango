@@ -246,6 +246,12 @@ Entries are kept for a year by default, and the server removes expired ones for 
 NANGO_AUDIT_POSTGRES_RETENTION_DAYS=365
 ```
 
+Connection credentials read through the API, such as with `GET /connections/{connectionId}`, are recorded too. To stop recording them, set:
+
+```sh
+FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES=none
+```
+
 ### Feature flags
 
 Nango gates some behavior behind feature flags. Flags are served by the provider set in `NANGO_FLAG_PROVIDER`, which defaults to `noop`, so every flag uses its built-in default.

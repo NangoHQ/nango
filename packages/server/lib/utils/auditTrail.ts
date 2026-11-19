@@ -4,6 +4,7 @@ import { getPlanSafe } from '@nangohq/shared';
 import { flagHasPlan, flags } from '@nangohq/utils';
 
 import { auditBackend } from '../audit.js';
+import { envs } from '../env.js';
 
 import type { AuditTrailDataPlaneScope, DBPlan } from '@nangohq/types';
 import type { Request } from 'express';
@@ -32,8 +33,11 @@ export async function canRecordAuditTrail(
     if (!dataPlane) {
         return true;
     }
-    // Data-plane events are not released for self-hosted (BYOC, self-managed) yet.
-    if (!flagHasPlan || !plan?.audit_trail_data_plane_scopes?.includes(dataPlane.scope)) {
+    // Self-hosted Enterprise: no plans, so the deployment picks its scopes.
+    if (!flagHasPlan) {
+        return envs.FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES.includes(dataPlane.scope);
+    }
+    if (!plan?.audit_trail_data_plane_scopes?.includes(dataPlane.scope)) {
         return false;
     }
     // Temporary, until the rollout reaches every request.

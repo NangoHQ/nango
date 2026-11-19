@@ -6844,8 +6844,6 @@ Description: Review who changed what in your Nango account.
 
 The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: connection changes, integration settings, teammate roles, sign-ins. From the **data plane**, it records credential reads, such as fetching a connection's credentials through the API.
 
-*Data-plane credential reads are recorded on Nango Cloud; self-hosted deployments do not record them yet.*
-
 Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review.
 
 Entries are immutable: Nango never edits or deletes one before its retention period ends.
@@ -7729,6 +7727,12 @@ Entries are kept for a year by default, and the server removes expired ones for 
 
 ```sh
 NANGO_AUDIT_POSTGRES_RETENTION_DAYS=365
+```
+
+Connection credentials read through the API, such as with `GET /connections/{connectionId}`, are recorded too. To stop recording them, set:
+
+```sh
+FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES=none
 ```
 
 ### Feature flags

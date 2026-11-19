@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { canAccessAuditTrail, canRecordAuditTrail, canViewAuditTrail } from './auditTrail.js';
 
 import type * as NangoUtils from '@nangohq/utils';
@@ -39,6 +40,7 @@ describe('audit trail entitlement', () => {
         planFlag.enabled = true;
         backendFlag.configured = true;
         rolloutMock.mockReset();
+        envs.FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES = ['read_credentials'];
         vi.restoreAllMocks();
     });
 
@@ -144,12 +146,25 @@ describe('audit trail entitlement', () => {
             expect(rolloutMock).not.toHaveBeenCalled();
         });
 
-        it('stays off without plans, even when the deployment opted in to the audit trail', async () => {
+        it('without plans, records the scopes the deployment enables, without asking the rollout', async () => {
             setup({ optIn: true, hasPlan: false });
-            rolloutMock.mockResolvedValue(true);
+            rolloutMock.mockResolvedValue(false);
 
-            await expect(canRecordAuditTrail(covered, dataPlane)).resolves.toBe(false);
+            await expect(canRecordAuditTrail(null, dataPlane)).resolves.toBe(true);
             expect(rolloutMock).not.toHaveBeenCalled();
+        });
+
+        it('without plans, stays off when the deployment disables the scope', async () => {
+            setup({ optIn: true, hasPlan: false });
+            envs.FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES = [];
+
+            await expect(canRecordAuditTrail(null, dataPlane)).resolves.toBe(false);
+        });
+
+        it('without plans, stays off when the audit trail itself is off', async () => {
+            setup({ optIn: false, hasPlan: false });
+
+            await expect(canRecordAuditTrail(null, dataPlane)).resolves.toBe(false);
         });
 
         it('leaves a control-plane event to the plan alone', async () => {
