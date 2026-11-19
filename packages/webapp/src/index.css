@@ -292,5 +292,5 @@
 
 .mantine-Prism-code {
     font-family: 'Geist Mono';
-    background-color: var(--surface-canvas) !important;
+    background-color: var(--surface-panel-muted) !important;
 }
