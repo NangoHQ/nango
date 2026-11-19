@@ -51,8 +51,17 @@ interface OnEventArgs {
     sdkVersion: string | null;
 }
 
+// A type and not an interface, which is not assignable to the task's JSON payload.
+export type FunctionInlineSource = {
+    kind: 'inline';
+    code: string;
+    description?: string;
+};
+
+// A function task runs a deployed function (functionUuid) or code carried by the task (source), never both.
 interface FunctionArgs {
-    functionUuid: string;
+    functionUuid?: string;
+    source?: FunctionInlineSource;
     connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     activityLogId?: string;
     variant?: string;
@@ -284,7 +293,8 @@ export function TaskFunction(props: TaskCommonFields & FunctionArgs): TaskFuncti
         attempt: props.attempt,
         retryKey: props.retryKey,
         attemptMax: props.attemptMax,
-        functionUuid: props.functionUuid,
+        ...(props.functionUuid !== undefined && { functionUuid: props.functionUuid }),
+        ...(props.source !== undefined && { source: props.source }),
         ...(props.variant !== undefined && { variant: props.variant }),
         connection: props.connection,
         ...(props.activityLogId !== undefined && { activityLogId: props.activityLogId }),

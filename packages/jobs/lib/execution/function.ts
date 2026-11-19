@@ -22,6 +22,7 @@ import { envs } from '../env.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { pubsub } from '../utils/pubsub.js';
+import { buildInlineFunction, INLINE_FUNCTION_NAME } from './inlineFunction.js';
 import { startScript } from './operations/start.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
@@ -71,38 +72,28 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
         }
 
-        const resolved = await tracer.trace('function.prepare.functionConfig', async () =>
-            functionLookupService.resolveFunctionByUuid({
-                environmentId: task.connection.environment_id,
-                functionUuid: task.functionUuid
-            })
-        );
-        if (resolved.isErr()) {
-            throw resolved.error;
+        let inlineCode: string | undefined;
+        if (task.source) {
+            functionName = INLINE_FUNCTION_NAME;
+            const built = buildInlineFunction(task.source.code);
+            if (built.isErr()) {
+                throw built.error;
+            }
+            inlineCode = built.value;
+            syncConfig = toInlineConfig({ environmentId: task.connection.environment_id, configId: providerConfig.id });
+        } else {
+            const fn = await resolveFunction(task, providerConfig);
+            functionName = fn.name;
+            tracer
+                .scope()
+                .active()
+                ?.addTags({
+                    'function.name': fn.name,
+                    ...(fn.kind === 'deployed' && { 'function.id': fn.definition.function_config_id }),
+                    'function.uuid': fn.uuid
+                });
+            syncConfig = toLegacyConfig(fn, { environmentId: task.connection.environment_id, configId: providerConfig.id });
         }
-        const fn = resolved.value;
-        if (!fn) {
-            throw new Error(`Function not found: ${task.functionUuid}`);
-        }
-        if (!fn.enabled) {
-            throw new Error(`Function is disabled: ${fn.name}`);
-        }
-        if (
-            (fn.kind === 'deployed' && fn.integration.unique_key !== task.connection.provider_config_key) ||
-            (fn.kind === 'catalog' && fn.definition.provider !== providerConfig.provider)
-        ) {
-            throw new Error(`Function '${task.functionUuid}' does not belong to integration '${task.connection.provider_config_key}'`);
-        }
-        functionName = fn.name;
-        tracer
-            .scope()
-            .active()
-            ?.addTags({
-                'function.name': fn.name,
-                ...(fn.kind === 'deployed' && { 'function.id': fn.definition.function_config_id }),
-                'function.uuid': fn.uuid
-            });
-        syncConfig = toLegacyConfig(fn, { environmentId: task.connection.environment_id, configId: providerConfig.id });
 
         const getEndUser = await tracer.trace('function.prepare.endUser', async () => getEndUserByConnectionId(db.knex, { connectionId: task.connection.id }));
         if (getEndUser.isOk()) {
@@ -121,7 +112,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             nangoConnectionId: task.connection.id,
             connectionId: task.connection.connection_id,
             startedAt: now,
-            meta: { trigger: task.trigger.kind, variant: task.variant ?? 'base', taskId: task.id }
+            meta: { trigger: task.trigger.kind, variant: task.variant ?? 'base', taskId: task.id, ...inlineLogFields(task) }
         });
 
         // capping
@@ -142,11 +133,12 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             void logCtx.warn(message, { cappingFunctionLogsStatus });
         }
 
-        void logCtx.info(`Starting function '${fn.name}'${formatAttempts(task)}`, {
+        void logCtx.info(`Starting function '${functionName}'${formatAttempts(task)}`, {
             input: envs.NANGO_LOG_FUNCTION_INPUT ? task.trigger.input : 'REDACTED',
-            function: fn.name,
+            function: functionName,
             connection: task.connection.connection_id,
-            integration: task.connection.provider_config_key
+            integration: task.connection.provider_config_key,
+            ...inlineLogFields(task)
         });
 
         let sdkLogger: SdkLogger;
@@ -204,7 +196,8 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             nangoProps,
             routingContext,
             logCtx: logCtx,
-            arg: task.trigger
+            arg: task.trigger,
+            code: inlineCode
         });
 
         if (res.isErr()) {
@@ -227,7 +220,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
                 environment_id: task.connection.environment_id,
                 provider_config_key: task.connection.provider_config_key
             },
-            functionName: functionName || task.functionUuid, // fallback to functionUuid if failure happened before fetching the function config
+            functionName: functionName || task.functionUuid || INLINE_FUNCTION_NAME, // fallback to functionUuid if failure happened before fetching the function config
             provider: providerConfig?.provider || 'unknown',
             providerConfigKey: task.connection.provider_config_key,
             activityLogId: logCtx?.id ?? task.activityLogId,
@@ -570,6 +563,40 @@ async function getLogCtx(
     return logCtx;
 }
 
+function inlineLogFields(task: TaskFunction): Record<string, string> {
+    if (!task.source) {
+        return {};
+    }
+    return { source: task.source.kind, ...(task.source.description && { description: task.source.description }) };
+}
+
+async function resolveFunction(task: TaskFunction, providerConfig: Config): Promise<ResolvedFunction> {
+    const functionUuid = task.functionUuid;
+    if (!functionUuid) {
+        throw new Error('Function task has no functionUuid and no source');
+    }
+    const resolved = await tracer.trace('function.prepare.functionConfig', async () =>
+        functionLookupService.resolveFunctionByUuid({ environmentId: task.connection.environment_id, functionUuid })
+    );
+    if (resolved.isErr()) {
+        throw resolved.error;
+    }
+    const fn = resolved.value;
+    if (!fn) {
+        throw new Error(`Function not found: ${functionUuid}`);
+    }
+    if (!fn.enabled) {
+        throw new Error(`Function is disabled: ${fn.name}`);
+    }
+    if (
+        (fn.kind === 'deployed' && fn.integration.unique_key !== task.connection.provider_config_key) ||
+        (fn.kind === 'catalog' && fn.definition.provider !== providerConfig.provider)
+    ) {
+        throw new Error(`Function '${functionUuid}' does not belong to integration '${task.connection.provider_config_key}'`);
+    }
+    return fn;
+}
+
 // TODO: refactor NangoProps to support native function config
 function toLegacyConfig(fn: ResolvedFunction, { environmentId, configId }: { environmentId: number; configId: number }): DBSyncConfig {
     const version = fn.definition;
@@ -604,5 +631,37 @@ function toLegacyConfig(fn: ResolvedFunction, { environmentId, configId }: { env
         created_at: deployed?.created_at ?? now,
         updated_at: deployed?.updated_at ?? now,
         deleted_at: deployed?.deleted_at ?? null
+    };
+}
+
+function toInlineConfig({ environmentId, configId }: { environmentId: number; configId: number }): DBSyncConfig {
+    const now = new Date();
+    return {
+        id: 0,
+        sync_name: INLINE_FUNCTION_NAME,
+        nango_config_id: configId,
+        file_location: '',
+        version: '0.0.0',
+        models: [],
+        active: true,
+        runs: null,
+        model_schema: null,
+        environment_id: environmentId,
+        track_deletes: false,
+        type: 'action',
+        auto_start: false,
+        attributes: {},
+        source: 'standalone',
+        metadata: {},
+        input: null,
+        sync_type: null,
+        webhook_subscriptions: [],
+        enabled: true,
+        models_json_schema: null,
+        sdk_version: null,
+        features: [],
+        created_at: now,
+        updated_at: now,
+        deleted_at: null
     };
 }
