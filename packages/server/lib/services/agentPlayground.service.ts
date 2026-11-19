@@ -7,7 +7,7 @@ import { buildTagsFromEndUser, configService, connectionService, getProvider, sh
 import { Err, getLogger, metrics, Ok, report, stringifyError } from '@nangohq/utils';
 
 import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
-import { createAgentSessionMcpServer, TOOL_NAME_SEPARATOR } from '../controllers/agent/mcp/sessionServer.js';
+import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
 import { postAgentSessionsBodySchema } from '../controllers/agent/postSessions.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { buildInstructions } from './agentPlayground.instructions.js';
@@ -18,6 +18,7 @@ import { PLAYGROUND_USER_TAG_KEY, sessionOwner } from './agentPlaygroundTags.js'
 import { isUsableOutcome, trackPlaygroundTurn, trackStarterIntegrationSetup } from './agentPlaygroundUsage.service.js';
 import * as agentSessionService from './agentSession.service.js';
 import { trackAgentSessionCreated } from './agentSessionAnalytics.service.js';
+import { TOOL_NAME_SEPARATOR } from './agentSessionToolCatalog.service/index.js';
 
 import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
 import type { PlaygroundRequest } from './agentPlaygroundRequest.js';

@@ -4,8 +4,8 @@ import { Ok } from '@nangohq/utils';
 
 import * as agentSessionService from '../../../services/agentSession.service.js';
 import * as agentSessionMcpDiscoveryService from '../../../services/agentSessionMcpDiscovery.service.js';
+import { buildSessionTools } from '../../../services/agentSessionToolCatalog.service/index.js';
 import { hasPendingMcpServers, withMcpToolsDiscovered } from './sessionConnection.js';
-import { buildSessionTools } from './sessionServer.js';
 
 import type { McpServerDiscovery } from '../../../services/agentSessionMcpDiscovery.service.js';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';

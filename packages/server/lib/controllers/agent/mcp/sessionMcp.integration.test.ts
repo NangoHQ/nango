@@ -9,8 +9,8 @@ import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { AGENT_SESSION_TAG_KEY } from '../../../services/agentSessionConnections.service.js';
 import * as agentSessionMcpDiscoveryService from '../../../services/agentSessionMcpDiscovery.service.js';
+import { toolSearchOutputSchema } from '../../../services/agentSessionToolCatalog.service/index.js';
 import { runServer } from '../../../utils/tests.js';
-import { toolSearchOutputSchema } from './toolSearch/schema.js';
 
 import type {
     AgentSessionToolSearchQueryResult,

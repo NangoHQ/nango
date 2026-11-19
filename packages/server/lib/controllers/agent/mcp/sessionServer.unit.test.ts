@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { seeders, toolService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
-import { directCallInputSchema } from './directCallSchema.js';
-import { actionInputSchemaOf, buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
+import { actionInputSchemaOf, buildSessionTools, directCallInputSchema, listSessionTools } from '../../../services/agentSessionToolCatalog.service/index.js';
+import { createAgentSessionMcpServer, TOOLS_PAGE_SIZE } from './sessionServer.js';
 
 import type * as ToolSearchService from '../../../services/agentSessionToolSearch.service.js';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools, AgentSessionToolInput } from '@nangohq/types';

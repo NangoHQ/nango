@@ -6,14 +6,14 @@ import { Err, Ok } from '@nangohq/utils';
 import { executeAction } from '../../../../services/action.service.js';
 import * as agentGettingStartedService from '../../../../services/agentGettingStarted.service.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
+import { executeToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { callRemoteTool, withRemoteMcpSession } from '../../../../services/remoteMcp.service.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { resolveSessionConnection } from '../sessionConnection.js';
-import { defineAgentSessionMcpTool, invalidArgumentsOf, RemoteToolResult } from '../sessionTool.js';
+import { invalidArgumentsOf, makeAgentSessionMcpTool, RemoteToolResult } from '../sessionTool.js';
 import { actionExecutionErrorToMcp, functionInvokeErrorToMcp, remoteMcpErrorToMcp, toolUnavailableError } from './errors.js';
-import { executeInputSchema } from './schema.js';
 
 import type { AgentSessionMcpContext } from '../sessionTool.js';
 import type { AgentSession, AgentSessionMetaTool, AgentSessionResolvedConnection, FunctionSource } from '@nangohq/types';
@@ -23,18 +23,8 @@ import type { Span } from 'dd-trace';
 // Same default as the public trigger endpoint.
 const RETRY_MAX = 0;
 
-export const executeTool = defineAgentSessionMcpTool({
-    name: 'nango_execute',
-    description:
-        "Run one of this session's tools, named as it is listed in tools/list or returned by nango_tool_search, on the connection the session resolved for it. Reaches tools that are not listed.",
-    inputSchema: executeInputSchema,
-    annotations: {
-        readOnlyHint: false,
-        destructiveHint: true,
-        idempotentHint: false,
-        openWorldHint: true
-    },
-    isEnabled: (metaTools) => metaTools.nangoExecute,
+export const executeTool = makeAgentSessionMcpTool({
+    ...executeToolDefinition,
     onInvalidArguments: ({ session }, { error }) => {
         trackAgentSessionToolCall({ metaTool: 'nango_execute', session, errorCode: 'invalid_input', invalidArguments: invalidArgumentsOf(error) });
     },
