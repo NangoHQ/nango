@@ -51,8 +51,13 @@ class RemoteFileService {
         return this.templatesStore;
     }
 
+    private isTemplatesKey(key: string): boolean {
+        return key.startsWith(`${this.publicZeroYamlRoute}/`);
+    }
+
+    /** Every `templates-zero/` key goes to the templates store, every other key to the integrations store. */
     private getStoreFor(key: string): ObjectStore {
-        return key.startsWith(`${this.publicZeroYamlRoute}/`) ? this.getTemplatesStore() : this.getStore();
+        return this.isTemplatesKey(key) ? this.getTemplatesStore() : this.getStore();
     }
 
     async upload({
@@ -71,7 +76,7 @@ class RemoteFileService {
         }
 
         try {
-            await this.getStore().put(destinationPath, content);
+            await this.getStoreFor(destinationPath).put(destinationPath, content);
 
             return destinationPath;
         } catch (err) {
@@ -86,7 +91,7 @@ class RemoteFileService {
             return true;
         }
 
-        return !(await this.getStore().hasSameContent(objectKey, content));
+        return !(await this.getStoreFor(objectKey).hasSameContent(objectKey, content));
     }
 
     /**
@@ -152,7 +157,13 @@ class RemoteFileService {
             return;
         }
 
-        await this.getStore().delete(fileNames);
+        // One delete per store; when templates share the integrations bucket, that's still a single call.
+        const keysByStore = new Map<ObjectStore, string[]>();
+        for (const key of fileNames) {
+            const store = this.getStoreFor(key);
+            keysByStore.set(store, [...(keysByStore.get(store) ?? []), key]);
+        }
+        await Promise.all([...keysByStore].map(([store, keys]) => store.delete(keys)));
     }
 
     async zipAndSendPublicFiles({
