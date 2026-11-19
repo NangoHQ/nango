@@ -1,4 +1,4 @@
-import { getProvider } from '@nangohq/shared';
+import { catalogStore, getProvider } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import flowService from './flow.service.js';
@@ -73,9 +73,13 @@ export class ProviderService {
 
     countTemplatesByProvider(): Result<Map<string, ApiProviderFunctionCounts>, ListProviderTemplatesServiceError> {
         try {
+            // From the catalog index: counting doesn't read any provider's definitions.
             const counts = new Map<string, ApiProviderFunctionCounts>();
-            for (const entry of flowService.getAllAvailableFlowsAsStandardConfig()) {
-                counts.set(entry.providerConfigKey, { actions: entry.actions.length, syncs: entry.syncs.length });
+            for (const provider of catalogStore.listProviders()) {
+                const providerCounts = catalogStore.getCounts(provider);
+                if (providerCounts) {
+                    counts.set(provider, { actions: providerCounts.actions, syncs: providerCounts.syncs });
+                }
             }
             return Ok(counts);
         } catch (err) {
@@ -91,7 +95,7 @@ export class ProviderService {
 
     listTemplates({ providerName }: { providerName: string }): Result<NangoSyncConfig[], ListProviderTemplatesServiceError> {
         try {
-            const entry = flowService.getAllAvailableFlowsAsStandardConfig().find((value) => value.providerConfigKey === providerName);
+            const entry = flowService.getProviderTemplates(providerName);
             return Ok(entry ? [...entry.actions, ...entry.syncs] : []);
         } catch (err) {
             return Err(

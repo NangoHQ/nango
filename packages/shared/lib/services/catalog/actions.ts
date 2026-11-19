@@ -1,14 +1,11 @@
-import { createRequire } from 'node:module';
-
 import { filterJsonSchemaForModels } from '@nangohq/utils';
 
-import type { Feature, FlowsZeroJson, FunctionCapabilities } from '@nangohq/types';
+import { catalogStore } from './store.js';
+
+import type { Feature, FlowZeroJson, FunctionCapabilities } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 export const TEMPLATES_ZERO_PREFIX = 'templates-zero';
-
-const nodeRequire = createRequire(import.meta.url);
-let flowsJson: FlowsZeroJson | undefined;
 
 export interface CatalogTool {
     name: string;
@@ -31,13 +28,15 @@ export interface CatalogTool {
     module: 'action';
 }
 
-const toolsByProvider = new Map<string, CatalogTool[]>();
-const toolByProviderAndName = new Map<string, Map<string, CatalogTool>>();
-
-export function getFlowsJson(): FlowsZeroJson {
-    flowsJson ??= nodeRequire('../../../flows.zero.json') as FlowsZeroJson;
-    return flowsJson;
+interface CatalogTools {
+    list: CatalogTool[];
+    byName: Map<string, CatalogTool>;
 }
+
+const noTools: CatalogTools = { list: [], byName: new Map() };
+
+// Keyed by the catalog entry, so the tools go away together with it when the catalog store evicts it.
+const toolsByEntry = new WeakMap<FlowZeroJson, CatalogTools>();
 
 function resolveJsonSchema({
     itemSchema,
@@ -79,21 +78,18 @@ function tsPath(folder: string, name: string): string {
     return `${TEMPLATES_ZERO_PREFIX}/${folder}/actions/${name}.ts`;
 }
 
-function loadCatalogTools(provider: string): CatalogTool[] {
-    const cached = toolsByProvider.get(provider);
+function loadCatalogTools(provider: string): CatalogTools {
+    const integration = catalogStore.getEntry(provider);
+    if (!integration) {
+        return noTools;
+    }
+    const cached = toolsByEntry.get(integration);
     if (cached) {
         return cached;
     }
 
-    const integration = getFlowsJson().find((entry) => entry.providerConfigKey === provider);
-    if (!integration) {
-        toolsByProvider.set(provider, []);
-        toolByProviderAndName.set(provider, new Map());
-        return [];
-    }
-
     const folder = integration.symLinkTargetName ?? provider;
-    const tools: CatalogTool[] = integration.actions.map((item) => {
+    const list: CatalogTool[] = integration.actions.map((item) => {
         return {
             name: item.name,
             description: item.description,
@@ -110,18 +106,17 @@ function loadCatalogTools(provider: string): CatalogTool[] {
         };
     });
 
-    toolsByProvider.set(provider, tools);
-    toolByProviderAndName.set(provider, new Map(tools.map((tool) => [tool.name, tool])));
+    const tools: CatalogTools = { list, byName: new Map(list.map((tool) => [tool.name, tool])) };
+    toolsByEntry.set(integration, tools);
     return tools;
 }
 
 export function listCatalogTools(provider: string): CatalogTool[] {
-    return loadCatalogTools(provider);
+    return loadCatalogTools(provider).list;
 }
 
 export function getCatalogTool(provider: string, name: string): CatalogTool | undefined {
-    loadCatalogTools(provider);
-    return toolByProviderAndName.get(provider)?.get(name);
+    return loadCatalogTools(provider).byName.get(name);
 }
 
 export function isTemplatesZeroPath(fileLocation: string): boolean {

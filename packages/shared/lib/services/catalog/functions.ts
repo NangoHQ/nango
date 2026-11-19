@@ -1,4 +1,5 @@
-import { getFlowsJson, TEMPLATES_ZERO_PREFIX } from './actions.js';
+import { TEMPLATES_ZERO_PREFIX } from './actions.js';
+import { catalogStore } from './store.js';
 
 import type { ScriptTypeLiteral } from '@nangohq/types';
 
@@ -20,7 +21,7 @@ const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-ev
  * Aliased providers resolve to the folder of the provider they point to.
  */
 export function findCatalogFunctions({ provider, name, type }: { provider: string; name: string; type?: ScriptTypeLiteral | undefined }): CatalogFunction[] {
-    const integration = getFlowsJson().find((entry) => entry.providerConfigKey === provider);
+    const integration = catalogStore.getEntry(provider);
     if (!integration) {
         return [];
     }
