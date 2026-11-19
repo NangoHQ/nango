@@ -70,7 +70,7 @@ You can select connections by tags instead of hardcoding a connection ID:
 }
 ```
 
-Selectors must resolve to exactly one connection per integration. A session can include connections from multiple integrations. See [Tenant](/guides/agent-sessions#tenant) for more selector options.
+Selectors must resolve to exactly one connection per integration. A session can include connections from multiple integrations. See [Tenant](/guides/agent-sessions/tenant) for more selector options.
 
 To allow every tool for an integration, replace the integration policy with `"*"`:
 
@@ -109,7 +109,7 @@ Searchable tools can be used through:
 - `nango_tool_search` to find a relevant tool
 - `nango_execute` to run the selected tool
 
-Update any system prompts or client configuration that refer to tools by name. For example, `read_doc` becomes `notion__read_doc` when it is exposed directly by a session. See [Toolsets & tools](/guides/agent-sessions#toolsets-&-tools) for details.
+Update any system prompts or client configuration that refer to tools by name. For example, `read_doc` becomes `notion__read_doc` when it is exposed directly by a session. See [Toolsets & tools](/guides/agent-sessions/toolsets) for details.
 
 ## Handle session expiry
 

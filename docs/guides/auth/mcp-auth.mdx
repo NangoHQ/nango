@@ -113,9 +113,9 @@ If you are missing a catalog MCP server you can [request it](/integrations/contr
    </Accordion>
 
 2. **Run the same auth flow as standard OAuth**  
-   - Backend: [create a Connect session](/guides/auth/auth-guide#generate-session-token) with `allowed_integrations: ['<integration-id>']` (e.g. `hubspot-mcp`, `notion-mcp`).  
-   - Frontend: [open the Connect UI](/guides/auth/auth-guide#trigger-auth-flow) with the session token.  
-   - Backend: [persist the connection ID](/guides/auth/auth-guide#save-connection-id-from-webhook) from the auth webhook or Connect UI callback.
+   - Backend: [create a Connect session](/guides/auth/overview#generate-session-token) with `allowed_integrations: ['<integration-id>']` (e.g. `hubspot-mcp`, `notion-mcp`).  
+   - Frontend: [open the Connect UI](/guides/auth/overview#trigger-auth-flow) with the session token.  
+   - Backend: [persist the connection ID](/guides/auth/overview#save-connection-id-from-webhook) from the auth webhook or Connect UI callback.
 
 3. **Call the MCP server**  
    Use the stored `connection_id` and integration id (e.g. `hubspot-mcp`) with the [Proxy API](/reference/backend/http-api/proxy/post) (JSON-RPC `tools/call`, etc.).

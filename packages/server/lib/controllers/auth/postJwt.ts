@@ -28,7 +28,7 @@ import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
+import type { Metadata, PostPublicJwtAuthorization, ProviderJwt } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
 const bodyValidation = z.looseObject({});
@@ -76,6 +76,7 @@ export const postPublicJwtAuthorization = asyncWrapperWithEnvironment<PostPublic
     const queryString: PostPublicJwtAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicJwtAuthorization['Params'] = paramVal.data;
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let metadata: Metadata = {};
     const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
@@ -146,6 +147,7 @@ export const postPublicJwtAuthorization = asyncWrapperWithEnvironment<PostPublic
                 return;
             }
             connectionId = connection?.connection_id;
+            metadata = connection.metadata ?? {};
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
@@ -182,7 +184,7 @@ export const postPublicJwtAuthorization = asyncWrapperWithEnvironment<PostPublic
             credentials,
             connectionConfig,
             webhookUrlOverride,
-            metadata: {},
+            metadata,
             config,
             environment,
             tags: connectSession?.tags

@@ -4,6 +4,7 @@ import tracer from 'dd-trace';
 
 import { getLogger, retry, stringifyError } from '@nangohq/utils';
 
+import { HISTOGRAM_PARTS } from './catalog.js';
 import { HOSTED_TELEMETRY_ATTRIBUTES_MAX_BYTES, HOSTED_TELEMETRY_TABLE } from './postgres/schema.js';
 
 import type { Attributes } from '@opentelemetry/api';
@@ -99,10 +100,9 @@ export function flatten(batch: ResourceMetrics): { rows: MetricRow[]; dropped: R
                     for (const dataPoint of metric.dataPoints) {
                         const prepared = prepare(dataPoint, name);
                         if (prepared) {
-                            push(prepared, `${name}.count`, dataPoint.value.count);
-                            push(prepared, `${name}.sum`, dataPoint.value.sum);
-                            push(prepared, `${name}.min`, dataPoint.value.min);
-                            push(prepared, `${name}.max`, dataPoint.value.max);
+                            for (const part of HISTOGRAM_PARTS) {
+                                push(prepared, `${name}.${part}`, dataPoint.value[part]);
+                            }
                         }
                     }
                     break;

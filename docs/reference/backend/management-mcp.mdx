@@ -9,7 +9,7 @@ The Management MCP server lets MCP-compatible clients manage Nango through tools
 
 ## Connect with OAuth
 
-For step-by-step installation instructions for specific coding agents, like Claude Code, Cursor, Codex, VS Code, Pi, and OpenCode, see the [coding agent setup guide](/getting-started/coding-agent-setup#management-mcp-server).
+For step-by-step OAuth setup in Claude Code, Codex, and VS Code, see the [coding agent setup guide](/getting-started/coding-agent-setup#management-mcp-server).
 
 OAuth is the default way to connect. Your MCP client opens Nango in a browser so you can sign in and approve access. You do not need to create or store a credential in the client.
 
@@ -136,7 +136,7 @@ See [Observability](/guides/platform/observability) for more information about N
 
 ## Use an API key instead
 
-An Environment API key is an option for non-interactive clients and clients that do not support CIMD. It authenticates the client to one Nango environment, so `environments_list` is not exposed and other tool calls do not take an `environment` argument.
+An Environment API key is an option for CI/CD pipelines, other non-interactive clients, and clients that do not support CIMD. It authenticates the client to one Nango environment, so `environments_list` is not exposed and other tool calls do not take an `environment` argument.
 
 Create an Environment API key in **Environment Settings > API Keys**, then configure the MCP client to send it as a Bearer token:
 
@@ -144,7 +144,137 @@ Create an Environment API key in **Environment Settings > API Keys**, then confi
 | --------------- | ------------------------ |
 | `Authorization` | `Bearer <NANGO-API-KEY>` |
 
-The permissions in the tables above are the [required API key scopes](/reference/backend/http-api/api-keys#scopes). The `environment:mcp` scope is not required.
+The permissions in the tables above are the [required API key scopes](/reference/backend/http-api/api-keys#scopes). Limit the key to the scopes your client needs. The `environment:mcp` scope is not required.
+
+### Client configuration
+
+Replace `<NANGO-API-KEY>` in the configuration for your client.
+
+<Tabs>
+  <Tab title="Claude Code">
+    Add the server for your user so it is available across projects:
+
+    ```bash
+    claude mcp add --transport http nango-management --scope user https://mcp.nango.dev/mcp \
+      --header "Authorization: Bearer <NANGO-API-KEY>"
+    ```
+
+    Run `claude mcp list` to verify the connection.
+  </Tab>
+
+  <Tab title="Cursor">
+    Add the following to `~/.cursor/mcp.json` for a global configuration, or `.cursor/mcp.json` for a project configuration:
+
+    ```json
+    {
+      "mcpServers": {
+        "nango-management": {
+          "url": "https://mcp.nango.dev/mcp",
+          "headers": {
+            "Authorization": "Bearer <NANGO-API-KEY>"
+          }
+        }
+      }
+    }
+    ```
+
+    Restart Cursor after saving the file.
+  </Tab>
+
+  <Tab title="Codex">
+    Add the following to `~/.codex/config.toml` for a global configuration, or `.codex/config.toml` for a project configuration:
+
+    ```toml
+    [mcp_servers.nango-management]
+    url = "https://mcp.nango.dev/mcp"
+    http_headers = { Authorization = "Bearer <NANGO-API-KEY>" }
+    ```
+
+    Restart Codex after saving the file, then use `/mcp` to verify the connection.
+  </Tab>
+
+  <Tab title="VS Code">
+    Run **MCP: Open User Configuration** from the Command Palette, then add the server and a secure input for the API key:
+
+    ```json
+    {
+      "inputs": [
+        {
+          "type": "promptString",
+          "id": "nango-api-key",
+          "description": "Nango API key",
+          "password": true
+        }
+      ],
+      "servers": {
+        "nangoManagement": {
+          "type": "http",
+          "url": "https://mcp.nango.dev/mcp",
+          "headers": {
+            "Authorization": "Bearer ${input:nango-api-key}"
+          }
+        }
+      }
+    }
+    ```
+
+    VS Code prompts for the API key when it first starts the server and stores the value securely.
+  </Tab>
+
+  <Tab title="Pi">
+    Pi does not include an MCP client, so first install the [`pi-mcp-adapter`](https://pi.dev/packages/pi-mcp-adapter) extension:
+
+    ```bash
+    pi install npm:pi-mcp-adapter
+    ```
+
+    Then add the following to `~/.config/mcp/mcp.json` for a global configuration, or `.mcp.json` for a project configuration:
+
+    ```json
+    {
+      "mcpServers": {
+        "nango-management": {
+          "url": "https://mcp.nango.dev/mcp",
+          "headers": {
+            "Authorization": "Bearer <NANGO-API-KEY>"
+          }
+        }
+      }
+    }
+    ```
+
+    Restart Pi after installing the extension, then use `/mcp` to verify the connection.
+  </Tab>
+
+  <Tab title="OpenCode">
+    Add the following to `~/.config/opencode/opencode.json` for a global configuration, or `opencode.json` in a project root for a project configuration:
+
+    ```json
+    {
+      "$schema": "https://opencode.ai/config.json",
+      "mcp": {
+        "nango-management": {
+          "type": "remote",
+          "url": "https://mcp.nango.dev/mcp",
+          "oauth": false,
+          "headers": {
+            "Authorization": "Bearer <NANGO-API-KEY>"
+          },
+          "enabled": true
+        }
+      }
+    }
+    ```
+
+    Run `opencode mcp list` to verify the connection.
+  </Tab>
+</Tabs>
+
+<Warning>
+Keep the API key server-side and only configure it in MCP clients you trust. Do not commit it to source control, expose it in client-side code, or put it in logs or URLs. Prefer user-level configuration, or your CI provider's secret store, over project files.
+</Warning>
+
+### API key-only tools
 
 API key authentication also exposes these tools:
 
@@ -154,5 +284,3 @@ API key authentication also exposes these tools:
 | `deploy_function` | Start a code function deployment.                                 | `environment:deploy`          |
 
 `proxy_request` supports `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`, along with query parameters, headers, request bodies, base URL overrides, and up to 5 retries. It returns the provider response status, headers, and JSON or UTF-8 text body up to 5 MB (5,000,000 bytes). Unsafe JSON integers and high-precision decimals are returned as strings. Binary responses, other character encodings, and larger responses return a tool error. Use the matching [Proxy HTTP API endpoint](/reference/backend/http-api/proxy/get) for those responses.
-
-Keep the API key server-side and only configure it in MCP clients you trust. Do not expose it in client-side code, logs, or URLs.

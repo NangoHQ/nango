@@ -81,7 +81,7 @@ describe('createConnectionToolsMcpServer', () => {
             const result = await client.callTool({ name: 'delete-repository', arguments: { id: 'repo-1' } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify({ deleted: true }, null, 2) }]
+                content: [{ type: 'text', text: JSON.stringify({ deleted: true }) }]
             });
             expect(mocks.executeAction).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -115,7 +115,7 @@ describe('createConnectionToolsMcpServer', () => {
             const result = await client.callTool({ name: 'delete-file', arguments: { id: 'repo-1' } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify({ deleted: true }, null, 2) }]
+                content: [{ type: 'text', text: JSON.stringify({ deleted: true }) }]
             });
             expect(mocks.executeAction).toHaveBeenCalledWith(
                 expect.objectContaining({

@@ -11,9 +11,9 @@ import { SearchField } from './SearchField';
 
 import type { NangoFunctionTemplate } from '@nangohq/types';
 
-const FUNCTIONS_GUIDE_URL = 'https://nango.dev/docs/guides/functions/functions-guide';
-const PROXY_GUIDE_URL = 'https://nango.dev/docs/guides/platform/proxy-requests';
-const MCP_TOOLS_GUIDE_URL = 'https://nango.dev/docs/guides/agent-sessions#mcp-server-tools';
+const FUNCTIONS_GUIDE_URL = 'https://nango.dev/docs/guides/platform/functions/functions-guide';
+const PROXY_GUIDE_URL = 'https://nango.dev/docs/guides/auth/proxy-requests';
+const MCP_TOOLS_GUIDE_URL = 'https://nango.dev/docs/guides/agent-sessions/toolsets#mcp-server-tools';
 
 const FUNCTION_TYPES = ['action', 'sync'] as const;
 type FunctionTypeTab = (typeof FUNCTION_TYPES)[number];

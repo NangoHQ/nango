@@ -50,11 +50,33 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '-1' })).toThrowError(/LOCAL_NANGO_USER_ID/);
     });
 
+    it('rejects an audit batch window the visibility timeout cannot cover', () => {
+        // 30 s visibility leaves 10 s after the 20 s write, half of it for the delete: 5 s.
+        expect(parseEnvs(ENVS, {}).NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS).toBe(5000);
+        expect(() => parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS: '5001' })).toThrowError(/NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS/);
+        expect(
+            parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS: '10000', NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS: '60' })
+                .NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS
+        ).toBe(10000);
+    });
+
     it('should parse the throttled immediate limit', () => {
         expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '123' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(123);
         // 0 disables throttling
         expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '0' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(0);
         expect(() => parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '-1' })).toThrowError();
+    });
+
+    it('accepts the templates bucket settings unset or non-empty, and rejects empty or blank strings', () => {
+        expect(parseEnvs(ENVS, {}).AWS_TEMPLATES_BUCKET_NAME).toBeUndefined();
+        expect(parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: 'templates', AWS_TEMPLATES_REGION: 'us-west-2' })).toMatchObject({
+            AWS_TEMPLATES_BUCKET_NAME: 'templates',
+            AWS_TEMPLATES_REGION: 'us-west-2'
+        });
+        expect(() => parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: '' })).toThrowError(/AWS_TEMPLATES_BUCKET_NAME/);
+        expect(() => parseEnvs(ENVS, { AWS_TEMPLATES_REGION: '' })).toThrowError(/AWS_TEMPLATES_REGION/);
+        expect(() => parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: '  ' })).toThrowError(/AWS_TEMPLATES_BUCKET_NAME/);
+        expect(parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: ' templates ' }).AWS_TEMPLATES_BUCKET_NAME).toBe('templates');
     });
 
     it('rejects NANGO_INTERNAL_AUTH_REQUIRED=1', () => {

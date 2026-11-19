@@ -6,7 +6,7 @@ import { auditClickhouseClient, ClickhouseAuditStore, migrate as migrateAudit } 
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DefaultTransport } from '@nangohq/pubsub';
 import { Clickhouse, getUsageTracker, migrate as migrateUsage } from '@nangohq/usage';
-import { metrics, once, report } from '@nangohq/utils';
+import { AUDIT_CONSUMER_WRITE_TIMEOUT_FRACTION_OF_VISIBILITY, metrics, once, report } from '@nangohq/utils';
 
 import { billingEventsS3DLQMonitorCron } from './crons/billingEventsS3DLQMonitor.js';
 import { billingEventsS3ExportCron } from './crons/billingEventsS3Export.js';
@@ -16,8 +16,6 @@ import { AuditProcessor } from './processors/audit.js';
 import { TeamProcessor } from './processors/team.js';
 import { UsageProcessor } from './processors/usage.js';
 import { logger } from './utils.js';
-
-const WRITE_TIMEOUT_FRACTION_OF_VISIBILITY = 2 / 3;
 
 try {
     process.on('unhandledRejection', (reason) => {
@@ -79,13 +77,17 @@ try {
                   queueUrl: auditQueueUrl,
                   store: new ClickhouseAuditStore(
                       auditClickhouseClient(envs.CLICKHOUSE_URL, {
-                          requestTimeoutMs: Math.floor(envs.NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS * 1000 * WRITE_TIMEOUT_FRACTION_OF_VISIBILITY)
+                          requestTimeoutMs: Math.floor(
+                              envs.NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS * 1000 * AUDIT_CONSUMER_WRITE_TIMEOUT_FRACTION_OF_VISIBILITY
+                          )
                       })
                   ),
                   concurrency: envs.NANGO_AUDIT_CONSUMER_CONCURRENCY,
                   maxMessages: envs.NANGO_AUDIT_CONSUMER_MAX_MESSAGES,
                   waitTimeSeconds: envs.NANGO_AUDIT_CONSUMER_WAIT_TIME_SECONDS,
-                  visibilityTimeoutSeconds: envs.NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS
+                  visibilityTimeoutSeconds: envs.NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS,
+                  batchMaxEvents: envs.NANGO_AUDIT_CONSUMER_BATCH_MAX_EVENTS,
+                  batchMaxWaitMs: envs.NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS
               })
             : null;
     if (auditProc) {

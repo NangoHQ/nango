@@ -29,7 +29,7 @@ export const FunctionPanelHeader: React.FC<FunctionPanelHeaderProps> = ({ name, 
                 <h2 data-panel-title tabIndex={-1} className="truncate type-code-medium-sm text-text-default outline-none">
                     {name}
                 </h2>
-                <CopyButton size="2xs" value={name} />
+                <CopyButton size="sm" inline value={name} />
             </div>
             {description && <p className="type-text-regular-xs text-text-secondary">{description}</p>}
             {children}

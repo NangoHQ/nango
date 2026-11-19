@@ -99,7 +99,7 @@ const columns: ColumnDef<ConnectionRow>[] = [
             return (
                 <div className="flex gap-1.5 items-center min-w-0">
                     <span className="text-body-extra-small-medium text-text-secondary truncate flex-1 min-w-0">{connection_id}</span>
-                    <CopyButton value={connection_id} label="Copy connection ID" size="2xs" />
+                    <CopyButton value={connection_id} label="Copy connection ID" size="sm" inline />
                 </div>
             );
         }
@@ -431,7 +431,7 @@ export const ConnectionList = () => {
                             <p className="text-text-secondary text-body-medium-regular">
                                 Connections can be created by using{' '}
                                 <LinkButton asChild size="lg">
-                                    <a href="https://nango.dev/docs/guides/auth/auth-guide" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://nango.dev/docs/guides/auth/overview" target="_blank" rel="noopener noreferrer">
                                         Nango Connect
                                         <ExternalLink />
                                     </a>

@@ -2,60 +2,60 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `add-group-users` | Add users to a group | [Tool](/guides/functions/tools) |
-| `create-connect-configuration` | Create a Connect webhook configuration to receive envelope event notifications. | [Tool](/guides/functions/tools) |
-| `create-document-opened-trigger` | Configure a DocuSign Connect webhook that fires when any recipient opens or views a document, without needing to know the underlying "recipient-delivered" event name. | [Tool](/guides/functions/tools) |
-| `create-envelope-from-template` | Create an envelope using a template, supplying role assignments and pre-fill data. | [Tool](/guides/functions/tools) |
-| `create-envelope` | Create or send an envelope with documents and recipients | [Tool](/guides/functions/tools) |
-| `create-event-subscription` | Create a DocuSign Connect webhook that publishes JSON notifications for any chosen set of envelope, recipient, template or other events. | [Tool](/guides/functions/tools) |
-| `create-group` | Create one or more custom groups. | [Tool](/guides/functions/tools) |
-| `create-recipient-tabs` | Add signature, date, text, checkbox and other tabs to a recipient on a draft envelope. | [Tool](/guides/functions/tools) |
-| `create-recipient-view` | Generate an embedded signing URL for a recipient | [Tool](/guides/functions/tools) |
-| `create-template` | Create a reusable envelope template with documents, roles, and tabs. | [Tool](/guides/functions/tools) |
-| `create-user` | Create a new account user. | [Tool](/guides/functions/tools) |
-| `delete-connect-configuration` | Delete a Connect webhook configuration | [Tool](/guides/functions/tools) |
-| `delete-envelope-recipients` | Remove recipients from a draft envelope. | [Tool](/guides/functions/tools) |
-| `delete-envelope` | Move a draft envelope to the recycle bin (soft delete). | [Tool](/guides/functions/tools) |
-| `delete-groups` | Delete one or more custom groups | [Tool](/guides/functions/tools) |
-| `delete-user` | Close/remove users from the account. | [Tool](/guides/functions/tools) |
-| `get-account-settings` | Retrieve all account-level settings and feature flags. | [Tool](/guides/functions/tools) |
-| `get-brand` | Retrieve a specific brand by ID. Requires Branding feature (enterprise plans). | [Tool](/guides/functions/tools) |
-| `get-envelope-audit-events` | Retrieve the audit trail for an envelope. | [Tool](/guides/functions/tools) |
-| `get-envelope-form-data` | Retrieve form field (tab) data filled in by recipients. | [Tool](/guides/functions/tools) |
-| `get-envelope` | Retrieve a single envelope's metadata. | [Tool](/guides/functions/tools) |
-| `get-template` | Retrieve a template by ID including documents, recipients, and tabs. | [Tool](/guides/functions/tools) |
-| `get-user` | Retrieve a user's detailed profile and settings. | [Tool](/guides/functions/tools) |
-| `list-brands` | List branding profiles for the account. Requires Branding feature (enterprise plans). | [Tool](/guides/functions/tools) |
-| `list-connect-configurations` | List Connect (webhook) configurations for the account. | [Tool](/guides/functions/tools) |
-| `list-envelope-documents` | List document metadata for an envelope (no binary download). | [Tool](/guides/functions/tools) |
-| `list-envelope-recipients` | List all recipients for an envelope. | [Tool](/guides/functions/tools) |
-| `list-envelopes` | Search and list envelopes with filters. | [Tool](/guides/functions/tools) |
-| `list-folder-envelopes` | List envelopes contained in a specific folder. | [Tool](/guides/functions/tools) |
-| `list-folders` | List all envelope folders for the authenticated user. | [Tool](/guides/functions/tools) |
-| `list-group-users` | List users that belong to a specific group. | [Tool](/guides/functions/tools) |
-| `list-groups` | List all account groups. | [Tool](/guides/functions/tools) |
-| `list-permission-profiles` | List all permission profiles for the account. | [Tool](/guides/functions/tools) |
-| `list-recipient-tabs` | Retrieve all tabs for a specific recipient in an envelope. | [Tool](/guides/functions/tools) |
-| `list-signing-groups` | List signing groups (shared signature groups) for the account. | [Tool](/guides/functions/tools) |
-| `list-template-recipients` | List recipient roles defined in a template | [Tool](/guides/functions/tools) |
-| `list-templates` | List account templates with optional search and pagination | [Tool](/guides/functions/tools) |
-| `list-users` | List account users with optional filters. | [Tool](/guides/functions/tools) |
-| `remove-group-users` | Remove users from a group. | [Tool](/guides/functions/tools) |
-| `update-connect-configuration` | Update an existing Connect webhook configuration. | [Tool](/guides/functions/tools) |
-| `update-envelope-recipients` | Update recipients on a draft envelope | [Tool](/guides/functions/tools) |
-| `update-envelope` | Update a draft envelope's fields (subject, email body, expiration, etc.). | [Tool](/guides/functions/tools) |
-| `update-group` | Update a group's name or permission profile. | [Tool](/guides/functions/tools) |
-| `update-recipient-tabs` | Update tabs on a recipient in a draft envelope. | [Tool](/guides/functions/tools) |
-| `update-template` | Update a template's metadata: name, description, emailSubject, or emailBlurb. | [Tool](/guides/functions/tools) |
-| `update-user` | Update a user's profile or settings. | [Tool](/guides/functions/tools) |
-| `void-envelope` | Void a sent envelope that has not yet been completed. | [Tool](/guides/functions/tools) |
-| `brands` | Sync branding profiles. Requires Branding feature (enterprise plans). | [Sync](/guides/functions/syncs/sync-functions) |
-| `connect-configurations` | Sync Connect webhook configurations with full-refresh delete tracking | [Sync](/guides/functions/syncs/sync-functions) |
-| `custom-fields` | Sync account-level custom field definitions (text and list types). | [Sync](/guides/functions/syncs/sync-functions) |
-| `envelopes` | Sync envelope metadata incrementally by last-modified date. | [Sync](/guides/functions/syncs/sync-functions) |
-| `folders` | Sync envelope folder structure with full-refresh delete tracking. | [Sync](/guides/functions/syncs/sync-functions) |
-| `groups` | Sync account groups with full-refresh delete tracking. | [Sync](/guides/functions/syncs/sync-functions) |
-| `permission-profiles` | Sync account permission profiles with full-refresh delete tracking. | [Sync](/guides/functions/syncs/sync-functions) |
-| `signing-groups` | Sync signing groups (shared signature pools) with full-refresh delete tracking. | [Sync](/guides/functions/syncs/sync-functions) |
-| `templates` | Sync template metadata with full-refresh delete tracking. | [Sync](/guides/functions/syncs/sync-functions) |
-| `users` | Sync account users with full-refresh delete tracking. | [Sync](/guides/functions/syncs/sync-functions) |
+| `add-group-users` | Add users to a group | [Tool](/guides/tools/customize-tools) |
+| `create-connect-configuration` | Create a Connect webhook configuration to receive envelope event notifications. | [Tool](/guides/tools/customize-tools) |
+| `create-document-opened-trigger` | Configure a DocuSign Connect webhook that fires when any recipient opens or views a document, without needing to know the underlying "recipient-delivered" event name. | [Tool](/guides/tools/customize-tools) |
+| `create-envelope-from-template` | Create an envelope using a template, supplying role assignments and pre-fill data. | [Tool](/guides/tools/customize-tools) |
+| `create-envelope` | Create or send an envelope with documents and recipients | [Tool](/guides/tools/customize-tools) |
+| `create-event-subscription` | Create a DocuSign Connect webhook that publishes JSON notifications for any chosen set of envelope, recipient, template or other events. | [Tool](/guides/tools/customize-tools) |
+| `create-group` | Create one or more custom groups. | [Tool](/guides/tools/customize-tools) |
+| `create-recipient-tabs` | Add signature, date, text, checkbox and other tabs to a recipient on a draft envelope. | [Tool](/guides/tools/customize-tools) |
+| `create-recipient-view` | Generate an embedded signing URL for a recipient | [Tool](/guides/tools/customize-tools) |
+| `create-template` | Create a reusable envelope template with documents, roles, and tabs. | [Tool](/guides/tools/customize-tools) |
+| `create-user` | Create a new account user. | [Tool](/guides/tools/customize-tools) |
+| `delete-connect-configuration` | Delete a Connect webhook configuration | [Tool](/guides/tools/customize-tools) |
+| `delete-envelope-recipients` | Remove recipients from a draft envelope. | [Tool](/guides/tools/customize-tools) |
+| `delete-envelope` | Move a draft envelope to the recycle bin (soft delete). | [Tool](/guides/tools/customize-tools) |
+| `delete-groups` | Delete one or more custom groups | [Tool](/guides/tools/customize-tools) |
+| `delete-user` | Close/remove users from the account. | [Tool](/guides/tools/customize-tools) |
+| `get-account-settings` | Retrieve all account-level settings and feature flags. | [Tool](/guides/tools/customize-tools) |
+| `get-brand` | Retrieve a specific brand by ID. Requires Branding feature (enterprise plans). | [Tool](/guides/tools/customize-tools) |
+| `get-envelope-audit-events` | Retrieve the audit trail for an envelope. | [Tool](/guides/tools/customize-tools) |
+| `get-envelope-form-data` | Retrieve form field (tab) data filled in by recipients. | [Tool](/guides/tools/customize-tools) |
+| `get-envelope` | Retrieve a single envelope's metadata. | [Tool](/guides/tools/customize-tools) |
+| `get-template` | Retrieve a template by ID including documents, recipients, and tabs. | [Tool](/guides/tools/customize-tools) |
+| `get-user` | Retrieve a user's detailed profile and settings. | [Tool](/guides/tools/customize-tools) |
+| `list-brands` | List branding profiles for the account. Requires Branding feature (enterprise plans). | [Tool](/guides/tools/customize-tools) |
+| `list-connect-configurations` | List Connect (webhook) configurations for the account. | [Tool](/guides/tools/customize-tools) |
+| `list-envelope-documents` | List document metadata for an envelope (no binary download). | [Tool](/guides/tools/customize-tools) |
+| `list-envelope-recipients` | List all recipients for an envelope. | [Tool](/guides/tools/customize-tools) |
+| `list-envelopes` | Search and list envelopes with filters. | [Tool](/guides/tools/customize-tools) |
+| `list-folder-envelopes` | List envelopes contained in a specific folder. | [Tool](/guides/tools/customize-tools) |
+| `list-folders` | List all envelope folders for the authenticated user. | [Tool](/guides/tools/customize-tools) |
+| `list-group-users` | List users that belong to a specific group. | [Tool](/guides/tools/customize-tools) |
+| `list-groups` | List all account groups. | [Tool](/guides/tools/customize-tools) |
+| `list-permission-profiles` | List all permission profiles for the account. | [Tool](/guides/tools/customize-tools) |
+| `list-recipient-tabs` | Retrieve all tabs for a specific recipient in an envelope. | [Tool](/guides/tools/customize-tools) |
+| `list-signing-groups` | List signing groups (shared signature groups) for the account. | [Tool](/guides/tools/customize-tools) |
+| `list-template-recipients` | List recipient roles defined in a template | [Tool](/guides/tools/customize-tools) |
+| `list-templates` | List account templates with optional search and pagination | [Tool](/guides/tools/customize-tools) |
+| `list-users` | List account users with optional filters. | [Tool](/guides/tools/customize-tools) |
+| `remove-group-users` | Remove users from a group. | [Tool](/guides/tools/customize-tools) |
+| `update-connect-configuration` | Update an existing Connect webhook configuration. | [Tool](/guides/tools/customize-tools) |
+| `update-envelope-recipients` | Update recipients on a draft envelope | [Tool](/guides/tools/customize-tools) |
+| `update-envelope` | Update a draft envelope's fields (subject, email body, expiration, etc.). | [Tool](/guides/tools/customize-tools) |
+| `update-group` | Update a group's name or permission profile. | [Tool](/guides/tools/customize-tools) |
+| `update-recipient-tabs` | Update tabs on a recipient in a draft envelope. | [Tool](/guides/tools/customize-tools) |
+| `update-template` | Update a template's metadata: name, description, emailSubject, or emailBlurb. | [Tool](/guides/tools/customize-tools) |
+| `update-user` | Update a user's profile or settings. | [Tool](/guides/tools/customize-tools) |
+| `void-envelope` | Void a sent envelope that has not yet been completed. | [Tool](/guides/tools/customize-tools) |
+| `brands` | Sync branding profiles. Requires Branding feature (enterprise plans). | [Sync](/guides/syncs/sync-functions) |
+| `connect-configurations` | Sync Connect webhook configurations with full-refresh delete tracking | [Sync](/guides/syncs/sync-functions) |
+| `custom-fields` | Sync account-level custom field definitions (text and list types). | [Sync](/guides/syncs/sync-functions) |
+| `envelopes` | Sync envelope metadata incrementally by last-modified date. | [Sync](/guides/syncs/sync-functions) |
+| `folders` | Sync envelope folder structure with full-refresh delete tracking. | [Sync](/guides/syncs/sync-functions) |
+| `groups` | Sync account groups with full-refresh delete tracking. | [Sync](/guides/syncs/sync-functions) |
+| `permission-profiles` | Sync account permission profiles with full-refresh delete tracking. | [Sync](/guides/syncs/sync-functions) |
+| `signing-groups` | Sync signing groups (shared signature pools) with full-refresh delete tracking. | [Sync](/guides/syncs/sync-functions) |
+| `templates` | Sync template metadata with full-refresh delete tracking. | [Sync](/guides/syncs/sync-functions) |
+| `users` | Sync account users with full-refresh delete tracking. | [Sync](/guides/syncs/sync-functions) |

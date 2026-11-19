@@ -28,7 +28,7 @@ export const ConnectionSideInfo: React.FC<{ connectionData: GetConnection['Succe
             <SideInfoRow label="Connection ID">
                 <div className="flex items-center gap-2 min-w-0">
                     <span>{truncateMiddle(connection.connection_id, 23)}</span>
-                    <CopyButton value={connection.connection_id} size="2xs" />
+                    <CopyButton value={connection.connection_id} size="sm" inline />
                 </div>
             </SideInfoRow>
 

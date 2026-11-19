@@ -28,7 +28,7 @@ We run regular penetration tests, a secure development lifecycle, incident respo
 | Integration credentials | Your OAuth client secrets and custom provider settings | **AES-256-GCM** | Until you delete the integration |
 | Nango API keys | Account and environment API keys | **AES-256-GCM** | Until rotated or deleted |
 | Environment variables | Values you set per environment | **AES-256-GCM** | Until you delete them |
-| Synced records | Record payloads written to the [records cache](/guides/functions/syncs/records-cache) by sync functions | **AES-256-GCM** | Payload **30 days**, record **60 days** |
+| Synced records | Record payloads written to the [records cache](/guides/syncs/records-cache) by sync functions | **AES-256-GCM** | Payload **30 days**, record **60 days** |
 | Nango logs | Auth flows, function executions, proxy requests | Storage-level | **15 days** on Nango Cloud |
 | Audit trail | Control-plane changes | Storage-level | **1 year** by default |
 
@@ -67,14 +67,14 @@ Logs and audit trail entries age out on their own schedule. They are not removed
 <a id="synced-records-retention"></a>
 ### Synced records
 
-<Note>Applies only if you use the [records cache](/guides/functions/syncs/records-cache).</Note>
+<Note>Applies only if you use the [records cache](/guides/syncs/records-cache).</Note>
 
-Nango prunes the [records cache](/guides/functions/syncs/records-cache) so customer data is not held indefinitely:
+Nango prunes the [records cache](/guides/syncs/records-cache) so customer data is not held indefinitely:
 
 - **Payload pruning after 30 days** without a record update. The record ID and payload hash remain, so change detection and your syncs keep working — but the data is no longer retrievable from the cache.
 - **Hard deletion after 60 days** without a sync execution. All records data associated with this sync is deleted, including delta-detection hashes. If you start the sync again it starts with an empty cache.
 
-Treat the cache as a delivery mechanism, not a data store: [fetch promptly and keep your own copy](/guides/functions/syncs/sync-efficiency#consume-changes-promptly).
+Treat the cache as a delivery mechanism, not a data store: [fetch promptly and keep your own copy](/guides/syncs/sync-efficiency#consume-changes-promptly).
 
 <a id="audit-logging"></a>
 ### Nango logs
@@ -169,6 +169,6 @@ Security researchers can submit findings by following our [security policy](http
 ## Related guides
 
 - [API keys](/reference/backend/http-api/api-keys) - create scoped keys for production access.
-- [Auth guide](/guides/auth/auth-guide) - keep provider credentials out of your app.
+- [Auth guide](/guides/auth/overview) - keep provider credentials out of your app.
 - [Token refreshing and validity](/guides/auth/token-refreshing) - handle revoked OAuth credentials.
 - [BYOC](/guides/platform/self-hosting) - run a dedicated Nango instance in your own cloud account.

@@ -34,7 +34,7 @@ interface Props {
     onRetryFunctions: () => void;
 }
 
-const selectTriggerClassName = 'rounded-ds-xs border-ds-hairline border-border-muted bg-surface-input hover:bg-surface-input hover:border-border-input';
+const selectTriggerClassName = 'border-border-muted bg-surface-input hover:bg-surface-input';
 
 export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functionsReady, functionsError, onRetryFunctions }) => {
     const navigate = useNavigate();

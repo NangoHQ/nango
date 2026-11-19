@@ -33,7 +33,7 @@ curl -X PATCH "https://api.nango.dev/connections/metadata" \
   }'
 ```
 
-Use a different secret for each connection. See [Webhook forwarding](/guides/platform/webhook-forwarding#providers-that-do-not-sign-webhooks) for how Nango verifies it.
+Use a different secret for each connection. See [Webhook forwarding](/guides/triggers/webhook-forwarding#providers-that-do-not-sign-webhooks) for how Nango verifies it.
 
 ### 3. Register a hook
 
@@ -102,15 +102,15 @@ Nango rejects the request:
 - with a `400` if any event in it has no `entityRef`;
 - with a `401` if no event matches a connection whose `webhookSecret` equals the `X-Nango-Webhook-Secret` header.
 
-A connection without a `webhookSecret` only receives events when the integration [allows unverified webhooks](/guides/platform/webhook-forwarding#unverified-webhooks).
+A connection without a `webhookSecret` only receives events when the integration [allows unverified webhooks](/guides/triggers/webhook-forwarding#unverified-webhooks).
 </Warning>
 
 ## Handle the webhook
 
 Once routed to a connection, you have two options:
 
-- **Forward it to your app**: Nango forwards the events to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
-- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. Nango matches subscriptions against each event's `itemTypeId`, such as `ticket` or `order`. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+- **Forward it to your app**: Nango forwards the events to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. Nango matches subscriptions against each event's `itemTypeId`, such as `ticket` or `order`. See [Real-time syncs](/guides/syncs/realtime-syncs).
 
 Command Alkon does not document retries, ordering or delivery guarantees. Fetch the current record on each event rather than applying events in order, and keep a periodic sync running to catch anything a webhook missed.
 

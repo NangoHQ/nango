@@ -94,7 +94,7 @@ The webhook secret on the integration's Settings page is not used for Okta. Nang
 
     Save the `id` to delete the hook later. Managing event hooks needs the `okta.eventHooks.manage` scope, or an API token from a super admin.
 
-    To do this for every new connection, use a [post-connection-creation function](/guides/functions/event-functions): generate the secret, store it with `nango.updateMetadata({ webhookSecret })`, then create and verify the hook with `nango.post()`.
+    To do this for every new connection, use a [post-connection-creation function](/guides/platform/functions/event-functions): generate the secret, store it with `nango.updateMetadata({ webhookSecret })`, then create and verify the hook with `nango.post()`.
   </Tab>
 </Tabs>
 
@@ -106,8 +106,8 @@ Okta retries a failed delivery only once. If the secrets don't match, or the con
 
 Once routed, you have two options:
 
-- **Forward it to your app**: Nango forwards the whole delivery to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
-- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to event types like `user.lifecycle.deactivate` or `group.user_membership.add`. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+- **Forward it to your app**: Nango forwards the whole delivery to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to event types like `user.lifecycle.deactivate` or `group.user_membership.add`. See [Real-time syncs](/guides/syncs/realtime-syncs).
 
 Okta delivers at least once and may deliver out of order. Deduplicate on each event's `uuid` and order by `published`. See [Event types](https://developer.okta.com/docs/reference/api/event-types/?q=event-hook-eligible) for the events you can subscribe to.
 
