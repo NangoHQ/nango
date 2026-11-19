@@ -87,7 +87,8 @@ const CONNECT = call(
     {
         output: {
             connect_url: 'https://connect.nango.dev/?session_token=story',
-            expires_at: '2099-01-01T00:00:00.000Z',
+            // setTimeout fires at once past ~24.8 days, so a far-future expiry renders as expired.
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60_000).toISOString(),
             integration: 'hubspot',
             provider: 'hubspot'
         }
@@ -200,6 +201,38 @@ export const MidChatSetUp: Story = {
             <Card part={SEARCH} />
             <Card part={CONNECT} />
             <Markdown>Please connect HubSpot using the Connect button, and I&apos;ll carry on once it&apos;s connected.</Markdown>
+        </>
+    )
+};
+
+export const PlaygroundActions: Story = {
+    name: 'Playground actions in a reply',
+    render: () => (
+        <>
+            <Heading>Adds an integration mid-chat</Heading>
+            <Setup value={setup('sendgrid', 'created', { integrationId: 'sendgrid', displayName: 'SendGrid' })} />
+            <Session reason="integrations_changed" replaced newIntegrations={['SendGrid']} />
+            <Card part={SEARCH} />
+
+            <Heading>Uses an existing integration</Heading>
+            <Setup value={setup('linear', 'existing', { integrationId: 'linear' })} />
+            <Session />
+            <ToolCallGroup calls={[SEARCH, LIST_ISSUES]} entries={GROUP_ENTRIES} labels={LABELS} chatActive={false} renderEntry={renderEntry} />
+
+            <Heading>Needs your own developer app</Heading>
+            <Session />
+            <Setup value={setup('slack', 'needs_developer_app')} />
+
+            <Heading>Production, before the one-click add</Heading>
+            <Session />
+            <Setup value={setup('sendgrid', 'needs_confirmation', { displayName: 'SendGrid' })} />
+
+            <Heading>Production, after the one-click add</Heading>
+            <Session />
+            <Setup value={setup('sendgrid', 'needs_confirmation', { displayName: 'SendGrid' })} added={new Map([['sendgrid', 'sendgrid']])} />
+            <Session reason="integrations_changed" replaced newIntegrations={['SendGrid']} />
+            <Card part={SEARCH} />
+            <Card part={CONNECT} />
         </>
     )
 };
