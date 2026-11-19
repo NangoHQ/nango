@@ -298,7 +298,7 @@
     --surface-code: var(--surface-panel-muted);
 }
 
-/* Code on a white surface takes this lighter tint; removing it makes those blocks read as heavy grey. */
+/* These selectors match Tailwind's surface classes. Code inside a white surface takes its lighter tint from here. */
 .bg-surface-panel,
 .bg-surface-raised,
 .bg-surface-overlay {
