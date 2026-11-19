@@ -123,7 +123,8 @@ export type ToolSlugLookup = (tool: { integration: string; action: string }) => 
  * Searches the session's tools, one ranking per query, and returns each query's matches with
  * their input schema and its related tools by name only.
  *
- * Each query is scored word by word against every tool in the session (scoreCandidates), cut
+ * A query that names a tool is that tool's match (toolNamed). Any other query is scored word by
+ * word against every tool in the session (scoreCandidates), cut
  * into matches and related tools at a line that follows the top score (bestMatchScoreFor), with
  * a tie for the top broken or left unpromoted (breakLeadingTie). Related tools are then trimmed
  * across the queries in the call, so each is listed once (trimRelated).
@@ -217,6 +218,17 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
     tied: boolean;
 } {
     const candidates = buildSearchCandidateList({ session, slugOf });
+
+    const named = toolNamed({ candidates, query });
+    if (named) {
+        const others = scoreCandidates({ candidates: candidates.filter((candidate) => candidate !== named), terms: queryTerms(query) });
+        return {
+            best: [{ ...named, score: 0 }],
+            related: others.slice(0, MAX_RELATED_CANDIDATES).map(({ candidate, score }) => ({ ...candidate, score })),
+            tied: false
+        };
+    }
+
     const { scored, lead } = breakLeadingTie({ scored: scoreCandidates({ candidates, terms: queryTerms(query) }), query });
     const bestMatchScore = bestMatchScoreFor(scored[0]?.score);
     const maxBest = lead === 'single' ? MAX_BEST_MATCHES : lead === 'tie_broken' ? 1 : 0;
@@ -234,6 +246,21 @@ export function rankSessionTools({ session, query, slugOf }: { session: AgentSes
 
     // A tie among tools too weak to match anyway is not worth telling the agent about.
     return { best, related, tied: lead === 'tied' && (scored[0]?.score ?? 1) <= bestMatchScore };
+}
+
+/**
+ * A query that is a tool's slug names that tool, and so does an action name only one tool in the
+ * session has. Scoring cannot be trusted here, since 'update-issue' ties with 'update-issue-label'.
+ */
+function toolNamed({ candidates, query }: { candidates: SearchCandidate[]; query: string }): SearchCandidate | undefined {
+    const name = query.trim().toLowerCase();
+    const bySlug = candidates.find((candidate) => candidate.slug.toLowerCase() === name);
+    if (bySlug) {
+        return bySlug;
+    }
+
+    const byAction = candidates.filter((candidate) => candidate.action.toLowerCase() === name);
+    return byAction.length === 1 ? byAction[0] : undefined;
 }
 
 /**

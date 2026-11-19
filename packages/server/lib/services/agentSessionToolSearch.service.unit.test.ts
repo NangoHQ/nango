@@ -91,6 +91,20 @@ const messages: AgentSessionCompiledToolset = {
     }
 };
 
+const issueSchema: JSONSchema7 = { type: 'object', properties: { id: { type: 'string' } } };
+
+const issues: AgentSessionCompiledToolset = {
+    linear: {
+        provider: 'linear',
+        pinned: [],
+        searchable: [
+            { name: 'update-issue', description: 'Update an issue.', mcp: { inputSchema: issueSchema as Record<string, unknown> } },
+            { name: 'update-issue-label', description: 'Update an issue label.' },
+            { name: 'update-issue-relation', description: 'Update an issue relation.' }
+        ]
+    }
+};
+
 describe('rankSessionTools', () => {
     it('finds a tool by what it does rather than by its name', () => {
         const { best } = rank({ compiledToolset: mailbox, query: 'send a message to a recipient' });
@@ -195,6 +209,38 @@ describe('rankSessionTools', () => {
         });
 
         // A fuzzy 'get' would pick delete_message.
+        expect(best).toStrictEqual([]);
+        expect(tied).toBe(true);
+    });
+
+    it('returns the tool a query names by its slug as the only match, with its input', () => {
+        const { best, related, tied } = rank({ compiledToolset: issues, query: 'linear__update-issue' });
+
+        expect(best.map((match) => match.slug)).toStrictEqual(['linear__update-issue']);
+        expect(best[0]?.input).toStrictEqual({ kind: 'schema', schema: issueSchema });
+        expect(related.map((match) => match.action).sort()).toStrictEqual(['update-issue-label', 'update-issue-relation']);
+        expect(tied).toBe(false);
+    });
+
+    it('returns the tool a query names by an action only it has', () => {
+        const { best } = rank({ compiledToolset: issues, query: 'update-issue' });
+
+        expect(best.map((match) => match.slug)).toStrictEqual(['linear__update-issue']);
+    });
+
+    it('does not take an action name several tools share as naming one of them', () => {
+        const { best, tied } = rank({
+            compiledToolset: { ...issues, jira: { provider: 'jira', pinned: [], searchable: [{ name: 'update-issue', description: 'Update an issue.' }] } },
+            query: 'update-issue'
+        });
+
+        expect(best.map((match) => match.slug)).toStrictEqual([]);
+        expect(tied).toBe(true);
+    });
+
+    it('still ties a query that only shares words with the names', () => {
+        const { best, tied } = rank({ compiledToolset: issues, query: 'update issue' });
+
         expect(best).toStrictEqual([]);
         expect(tied).toBe(true);
     });
