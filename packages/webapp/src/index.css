@@ -52,7 +52,7 @@
     --animate-accordion-up: accordion-up 0.2s ease-out;
     --animate-spiral-wave: spiral-wave 3.6s ease-in-out infinite;
     --animate-spiral-band: spiral-band 3s ease-in-out infinite;
-    --animate-spiral-shimmer: spiral-shimmer 3.2s ease-in-out infinite;
+    --animate-spiral-shimmer: spiral-shimmer 2.4s ease-in-out infinite;
 
     @keyframes spiral-wave {
         0%,
@@ -76,10 +76,10 @@
     @keyframes spiral-shimmer {
         0%,
         100% {
-            stroke: color-mix(in oklab, var(--color-icon-brand), black 15%);
+            stroke: color-mix(in oklab, var(--color-icon-brand), black 30%);
         }
         50% {
-            stroke: color-mix(in oklab, var(--color-icon-brand), white 50%);
+            stroke: color-mix(in oklab, var(--color-icon-brand), white 70%);
         }
     }
 
