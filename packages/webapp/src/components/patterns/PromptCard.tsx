@@ -3,8 +3,12 @@ import { ArrowRight, Check, Copy } from 'lucide-react';
 import { IconButton } from '@nangohq/design-system';
 
 import { GithubLogo } from '@/assets/GithubLogo';
+import { NotionLogo } from '@/assets/NotionLogo';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { cn } from '@/utils/utils';
+
+// The template logos for these apps are dark artwork on a fixed background, so they break in one of the themes.
+const MONOCHROME_LOGOS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = { github: GithubLogo, notion: NotionLogo };
 
 interface PromptCardProps {
     prompt: string;
@@ -20,11 +24,12 @@ interface PromptCardProps {
 
 export const PromptCard: React.FC<PromptCardProps> = ({ prompt, provider, name, action, copied = false, onClick }) => {
     const cardClassName = 'flex gap-3 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-[13px] text-left type-text-regular-sm text-text-default';
+    const MonochromeLogo = MONOCHROME_LOGOS[provider];
     const content = (
         <>
             {/* Template logos pad their artwork, so a 25px box draws an 18px logo. */}
-            {provider === 'github' ? (
-                <GithubLogo className="-m-[3.5px] size-[25px] shrink-0 text-text-strong" />
+            {MonochromeLogo ? (
+                <MonochromeLogo className="-m-[3.5px] size-[25px] shrink-0 text-text-strong" />
             ) : (
                 <IntegrationLogo provider={provider} className="-m-[3.5px] size-[25px] shrink-0 border-0 bg-transparent p-0" />
             )}
