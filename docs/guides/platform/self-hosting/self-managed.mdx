@@ -26,7 +26,7 @@ Custom deployments (e.g., ECS instead of Kubernetes) are possible with our guida
 
 ## What leaves your account
 
-**Anonymous usage metrics only.** Self-hosted instances don't send logs, credentials, records, or any other instance data back to Nango. The only thing reported to Nango is [hosted telemetry](#hosted-telemetry): anonymous usage metrics, such as how many functions run at the same time. Beyond that, you're the only one with visibility into your instance, unless you choose to export metrics to your own monitoring tool, or share something with us directly when asking for support.
+**Usage metrics only.** Self-hosted instances don't send logs, credentials, records, or any other instance data back to Nango. The only thing reported to Nango is [hosted telemetry](#hosted-telemetry): usage metrics, such as how many functions run at the same time, sent under your installation ID. Beyond that, you're the only one with visibility into your instance, unless you choose to export metrics to your own monitoring tool, or share something with us directly when asking for support.
 
 ## Where your data lives
 
@@ -180,7 +180,7 @@ When Nango registers your instance, you'll receive three things.
 
 ### What Nango receives and when
 
-Each report covers one metric for one UTC day. Each row contains a timestamp, a metric name, a value, and a random ID for the process that recorded it. See [Hosted telemetry](#hosted-telemetry).
+Each report covers one metric for one UTC day. Its header carries your installation ID, so Nango knows which installation it comes from. Each row contains a timestamp, a metric name, a value, and a random ID for the process that recorded it. See [Hosted telemetry](#hosted-telemetry).
 
 A report is a gzip-compressed file with one JSON object per line: a header, then the rows.
 
@@ -210,7 +210,7 @@ curl -fsS -o nango-telemetry.ndjson.gz \
 
 `from` and `to` are UTC dates. The export includes `from` and excludes `to`, so the example covers November. A file holds at most 31 days.
 
-The export is a gzip-compressed NDJSON file. Nango uses the signature to verify that the file came from your installation and is intact.
+The export is a gzip-compressed NDJSON file. Its last line is a signature made with your installation key, which Nango uses to verify that the file came from your installation and is intact.
 
 {/* TODO(pau): how the customer sends the file to Nango. */}
 
@@ -480,7 +480,7 @@ See [Auth](/guides/auth/overview) for the end-user connection flow.
 
 ### Hosted telemetry
 
-Nango records anonymous usage metrics, such as how many functions run at the same time, into the `hosted_telemetry` schema of your database, to be reported to Nango. They carry no instance data: each row is a timestamp, a metric name, a value, and a random ID for the process that wrote it. It is on by default.
+Nango records usage metrics, such as how many functions run at the same time, into the `hosted_telemetry` schema of your database, to be reported to Nango. They carry no instance data: each row is a timestamp, a metric name, a value, and a random ID for the process that wrote it. It is on by default.
 
 Every service writes its metrics to the main database, so set `NANGO_DATABASE_URL` or `NANGO_DB_HOST` on every service.
 
@@ -841,6 +841,6 @@ If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in
     Not out of the box — the default configuration scales far without it, and we can guide you on setting up autoscaling when you need it.
   </Accordion>
   <Accordion title="Does Nango have any visibility into our instance?">
-    Only [hosted telemetry](#hosted-telemetry), which is anonymous usage metrics. Nothing else is sent back to Nango. If you need our help debugging something, you share what's relevant with us directly.
+    Only [hosted telemetry](#hosted-telemetry), which is usage metrics sent under your installation ID. Nothing else is sent back to Nango. If you need our help debugging something, you share what's relevant with us directly.
   </Accordion>
 </AccordionGroup>
