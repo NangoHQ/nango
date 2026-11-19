@@ -2,12 +2,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Ok } from '@nangohq/utils';
 
-import * as agentSessionService from '../../../services/agentSession.service.js';
-import * as agentSessionMcpDiscoveryService from '../../../services/agentSessionMcpDiscovery.service.js';
-import { buildSessionTools } from '../../../services/agentSessionToolCatalog.service/index.js';
-import { hasPendingMcpServers, withMcpToolsDiscovered } from './sessionConnection.js';
+import * as agentSessionService from './agentSession.service.js';
+import { hasPendingMcpServers, withMcpToolsDiscovered } from './agentSessionMcpDiscovery.service.js';
+import { buildSessionTools } from './agentSessionToolCatalog.service/index.js';
+import * as remoteMcpService from './remoteMcp.service.js';
 
-import type { McpServerDiscovery } from '../../../services/agentSessionMcpDiscovery.service.js';
+import type { RemoteMcpTool } from './remoteMcp.service.js';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';
 
 const inputSchema = { type: 'object', properties: {} };
@@ -44,8 +44,8 @@ function discover(current: AgentSession) {
     return withMcpToolsDiscovered({ account: { id: 1 } as DBTeam, environment: { id: 42 } as DBEnvironment, plan: null, session: current });
 }
 
-function listsNotion(discovery: McpServerDiscovery) {
-    return vi.spyOn(agentSessionMcpDiscoveryService, 'discoverMcpTools').mockResolvedValue(new Map([['notion-mcp', discovery]]));
+function listsNotion(discovery: { status: 'available'; tools: RemoteMcpTool[] }) {
+    return vi.spyOn(remoteMcpService, 'withRemoteMcpSession').mockResolvedValue({ logOperationId: undefined, result: Ok(discovery.tools) });
 }
 
 function storesWhatItIsGiven(base: AgentSessionCompiledToolset) {
@@ -71,7 +71,10 @@ describe('withMcpToolsDiscovered', () => {
 
         const current = await discover(session({ 'notion-mcp': NOTION_CREATED_IN_SESSION }));
 
-        expect(discoverMcpTools).toHaveBeenCalledWith(expect.objectContaining({ connections: [NOTION_CREATED_IN_SESSION] }));
+        expect(discoverMcpTools).toHaveBeenCalledWith(
+            expect.objectContaining({ integrationId: 'notion-mcp', connectionId: 'notion-new' }),
+            expect.any(Function)
+        );
         expect(current.compiledToolset['notion-mcp']).toEqual({
             provider: 'notion-mcp',
             pinned: [{ name: 'search', description: 'search', mcp: { inputSchema }, slug: 'notion-mcp__search' }],
@@ -125,7 +128,7 @@ describe('withMcpToolsDiscovered', () => {
     });
 
     it('does not list a server that is still not connected', async () => {
-        const discoverMcpTools = vi.spyOn(agentSessionMcpDiscoveryService, 'discoverMcpTools');
+        const discoverMcpTools = vi.spyOn(remoteMcpService, 'withRemoteMcpSession');
 
         const current = session({});
 
