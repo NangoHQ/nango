@@ -11,9 +11,9 @@ const STEP_ANGLE = (Math.asin(GROWTH / 1.005 / Math.SQRT2) * 180) / Math.PI - 45
 export type SpiralPulse = 'ripple' | 'gather' | 'shimmer';
 
 const PULSES: Record<SpiralPulse, { className: string; delay: (i: number) => number }> = {
-    ripple: { className: 'animate-spiral-wave', delay: (i) => (i - SQUARES) * 300 },
-    gather: { className: 'animate-spiral-band', delay: (i) => -i * 110 },
-    shimmer: { className: 'animate-spiral-shimmer', delay: (i) => (i % 2) * -1200 - i * 40 }
+    ripple: { className: 'animate-spiral-wave', delay: (i) => (i - SQUARES) * 120 },
+    gather: { className: 'animate-spiral-band', delay: (i) => -i * 75 },
+    shimmer: { className: 'animate-spiral-shimmer', delay: (i) => (i % 2) * -800 - i * 25 }
 };
 
 const squares = Array.from({ length: SQUARES }, (_, i) => ({
