@@ -29,7 +29,7 @@ Run the sync from the branch that changes the tokens, before the PR merges, so t
 
     It prints what would change and writes `apply-N.js` files. `✓ Figma matches tokens.json` means you're done.
 
-5. **First sync only:** if `tokens.json` has no `$description` on most tokens, copy Dharma's descriptions in, or the apply erases them. Then run `diff` again.
+5. **First sync only:** if `tokens.json` has no `$description` on most tokens, copy Dharma's descriptions in, or the apply erases them. Then go back to step 2: `diff` reuses the old check result, so it still lists the copied descriptions.
 
     ```bash
     npm run tokens:figma --workspace=@nangohq/design-system -- pull-descriptions <check-result.json>
