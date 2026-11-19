@@ -5,6 +5,8 @@ import type * as z from 'zod/v4';
 /** The MCP limit on a tool name, which is what a session tool's slug is clipped to fit. */
 export const MAX_TOOL_NAME_LENGTH = 64;
 
+export const TOOLS_PAGE_SIZE = 50;
+
 export interface AgentSessionCallableTool {
     integrationId: string;
     name: string;
