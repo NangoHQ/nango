@@ -10,6 +10,16 @@ import { defaultExclude, defineConfig } from 'vitest/config';
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+    plugins: [
+        // `@/` is the importing package's src, as the webapp and connect-ui declare in their own Vite configs.
+        {
+            name: 'package-src-alias',
+            resolveId(source, importer) {
+                const pkg = source.startsWith('@/') ? importer?.match(/^(.*\/packages\/[^/]+)\/src\//) : null;
+                return pkg ? this.resolve(path.join(pkg[1], 'src', source.slice(2)), importer, { skipSelf: true }) : null;
+            }
+        }
+    ],
     resolve: {
         // Unit tests should exercise workspace source, not potentially stale dist/
         // artifacts restored by CI incremental build caches.

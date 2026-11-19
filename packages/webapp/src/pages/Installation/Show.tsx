@@ -10,7 +10,7 @@ import { apiErrorCode } from '@/utils/api';
 
 import type { InstallationLicense } from '@nangohq/types';
 
-const formatDay = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const formatDay = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 
 const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
     <>

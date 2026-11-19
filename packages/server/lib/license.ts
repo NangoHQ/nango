@@ -7,7 +7,7 @@ import type { InstallationLicense } from '@nangohq/types';
 
 const logger = getLogger('Server');
 
-/** Reads NANGO_LICENSE on every call, so an expiry shows without a restart. */
+/** Checks the license against the clock on every call, so an expiry shows without a restart. */
 export async function evaluateLicense(publicKeyPem: string, now = new Date()): Promise<InstallationLicense> {
     if (!envs.NANGO_LICENSE) {
         return { status: 'missing' };
