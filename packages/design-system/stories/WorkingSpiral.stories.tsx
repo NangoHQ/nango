@@ -47,7 +47,7 @@ export const Compare: Story = {
 const FIXED: Record<SpiralPulse, { riseEasing: string; fallEasing: string; lightHold: number; darkRestFade: number }> = {
     ripple: { riseEasing: 'ease-out', fallEasing: 'ease-in-out', lightHold: 0, darkRestFade: 15 },
     gather: { riseEasing: 'ease-out', fallEasing: 'ease-in-out', lightHold: 0, darkRestFade: 15 },
-    shimmer: { riseEasing: 'ease-in-out', fallEasing: 'ease-in-out', lightHold: 18, darkRestFade: 0 }
+    shimmer: { riseEasing: 'linear', fallEasing: 'linear', lightHold: 0, darkRestFade: 0 }
 };
 
 interface TunerProps {
@@ -144,5 +144,5 @@ export const Gather: TunerStory = {
 export const Shimmer: TunerStory = {
     render: (args) => <Tuner {...args} />,
     argTypes: tunerArgTypes,
-    args: { pulse: 'shimmer', durationMs: 2400, lightStart: 45, lightestAt: 62, backAt: 100, strength: 90, staggerMs: -300, lineOffset: 0.25 }
+    args: { pulse: 'shimmer', durationMs: 2400, lightStart: 0, lightestAt: 50, backAt: 100, strength: 90, staggerMs: -300, lineOffset: 0.25 }
 };

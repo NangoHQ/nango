@@ -52,7 +52,7 @@
     --animate-accordion-up: accordion-up 0.2s ease-out;
     --animate-spiral-wave: spiral-wave 2.2s infinite;
     --animate-spiral-band: spiral-band 2s infinite;
-    --animate-spiral-shimmer: spiral-shimmer 2.4s ease-in-out infinite;
+    --animate-spiral-shimmer: spiral-shimmer 2.4s linear infinite;
 
     @keyframes spiral-wave {
         0%,
@@ -80,12 +80,10 @@
     }
     @keyframes spiral-shimmer {
         0%,
-        45%,
         100% {
             stroke: var(--spiral-shimmer-rest);
         }
-        62%,
-        80% {
+        50% {
             stroke: var(--spiral-shimmer-lit);
         }
     }
