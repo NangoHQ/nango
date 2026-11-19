@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-import { mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -461,6 +461,8 @@ function diff([resultFile]) {
     const { desired, runtime } = loadDesired();
     const result = JSON.parse(readFileSync(resultFile, 'utf8'));
     const lines = describeDiff(desired, result);
+    mkdirSync(OUT_DIR, { recursive: true });
+    for (const old of readdirSync(OUT_DIR).filter((f) => /^apply-\d+\.js$/.test(f))) rmSync(path.join(OUT_DIR, old));
     if (lines.length === 0) {
         console.log('✓ Figma matches tokens.json');
         return;
