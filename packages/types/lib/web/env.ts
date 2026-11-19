@@ -18,6 +18,8 @@ export interface WindowEnv {
     isCloud: boolean;
     isHosted: boolean;
     isEnterprise: boolean;
+    /** The build has the license public key compiled in: a managed release */
+    isManaged: boolean;
     features: {
         logs: boolean;
         scripts: boolean;
