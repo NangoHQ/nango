@@ -1111,7 +1111,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </div>
                                 <div>
                                     <div className="mt-6">
-                                        <Prism className="transparent-code" language="typescript" colorScheme={darkMode ? 'dark' : 'light'}>
+                                        <Prism language="typescript" colorScheme={darkMode ? 'dark' : 'light'}>
                                             {snippet()}
                                         </Prism>
                                     </div>
