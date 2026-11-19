@@ -99,11 +99,11 @@ export function describeTool(toolName: string, input: unknown, labels?: Integrat
         const [only] = queries.length === 1 ? queries : [];
         const named = only && !/\s/.test(only) ? integrationTool(only) : null;
         if (named) {
-            return { kind: 'search', title: `Checking how to use ${humanize(named.action)}` };
+            return { kind: 'search', title: 'Look Up Tool', subtitle: `“${humanize(named.action)}”` };
         }
         return {
             kind: 'search',
-            title: queries.length > 1 ? 'Searching for the right tools' : 'Searching for the right tool',
+            title: 'Search Tools',
             ...(queries.length > 0 ? { subtitle: queries.map((query) => `“${query}”`).join(', ') } : {})
         };
     }
@@ -119,7 +119,7 @@ export function describeTool(toolName: string, input: unknown, labels?: Integrat
         const integration = withIntegration(integrationId);
         return {
             kind: 'proxy',
-            title: `Calling the ${integration.integration?.name ?? ''} API directly`.replace('  ', ' '),
+            title: 'Call API',
             ...(method ? { method } : {}),
             ...(path ? { path } : {}),
             ...integration
