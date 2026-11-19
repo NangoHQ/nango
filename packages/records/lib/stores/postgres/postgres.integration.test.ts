@@ -8,6 +8,7 @@ import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';
 import { formatRecords } from '../../helpers/format.js';
 import { decryptRecordData, encryptRecords } from '../../utils/encryption.js';
+import { makePostgresConfig } from './config.js';
 import { incrCount, PostgresStore } from './postgres.js';
 import { testConfig } from './tests/helpers.js';
 
@@ -722,6 +723,31 @@ describe('PostgresStore', () => {
     });
 
     describe('getRecords', () => {
+        it('Should read from the primary when asked to skip the replica', async () => {
+            // The replica points at a schema without the records tables, so only a read on the primary succeeds.
+            const replicaConfig = makePostgresConfig({
+                databaseUrl: envs.RECORDS_DATABASE_URL!,
+                schema: 'records_replica_without_tables',
+                statementTimeout: envs.RECORDS_DATABASE_STATEMENT_TIMEOUT_MS,
+                ssl: envs.RECORDS_DATABASE_SSL,
+                applicationName: 'tests-replica',
+                pool: { min: 0, max: 1 }
+            });
+            const replicatedStore = new PostgresStore(testConfig, replicaConfig);
+            try {
+                const { connectionId, model } = await upsertNRecords(2);
+
+                const fromReplica = await replicatedStore.getRecords({ connectionId, model });
+                expect(fromReplica.isErr()).toBe(true);
+
+                const fromPrimary = await replicatedStore.getRecords({ connectionId, model, readFromPrimary: true });
+                expect(fromPrimary.unwrap().records).toHaveLength(2);
+                expect(fromPrimary.unwrap().records[0]).toMatchObject({ name: expect.stringContaining('record') });
+            } finally {
+                await replicatedStore.close();
+            }
+        });
+
         it('Should retrieve records', async () => {
             const n = 10;
             const { connectionId, model } = await upsertNRecords(n);
