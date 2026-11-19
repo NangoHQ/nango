@@ -7,7 +7,10 @@ const meta: Meta<typeof WorkingSpiral> = {
     component: WorkingSpiral,
     title: 'Features/Agent Playground/WorkingSpiral',
     parameters: { layout: 'padded' },
-    argTypes: { pulse: { control: 'inline-radio', options: ['ripple', 'gather', 'shimmer'] } }
+    argTypes: {
+        pulse: { control: 'inline-radio', options: ['ripple', 'gather', 'shimmer'] },
+        size: { control: 'inline-radio', options: ['sm', 'lg'] }
+    }
 };
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -25,25 +28,29 @@ const Indicator: React.FC<{ pulse: SpiralPulse; label: string }> = ({ pulse, lab
     </div>
 );
 
+const BothSizes: React.FC<{ pulse: SpiralPulse }> = ({ pulse }) => (
+    <div className="flex items-center gap-10">
+        <Indicator pulse={pulse} label="Thinking…" />
+        <WorkingSpiral pulse={pulse} size="lg" />
+    </div>
+);
+
 export const Compare: Story = {
     render: () => (
-        <div className="grid w-fit grid-cols-[auto_auto_auto] items-center gap-x-10 gap-y-6">
+        <div className="grid w-fit grid-cols-[auto_auto] items-center gap-x-10 gap-y-6">
             {PULSES.map(({ pulse, name }) => (
                 <div key={pulse} className="contents">
                     <span className="text-body-small-regular text-text-tertiary">{name}</span>
-                    <Indicator pulse={pulse} label="Thinking…" />
-                    <div className="size-24 [&>svg]:size-full">
-                        <WorkingSpiral pulse={pulse} />
-                    </div>
+                    <BothSizes pulse={pulse} />
                 </div>
             ))}
         </div>
     )
 };
 
-export const Ripple: Story = { args: { pulse: 'ripple' } };
-export const Gather: Story = { args: { pulse: 'gather' } };
-export const Shimmer: Story = { args: { pulse: 'shimmer' } };
+export const Ripple: Story = { render: () => <BothSizes pulse="ripple" /> };
+export const Gather: Story = { render: () => <BothSizes pulse="gather" /> };
+export const Shimmer: Story = { render: () => <BothSizes pulse="shimmer" /> };
 
 export const WithStatus: Story = {
     render: () => (
