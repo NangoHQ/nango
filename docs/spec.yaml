@@ -2535,7 +2535,7 @@ paths:
         get:
             deprecated: true
             summary: Get action result (deprecated)
-            description: Retrieves the result of an asynchronous action. See [Asynchronous action documentation](/guides/functions/action-functions#trigger-asynchronously) for more details.
+            description: Retrieves the result of an asynchronous action. See [Asynchronous action documentation](/guides/platform/functions/action-functions#trigger-asynchronously) for more details.
             parameters:
                 - name: actionId
                   in: path
@@ -2719,7 +2719,7 @@ paths:
                   required: false
                   schema:
                       type: boolean
-                  description: Set to true to trigger the action asynchronously. When true, the response will include a status URL and ID for retrieving the action result later. See [Asynchronous action documentation](/guides/functions/action-functions#trigger-asynchronously) for more details.
+                  description: Set to true to trigger the action asynchronously. When true, the response will include a status URL and ID for retrieving the action result later. See [Asynchronous action documentation](/guides/platform/functions/action-functions#trigger-asynchronously) for more details.
                 - name: X-Max-Retries
                   in: header
                   required: false
@@ -2930,12 +2930,12 @@ paths:
                                 hmac_key:
                                     type: string
                                     deprecated: true
-                                    description: Legacy public-key authorization HMAC key. Use [Connect sessions](/guides/auth/auth-guide#guide) instead.
+                                    description: Legacy public-key authorization HMAC key. Use [Connect sessions](/guides/auth/overview#guide) instead.
                                     maxLength: 1000
                                 hmac_enabled:
                                     type: boolean
                                     deprecated: true
-                                    description: Whether legacy public-key authorization HMAC verification is enabled. Use [Connect sessions](/guides/auth/auth-guide#guide) instead.
+                                    description: Whether legacy public-key authorization HMAC verification is enabled. Use [Connect sessions](/guides/auth/overview#guide) instead.
                                 slack_notifications:
                                     type: boolean
                                     description: Whether Slack notifications are enabled for this environment.

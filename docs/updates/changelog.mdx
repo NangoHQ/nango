@@ -14,7 +14,7 @@ description: "Important developer & product updates, including deprecations & br
 ---
 
 <Update label="Agent sessions updates" description="November 13, 2026">
-  - **Search multiple tools in one call:** `nango_tool_search` now takes up to five queries, so your agent can find all tools related to a task in one round trip. See [nango_tool_search](/guides/agent-sessions#nango-tool-search).
+  - **Search multiple tools in one call:** `nango_tool_search` now takes up to five queries, so your agent can find all tools related to a task in one round trip. See [nango_tool_search](/guides/agent-sessions/meta-tools#nango_tool_search).
   - **The agent knows whose account it is using:** Session information now includes the name/email of the connection being used based on the connection tags in Nango.
 </Update>
 ---
@@ -41,7 +41,7 @@ description: "Important developer & product updates, including deprecations & br
   - **Read connection metadata and save checkpoints:** Declare `data.metadata` or `data.checkpoint` schemas and the tool gets them at call time.
   - **Carry instructions and required scopes:** Agents learn when and how to use the tool from the definition itself.
 
-  Follow the [tools guide](/guides/functions/tools) to build and deploy a tool, then call it from [agent sessions](/guides/agent-sessions), [API](/reference/backend/http-api/tools/call), [SDK](/reference/backend/backend-sdk/node#call-a-tool) or the [Management MCP server](/reference/backend/management-mcp#functions).
+  Follow the [tools guide](/guides/tools/customize-tools) to build and deploy a tool, then call it from [agent sessions](/guides/agent-sessions), [API](/reference/backend/http-api/tools/call), [SDK](/reference/backend/backend-sdk/node#call-a-tool) or the [Management MCP server](/reference/backend/management-mcp#functions).
 
   **Actions are deprecated.** Existing action functions and the action APIs keep working. See [migrate from actions to tools](/guides/platform/migrations/migrate-from-actions).
 </Update>
@@ -55,14 +55,14 @@ description: "Important developer & product updates, including deprecations & br
 ---
 
 <Update label="Agent goals and intents in logs" description="November 5, 2026">
-  Tool calls an agent makes in an agent session now record the user's `goal` and the agent's `intent` for each call. Open the call in Logs to see why the agent did what it did. See [agent sessions](/guides/agent-sessions#nango-execute).
+  Tool calls an agent makes in an agent session now record the user's `goal` and the agent's `intent` for each call. Open the call in Logs to see why the agent did what it did. See [agent sessions](/guides/agent-sessions/meta-tools#nango_execute).
 
   ![Operation details of an agent tool call showing the goal and intent fields](/images/changelog/agent-tool-call-log.png)
 </Update>
 ---
 
 <Update label="Five more Nango-managed OAuth apps" description="November 5, 2026">
-  Close, Google Tasks, Smartsheet, Twitch, and Webex now have [Nango-managed OAuth apps](/guides/auth/auth-guide#nango-managed-oauth-apps), for 81 APIs in total. See the [full list](/guides/auth/auth-guide#apis-with-a-nango-managed-oauth-app).
+  Close, Google Tasks, Smartsheet, Twitch, and Webex now have [Nango-managed OAuth apps](/guides/auth/overview#nango-managed-oauth-apps), for 81 APIs in total. See the [full list](/guides/auth/overview#apis-with-a-nango-managed-oauth-app).
 
   You can also use them from the API. [Create an integration](/reference/backend/http-api/integration/create) now accepts `NANGO_MANAGED` credentials instead of registering your own app. The Node SDK's `createQuickstartIntegration()` was removed in 0.72.2. Use `createIntegration()` with `NANGO_MANAGED` credentials instead.
 </Update>
@@ -77,7 +77,7 @@ description: "Important developer & product updates, including deprecations & br
 
 <Update label="CLI updates" description="November 5, 2026">
   - **Deploy one function by path:** `nango deploy dev github/tools/create-issue.ts` deploys a single function without touching the others. `--action` and `--sync` still work but are deprecated. See [deploy](/reference/functions/functions-cli#deploy).
-  - **`nango clone` removed:** Use [`nango pull --catalog`](/guides/functions/functions-guide#extend-a-template) instead.
+  - **`nango clone` removed:** Use [`nango pull --catalog`](/guides/platform/functions/functions-guide#extend-a-template) instead.
 </Update>
 ---
 
@@ -155,7 +155,7 @@ description: "Important developer & product updates, including deprecations & br
 <Update label="Nango-managed OAuth apps" description="October 29, 2026">
   Nango provides pre-approved OAuth apps for 75+ APIs, including CASA-verified apps for Gmail, Google Drive, and Google Calendar. You can now use them in production without waiting for your own app to be approved.
 
-  In the dashboard, pick the **Nango-managed OAuth app** tab when creating an integration. See the [list of APIs with a Nango-managed OAuth app](/guides/auth/auth-guide#apis-with-a-nango-managed-oauth-app) and the [trade-offs](/guides/auth/auth-guide#nango-managed-oauth-apps) compared to your own app.
+  In the dashboard, pick the **Nango-managed OAuth app** tab when creating an integration. See the [list of APIs with a Nango-managed OAuth app](/guides/auth/overview#apis-with-a-nango-managed-oauth-app) and the [trade-offs](/guides/auth/overview#nango-managed-oauth-apps) compared to your own app.
 
   ![The Nango-managed OAuth app tab when creating a Google Drive integration](/images/changelog/nango-managed-oauth-app.png)
 </Update>
@@ -164,7 +164,7 @@ description: "Important developer & product updates, including deprecations & br
 <Update label="10,000+ tools for agents" description="October 27, 2026">
   Nango now has 10,000+ pre-built tools across 1,000+ APIs, available in [agent sessions](/guides/agent-sessions). Your agent can use them even when an API has no official MCP server.
 
-  All tools are customizable. Browse them in [APIs & Integrations](/integrations/overview), or [take ownership of a tool](/guides/functions/functions-guide#take-ownership-of-a-function) to change what it does.
+  All tools are customizable. Browse them in [APIs & Integrations](/integrations/overview), or [take ownership of a tool](/guides/platform/functions/functions-guide#take-ownership-of-a-function) to change what it does.
 </Update>
 ---
 
@@ -190,7 +190,7 @@ description: "Important developer & product updates, including deprecations & br
 
   When a connection's credentials expire, fail to refresh, or lack a scope, the user gets a reconnect link and authorizes the same connection again. Your agent continues working in the same session without interruptions.
 
-  See [reconnecting a connection](/guides/agent-sessions#reconnecting-a-connection).
+  See [reconnecting a connection](/guides/agent-sessions/meta-tools#reconnecting-a-connection).
 
   ![An agent asking the user to reconnect Linear after its credentials were rejected](/images/changelog/agent-session-reconnect.png)
 </Update>
@@ -251,7 +251,7 @@ description: "Important developer & product updates, including deprecations & br
 
   Include an MCP integration such as [Notion (MCP)](/api-integrations/notion-mcp) or [Linear (MCP)](/api-integrations/linear-mcp) in the session's toolset, and its tools join the session alongside Nango actions.
 
-  See [MCP server tools](/guides/agent-sessions#mcp-server-tools) in the agent sessions guide.
+  See [MCP server tools](/guides/agent-sessions/toolsets#mcp-server-tools) in the agent sessions guide.
 </Update>
 ---
 
@@ -275,8 +275,8 @@ description: "Important developer & product updates, including deprecations & br
   A second round of changes to how Nango verifies the webhooks it receives, following [last month's](/updates/changelog#webhook-verification):
 
   - **Allow unverified webhooks:** A new per-integration setting lets webhooks with a missing or unverifiable signature through (invalid signatures are always rejected). Available for providers that reject unverified webhooks, such as GitHub App, Gmail, Microsoft Teams, and Salesforce. It's off by default.
-  - **Unverified flag:** When Nango forwards a webhook it could not verify, the request carries an `X-Nango-Webhook-Unverified: true` header and the Nango wrapper includes `"unverified": true`. Treat those payloads as untrusted. See [unverified webhooks](/guides/platform/webhook-forwarding#unverified-webhooks).
-  - **Providers that do not sign webhooks:** Affinity, Fillout, ShipStation, and Salesforce now require a secret you set per connection, sent in the `X-Nango-Webhook-Secret` header or a `nangoWebhookSecret` query parameter. Webhooks without a matching secret are rejected. See [providers that do not sign webhooks](/guides/platform/webhook-forwarding#providers-that-do-not-sign-webhooks).
+  - **Unverified flag:** When Nango forwards a webhook it could not verify, the request carries an `X-Nango-Webhook-Unverified: true` header and the Nango wrapper includes `"unverified": true`. Treat those payloads as untrusted. See [unverified webhooks](/guides/triggers/webhook-forwarding#unverified-webhooks).
+  - **Providers that do not sign webhooks:** Affinity, Fillout, ShipStation, and Salesforce now require a secret you set per connection, sent in the `X-Nango-Webhook-Secret` header or a `nangoWebhookSecret` query parameter. Webhooks without a matching secret are rejected. See [providers that do not sign webhooks](/guides/triggers/webhook-forwarding#providers-that-do-not-sign-webhooks).
   - **More signatures checked:** Airtable notifications are verified against each webhook's MAC secret, Microsoft Teams activities must carry a valid Bot Framework token, and Halo PSA webhooks route to a connection with Basic auth.
 </Update>
 ---
@@ -370,7 +370,7 @@ description: "Important developer & product updates, including deprecations & br
   - **New `nango_create_connection` meta tool:** When one of the session's integrations has no connection, the agent calls it and gets a connect link to hand to the user. Once the user authorizes, that integration's tools work for the rest of the session. It is off by default. Enable it per session with `meta_tools`, optionally with tags to stamp on the connections it creates so later sessions can select them.
   - **Clearer guidance:** When an integration is not connected, `nango_tool_search` and `nango_execute` tell the agent what to do next: call `nango_create_connection` if the session allows it, otherwise hand it to the user.
 
-  See [nango_create_connection](/guides/agent-sessions#nango_create_connection) in the agent sessions guide.
+  See [nango_create_connection](/guides/agent-sessions/meta-tools#nango_create_connection) in the agent sessions guide.
 </Update>
 ---
 
@@ -423,7 +423,7 @@ description: "Important developer & product updates, including deprecations & br
 <Update label="Agent sessions updates" description="September 16, 2026">
   Improvements to [agent sessions](/guides/agent-sessions) since launch:
 
-  - **Proxy tool:** A new `nango_proxy` meta tool lets the agent call any endpoint of a connected integration when no tool in the session fits. Nango authenticates the request, so the agent never sees credentials. It is off by default; turn it on per session. See [meta tools](/guides/agent-sessions#meta-tools).
+  - **Proxy tool:** A new `nango_proxy` meta tool lets the agent call any endpoint of a connected integration when no tool in the session fits. Nango authenticates the request, so the agent never sees credentials. It is off by default; turn it on per session. See [meta tools](/guides/agent-sessions/meta-tools).
   - **Terminate a session:** A new `DELETE /sessions/{session_id}` API to end a session before it expires and revoke its token. See [terminating a session](/guides/agent-sessions#terminating-a-session).
   - **Logs filter:** The Logs page has an Agent session filter that shows the operations a session ran. Each operation also shows which session drove it.
   - **Clearer tool errors:** Failed tool calls return a message that says what failed and what the agent should do next.
@@ -952,7 +952,7 @@ description: "Important developer & product updates, including deprecations & br
 ---
 
 <Update label="Remote function builder" description="June 1, 2026">
-  Claude, Cursor, Codex, or other agents can now build integrations ([actions, syncs, webhooks, events](/guides/functions/functions-guide)) without a local project. This is powered by the new [Function Builder skill](/getting-started/coding-agent-setup#skills) and [REST endpoints for compile, dry run, and deploy functions](/guides/functions/functions-guide#build-with-the-functions-api).
+  Claude, Cursor, Codex, or other agents can now build integrations ([actions, syncs, webhooks, events](/guides/platform/functions/functions-guide)) without a local project. This is powered by the new [Function Builder skill](/guides/platform/functions/functions-guide#build-with-a-coding-agent) and [REST endpoints for compile, dry run, and deploy functions](/guides/platform/functions/functions-guide#build-with-the-functions-api).
 
   With the Nango skill, your agent turns behavior described in a prompt into a complete integration: it generates TypeScript code, compiles it, tests it against a real connection, and deploys it.
 
@@ -1068,7 +1068,7 @@ description: "Important developer & product updates, including deprecations & br
 ---
 
 <Update label="Playground" description="April 14, 2026">
-  We added a Playground to the Nango dashboard. You can now trigger [actions](/getting-started/use-cases/actions) and [syncs](/getting-started/use-cases/syncs) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
+  We added a Playground to the Nango dashboard. You can now trigger [actions](/getting-started/use-cases/actions) and [syncs](/guides/syncs/overview) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
 
   ![Playground](/images/changelog/playground.gif)
 
@@ -1203,7 +1203,7 @@ description: "Important developer & product updates, including deprecations & br
   const jsonSchema = z.toJSONSchema(issueSchema);
   ```
 
-  See the [data validation guide](/guides/functions/data-validation) for more details on working with Zod schemas in Nango.
+  See the [data validation guide](/guides/platform/functions/data-validation) for more details on working with Zod schemas in Nango.
 </Update>
 ---
 
@@ -1288,7 +1288,7 @@ description: "Important developer & product updates, including deprecations & br
   });
   ```
 
-  Checkpoints are optional; not using them implies the function will always run from scratch. See the [Sync checkpoints documentation](/guides/functions/syncs/checkpoints).
+  Checkpoints are optional; not using them implies the function will always run from scratch. See the [Sync checkpoints documentation](/guides/syncs/checkpoints).
 
   **No breaking changes:** Existing syncs without a `checkpoint` declaration continue to run as full syncs. For any sync with a large or growing dataset, define a `checkpoint` schema and call `saveCheckpoint()` after each batch.
 
@@ -1299,20 +1299,20 @@ description: "Important developer & product updates, including deprecations & br
 <Update label="Serverless runtime" description="February 2026">
   We overhauled the underlying execution infrastructure to be fully serverless.
 
-  [Function](/guides/functions/functions-guide) executions now run in isolated AWS Lambda environments rather than using a single VM per customer. This provides dedicated resources and an isolated runtime for every Function execution, significantly improving tenant isolation, execution fairness, reliability, and performance scaling.
+  [Function](/guides/platform/functions/functions-guide) executions now run in isolated AWS Lambda environments rather than using a single VM per customer. This provides dedicated resources and an isolated runtime for every Function execution, significantly improving tenant isolation, execution fairness, reliability, and performance scaling.
 
   This change is at the infrastructure level; your function code and APIs are unaffected.
 </Update>
 ---
 
 <Update label="Integration builder skill" description="February 2026">
-  We released a new AI skill for writing and testing Nango [Actions](/getting-started/use-cases/actions) & [Syncs ](/getting-started/use-cases/syncs)using your favorite AI coding agent.
+  We released a new AI skill for writing and testing Nango [Actions](/getting-started/use-cases/actions) & [Syncs ](/guides/syncs/overview)using your favorite AI coding agent.
 
   The skill is compatible with over 18 different AI frameworks, including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
 
   ![Building Nango integrations with Cursor](/images/changelog/nango-ai-integration-builder-cursor.png)
 
-  See the [Functions guide](/guides/functions/functions-guide#guide) for instructions on building integrations with AI.
+  See the [Functions guide](/guides/platform/functions/functions-guide#guide) for instructions on building integrations with AI.
 </Update>
 ---
 
@@ -1411,7 +1411,7 @@ description: "Important developer & product updates, including deprecations & br
 
   **Why:** These retention policies are part of our broader commitment to helping customers meet modern data compliance and security expectations. They ensure that sensitive user data is not stored indefinitely in the Nango sync cache when it is no longer needed for syncing.
 
-  See the [Records cache documentation](/guides/functions/syncs/records-cache).
+  See the [Records cache documentation](/guides/syncs/records-cache).
 
   We also introduced a new endpoint to manually prune records.
 
@@ -1633,7 +1633,7 @@ description: "Important developer & product updates, including deprecations & br
   nango clone github/actions/list-repos
   ```
 
-  See the guide on [customizing a function template](/guides/functions/functions-guide#guide).
+  See the guide on [customizing a function template](/guides/platform/functions/functions-guide#guide).
 </Update>
 ---
 
@@ -1756,14 +1756,14 @@ description: "Important developer & product updates, including deprecations & br
 <Update label="Test mock format" description="October 2025">
   We have moved from a multi-file mock format to a single `.test.json`.
 
-  When you generate mocks for your Nango syncs or actions, a single `.test.json` file is generated next to your test file. The file contains input, output, Nango stubs, and API response mocks, organized by method and path. This keeps test data in one place, making tests easier to run and maintain. See [mock file structure](/guides/functions/testing#mock-file-structure).
+  When you generate mocks for your Nango syncs or actions, a single `.test.json` file is generated next to your test file. The file contains input, output, Nango stubs, and API response mocks, organized by method and path. This keeps test data in one place, making tests easier to run and maintain. See [mock file structure](/guides/platform/functions/testing#mock-file-structure).
 
-  **Migration Note:** See [migrating from the old format](/guides/functions/testing#migrating-from-the-old-format) if you have tests still using the old multi-file mocks.
+  **Migration Note:** See [migrating from the old format](/guides/platform/functions/testing#migrating-from-the-old-format) if you have tests still using the old multi-file mocks.
 </Update>
 ---
 
 <Update label="CI/CD guide" description="October 2025">
-  - [CI/CD for Nango integrations](/guides/functions/ci-cd): A complete guide on integrating Nango into your CI/CD processes.
+  - [CI/CD for Nango integrations](/guides/platform/functions/ci-cd): A complete guide on integrating Nango into your CI/CD processes.
 </Update>
 ---
 
@@ -1848,7 +1848,7 @@ description: "Important developer & product updates, including deprecations & br
 ---
 
 <Update label="Deletion detection" description="September 2025">
-  For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/guides/functions/syncs/deletion-detection)).
+  For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/guides/syncs/deletion-detection)).
 
   Inside your sync function, you can now call `nango.deleteRecordsFromPreviousExecutions('ModelName')` to detect deletions.
 
@@ -1857,14 +1857,14 @@ description: "Important developer & product updates, including deprecations & br
 ---
 
 <Update label="Credential verification" description="September 2025">
-  We added the ability to customize the credentials verification script, which is called when a new connection is created. For this, use the new `validate-connection` hook ([docs](/guides/functions/event-functions)).
+  We added the ability to customize the credentials verification script, which is called when a new connection is created. For this, use the new `validate-connection` hook ([docs](/guides/platform/functions/event-functions)).
 
   This lets you verify your customers’ API credentials by testing them against specific endpoints that correspond to particular API scopes.
 </Update>
 ---
 
 <Update label="Action output limit" description="August 22, 2025">
-  Nango actions currently have a documented output limit of 10MB. We are further restricting that limit to 2MB. Instead of using an action for large payloads, use the Nango [proxy](/guides/platform/proxy-requests).
+  Nango actions currently have a documented output limit of 10MB. We are further restricting that limit to 2MB. Instead of using an action for large payloads, use the Nango [proxy](/guides/auth/proxy-requests).
 
   We will also soon restrict action inputs, so please take note of your inputs.
 
@@ -2050,7 +2050,7 @@ description: "Important developer & product updates, including deprecations & br
   - Select this option when creating a new integration.
 
   <Note>
-    Update: Nango-managed OAuth apps are production-ready, and you can use them with real users. Register your own OAuth app only if you need white-labeled auth, custom scopes, or the other benefits listed in [Nango-managed OAuth apps](/guides/auth/auth-guide#nango-managed-oauth-apps).
+    Update: Nango-managed OAuth apps are production-ready, and you can use them with real users. Register your own OAuth app only if you need white-labeled auth, custom scopes, or the other benefits listed in [Nango-managed OAuth apps](/guides/auth/overview#nango-managed-oauth-apps).
   </Note>
 </Update>
 ---
@@ -2096,7 +2096,7 @@ description: "Important developer & product updates, including deprecations & br
     ![Generate integrations with AI illustration](/images/changelog/generate-integrations-with-ai.png)
   </Frame>
   We published a new guide on using AI to generate integrations faster than coding them manually. You can still edit the generated code as needed.\
-  [Guide](/guides/functions/functions-guide#guide).
+  [Guide](/guides/platform/functions/functions-guide#guide).
 </Update>
 ---
 
@@ -2157,7 +2157,7 @@ description: "Important developer & product updates, including deprecations & br
 
   - Build and enable/disable tools with Nango actions.
   - Use them via the MCP protocol.\
-    [Guide](/getting-started/use-cases/tool-calling).
+    [Guide](/guides/tools/overview).
 </Update>
 ---
 
@@ -2177,7 +2177,7 @@ description: "Important developer & product updates, including deprecations & br
   - You don’t need the response right away.
   - Actions should be retried for reliability.
   - You’re sending many actions at once.\
-    [Docs](/guides/functions/action-functions#trigger-asynchronously).
+    [Docs](/guides/platform/functions/action-functions#trigger-asynchronously).
 </Update>
 ---
 
@@ -2338,7 +2338,7 @@ description: "Important developer & product updates, including deprecations & br
 
   - [**Introspection endpoint**](/reference/backend/http-api/scripts/config): List available actions programmatically, exportable as OpenAI tools
   - [**Action trigger endpoint**](/reference/backend/http-api/action/trigger): Run actions reliably via the API
-  - [**Integrated authorization**](/guides/auth/auth-guide): Use Nango’s pre-built UI to securely prompt users for access
+  - [**Integrated authorization**](/guides/auth/overview): Use Nango’s pre-built UI to securely prompt users for access
 
   This makes it easier to build AI agents that can reliably interact with 800+ APIs.
 
@@ -2379,7 +2379,7 @@ description: "Important developer & product updates, including deprecations & br
       - [Check](/integrations/all/checkhq)
       - [Commercetools](/integrations/all/commercetools)
       - [Drupal](/integrations/all/drupal)
-      - [Google Gemini](/integrations/all/google-gemini)
+      - [Google Gemini](/api-integrations/google-gemini)
       - [Guru (SCIM)](/integrations/all/guru-scim)
       - [Gorgias (Basic Auth)](/integrations/all/gorgias-basic)
       - [Jira Data Center (API Key)](/integrations/all/jira-data-center-api-key)
@@ -2412,7 +2412,7 @@ description: "Important developer & product updates, including deprecations & br
 
   The API and UI give you full control over these syncs, letting you create, manage, and monitor them with ease.
 
-  [Learn more in the docs](/guides/functions/syncs/sync-partitioning).
+  [Learn more in the docs](/guides/syncs/sync-partitioning).
 </Update>
 ---
 
@@ -2458,7 +2458,7 @@ description: "Important developer & product updates, including deprecations & br
   - **Most recent update wins (default)**: The latest write—whether from a webhook or a periodic sync—always updates the record.
   - **Ignore older updates**: When polling, Nango checks if a newer webhook update exists. If so, it preserves the more recent webhook data instead of overwriting it.
 
-  [Learn more in the docs](/guides/functions/syncs/realtime-syncs#sync-concurrency-considerations).
+  [Learn more in the docs](/guides/syncs/realtime-syncs#sync-concurrency-considerations).
 </Update>
 ---
 
@@ -2510,7 +2510,7 @@ description: "Important developer & product updates, including deprecations & br
   <Frame>
     ![Event-based scripts illustration](/images/changelog/event-based-scripts.png)
   </Frame>
-  Nango now supports event-based scripts, which are executed automatically after specific events, such as connection creation or deletion. These scripts enable you to automate tasks like registering or deregistering webhooks. For more details, check out the [guide](/guides/functions/event-functions).
+  Nango now supports event-based scripts, which are executed automatically after specific events, such as connection creation or deletion. These scripts enable you to automate tasks like registering or deregistering webhooks. For more details, check out the [guide](/guides/platform/functions/event-functions).
 </Update>
 ---
 
@@ -2621,7 +2621,7 @@ description: "Important developer & product updates, including deprecations & br
   <Frame>
     ![User and org information screenshot](/images/changelog/user-and-org-information.png)
   </Frame>
-  Attach information about your users and organizations to integrations for better visibility in the Nango UI, laying the ground for lays the groundwork for user-specific and customer-specific insights. Learn how to set this up in the [authorization guide](/guides/auth/auth-guide).
+  Attach information about your users and organizations to integrations for better visibility in the Nango UI, laying the ground for lays the groundwork for user-specific and customer-specific insights. Learn how to set this up in the [authorization guide](/guides/auth/overview).
 </Update>
 ---
 
@@ -2682,7 +2682,7 @@ description: "Important developer & product updates, including deprecations & br
   <Frame>
     ![Authorization input validation screenshot](/images/changelog/authorization-input-validation.png)
   </Frame>
-  When your users authorize integrations, Nango now validates input fields through formatting checks and live API requests, minimizing misconfigurations. This is available in the [default authorization UI](/guides/auth/auth-guide).
+  When your users authorize integrations, Nango now validates input fields through formatting checks and live API requests, minimizing misconfigurations. This is available in the [default authorization UI](/guides/auth/overview).
 </Update>
 ---
 
@@ -2698,7 +2698,7 @@ description: "Important developer & product updates, including deprecations & br
   <Frame>
     ![End-user authorization guides screenshot](/images/changelog/end-user-authorization-guides.png)
   </Frame>
-  Step-by-step guides are now provided to your users to explain how to find and input credentials when they authorize integrations. Each input field ties directly to a relevant section in the guide. This is available in the [default authorization UI](/guides/auth/auth-guide).
+  Step-by-step guides are now provided to your users to explain how to find and input credentials when they authorize integrations. Each input field ties directly to a relevant section in the guide. This is available in the [default authorization UI](/guides/auth/overview).
 </Update>
 ---
 
@@ -2714,7 +2714,7 @@ description: "Important developer & product updates, including deprecations & br
   <Frame>
     ![Pre-built authorization UI screenshot](/images/changelog/pre-built-authorization-ui.png)
   </Frame>
-  The Connect UI is a pre-built interface to streamline how your users authorize integrations. It handles API keys, basic credentials, OAuth and additional API-specific required fields. Check out the [guide](/guides/auth/auth-guide) to use it, or continue using your [custom UI](/guides/auth/customize-connect-ui) without interruption.
+  The Connect UI is a pre-built interface to streamline how your users authorize integrations. It handles API keys, basic credentials, OAuth and additional API-specific required fields. Check out the [guide](/guides/auth/overview) to use it, or continue using your [custom UI](/guides/auth/customize-connect-ui) without interruption.
 </Update>
 ---
 
@@ -2766,5 +2766,5 @@ description: "Important developer & product updates, including deprecations & br
   <Frame>
     ![JSONSchema types screenshot](/images/changelog/jsonschema-types.png)
   </Frame>
-  Nango now lets you generate strongly-typed JSONSchema models for your integrations inputs and outputs, compatible with all programming languages and importable in your codebase. For TypeScript codebases, you can also generate TypeScript and Zod models. Check out this [guide](/guides/functions/data-validation#json-schema-runtime-language-agnostic) to get started.
+  Nango now lets you generate strongly-typed JSONSchema models for your integrations inputs and outputs, compatible with all programming languages and importable in your codebase. For TypeScript codebases, you can also generate TypeScript and Zod models. Check out this [guide](/guides/platform/functions/data-validation#json-schema-runtime-language-agnostic) to get started.
 </Update>

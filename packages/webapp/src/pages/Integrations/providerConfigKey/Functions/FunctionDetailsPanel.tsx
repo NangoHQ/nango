@@ -134,7 +134,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                             <span className="type-text-medium-xs text-text-default">Customize this function</span>
                             {(source === 'catalog' || source === 'tools-catalog' || source === 'template') && (
                                 <LinkButton asChild size="sm">
-                                    <a href="https://nango.dev/docs/guides/functions/functions-guide#guide" target="_blank" rel="noreferrer">
+                                    <a href="https://nango.dev/docs/guides/platform/functions/functions-guide#guide" target="_blank" rel="noreferrer">
                                         Learn about custom functions <ArrowUpRight />
                                     </a>
                                 </LinkButton>

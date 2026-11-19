@@ -6,7 +6,7 @@ description: 'Process external API webhooks inside Nango functions.'
 
 Webhook functions run when an external API sends a webhook to Nango. Use them when the webhook should execute Nango-hosted logic, update records, normalize events, or mark data for later reconciliation.
 
-If your app should handle the webhook directly, use [webhook forwarding](/guides/platform/webhook-forwarding) instead.
+If your app should handle the webhook directly, use [webhook forwarding](/guides/triggers/webhook-forwarding) instead.
 
 ## Processing or forwarding
 
@@ -19,7 +19,7 @@ Use a webhook function when:
 - The webhook payload needs normalization before your app sees it.
 - The event should trigger reconciliation logic inside a sync function.
 
-Use [webhook forwarding](/guides/platform/webhook-forwarding) when:
+Use [webhook forwarding](/guides/triggers/webhook-forwarding) when:
 
 - Your app already has webhook handling logic.
 - You want Nango to attribute the event to a connection and forward it.
@@ -33,7 +33,7 @@ When the provider has a webhook routing script, Nango reads the incoming payload
 
 If Nango can map the webhook to a connection, the webhook function runs in that connection context. If Nango cannot map the event, the event cannot safely run connection-scoped function logic; use provider-specific setup or webhook forwarding for that case.
 
-Some providers require one global webhook registration. Others require one webhook subscription per connected account, which you can automate with an [event function](/guides/functions/event-functions).
+Some providers require one global webhook registration. Others require one webhook subscription per connected account, which you can automate with an [event function](/guides/platform/functions/event-functions).
 
 <Accordion title="For agents">
   Before implementing a webhook function, inspect the provider-specific Nango docs for webhook routing requirements. Some providers need the Nango connection ID embedded in the provider webhook payload, while others route automatically from account, team, tenant, or installation identifiers.
@@ -129,8 +129,8 @@ Prefer lightweight, idempotent handling in `onWebhook`, and let the sync functio
 
 ## Related guides
 
-- [Webhook forwarding](/guides/platform/webhook-forwarding)
-- [Process external webhooks](/getting-started/use-cases/webhooks-from-external-apis)
-- [Real-time syncs](/guides/functions/syncs/realtime-syncs)
-- [Event functions](/guides/functions/event-functions)
-- [Records cache](/guides/functions/syncs/records-cache)
+- [Webhook forwarding](/guides/triggers/webhook-forwarding)
+- [Process external webhooks](/guides/triggers/overview)
+- [Real-time syncs](/guides/syncs/realtime-syncs)
+- [Event functions](/guides/platform/functions/event-functions)
+- [Records cache](/guides/syncs/records-cache)

@@ -358,7 +358,7 @@ Your reverse proxy must strip the base path prefix before forwarding to Connect 
 
 Connect UI is a single-page app: the server must respond with `index.html` for any path that isn't a built asset, including the base path without a trailing slash. Nango's static file server handles this out of the box; if you serve the built `dist` from your own static host, enable its SPA fallback.
 
-See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
+See [Auth](/guides/auth/overview) for the end-user connection flow.
 
 ### Hosted telemetry
 
@@ -447,7 +447,7 @@ The runner boundary has the same set of variables prefixed with `NANGO_CUSTOMER_
 
 #### Proxy base URL override hardening
 
-The [proxy](/guides/platform/proxy-requests) can send authenticated requests to external APIs. Some proxy calls accept a **base URL override** (HTTP header `Base-Url-Override`, SDK `baseUrlOverride`, or an integration `custom.baseUrl`) to target a host that differs from the provider's default API base URL.
+The [proxy](/guides/auth/proxy-requests) can send authenticated requests to external APIs. Some proxy calls accept a **base URL override** (HTTP header `Base-Url-Override`, SDK `baseUrlOverride`, or an integration `custom.baseUrl`) to target a host that differs from the provider's default API base URL.
 
 Because the proxy makes outbound HTTP requests from your Nango server (and from the runner for sync functions and tools), a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed—such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
 

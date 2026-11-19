@@ -207,12 +207,12 @@ For small datasets (e.g., a list of Slack users for an organization with fewer t
 As datasets grow, full syncs become unscalable — taking longer to run, triggering rate limits, and consuming more compute and memory. If your dataset has more than a few thousand records and the API supports pagination and/or filtering by date or cursor, use checkpoints.
 
 <Warning>
-`deleteRecordsFromPreviousExecutions()` is incompatible with checkpoints because it requires comparing the full dataset between consecutive runs. Use `trackDeletesStart`/`trackDeletesEnd` instead — see [Deletion detection](/guides/functions/syncs/deletion-detection).
+`deleteRecordsFromPreviousExecutions()` is incompatible with checkpoints because it requires comparing the full dataset between consecutive runs. Use `trackDeletesStart`/`trackDeletesEnd` instead — see [Deletion detection](/guides/syncs/deletion-detection).
 </Warning>
 
 ## Checkpoints vs. cursors
 
-Both checkpoints and [cursors](/guides/functions/syncs/records-cache#cursors-and-sync-progress) are markers of sync progress, but they track different relationships:
+Both checkpoints and [cursors](/guides/syncs/records-cache#cursors-and-sync-progress) are markers of sync progress, but they track different relationships:
 
 | | Checkpoint | Cursor |
 | --- | --- | --- |
@@ -239,7 +239,7 @@ When you [trigger a sync](/reference/backend/http-api/sync/trigger) manually (fr
 **Use `reset: true` with `emptyCache: true`** when you need to start from scratch — for example, after a breaking change to your data model.
 
 <Warning>
-Resetting the checkpoint triggers a full re-sync from the external API, which takes longer and may incur higher compute costs. Clearing the cache additionally means every record will be reported as `ADDED`, your previously persisted [cursors](/guides/functions/syncs/records-cache#cursors-and-sync-progress) become invalid, and you will need to reprocess the entire dataset on your side.
+Resetting the checkpoint triggers a full re-sync from the external API, which takes longer and may incur higher compute costs. Clearing the cache additionally means every record will be reported as `ADDED`, your previously persisted [cursors](/guides/syncs/records-cache#cursors-and-sync-progress) become invalid, and you will need to reprocess the entire dataset on your side.
 </Warning>
 
 ```ts
@@ -269,7 +269,7 @@ When developing locally with the Nango CLI, you can pass a checkpoint value to `
 nango dryrun salesforce-contacts '<CONNECTION-ID>' --checkpoint '{"lastModifiedISO": "2024-01-15T00:00:00Z"}'
 ```
 
-This lets you test that your sync correctly resumes from a checkpoint without needing to run a full initial sync first. See the [testing guide](/guides/functions/testing) for more details, including how to write unit tests for checkpoint logic.
+This lets you test that your sync correctly resumes from a checkpoint without needing to run a full initial sync first. See the [testing guide](/guides/platform/functions/testing) for more details, including how to write unit tests for checkpoint logic.
 
 <Tip>
 **Migrating from `nango.lastSyncDate`?** Checkpoints replace it with a schema you control, mid-run granularity, and failure-resumption. Follow the [migration guide](/guides/platform/migrations/migrate-to-checkpoints) for step-by-step instructions.

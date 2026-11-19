@@ -4,7 +4,7 @@ sidebarTitle: 'CI/CD'
 description: 'How to integrate Nango Function deployments into your CI/CD pipeline.'
 ---
 
-CI/CD for Nango is about keeping your [Functions](/guides/functions/functions-guide) — sync functions, tools, webhook functions, and event functions — in sync with your application across environments.
+CI/CD for Nango is about keeping your [Functions](/guides/platform/functions/functions-guide) — sync functions, tools, webhook functions, and event functions — in sync with your application across environments.
 
 The core principle: **deploy to Nango as part of the same pipeline step as your application**. Deploying them separately risks your app and your Functions going out of sync, which can cause subtle bugs that are hard to trace.
 
@@ -16,6 +16,10 @@ To deploy from CI, you need a scoped API key for each Nango environment.
 2. **Store the keys**: Add them as secrets in your CI/CD provider. The Nango CLI reads them from these environment variables:
    - `NANGO_SECRET_KEY_DEV`
    - `NANGO_SECRET_KEY_PROD`
+
+<Note>
+Coding agents running in CI can use the [Management MCP server](/reference/backend/management-mcp) with an Environment API key instead of OAuth. See [Use an API key instead](/reference/backend/management-mcp#use-an-api-key-instead) for client configuration and scopes.
+</Note>
 
 ## Recommended pipeline
 
@@ -167,7 +171,7 @@ Run your test suite in CI before every deployment. Nango's testing framework use
 npm test
 ```
 
-See the [Testing integrations guide](/guides/functions/testing) for details.
+See the [Testing integrations guide](/guides/platform/functions/testing) for details.
 
 ## Ephemeral preview environments (e.g. Vercel)
 
@@ -199,5 +203,5 @@ In CI environments, Nango automatically disables dependency updates to prevent m
 
 ## Related resources
 
-- [Testing integrations](/guides/functions/testing) - A comprehensive guide to testing your Nango Functions.
+- [Testing integrations](/guides/platform/functions/testing) - A comprehensive guide to testing your Nango Functions.
 - [API Keys reference](/reference/backend/http-api/api-keys) - Available scopes and advised profiles for CI/CD and other use cases.

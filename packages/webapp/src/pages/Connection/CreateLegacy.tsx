@@ -882,7 +882,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         Some integrations require extra configuration — see{' '}
                                         <LinkButton asChild size="sm">
                                             <a
-                                                href="https://nango.dev/docs/guides/auth/customize-connect-ui#handle-apis-requiring-connection-specific-configuration-for-authorization"
+                                                href="https://nango.dev/docs/guides/auth/customize-connect-ui#pass-connection-configuration"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
@@ -1131,7 +1131,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     Integration
                                 </Link>{' '}
                                 first to create a Connection. Follow the{' '}
-                                <a href="https://nango.dev/docs/guides/auth/auth-guide" className="text-text-link" target="_blank" rel="noreferrer">
+                                <a href="https://nango.dev/docs/guides/auth/overview" className="text-text-link" target="_blank" rel="noreferrer">
                                     Authorize an API guide
                                 </a>{' '}
                                 for more instructions.

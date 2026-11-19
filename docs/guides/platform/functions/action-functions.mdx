@@ -5,7 +5,7 @@ description: 'Compatibility reference for existing action functions and asynchro
 ---
 
 <Warning>
-  Actions are deprecated. For new development, use [Tools](/guides/functions/tools). Existing actions remain callable. See [Migrate from actions to tools](/guides/platform/migrations/migrate-from-actions) before changing an existing integration.
+  Actions are deprecated. For new development, use [Tools](/guides/tools/customize-tools). Existing actions remain callable. See [Migrate from actions to tools](/guides/platform/migrations/migrate-from-actions) before changing an existing integration.
 </Warning>
 
 <a id="create-the-function"></a>
@@ -36,7 +36,7 @@ Keep importing the file from your project's `index.ts`. Existing projects can dr
 <a id="trigger-synchronously"></a>
 ## Synchronous calls
 
-Prefer [calling the action through the tool-call API](/guides/functions/tools#call-a-tool). Existing callers can continue to use `nango.triggerAction(integrationId, connectionId, actionName, input)` or [`POST /action/trigger`](/reference/backend/http-api/action/trigger).
+Prefer [calling the action through the tool-call API](/guides/tools/customize-tools#call-a-tool). Existing callers can continue to use `nango.triggerAction(integrationId, connectionId, actionName, input)` or [`POST /action/trigger`](/reference/backend/http-api/action/trigger).
 
 Legacy HTTP calls send `Connection-Id`, `Provider-Config-Key`, and `Content-Type: application/json` headers, with `{ "action_name": "<ACTION-NAME>", "input": {} }` as the body. Authenticate with a Nango Environment API key from **Environment Settings > API Keys**, sent as `Authorization: Bearer <NANGO-API-KEY>`. Scoped keys need `environment:tools:call`.
 
@@ -59,7 +59,7 @@ For HTTP, send the same request to `POST /action/trigger` with `X-Async: true`. 
 
 The response contains an `id` and `statusUrl`. Poll `GET /action/<ACTION-ID>`: `404` means the execution is still running, `200` returns the output, and `500` returns the execution error. Use the same authentication and scope as the trigger request.
 
-Async actions are processed sequentially per environment; completion time depends on queue length and execution time. To receive completion events instead of polling, enable **Async action completed** in your [webhook configuration](/guides/functions/action-functions#completion-webhook).
+Async actions are processed sequentially per environment; completion time depends on queue length and execution time. To receive completion events instead of polling, enable **Async action completed** in your [webhook configuration](/guides/platform/functions/action-functions#completion-webhook).
 
 ## Calling an action from a function
 
