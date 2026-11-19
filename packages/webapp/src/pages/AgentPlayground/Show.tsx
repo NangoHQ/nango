@@ -55,9 +55,9 @@ const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
     { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
     { prompt: 'Summarize my 3 latest emails in Gmail', provider: 'google-mail', name: 'Gmail' },
     { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
-    { prompt: 'Send me "Hello, world!" on Slack', provider: 'slack', name: 'Slack' },
+    { prompt: 'List my recent files in Google Drive', provider: 'google-drive', name: 'Google Drive' },
     { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
-    { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot', name: 'HubSpot' }
+    { prompt: 'Show my recently edited Notion pages', provider: 'notion', name: 'Notion' }
 ];
 
 function providerName(provider: string): string {
