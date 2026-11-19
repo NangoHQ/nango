@@ -1,4 +1,4 @@
-import { Bot, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { ButtonLink } from '@/components/ui/ButtonLink';
@@ -11,19 +11,12 @@ interface PlaygroundEventProps {
     details?: React.ReactNode;
 }
 
-export const PlaygroundIcons: React.FC<{ provider: string }> = ({ provider }) => (
-    <span className="flex shrink-0 items-center gap-1">
-        <Bot className="size-4 shrink-0 text-icon-secondary" />
-        <span className="flex size-4 items-center justify-center">
+const EventLabel: React.FC<{ provider: string; text: string }> = ({ provider, text }) => (
+    <>
+        <span className="flex size-4 shrink-0 items-center justify-center">
             {/* Larger than its 16px slot, because integration logo artwork has built-in padding. */}
             <IntegrationLogo provider={provider} className="size-5.5 shrink-0 border-0 bg-transparent p-0" />
         </span>
-    </span>
-);
-
-const EventLabel: React.FC<{ provider: string; text: string }> = ({ provider, text }) => (
-    <>
-        <PlaygroundIcons provider={provider} />
         <span className="min-w-0 truncate">
             <span className="text-body-medium-medium text-text-default">Playground</span> {text}
         </span>
