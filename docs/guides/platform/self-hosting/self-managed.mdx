@@ -173,15 +173,8 @@ When Nango registers your instance, you'll receive three things.
     Give `selfHosting` the same database settings as your other services. Set `NANGO_DATABASE_URL` or the `NANGO_DB_*` variables, along with `NANGO_DB_SSL` if your main database requires TLS. If you store metrics in a separate database, use the same telemetry database URL and TLS settings on `selfHosting` as on the services that write the metrics. See [Hosted telemetry](#hosted-telemetry).
   </Step>
   <Step id="check-it-works" title="Verify the rollout">
-    After you deploy the updated Helm values, check the server logs for the license status. If you enabled automatic reporting, check the `selfHosting` logs for upload activity.
-
-    | Service | Log line | Meaning |
-    | --- | --- | --- |
-    | server | `License for <name> (<installation id>) is valid until <date>.` | The license is installed and verified |
-    | self-hosting | `Uploading telemetry to <installations URL>` | The uploader started |
-    | self-hosting | `Uploaded <metric> for <day>` | Nango received the report for that metric and day. Can take up to an hour after the rollout |
-
-    {/* TODO(pau): describe the license status view once it ships. */}
+    {/* TODO(pau): name the dashboard view once it ships. */}
+    After you deploy the updated Helm values, open the installation info in the dashboard. It shows the status of your license and the version you run.
   </Step>
 </Steps>
 
@@ -225,26 +218,7 @@ The export is a gzip-compressed NDJSON file. Nango uses the signature to verify 
 
 When Nango sends you a new license, replace `NANGO_LICENSE` in the secret and restart the server and the `selfHosting` workload. Both read it at startup.
 
-What the server logs at startup, for each state of the license:
-
-| State | Server | Reporting |
-| --- | --- | --- |
-| Valid | Logs `License for <name> (<id>) is valid until <date>.` | Runs |
-| Expired, in the grace period | Logs `License for <name> (<id>) expired on <date>. Renew it before <date>.` | Runs |
-| Past the grace period | Logs `License check failed: license for <name> expired on <date> and its grace period ended on <date>.` | Uploads stop and the export endpoint returns `403` |
-
 To replace the installation key, ask Nango for a new one, replace `NANGO_INSTALLATION_PRIVATE_KEY` in the secret and restart the `selfHosting` workload.
-
-### Troubleshooting
-
-| Service | Log line | Cause | Fix |
-| --- | --- | --- | --- |
-| server | `License check failed: NANGO_LICENSE is not set.` | The server has no license | Add `NANGO_LICENSE` to the server |
-| server | `License check failed: <reason>.` | The license failed verification | Check the `NANGO_LICENSE` value in the secret, or ask Nango to send the license again |
-| self-hosting | `Skipping (<reason>)` | A setting is missing or unusable. The reason names it | Fix the setting it names and restart the workload |
-| self-hosting | `Uploading stopped. The rest will be uploaded later`, with `could not reach …` | The uploader couldn't connect to the installations URL | Check the URL and make sure your cluster allows outbound HTTPS to the IP addresses Nango gave you |
-| self-hosting | `Uploading stopped. The rest will be uploaded later`, with `Nango answered 401` or `403` | Nango rejected the request | Contact Nango with the error message. The uploader retries automatically |
-| self-hosting | `Not uploading (the grace period of the license ended on …)` | The license expired and its grace period is over | Renew the license |
 
 ## Configuration reference
 
