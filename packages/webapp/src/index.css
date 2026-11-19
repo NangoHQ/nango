@@ -294,3 +294,7 @@
     font-family: 'Geist Mono';
     background-color: var(--surface-canvas) !important;
 }
+
+.muted-code .mantine-Prism-code {
+    background-color: var(--surface-panel-muted) !important;
+}

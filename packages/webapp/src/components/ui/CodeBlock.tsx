@@ -34,6 +34,7 @@ export type CodeBlockProps = {
     wrapLines?: boolean;
     copyValue?: string;
     syntaxHighlight?: boolean;
+    bare?: boolean;
 } & HTMLAttributes<HTMLDivElement>;
 
 const highlight = {
@@ -60,6 +61,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     wrapLines = false,
     copyValue,
     syntaxHighlight = true,
+    bare = false,
     ...props
 }) => {
     const darkMode = useThemeStore(darkModeSelector);
@@ -161,8 +163,19 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     const copyText = editing ? draft : (copyValue ?? code);
 
     return (
-        <div {...props} className={cn('border border-border-muted rounded', props.className)}>
-            <header className="flex justify-between items-center py-1.5 px-3 bg-surface-panel-inset rounded-t">
+        <div
+            {...props}
+            className={cn(
+                bare ? 'muted-code group/code relative overflow-hidden rounded border border-border-muted' : 'border border-border-muted rounded',
+                props.className
+            )}
+        >
+            {bare && copyable && (
+                <div className="absolute right-2 top-2 z-10 opacity-0 transition-opacity focus-within:opacity-100 group-hover/code:opacity-100">
+                    <CopyButton value={copyText} size="2xs" />
+                </div>
+            )}
+            <header className={cn('flex justify-between items-center py-1.5 px-3 bg-surface-panel-inset rounded-t', bare && 'hidden')}>
                 <span className="text-text-muted text-s">{title}</span>
                 <div className="flex gap-2 items-center">
                     {headerElement}
