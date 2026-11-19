@@ -41,6 +41,8 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<GetAgentSess
         model: agentSessionResultModel(sessionId),
         externalIds: [recordId],
         limit: 1,
+        // The agent runs code over a result right after it is stored, before a replica is sure to have it.
+        readFromPrimary: true,
         plan
     });
     if (result.isErr()) {

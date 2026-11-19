@@ -18,7 +18,8 @@ export interface RecordsStore {
         cursor,
         externalIds,
         metadataOnly,
-        sort
+        sort,
+        readFromPrimary
     }: {
         connectionId: number;
         model: string;
@@ -29,6 +30,8 @@ export interface RecordsStore {
         externalIds?: string[] | undefined;
         metadataOnly?: boolean | undefined;
         sort?: 'asc' | 'desc' | undefined;
+        /** Skips the read replica. For a read that must see a write made moments before. */
+        readFromPrimary?: boolean | undefined;
     }) => Promise<Result<GetRecordsResponse>>;
 
     getCursor: ({ connectionId, model, offset }: { connectionId: number; model: string; offset: CursorOffset }) => Promise<Result<string | undefined>>;
