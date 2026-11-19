@@ -98,7 +98,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                 <InputGroup>
                     <InputGroupInput disabled value={callbackUrl} />
                     <InputGroupAddon align="inline-end">
-                        <CopyButton size="2xs" value={callbackUrl} />
+                        <CopyButton value={callbackUrl} />
                     </InputGroupAddon>
                 </InputGroup>
             </SettingsField>

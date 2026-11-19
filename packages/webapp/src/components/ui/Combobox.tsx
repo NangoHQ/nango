@@ -573,11 +573,11 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
             <span className="min-w-0 truncate">{children}</span>
             {showRemove && (
                 <ComboboxPrimitive.ChipRemove
-                    render={<IconButton variant="ghost" size="2xs" label="Remove" />}
-                    className="size-4 p-0 flex items-center justify-center rounded-sm text-text-muted hover:text-text-strong hover:bg-state-hover"
+                    render={<IconButton variant="ghost" size="sm" inline label="Remove" />}
+                    className="flex items-center justify-center rounded-sm text-text-muted hover:text-text-strong hover:bg-state-hover"
                     data-slot="combobox-chip-remove"
                 >
-                    <XIcon className="pointer-events-none size-3.5" />
+                    <XIcon className="pointer-events-none" />
                 </ComboboxPrimitive.ChipRemove>
             )}
         </ComboboxPrimitive.Chip>
