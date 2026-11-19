@@ -1,0 +1,50 @@
+---
+title: 'Ambient Weather - How do I link my account?'
+sidebarTitle: 'Ambient Weather'
+---
+
+## Overview
+
+To authenticate with Ambient Weather, you need:
+
+1. **API Key** — the API key for your AmbientWeather.net account.
+2. **Application Key** — the key that identifies the application calling the API.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An [AmbientWeather.net](https://ambientweather.net) account.
+
+### Step 1: Create an API key
+
+1. Log in to AmbientWeather.net and open your [Account page](https://ambientweather.net/account).
+2. Open the **API Keys** tab.
+
+<img src="/api-integrations/ambient-weather/account_api_keys_tab.png" alt="AmbientWeather.net Account page with the API Keys tab highlighted"/>
+
+3. Click **Create API Key**.
+
+<img src="/api-integrations/ambient-weather/create_api_key.png" alt="AmbientWeather.net API Keys tab with the Create API Key button highlighted"/>
+
+4. A new row appears. Optionally enter a label for the key, then copy the value in the **API Key** column.
+
+<img src="/api-integrations/ambient-weather/api_key_created.png" alt="AmbientWeather.net API Keys tab with a labelled key and its API Key column highlighted"/>
+
+### Step 2: Create an application key
+
+1. On the same **API Keys** tab, find the line **Developers: An Application Key is also required** below the keys.
+2. Click **Click here**, describe your application, then click **Create Application Key**.
+3. Copy the new key: it is your application key.
+
+The application key identifies the developer or application, so if the app you are connecting gave you one, use that key instead.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Ambient Weather.
+2. Enter your **Application Key** and your **API Key** in their fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/ambient-weather/form.png" alt="Ambient Weather Connect UI form with the API Key and Application Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Ambient Weather.

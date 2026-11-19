@@ -1,0 +1,40 @@
+---
+title: 'BART - How do I link my account?'
+sidebarTitle: 'BART'
+---
+
+## Overview
+
+To authenticate with BART, you need:
+
+1. **Validation Key** — a key for the BART Legacy API.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A valid email address, if you register for your own key. The key is free, and there is no account or dashboard.
+
+### Step 1: Get a validation key
+
+1. Open the [BART API Key Registration](https://api.bart.gov/api/register.aspx) page.
+2. Enter your first name, last name and email address, then confirm your email.
+3. Tick **I've read the License Agreement**, complete the reCAPTCHA and click **Submit**.
+
+<img src="/api-integrations/bart/register_form.png" alt="BART API Key Registration form with name, email, License Agreement checkbox and Submit button"/>
+
+4. BART emails you your validation key. Copy it from the email.
+
+Alternatively, use BART's public key without registering. It is listed under **Two ways to get a Legacy API key** on the [BART Legacy API](https://www.bart.gov/schedules/developers/api) page. BART may refresh the public key; a key you registered for keeps working when it does.
+
+<img src="/api-integrations/bart/public_key.png" alt="BART Legacy API page with the public key under Two ways to get a Legacy API key"/>
+
+### Step 2: Enter your validation key in the Connect UI
+
+1. Open the form where you need to authenticate with BART.
+2. Paste your key into the **Validation Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/bart/form.png" alt="BART Connect UI form with the Validation Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to BART.
