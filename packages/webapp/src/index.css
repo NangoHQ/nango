@@ -57,29 +57,29 @@
     @keyframes spiral-wave {
         0%,
         100% {
-            stroke: var(--color-icon-brand);
+            stroke: var(--spiral-rest);
         }
         50% {
-            stroke: color-mix(in oklab, var(--color-icon-brand), white 50%);
+            stroke: var(--spiral-lit);
         }
     }
     @keyframes spiral-band {
         0%,
         45%,
         100% {
-            stroke: var(--color-icon-brand);
+            stroke: var(--spiral-rest);
         }
         18% {
-            stroke: color-mix(in oklab, var(--color-icon-brand), white 55%);
+            stroke: var(--spiral-lit);
         }
     }
     @keyframes spiral-shimmer {
         0%,
         100% {
-            stroke: var(--color-icon-brand);
+            stroke: var(--spiral-rest);
         }
         50% {
-            stroke: color-mix(in oklab, var(--color-icon-brand), white 65%);
+            stroke: var(--spiral-lit);
         }
     }
 
