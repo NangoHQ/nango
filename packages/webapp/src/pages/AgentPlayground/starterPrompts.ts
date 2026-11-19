@@ -1,3 +1,5 @@
+import { humanize } from './toolDisplay';
+
 // Read-only first tasks per provider, so trying an integration in the playground can't change anyone's data.
 // Providers missing here get a generic prompt. The Agent Playground PostHog dashboard ranks which of them people try.
 export const PROVIDER_STARTER_PROMPTS: Record<string, string> = {
@@ -161,3 +163,16 @@ export const PROVIDER_STARTER_PROMPTS: Record<string, string> = {
     zoom: 'What Zoom meetings do I have coming up?',
     'zoom-cc': 'What plan is my Zoom account on?'
 };
+
+export const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
+    { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
+    { prompt: 'Summarize my 3 latest emails in Gmail', provider: 'google-mail', name: 'Gmail' },
+    { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
+    { prompt: 'Send me "Hello, world!" on Slack', provider: 'slack', name: 'Slack' },
+    { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
+    { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot', name: 'HubSpot' }
+];
+
+export function providerName(provider: string): string {
+    return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
+}
