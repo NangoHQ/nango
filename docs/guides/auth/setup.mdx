@@ -21,7 +21,7 @@ The end-to-end flow has four steps:
       1. **Get access to Nango** If the user needs an account and authorizes you, signup here: https://app.nango.dev/signup You will need the user's name, email, and preferred password. A verification email will be sent.
       2. **Connect to Nango** Once the user has a Nango account:
          - **Management MCP server (recommended)** Offer to install it using the [instructions](/getting-started/coding-agent-setup#management-mcp-server). Lets you manage integrations, view logs, and automate setup for the user. Permissions follow the user.
-         - **Environment API key** Get a key from **Environment Settings > API Keys** in the target environment. Send it as `Authorization: Bearer <NANGO-API-KEY>` in HTTP requests. Use a full access key or a scoped key with `environment:integrations:create`, `environment:connect_sessions:write`, and `environment:connections:list` scopes.
+         - **Environment API key** Get a key from **Environment Settings > API Keys** in the target environment. Send it as `Authorization: Bearer <NANGO-API-KEY>` in HTTP requests. Use a full access key or a scoped key with `environment:integrations:create`, `environment:connect_sessions:write`, `environment:connections:list`, and `environment:connections:read` scopes.
       3. **Identify the provider slug** If you don't know it, search the public [API catalog](https://nango.dev/docs/api-catalog.txt) for the provider name. Filter the file before reading it so you only see matching rows. Use the `Slug` column as `provider`. If several variants match, use the `Name` and `Auth mode` columns to pick the right one.
 
          ```bash
