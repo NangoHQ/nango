@@ -60,9 +60,23 @@ const inputGroupVariants = cva(
 
 export type InputGroupProps = Omit<React.ComponentProps<'div'>, 'size'> & VariantProps<typeof inputGroupVariants>;
 
+const InputGroupContext = React.createContext(false);
+
+export function useInsideInputGroup(): boolean {
+    return React.useContext(InputGroupContext);
+}
+
 function InputGroup({ className, size, readOnlyStyle, ...props }: InputGroupProps) {
     return (
-        <div data-slot="input-group" data-size={size ?? 'md'} role="group" className={cn(inputGroupVariants({ size, readOnlyStyle }), className)} {...props} />
+        <InputGroupContext.Provider value={true}>
+            <div
+                data-slot="input-group"
+                data-size={size ?? 'md'}
+                role="group"
+                className={cn(inputGroupVariants({ size, readOnlyStyle }), className)}
+                {...props}
+            />
+        </InputGroupContext.Provider>
     );
 }
 
@@ -71,7 +85,7 @@ export const inputGroupAddonVariants = cva(
         'flex h-auto shrink-0 cursor-text items-center justify-center gap-1 select-none',
         'font-sans text-ds-sm font-ds-regular leading-ds-normal text-text-secondary',
         "[&>svg]:text-icon-secondary [&>svg:not([class*='size-'])]:size-3.5 [&>svg]:shrink-0",
-        'px-1.5 has-[>button]:px-0',
+        'px-1.5 has-[button]:px-0',
         'group-has-[[data-slot=input-group-control]:disabled]/input-group:text-text-disabled group-has-[[data-slot=input-group-control]:disabled]/input-group:[&>svg]:text-icon-disabled'
     ],
     {
