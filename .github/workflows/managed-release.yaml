@@ -72,6 +72,7 @@ jobs:
         outputs:
             status: ${{ steps.cluster-state.outputs.status }}
             digest: ${{ steps.build.outputs.digest }}
+            platforms: ${{ steps.build.outputs.platforms }}
         steps:
             - name: Setup kind
               uses: helm/kind-action@v1
@@ -116,8 +117,8 @@ jobs:
                   password: ${{ secrets.DOCKER_PASSWORD }}
 
             # Built once for every platform the base image has, and pushed untagged.
-            # finalize-release tags this exact digest, so what the kind test runs below
-            # is what gets released.
+            # finalize-release stamps the release version onto this exact digest, so
+            # what the kind test runs below is what gets released.
             - name: Build managed image
               id: build
               env:
@@ -170,6 +171,7 @@ jobs:
                           .
                       IMAGE="$CANDIDATE"
                   fi
+                  echo "platforms=$PLATFORMS" >> "$GITHUB_OUTPUT"
 
                   # Fails the release if the image has no license key, on any platform
                   for platform in ${PLATFORMS//,/ }; do
@@ -486,6 +488,10 @@ jobs:
                   username: ${{ secrets.DOCKER_USERNAME }}
                   password: ${{ secrets.DOCKER_PASSWORD }}
 
+            - name: Set up Docker Buildx
+              if: ${{ !env.ACT }}
+              uses: docker/setup-buildx-action@v3
+
             - name: Log Docker operations (act)
               if: ${{ env.ACT }}
               run: |
@@ -502,13 +508,16 @@ jobs:
               if: ${{ !env.ACT }}
               env:
                   DIGEST: ${{ needs.test-deployment.outputs.digest }}
+                  PLATFORMS: ${{ needs.test-deployment.outputs.platforms }}
               run: |
                   if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
                       echo "Test deployment failed, using bumped major version"
-                      IMAGE_TAG="managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
+                      MANAGED_VERSION="${{ steps.bump-major.outputs.image_version }}"
+                      IMAGE_TAG="managed-${MANAGED_VERSION}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   else
                       echo "Test deployment successful, using original versions"
-                      IMAGE_TAG="managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
+                      MANAGED_VERSION="${{ needs.manage-versions.outputs.image_version }}"
+                      IMAGE_TAG="managed-${MANAGED_VERSION}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   fi
 
                   if [ "${{ inputs.dry_run }}" != "true" ]; then
@@ -522,7 +531,13 @@ jobs:
                           echo "test-deployment pushed no image"
                           exit 1
                       fi
-                      docker buildx imagetools create -t "nangohq/nango:${PUSH_TAG}" "nangohq/nango@${DIGEST}"
+                      # The version is only known here, after the major bump decision. The tested
+                      # digest gets one more ENV layer and is pushed under the final tag; its
+                      # filesystem layers are reused as they are, on every platform it was built for
+                      docker buildx build --platform "$PLATFORMS" --provenance=false --tag "nangohq/nango:${PUSH_TAG}" --push - <<EOF
+                  FROM nangohq/nango@${DIGEST}
+                  ENV NANGO_MANAGED_VERSION=${MANAGED_VERSION}
+                  EOF
                   fi
 
                   echo "tag_name=${IMAGE_TAG}" >> $GITHUB_OUTPUT
