@@ -7595,7 +7595,7 @@ cosign verify nangohq/nango@<image-digest> \
 
 The command fails if the image has no valid signature from Nango's release workflow, which only publishes releases from `master`. Each release's notes include this command with the release's own digest. To deploy exactly the image you verified, pull it by the same digest: `nangohq/nango@<image-digest>`.
 
-Releases published before signing was introduced aren't signed.
+Managed releases after 1.7.2 are signed. Earlier releases aren't.
 
 ### Versions and policy
 
