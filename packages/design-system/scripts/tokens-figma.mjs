@@ -418,7 +418,7 @@ function payload(runtime, call) {
     return `${SHARED_HELPERS}\n${runtime}\nreturn await ${call};\n`;
 }
 
-export function buildCheckPayload(desired, runtime) {
+export function buildReadPayload(desired, runtime) {
     const input = {
         collections: desired.collections,
         variables: desired.variables.map((v) => [
@@ -430,8 +430,8 @@ export function buildCheckPayload(desired, runtime) {
         ]),
         styles: desired.styles.map((s) => [s.kind, s.name, s.id, hashOf(canonicalStyle(s)), hashOf(s.description)])
     };
-    const code = payload(runtime, `checkTokens(${JSON.stringify(input)})`);
-    if (code.length > CHUNK_BUDGET) throw new Error(`Check payload is ${code.length} characters, over the ${CHUNK_BUDGET} limit`);
+    const code = payload(runtime, `readFigma(${JSON.stringify(input)})`);
+    if (code.length > CHUNK_BUDGET) throw new Error(`Read payload is ${code.length} characters, over the ${CHUNK_BUDGET} limit`);
     return code;
 }
 
@@ -459,13 +459,13 @@ export function buildApplyPayloads(desired, runtime, changed) {
     return chunks.map(render);
 }
 
-export function describeDiff(desired, checkResult) {
+export function describeDiff(desired, figmaState) {
     const lines = [];
     const want = new Map([
         ...desired.variables.map((v) => [`variable|${v.name}`, canonicalVariable(v)]),
         ...desired.styles.map((s) => [`${s.kind}|${s.name}`, canonicalStyle(s)])
     ]);
-    for (const item of checkResult.changed ?? []) {
+    for (const item of figmaState.changed ?? []) {
         const desiredCanon = want.get(`${item.kind}|${item.name}`);
         if (!item.current) {
             lines.push(`+ create ${item.kind} ${item.name}`);
@@ -477,8 +477,8 @@ export function describeDiff(desired, checkResult) {
         if (item.description) parts.push('description');
         lines.push(`~ ${item.kind} ${item.name}: ${parts.join('; ')}`);
     }
-    for (const orphan of checkResult.orphans ?? []) lines.push(`? ${orphan.kind} ${orphan.name} is in Figma but not in tokens.json`);
-    for (const error of checkResult.errors ?? []) lines.push(`! ${error}`);
+    for (const orphan of figmaState.orphans ?? []) lines.push(`? ${orphan.kind} ${orphan.name} is in Figma but not in tokens.json`);
+    for (const error of figmaState.errors ?? []) lines.push(`! ${error}`);
     return lines;
 }
 
@@ -516,11 +516,11 @@ function loadDesired() {
     return { tokens, desired, runtime: readFileSync(RUNTIME_PATH, 'utf8') };
 }
 
-function check() {
+function readFigma() {
     const { desired, runtime } = loadDesired();
     mkdirSync(OUT_DIR, { recursive: true });
-    const file = path.join(OUT_DIR, 'check.js');
-    writeFileSync(file, buildCheckPayload(desired, runtime));
+    const file = path.join(OUT_DIR, 'read-figma.js');
+    writeFileSync(file, buildReadPayload(desired, runtime));
     console.log(`Figma file: ${FIGMA_FILE_KEY}`);
     console.log(`${desired.variables.length} variables, ${desired.styles.length} styles`);
     console.log(`\nRun with use_figma (reads only): ${file}`);
@@ -528,7 +528,7 @@ function check() {
 }
 
 function diff([resultFile]) {
-    if (!resultFile) throw new Error('Pass the file holding the check result.');
+    if (!resultFile) throw new Error('Pass the file holding the read-figma result.');
     const { tokens, desired, runtime } = loadDesired();
     const result = JSON.parse(readFileSync(resultFile, 'utf8'));
     const lines = describeDiff(desired, result);
@@ -538,17 +538,17 @@ function diff([resultFile]) {
         return;
     }
     console.log(lines.join('\n'));
-    if (stale.length > 0) console.log(`\n${stale.length} stale Figma references in tokens.json; write-keys removes them.`);
+    if (stale.length > 0) console.log(`\n${stale.length} stale Figma references in tokens.json; pull-new-figma-keys removes them.`);
     const files = buildApplyPayloads(desired, runtime, result.changed ?? []).map((code, i) => {
         const file = path.join(OUT_DIR, `apply-${i + 1}.js`);
         writeFileSync(file, code);
         return file;
     });
     if (files.length > 0) console.log(`\nAfter approval, run in order with use_figma:\n  ${files.join('\n  ')}`);
-    console.log(`Save each JSON result, then run: npm run tokens:figma -- write-keys <files>`);
+    console.log(`Save each JSON result, then run: npm run tokens:figma -- pull-new-figma-keys <files>`);
 }
 
-async function writeKeys(resultFiles) {
+async function pullNewFigmaKeys(resultFiles) {
     const { tokens, desired } = loadDesired();
     const results = resultFiles.map((f) => JSON.parse(readFileSync(f, 'utf8')));
     const errors = results.flatMap((r) => r.errors ?? []);
@@ -560,9 +560,9 @@ async function writeKeys(resultFiles) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const [command, ...args] = process.argv.slice(2);
-    const commands = { check: async () => check(), diff: async () => diff(args), 'write-keys': () => writeKeys(args) };
+    const commands = { 'read-figma': async () => readFigma(), diff: async () => diff(args), 'pull-new-figma-keys': () => pullNewFigmaKeys(args) };
     if (!commands[command]) {
-        console.error('Usage: tokens-figma.mjs check | diff <check-result.json> | write-keys <apply-result.json>...');
+        console.error('Usage: tokens-figma.mjs read-figma | diff <figma-state.json> | pull-new-figma-keys <apply-result.json>...');
         process.exit(1);
     }
     commands[command]().catch((err) => {

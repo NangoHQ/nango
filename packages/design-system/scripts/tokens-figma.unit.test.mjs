@@ -5,8 +5,8 @@ import { describe, expect, it } from 'vitest';
 import {
     applyResults,
     buildApplyPayloads,
-    buildCheckPayload,
     buildDesiredState,
+    buildReadPayload,
     canonicalStyle,
     canonicalVariable,
     describeDiff,
@@ -163,8 +163,8 @@ describe('buildDesiredState', () => {
 describe('payloads', () => {
     const desired = buildDesiredState(fixture());
 
-    it('keeps the check payload under the use_figma limit and descriptions out of the value hash', () => {
-        const code = buildCheckPayload(desired, runtime);
+    it('keeps the read payload under the use_figma limit and descriptions out of the value hash', () => {
+        const code = buildReadPayload(desired, runtime);
         expect(code.length).toBeLessThan(50000);
         const canvas = desired.variables.find((v) => v.name === 'surface/canvas');
         expect(hashOf(canonicalVariable({ ...canvas, description: 'changed' }))).toBe(hashOf(canonicalVariable(canvas)));

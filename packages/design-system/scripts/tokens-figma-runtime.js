@@ -98,7 +98,7 @@ function findStyle(state, kind, name, id) {
     return list.find((s) => s.id === id) || list.find((s) => s.name === name);
 }
 
-async function checkTokens(input) {
+async function readFigma(input) {
     const state = await loadFigmaState(input.collections);
     const changed = [];
     const errors = [];
@@ -182,7 +182,7 @@ async function applyTokens(input) {
             if (value.alias) {
                 const target = findVariable(value.alias);
                 if (!target) {
-                    errors.push(`${want.name} (${modeName}): alias target ${value.alias} doesn't exist yet; run the check again`);
+                    errors.push(`${want.name} (${modeName}): alias target ${value.alias} doesn't exist yet; sync again`);
                     continue;
                 }
                 variable.setValueForMode(modeId, figma.variables.createVariableAlias(target));
@@ -214,7 +214,7 @@ async function applyTokens(input) {
                     showShadowBehindNode: false
                 };
                 const target = e.colorAlias && findVariable(e.colorAlias);
-                if (e.colorAlias && !target) errors.push(`${want.name}: color alias ${e.colorAlias} doesn't exist yet; run the check again`);
+                if (e.colorAlias && !target) errors.push(`${want.name}: color alias ${e.colorAlias} doesn't exist yet; sync again`);
                 return target ? figma.variables.setBoundVariableForEffect(effect, 'color', target) : effect;
             });
             continue;
@@ -243,7 +243,7 @@ async function applyTokens(input) {
             ['letterSpacing', want.letterSpacing]
         ]) {
             const target = binding.alias ? findVariable(binding.alias) : null;
-            if (binding.alias && !target) errors.push(`${want.name}: ${field} alias ${binding.alias} doesn't exist yet; run the check again`);
+            if (binding.alias && !target) errors.push(`${want.name}: ${field} alias ${binding.alias} doesn't exist yet; sync again`);
             style.setBoundVariable(field, target || null);
         }
     }

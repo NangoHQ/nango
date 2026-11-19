@@ -1,6 +1,6 @@
 ---
-name: syncing-figma-tokens
-description: Use after changing packages/design-system/tokens/tokens.json, or when asked to sync design tokens to Figma or Dharma - pushes the repo's tokens one way into the Dharma Figma library through the Figma MCP, with a check before anything is written
+name: syncing-tokens-to-figma
+description: Use after changing packages/design-system/tokens/tokens.json, or when asked to sync design tokens to Figma or Dharma - pushes the repo's tokens one way into the Dharma Figma library through the Figma MCP, showing the differences before anything is written
 ---
 
 # Syncing design tokens to Figma
@@ -13,18 +13,18 @@ Run the sync from the branch that changes the tokens, before the PR merges, so t
 
 1. Load the `figma-use` skill. Every `use_figma` call below uses the file key the script prints.
 
-2. Build the check:
+2. Build the script that reads Figma:
 
     ```bash
-    npm run tokens:figma --workspace=@nangohq/design-system -- check
+    npm run tokens:figma --workspace=@nangohq/design-system -- read-figma
     ```
 
-3. Pass the printed `check.js` file's full contents as `code` to `use_figma`. It only reads.
+3. Pass the printed `read-figma.js` file's full contents as `code` to `use_figma`. It only reads.
 
 4. Save the JSON it returns to a file, then:
 
     ```bash
-    npm run tokens:figma --workspace=@nangohq/design-system -- diff <check-result.json>
+    npm run tokens:figma --workspace=@nangohq/design-system -- diff <figma-state.json>
     ```
 
     It prints what would change and writes `apply-N.js` files. `✓ Figma matches tokens.json` means you're done.
@@ -34,12 +34,12 @@ Run the sync from the branch that changes the tokens, before the PR merges, so t
 6. Save the Figma keys of anything created into `tokens.json`, and drop stale ones. With no `apply-N.js` files, run it with no arguments:
 
     ```bash
-    npm run tokens:figma --workspace=@nangohq/design-system -- write-keys [apply-1.json apply-2.json ...]
+    npm run tokens:figma --workspace=@nangohq/design-system -- pull-new-figma-keys [apply-1.json apply-2.json ...]
     ```
 
     Commit the `tokens.json` change with the token change.
 
-7. Run the check again. It should report nothing changed.
+7. Repeat steps 2–4. `diff` should report that Figma matches.
 
 ## Reading the diff
 
