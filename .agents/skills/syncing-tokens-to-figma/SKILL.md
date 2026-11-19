@@ -29,11 +29,11 @@ Run the sync from the branch that changes the tokens, before the PR merges. Only
 
     It prints what would change and writes `apply-N.js` files. `✓ Figma matches tokens.json` means you're done.
 
-5. Handle renames first. A token renamed in `tokens.json` shows up as a `+ create` line plus a `?` line for its old name. Rename the old variable or style in Figma with `use_figma`, so components that use it stay connected, then go back to step 2.
+5. Show the user the diff and wait for a yes. A token renamed in `tokens.json` shows up as a `+ create` line plus a `?` line for its old name; list those pairs as renames.
 
-6. Show the user the diff and wait for a yes. Then run each `apply-N.js` with `use_figma`, in order. Each returns `{ created, errors }`; fix any error and sync again.
+6. After the yes, rename the old variables or styles in Figma with `use_figma` first, so components that use them stay connected, then go back to step 2. With no renames left, run each `apply-N.js` with `use_figma`, in order. Each returns `{ created, errors }`; fix any error and sync again.
 
-7. Repeat steps 2–4. `diff` should report that Figma matches.
+7. Repeat steps 2–4. `diff` should print no `+`, `~` or `!` lines. `?` lines for items that exist only in Figma are expected.
 
 ## Reading the diff
 
@@ -42,7 +42,7 @@ Run the sync from the branch that changes the tokens, before the PR merges. Only
 | `+ create variable color/danger/750` | Missing in Figma; apply creates it |
 | `~ variable border/input: v {...} → {...}` | Figma value differs; apply overwrites it with the repo's |
 | `~ variable surface/canvas: description` | Only the description differs |
-| `? variable Colors/control/checkbox/border is in Figma but not in tokens.json` | Never deleted automatically. If it pairs with a `+ create`, it's a rename (step 5). Otherwise ask the user. |
+| `? variable Colors/control/checkbox/border is in Figma but not in tokens.json` | Never deleted automatically. If it pairs with a `+ create`, it's a rename (steps 5–6). Otherwise ask the user. |
 | `! ...` | An error. Fix it before applying. |
 
 A value change where Figma looks newer than the repo means someone edited Figma directly. Ask the user before overwriting it.
