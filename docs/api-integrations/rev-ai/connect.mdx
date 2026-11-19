@@ -1,0 +1,61 @@
+---
+title: 'Rev AI - How do I link my account?'
+sidebarTitle: 'Rev AI'
+---
+
+## Overview
+
+To authenticate with Rev AI, you need:
+
+1. **Region** - the Rev AI deployment your account is on.
+2. **Access Token** - a Rev AI access token.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A Rev AI account. If you don't have one, [sign up for a free account](https://www.rev.ai/auth/signup).
+
+### Step 1: Find your region
+
+Rev AI runs two deployments, each with its own API host:
+
+| Region | Host |
+| --- | --- |
+| US | `api.rev.ai` |
+| EU (Frankfurt) | `ec1.api.rev.ai` |
+
+The flag under the Rev AI logo in the dashboard sidebar shows your deployment. Pick `api.rev.ai` unless Rev AI support or your Customer Success Manager set up EU access for your account. A token used against the wrong deployment is denied access.
+
+### Step 2: Generate an access token
+
+1. Log in to [Rev AI](https://www.rev.ai/auth/login).
+2. In the left sidebar, click **Access Token**.
+
+<img src="/api-integrations/rev-ai/access_token_nav.png" alt="Rev AI dashboard sidebar with the Access Token link highlighted"/>
+
+3. Click **Generate** (or **Generate New Access Token** if you already have a token).
+
+<img src="/api-integrations/rev-ai/generate_access_token.png" alt="Rev AI Access Token page with the Generate button highlighted"/>
+
+4. In the **Generate new access token** dialog, click **Generate New Token**.
+
+<img src="/api-integrations/rev-ai/confirm_generate_token.png" alt="Rev AI dialog to confirm generating a new access token"/>
+
+5. Copy the **New Access Token** right away and store it somewhere safe.
+
+<img src="/api-integrations/rev-ai/access_token_created.png" alt="Rev AI Access Token page showing the new access token field"/>
+
+<Note>
+Rev AI shows each access token only once, and an account can have at most 2 access tokens at a time. If you lose a token, generate a new one and delete the old one.
+</Note>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Rev AI.
+2. Select your **Region** and enter your **Access Token**.
+3. Click **Connect**. Nango checks the token with Rev AI before saving the connection.
+
+<img src="/api-integrations/rev-ai/form.png" alt="Nango Connect UI form for choosing the Rev AI region and entering the access token" style={{maxWidth: "450px" }}/>
+
+You are now connected to Rev AI.

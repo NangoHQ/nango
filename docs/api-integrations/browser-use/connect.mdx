@@ -1,0 +1,61 @@
+---
+title: 'Browser Use - How do I link my account?'
+sidebarTitle: 'Browser Use'
+---
+
+## Overview
+
+To authenticate with Browser Use, you need:
+
+1. **Region** — the Browser Use API host for the dashboard where you created your API key.
+2. **API Key** — a Browser Use API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Browser Use account. You can sign up at [cloud.browser-use.com](https://cloud.browser-use.com).
+
+### Step 1: Choose your region
+
+Browser Use has a US and an EU deployment, each with its own dashboard and API host. Select the value that matches the dashboard you create your API key in:
+
+| Region | Dashboard | Value to select |
+|--------|-----------|-----------------|
+| US | `cloud.browser-use.com` | `api.browser-use.com` |
+| EU | `cloud.eu.browser-use.com` | `api.eu.browser-use.com` |
+
+US API keys do not authenticate EU API requests, so an EU connection needs a key created in the EU dashboard. See [EU deployment](https://docs.browser-use.com/cloud/eu-deployment) for details.
+
+### Step 2: Create an API key
+
+1. Sign in to the Browser Use dashboard for your region and open [Settings → API keys](https://cloud.browser-use.com/settings?tab=api-keys). For the EU, use the **API Keys** section of the EU dashboard at [cloud.eu.browser-use.com](https://cloud.eu.browser-use.com).
+2. On the **Platform API Keys** tab, click **Create API Key**.
+
+<img src="/api-integrations/browser-use/api_keys_page.png" alt="Browser Use API Keys page with the Create API Key button on the Platform API Keys tab"/>
+
+3. Enter a label and choose an expiration. Leave **Full access** on, or turn it off to pick a **Read** or **Write** permission per resource. Then click **Create**.
+
+<img src="/api-integrations/browser-use/create_api_key_dialog.png" alt="Create New API Key dialog in Browser Use with the label, expiration and Full access fields"/>
+
+4. In the **API Key Created** dialog, copy the key. It starts with `bu_`.
+
+<img src="/api-integrations/browser-use/api_key_created.png" alt="API Key Created dialog in Browser Use with the button to copy the key"/>
+
+A key with **Full access** turned off is created and copied the same way:
+
+<img src="/api-integrations/browser-use/restricted_api_key_created.png" alt="API Key Created dialog in Browser Use for a key with per-resource permissions"/>
+
+An EU key is created the same way in the EU dashboard:
+
+<img src="/api-integrations/browser-use/eu_api_key_created.png" alt="API Key Created dialog in the Browser Use EU dashboard"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Browser Use.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/browser-use/form.png" alt="Browser Use connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Browser Use.

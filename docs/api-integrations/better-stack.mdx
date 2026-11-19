@@ -1,0 +1,83 @@
+---
+title: 'Better Stack'
+sidebarTitle: 'Better Stack'
+description: 'Integrate your application with the Better Stack API'
+---
+
+## 🚀 Quickstart
+
+Connect to Better Stack with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Better Stack_.
+    </Step>
+    <Step id="authorize-better-stack" title="Authorize Better Stack">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Better Stack API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-better-stack-api" title="Call the Better Stack API">
+    Let's make your first request to the Better Stack Incidents API to list your monitors. This works with a global or Incidents API token. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/monitors?per_page=1" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/monitors',
+            params: { per_page: 1 },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Better Stack integration guides
+
+- [How do I link my account?](/api-integrations/better-stack/connect)  
+Create a Better Stack API token and connect it in the Connect UI.
+
+Official docs: [Better Stack Incidents API](https://betterstack.com/docs/uptime/api/getting-started-with-uptime-api/)
+
+## 🧩 Pre-built syncs & tools for Better Stack
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/better-stack/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Telemetry API calls go to `telemetry.betterstack.com`: set `baseUrlOverride` to `https://telemetry.betterstack.com/api`, and Nango keeps the connection's token and headers. See [List all sources](https://betterstack.com/docs/logs/api/list-all-existing-sources/).
+- Usage API calls go to `betterstack.com`: set `baseUrlOverride` to `https://betterstack.com/api`, and Nango keeps the connection's token and headers. See [Get usage overview](https://betterstack.com/docs/uptime/api/usage/overview/).
+
+---
