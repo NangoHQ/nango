@@ -161,7 +161,12 @@ class RemoteFileService {
         const keysByStore = new Map<ObjectStore, string[]>();
         for (const key of fileNames) {
             const store = this.getStoreFor(key);
-            keysByStore.set(store, [...(keysByStore.get(store) ?? []), key]);
+            const keys = keysByStore.get(store);
+            if (keys) {
+                keys.push(key);
+            } else {
+                keysByStore.set(store, [key]);
+            }
         }
         await Promise.all([...keysByStore].map(([store, keys]) => store.delete(keys)));
     }
