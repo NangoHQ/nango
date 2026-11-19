@@ -363,6 +363,9 @@ describe('LambdaRuntimeAdapter – internal auth mint', () => {
             codeParams: {}
         });
         expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.cause).toEqual(expect.objectContaining({ message: expect.stringContaining('NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY') }));
+        }
         expect(mockLambdaSend).not.toHaveBeenCalled();
     });
 });

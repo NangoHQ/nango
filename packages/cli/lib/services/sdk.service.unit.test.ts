@@ -151,6 +151,7 @@ describe('cliNango', () => {
     it('sends the secret and ignores a task token', () => {
         const config = cliNango({ secretKey: 'sk', taskAuthToken: 'task-token', connectionId: 'c', providerConfigKey: 'github' } as any, { isSync: false });
         expect(config).toMatchObject({ secretKey: 'sk', dryRun: true, isSync: false });
+        expect(config).not.toHaveProperty('taskAuthToken');
         expect(config).not.toHaveProperty('apiKey');
         expect(config).not.toHaveProperty('webhookSigningKey');
     });

@@ -6,8 +6,11 @@ import {
     exportRunnerPublicKey,
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_RUNNER,
+    INTERNAL_SERVICE_ISSUER_JOBS,
+    keyRegistryFromPublicKeys,
     verifyInternalServiceToken,
-    verifyRunnerDispatchToken
+    verifyRunnerDispatchToken,
+    verifyTaskCapabilityToken
 } from '@nangohq/internal-auth';
 import { Ok } from '@nangohq/utils';
 
@@ -177,7 +180,10 @@ describe('RunnerRuntimeAdapter internal auth', () => {
     });
 
     it('sends the capability token and drops secretKey when omit is set', async () => {
-        const { privateKey } = generateKeyPairSync('ed25519');
+        const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+        const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
+            .subarray(12)
+            .toString('base64url');
         mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
         mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
         mockEnvs.NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY = true;
@@ -186,7 +192,10 @@ describe('RunnerRuntimeAdapter internal auth', () => {
         expect(result.isOk()).toBe(true);
         const sent = startMutate.mock.calls[0]?.[0] as { nangoProps: { secretKey?: string; taskAuthToken?: string }; internalAuthToken?: string };
         expect(sent.nangoProps.secretKey).toBeUndefined();
+        expect(sent.internalAuthToken).toEqual(expect.stringMatching(/^eyJ/));
         expect(sent.nangoProps.taskAuthToken).toBe(sent.internalAuthToken);
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: raw }], INTERNAL_SERVICE_ISSUER_JOBS);
+        expect(await verifyTaskCapabilityToken(sent.internalAuthToken!, INTERNAL_SERVICE_AUDIENCE_JOBS, registry)).toMatchObject({ sub: 'task:task-1' });
     });
 
     it('fails dispatch when omit is set and no Ed25519 key is configured', async () => {
