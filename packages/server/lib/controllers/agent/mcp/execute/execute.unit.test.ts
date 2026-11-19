@@ -508,15 +508,16 @@ describe('executeSessionTool', () => {
         expect(executeAction).not.toHaveBeenCalled();
     });
 
-    it('returns invalid action input as a correctable error', async () => {
+    it.each(['', '.'])('returns invalid action input as a correctable error (suffix=%j)', async (suffix) => {
         executeAction.mockResolvedValue({
             logCtx: undefined,
-            result: Err(new ActionExecutionError({ code: 'invalid_input', message: 'Invalid action input: input must be object' }))
+            result: Err(new ActionExecutionError({ code: 'invalid_input', message: `Invalid action input: input must be object${suffix}` }))
         });
         const result = await execute('read_doc', { input: '{"id":"1"}' });
         expect(codeOf(result)).toBe('invalid_input');
         expect(errorOf(result).message).toContain('input must be object');
-        expect(errorOf(result).message).toContain('Correct the input');
+        expect(errorOf(result).message).toContain('input must be object. Correct the input');
+        expect(errorOf(result).message).not.toContain('..');
     });
 
     it('refuses an integration that was deleted after the session was created', async () => {

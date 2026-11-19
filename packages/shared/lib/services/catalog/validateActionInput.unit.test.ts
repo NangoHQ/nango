@@ -64,6 +64,14 @@ describe('validateActionInput', () => {
         }
     });
 
+    it('accepts empty MCP arguments for no-input actions without accepting nonempty values', () => {
+        const action = deployed({ definitions: { Input: { type: 'null' } } });
+        expect(validateActionInput(action, {}).isOk()).toBe(true);
+        expect(validateActionInput(action, { unexpected: true }).isErr()).toBe(true);
+        expect(validateActionInput(action, []).isErr()).toBe(true);
+        expect(validateActionInput(action, '').isErr()).toBe(true);
+    });
+
     it('keeps deployments without a JSON schema compatible', () => {
         expect(validateActionInput(deployed(null), 'legacy input').isOk()).toBe(true);
         expect(validateActionInput(deployed(objectSchema, null), undefined).isOk()).toBe(true);
@@ -98,16 +106,14 @@ describe('validateActionInput', () => {
         expect(validateActionInput(action, { id: 'order', patch: [{ op: 'invalid', path: '/value' }] }).isErr()).toBe(true);
     });
 
-    it('can compile the input schemas of every catalog action', () => {
+    it.each(getFlowsJson())('can compile the input schemas for $providerConfigKey', (integration) => {
         const failures: string[] = [];
-        for (const integration of getFlowsJson()) {
-            for (const action of integration.actions) {
-                const tool = getCatalogTool(integration.providerConfigKey, action.name);
-                if (!tool) throw new Error('Missing catalog action');
-                const result = validateActionInput({ kind: 'catalog', tool }, undefined);
-                if (result.isErr() && result.error.code === 'invalid_schema')
-                    failures.push(`${integration.providerConfigKey}/${action.name}: ${String(result.error.cause)}`);
-            }
+        for (const action of integration.actions) {
+            const tool = getCatalogTool(integration.providerConfigKey, action.name);
+            if (!tool) throw new Error('Missing catalog action');
+            const result = validateActionInput({ kind: 'catalog', tool }, undefined);
+            if (result.isErr() && result.error.code === 'invalid_schema')
+                failures.push(`${integration.providerConfigKey}/${action.name}: ${String(result.error.cause)}`);
         }
         expect(failures).toEqual([]);
     });

@@ -64,9 +64,11 @@ export function validateActionInput(action: Exclude<ResolvedLegacyAction, { kind
             if (oldest !== undefined) validators.delete(oldest);
         }
 
-        // Actions with optional object fields commonly accept omitted input. Bare
-        // null schemas also represent no input. Preserve the original value at execution.
-        const valid = input === undefined ? validate(null) || validate({}) : validate(input);
+        // MCP clients send {} for omitted arguments. Actions with null schemas
+        // represent no input, while optional object schemas can accept {}. Keep
+        // the original value unchanged when handing it to the runner.
+        const omittedInput = input === undefined || (typeof input === 'object' && input !== null && !Array.isArray(input) && Object.keys(input).length === 0);
+        const valid = omittedInput ? validate(null) || validate(input ?? {}) : validate(input);
         if (!valid) {
             return Err(
                 new ActionInputValidationError(
