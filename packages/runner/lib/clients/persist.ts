@@ -13,6 +13,7 @@ import type {
     DeleteHardAllRecordsSuccess,
     DeleteOutdatedRecordsSuccess,
     DeleteRecordsSuccess,
+    GetAgentSessionResultSuccess,
     GetCheckpointSuccess,
     GetCursorSuccess,
     GetRecordsSuccess,
@@ -423,6 +424,28 @@ export class PersistClient {
         });
         if (res.isErr()) {
             return Err(new Error(`Failed to get records: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async getAgentSessionResult({
+        environmentId,
+        nangoConnectionId,
+        sessionId,
+        recordId
+    }: {
+        environmentId: number;
+        nangoConnectionId: number;
+        sessionId: string;
+        recordId: string;
+    }): Promise<Result<GetAgentSessionResultSuccess>> {
+        const res = await this.fetch<GetAgentSessionResultSuccess>({
+            method: 'GET',
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/agent-session-result`,
+            params: { sessionId, recordId }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to get agent session result: ${res.error.message}`));
         }
         return res;
     }

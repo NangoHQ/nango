@@ -1,9 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { Ok } from '@nangohq/utils';
+
+import { PersistClient } from './clients/persist.js';
 import { exec } from './exec.js';
 import { MapLocks } from './sdk/locks.js';
 
-import type { DBSyncConfig, NangoProps } from '@nangohq/types';
+import type { DBSyncConfig, NangoProps, NangoRecord } from '@nangohq/types';
 
 function getNangoProps(): NangoProps {
     return {
@@ -64,6 +67,71 @@ describe('Exec', () => {
         const res = await exec({ nangoProps, code, codeParams: trigger });
 
         expect(res.unwrap().output).toEqual({ kind: 'invoke', value: 42, variant: 'canary' });
+    });
+
+    describe('function with a stored agent session result', () => {
+        const ref = { sessionId: '0b5ff4f1-8d3b-4e0a-9d4c-3f0d6c1b2a10', recordId: '5c1f7c0e-2f3a-4c59-8f0b-7a6f1d2e3b4c' };
+        const nangoProps = {
+            ...getNangoProps(),
+            scriptType: 'function' as const,
+            syncId: undefined,
+            syncJobId: undefined,
+            syncConfig: { sync_name: 'inline' } as DBSyncConfig,
+            agentSessionResult: ref
+        };
+        const code = `
+        exports.default = {
+            type: 'function',
+            exec: async (nango, trigger) => ({ kind: trigger.kind, count: trigger.input.emails.length })
+        }
+        `;
+
+        afterEach(() => {
+            vi.restoreAllMocks();
+        });
+
+        it('runs the function with the stored result as its input', async () => {
+            const getResult = vi.spyOn(PersistClient.prototype, 'getAgentSessionResult').mockResolvedValueOnce(
+                Ok({
+                    record: {
+                        id: ref.recordId,
+                        tool: 'list-emails',
+                        storedAt: '2026-11-19T00:00:00.000Z',
+                        data: { emails: ['a', 'b', 'c'] },
+                        _nango_metadata: {} as NangoRecord['_nango_metadata']
+                    }
+                })
+            );
+
+            const res = await exec({ nangoProps, code, codeParams: { kind: 'invoke', input: { ignored: true } } });
+
+            expect(res.unwrap().output).toEqual({ kind: 'invoke', count: 3 });
+            expect(getResult).toHaveBeenCalledWith({ environmentId: 1, nangoConnectionId: 1, ...ref });
+        });
+
+        it('fails before running the function when the result is gone', async () => {
+            vi.spyOn(PersistClient.prototype, 'getAgentSessionResult').mockResolvedValueOnce(Ok({ record: null }));
+
+            const res = await exec({ nangoProps, code, codeParams: { kind: 'invoke', input: {} } });
+            if (res.isOk()) {
+                throw new Error('Expected an error');
+            }
+
+            expect(res.error.toJSON()).toMatchObject({ type: 'agent_session_result_not_found', status: 500 });
+        });
+
+        it('does not read from persist without a reference', async () => {
+            const getResult = vi.spyOn(PersistClient.prototype, 'getAgentSessionResult');
+
+            const res = await exec({
+                nangoProps: { ...nangoProps, agentSessionResult: undefined },
+                code,
+                codeParams: { kind: 'invoke', input: { emails: ['a'] } }
+            });
+
+            expect(res.unwrap().output).toEqual({ kind: 'invoke', count: 1 });
+            expect(getResult).not.toHaveBeenCalled();
+        });
     });
 
     it('executes a function that uses botbuilder', async () => {
