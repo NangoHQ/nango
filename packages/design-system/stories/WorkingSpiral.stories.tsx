@@ -6,7 +6,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 const meta: Meta<typeof WorkingSpiral> = {
     component: WorkingSpiral,
     title: 'Features/Agent Playground/WorkingSpiral',
-    parameters: { layout: 'padded' }
+    parameters: { layout: 'padded' },
+    argTypes: { pulse: { table: { disable: true } }, size: { table: { disable: true } } }
 };
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -84,12 +85,14 @@ const tunerCss = (p: TunerProps) => {
     const readout = `${keyframes}
 ${colours}
 animation: ${p.durationMs}ms infinite
-delay(i, count) = (i % 2) * -${offsetMs} + i * ${staggerMs} / count`;
+delay(i, count) = (i % 2) * -${offsetMs} + i * ${staggerMs} / count - ${Math.max(staggerMs, 0)}`;
     const css = `${keyframes}
 ${colours}
+@media (prefers-reduced-motion: no-preference) {
 .${scope} path { animation: ${name} ${p.durationMs}ms infinite !important; }
 ${delays(12)}
-${delays(20)}`;
+${delays(20)}
+}`;
     return { css, readout };
 };
 
