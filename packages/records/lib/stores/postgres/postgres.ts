@@ -1223,48 +1223,13 @@ export class PostgresStore implements RecordsStore {
                         break;
                     }
 
-                    const targetIdsSubquery = () => {
-                        const subQuery = trx
-                            .select('id')
-                            .from(RECORDS_TABLE)
-                            .where({ connection_id: connectionId, model })
-                            .orderBy([
-                                { column: 'updated_at', order: 'asc' },
-                                { column: 'id', order: 'asc' }
-                            ])
-                            .limit(toDelete);
-                        if (from) {
-                            subQuery.whereRaw('(updated_at, id) > (?, ?)', [from.updated_at, from.id]);
-                        }
-                        if (decodedCursor) {
-                            // Delete records up to and including the cursor position
-                            subQuery.whereRaw('(updated_at, id) <= (?, ?)', [decodedCursor.sort, decodedCursor.id]);
-                        }
-                        if (mode === 'soft') {
-                            // only soft delete non-deleted records
-                            subQuery.whereNull('deleted_at');
-                        } else if (mode === 'prune') {
-                            // only prune non-pruned records
-                            subQuery.whereNull('pruned_at');
-                        }
-                        return subQuery;
-                    };
+                    const batch = { connectionId, model, mode, limit: toDelete, from, toCursorIncluded: decodedCursor };
+                    const targetIdsSubquery = (): Knex.QueryBuilder => getRecordsToDelete(trx, batch);
 
                     // Fetch the size of records before deletion
                     let sizeRows: { id: string; size_bytes: number }[] = [];
                     if (!dryRun) {
-                        sizeRows = await trx
-                            .select<{ id: string; size_bytes: number }[]>(
-                                'r.id',
-                                trx.raw('COALESCE(pg_column_size(r.json), r.size_bytes, pg_column_size(d.data), 0) as size_bytes')
-                            )
-                            .from({ r: RECORDS_TABLE })
-                            .leftJoin({ d: RECORDS_DATA_TABLE }, function () {
-                                this.on('d.connection_id', 'r.connection_id').andOn('d.model', 'r.model').andOn('d.id', 'r.id');
-                            })
-                            .where('r.connection_id', connectionId)
-                            .andWhere('r.model', model)
-                            .whereIn('r.id', targetIdsSubquery());
+                        sizeRows = await getRecordsToDeleteSizes(trx, batch);
                     }
 
                     // if hard mode, we permanently delete the records
@@ -1890,6 +1855,85 @@ async function deleteCount(
     }
 ): Promise<void> {
     await trx.from(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).del();
+}
+
+/**
+ * getRecordsToDelete
+ * @desc selects the next batch of records to delete, oldest first (updated_at, id)
+ */
+function getRecordsToDelete(
+    trx: Knex,
+    {
+        connectionId,
+        model,
+        mode,
+        limit,
+        from,
+        toCursorIncluded,
+        columns = ['id']
+    }: {
+        connectionId: number;
+        model: string;
+        mode: 'hard' | 'soft' | 'prune';
+        limit: number;
+        from: { updated_at: string; id: string } | null;
+        toCursorIncluded: { sort: string; id: string } | null;
+        columns?: string[];
+    }
+): Knex.QueryBuilder {
+    const query = trx
+        .select(columns)
+        .from(RECORDS_TABLE)
+        .where({ connection_id: connectionId, model })
+        .orderBy([
+            { column: 'updated_at', order: 'asc' },
+            { column: 'id', order: 'asc' }
+        ])
+        .limit(limit);
+    if (from) {
+        query.whereRaw('(updated_at, id) > (?, ?)', [from.updated_at, from.id]);
+    }
+    if (toCursorIncluded) {
+        // Delete records up to and including the cursor position
+        query.whereRaw('(updated_at, id) <= (?, ?)', [toCursorIncluded.sort, toCursorIncluded.id]);
+    }
+    if (mode === 'soft') {
+        // only soft delete non-deleted records
+        query.whereNull('deleted_at');
+    } else if (mode === 'prune') {
+        // only prune non-pruned records
+        query.whereNull('pruned_at');
+    }
+    return query;
+}
+
+/**
+ * getRecordsToDeleteSizes
+ * @desc returns the size in bytes of each record in the batch to delete
+ */
+function getRecordsToDeleteSizes(
+    trx: Knex,
+    params: {
+        connectionId: number;
+        model: string;
+        mode: 'hard' | 'soft' | 'prune';
+        limit: number;
+        from: { updated_at: string; id: string } | null;
+        toCursorIncluded: { sort: string; id: string } | null;
+    }
+): Knex.QueryBuilder<object, { id: string; size_bytes: number }[]> {
+    // Start from the batch so Postgres only looks up those records. LATERAL keeps it a per-row lookup if the planner misestimates
+    return trx
+        .select<{ id: string; size_bytes: number }[]>(
+            'r.id',
+            trx.raw('COALESCE(pg_column_size(r.json), r.size_bytes, pg_column_size(d.data), 0) as size_bytes')
+        )
+        .from(getRecordsToDelete(trx, { ...params, columns: ['id', 'json', 'size_bytes'] }).as('r'))
+        .joinRaw('LEFT JOIN LATERAL (SELECT data FROM ?? AS d WHERE d.connection_id = ? AND d.model = ? AND d.id = r.id) AS d ON true', [
+            RECORDS_DATA_TABLE,
+            params.connectionId,
+            params.model
+        ]);
 }
 
 /**
