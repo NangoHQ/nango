@@ -87,7 +87,7 @@ const CONNECT = call(
     {
         output: {
             connect_url: 'https://connect.nango.dev/?session_token=story',
-            expires_at: new Date(Date.now() + 30 * 60_000).toISOString(),
+            expires_at: '2099-01-01T00:00:00.000Z',
             integration: 'hubspot',
             provider: 'hubspot'
         }
@@ -125,10 +125,10 @@ const GROUP_ENTRIES: ReplyEntry[] = [
     { kind: 'tool', key: LIST_ISSUES.toolCallId, part: LIST_ISSUES }
 ];
 
-const Session: React.FC<{ reason?: AgentPlaygroundSessionCreated['reason']; replaced?: boolean; newIntegrations?: string }> = ({
+const Session: React.FC<{ reason?: AgentPlaygroundSessionCreated['reason']; replaced?: boolean; newIntegrations?: string[] }> = ({
     reason,
     replaced = false,
-    newIntegrations = ''
+    newIntegrations = []
 }) => <SessionNotice created={{ request: SESSION_REQUEST, ...(reason ? { reason } : {}) }} replaced={replaced} newIntegrations={newIntegrations} />;
 
 const Setup: React.FC<{ value: AgentPlaygroundIntegrationSetup; added?: ReadonlyMap<string, string> }> = ({ value, added = NO_INTEGRATIONS }) => (
@@ -163,7 +163,7 @@ export const AllStates: Story = {
             <Label>first session</Label>
             <Session />
             <Label>integrations_changed</Label>
-            <Session reason="integrations_changed" replaced newIntegrations="SendGrid" />
+            <Session reason="integrations_changed" replaced newIntegrations={['SendGrid']} />
             <Label>connections_changed</Label>
             <Session reason="connections_changed" replaced />
             <Label>expired</Label>
@@ -196,7 +196,7 @@ export const MidChatSetUp: Story = {
         <>
             <Setup value={setup('sendgrid', 'created', { integrationId: 'sendgrid', displayName: 'SendGrid' })} />
             <Markdown>SendGrid is available now; I&apos;ll look for its email-sending action.</Markdown>
-            <Session reason="integrations_changed" replaced newIntegrations="SendGrid" />
+            <Session reason="integrations_changed" replaced newIntegrations={['SendGrid']} />
             <Card part={SEARCH} />
             <Card part={CONNECT} />
             <Markdown>Please connect HubSpot using the Connect button, and I&apos;ll carry on once it&apos;s connected.</Markdown>
