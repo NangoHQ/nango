@@ -1,0 +1,56 @@
+---
+title: 'ClassMarker - How do I link my account?'
+sidebarTitle: 'ClassMarker'
+---
+
+## Overview
+
+To authenticate with ClassMarker, you need:
+
+1. **API Key** - the API key you create in your ClassMarker account.
+2. **API Secret** - the secret ClassMarker creates together with the API key.
+
+This guide will show you how to create them.
+
+### Prerequisites
+
+- A ClassMarker account. [Register](https://www.classmarker.com/register/) if you don't have one.
+- API access: ClassMarker refuses API requests from accounts that are not upgraded.
+
+### Step 1: Open the API settings
+
+1. Log in to ClassMarker and click your name in the top right to open **My Account**.
+2. Click **API**, then click **View API Keys**. This opens **My Account** > **Webhooks / API Keys**.
+
+<img src="/api-integrations/classmarker/my_account_api.png" alt="ClassMarker My Account page with the API section highlighted"/>
+
+### Step 2: Create an API key
+
+1. On the **API Keys** tab, click **New API Key**.
+
+<img src="/api-integrations/classmarker/api_keys_new.png" alt="ClassMarker API Keys tab with the New API Key button highlighted"/>
+
+2. Enter an **API Key Name**, keep **Status** set to **Active**, and under **Permissions** choose **Access all Groups & Links** or select the groups and links the key can access.
+3. Click **Save API Settings**.
+
+<img src="/api-integrations/classmarker/create_api_key_form.png" alt="ClassMarker API key form with the Save API Settings button highlighted"/>
+
+### Step 3: Copy your API key and secret
+
+1. After saving, click **View API Key and Secret**.
+2. Copy the **API Key** and the **API Secret**.
+
+<img src="/api-integrations/classmarker/api_key_created.png" alt="ClassMarker API key page after saving, showing the API Key and API Secret panel"/>
+
+<Tip>Keep your API Secret private and secure.</Tip>
+
+### Step 4: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ClassMarker.
+2. Paste the **API Key** from Step 3 into the **API Key** field.
+3. Paste the **API Secret** from Step 3 into the **API Secret** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/classmarker/form.png" alt="ClassMarker Connect UI form with the API Key and API Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to ClassMarker.

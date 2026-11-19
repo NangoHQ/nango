@@ -1,0 +1,38 @@
+---
+title: 'Dripcel - How do I link my account?'
+sidebarTitle: 'Dripcel'
+---
+
+## Overview
+
+To authenticate with Dripcel, you need:
+
+1. **API Key** — an API key for your Dripcel organisation.
+
+This guide will show you how to generate it.
+
+### Prerequisites
+
+- A Dripcel account. You can [sign up](https://app.dripcel.com/signup) if you don't have one.
+
+### Step 1: Generate an API key
+
+1. Sign in to [Dripcel](https://app.dripcel.com/) and open the [API keys page](https://app.dripcel.com/api-keys).
+2. Enter a name in the **API key name** field and click **Generate new key**.
+
+<img src="/api-integrations/dripcel/generate_api_key.png" alt="Dripcel API keys page with the Generate new key button highlighted"/>
+
+3. On the key's permissions page that opens, pick a role under **Prebuilt Permissions** (for example **Viewer** for read-only access) and click **Save**.
+4. Go back to the API keys list, open the key's actions menu (**...**) and click **Copy**.
+
+<img src="/api-integrations/dripcel/copy_api_key.png" alt="Dripcel API keys list with the Copy option in the key's actions menu highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Dripcel.
+2. Enter your API key in the **API Key** field.
+3. Submit the form. Nango checks the key with Dripcel before saving the connection.
+
+<img src="/api-integrations/dripcel/form.png" alt="Dripcel Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Dripcel.
