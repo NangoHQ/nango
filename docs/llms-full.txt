@@ -7627,6 +7627,8 @@ Everything below is what you configure directly to run a production instance —
 | `NANGO_CLOUD` | `false` | Marks this as a self-hosted instance |
 | `NANGO_ENTERPRISE` | `true` | Enables Enterprise features |
 | `NANGO_DB_SSL` | `true` | Require SSL to Postgres |
+| `NANGO_INSTALLATIONS_API_URL` | *(the installations URL from Nango)* | Where usage metrics are sent. Only the `selfHosting` workload needs it. See [License and usage reporting](/guides/platform/self-hosting/license-and-usage-reporting) |
+| `FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED` | `true` | Turns on the daily upload of usage metrics. Only the `selfHosting` workload needs it |
 
 ### Minimum secrets
 
@@ -7648,6 +7650,8 @@ Everything below is what you configure directly to run a production instance —
 | `MAILGUN_API_KEY` | `key-••••••••••••••••` | Transactional email |
 | `NANGO_LOGS_ES_USER` | `nango_logs` | OpenSearch/Elasticsearch username |
 | `NANGO_LOGS_ES_PWD` | `••••••••` | OpenSearch/Elasticsearch password |
+| `NANGO_LICENSE` | *(the license from Nango)* | Your license. The server and the `selfHosting` workload read it |
+| `NANGO_INSTALLATION_PRIVATE_KEY` | *(the installation key from Nango)* | Signs the usage reports. Only the `selfHosting` workload needs it |
 
 <Note>
 Set one object store. On AWS, set `AWS_INTEGRATIONS_BUCKET_NAME`. On Google Cloud Storage, set `GCS_INTEGRATIONS_BUCKET_NAME`; Nango authenticates with Application Default Credentials, so the workload needs permission to read and write objects in that bucket. On Azure Blob Storage, set `AZURE_INTEGRATIONS_ACCOUNT_NAME` and `AZURE_INTEGRATIONS_CONTAINER_NAME` together. Set `AZURE_INTEGRATIONS_ACCOUNT_KEY` to authenticate with a shared key, or omit it to use `DefaultAzureCredential`. S3, GCS, and Azure cannot be configured together.
