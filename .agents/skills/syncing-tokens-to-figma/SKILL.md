@@ -16,10 +16,10 @@ Run the sync from the branch that changes the tokens, before the PR merges, so t
 2. Build the script that reads Figma:
 
     ```bash
-    npm run tokens:figma --workspace=@nangohq/design-system -- read-figma
+    npm run tokens:figma --workspace=@nangohq/design-system -- prepare-figma-diff
     ```
 
-3. Pass the printed `read-figma.js` file's full contents as `code` to `use_figma`. It only reads.
+3. Pass the printed `prepare-figma-diff.js` file's full contents as `code` to `use_figma`. It only reads.
 
 4. Save the JSON it returns to a file, then:
 

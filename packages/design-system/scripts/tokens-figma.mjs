@@ -519,7 +519,7 @@ function loadDesired() {
 function readFigma() {
     const { desired, runtime } = loadDesired();
     mkdirSync(OUT_DIR, { recursive: true });
-    const file = path.join(OUT_DIR, 'read-figma.js');
+    const file = path.join(OUT_DIR, 'prepare-figma-diff.js');
     writeFileSync(file, buildReadPayload(desired, runtime));
     console.log(`Figma file: ${FIGMA_FILE_KEY}`);
     console.log(`${desired.variables.length} variables, ${desired.styles.length} styles`);
@@ -528,7 +528,7 @@ function readFigma() {
 }
 
 function diff([resultFile]) {
-    if (!resultFile) throw new Error('Pass the file holding the read-figma result.');
+    if (!resultFile) throw new Error('Pass the file holding the prepare-figma-diff result.');
     const { tokens, desired, runtime } = loadDesired();
     const result = JSON.parse(readFileSync(resultFile, 'utf8'));
     const lines = describeDiff(desired, result);
@@ -560,9 +560,9 @@ async function pullNewFigmaKeys(resultFiles) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const [command, ...args] = process.argv.slice(2);
-    const commands = { 'read-figma': async () => readFigma(), diff: async () => diff(args), 'pull-new-figma-keys': () => pullNewFigmaKeys(args) };
+    const commands = { 'prepare-figma-diff': async () => readFigma(), diff: async () => diff(args), 'pull-new-figma-keys': () => pullNewFigmaKeys(args) };
     if (!commands[command]) {
-        console.error('Usage: tokens-figma.mjs read-figma | diff <figma-state.json> | pull-new-figma-keys <apply-result.json>...');
+        console.error('Usage: tokens-figma.mjs prepare-figma-diff | diff <figma-state.json> | pull-new-figma-keys <apply-result.json>...');
         process.exit(1);
     }
     commands[command]().catch((err) => {
