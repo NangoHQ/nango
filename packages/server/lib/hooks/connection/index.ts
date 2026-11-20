@@ -64,3 +64,5 @@ export { default as enginemailerCredentialsVerification } from './providers/engi
 export { default as sendsparkPostConnection } from './providers/sendspark/post-connection.js';
 export { default as eventzillaCredentialsVerification } from './providers/eventzilla/credentials-verification.js';
 export { default as baselinkerCredentialsVerification } from './providers/baselinker/credentials-verification.js';
+export { default as apiSportsCredentialsVerification } from './providers/api-sports/credentials-verification.js';
+export { default as benzingaCredentialsVerification } from './providers/benzinga/credentials-verification.js';
