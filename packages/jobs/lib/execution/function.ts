@@ -43,6 +43,10 @@ import type {
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
+const INLINE_FUNCTION_NAME = 'inline';
+
+type InlineFunction = { kind: 'inline'; uuid: string; name: string; enabled: true };
+
 export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let logCtx: LogContext | undefined;
     let account: DBTeam | undefined;
@@ -50,7 +54,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let providerConfig: Config | null | undefined;
     let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
-    let functionName: string | undefined;
+    let functionName: string | undefined = task.source ? INLINE_FUNCTION_NAME : undefined;
 
     try {
         const accountContext = await tracer.trace('function.prepare.accountContext', async () =>
@@ -71,12 +75,14 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
         }
 
-        const resolved = await tracer.trace('function.prepare.functionConfig', async () =>
-            functionLookupService.resolveFunctionByUuid({
-                environmentId: task.connection.environment_id,
-                functionUuid: task.functionUuid
-            })
-        );
+        const resolved: Result<ResolvedFunction | InlineFunction | undefined> = task.source
+            ? Ok({ kind: 'inline', uuid: task.functionUuid, name: INLINE_FUNCTION_NAME, enabled: true })
+            : await tracer.trace('function.prepare.functionConfig', async () =>
+                  functionLookupService.resolveFunctionByUuid({
+                      environmentId: task.connection.environment_id,
+                      functionUuid: task.functionUuid
+                  })
+              );
         if (resolved.isErr()) {
             throw resolved.error;
         }
@@ -102,7 +108,8 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
                 ...(fn.kind === 'deployed' && { 'function.id': fn.definition.function_config_id }),
                 'function.uuid': fn.uuid
             });
-        syncConfig = toLegacyConfig(fn, { environmentId: task.connection.environment_id, configId: providerConfig.id });
+        const configIds = { environmentId: task.connection.environment_id, configId: providerConfig.id };
+        syncConfig = fn.kind === 'inline' ? toInlineConfig(configIds) : toLegacyConfig(fn, configIds);
 
         const getEndUser = await tracer.trace('function.prepare.endUser', async () => getEndUserByConnectionId(db.knex, { connectionId: task.connection.id }));
         if (getEndUser.isOk()) {
@@ -121,7 +128,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             nangoConnectionId: task.connection.id,
             connectionId: task.connection.connection_id,
             startedAt: now,
-            meta: { trigger: task.trigger.kind, variant: task.variant ?? 'base', taskId: task.id }
+            meta: { trigger: task.trigger.kind, variant: task.variant ?? 'base', taskId: task.id, ...inlineLogFields(task) }
         });
 
         // capping
@@ -146,7 +153,8 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             input: envs.NANGO_LOG_FUNCTION_INPUT ? task.trigger.input : 'REDACTED',
             function: fn.name,
             connection: task.connection.connection_id,
-            integration: task.connection.provider_config_key
+            integration: task.connection.provider_config_key,
+            ...inlineLogFields(task)
         });
 
         let sdkLogger: SdkLogger;
@@ -165,6 +173,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
 
         const nangoProps: NangoProps = {
             scriptType: 'function',
+            ...(task.source && { execMode: 'transform' as const }),
             host: getApiUrl(),
             team: {
                 id: account.id,
@@ -204,7 +213,8 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             nangoProps,
             routingContext,
             logCtx: logCtx,
-            arg: task.trigger
+            arg: task.trigger,
+            code: task.source?.code
         });
 
         if (res.isErr()) {
@@ -236,7 +246,8 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             syncConfig,
             team: account,
             environment: environment,
-            endUser
+            endUser,
+            inline: task.source !== undefined
         });
         return Err(error);
     }
@@ -283,7 +294,8 @@ export async function handleFunctionSuccess({
             syncConfig: nangoProps.syncConfig,
             endUser: nangoProps.endUser,
             telemetryBag,
-            functionRuntime
+            functionRuntime,
+            inline: nangoProps.execMode === 'transform'
         });
         return;
     }
@@ -303,13 +315,15 @@ export async function handleFunctionSuccess({
         environment_id: nangoProps.environmentId,
         provider_config_key: nangoProps.providerConfigKey
     };
-    void slackService.removeFailingConnection({
-        connection,
-        name: nangoProps.syncConfig.sync_name,
-        type: 'function',
-        originalActivityLogId: nangoProps.activityLogId,
-        provider: nangoProps.provider
-    });
+    if (nangoProps.execMode !== 'transform') {
+        void slackService.removeFailingConnection({
+            connection,
+            name: nangoProps.syncConfig.sync_name,
+            type: 'function',
+            originalActivityLogId: nangoProps.activityLogId,
+            provider: nangoProps.provider
+        });
+    }
 
     void bigQueryClient.insert({
         executionType: 'function',
@@ -397,7 +411,8 @@ export async function handleFunctionError({
             syncConfig: nangoProps.syncConfig,
             endUser: nangoProps.endUser,
             telemetryBag,
-            functionRuntime
+            functionRuntime,
+            inline: nangoProps.execMode === 'transform'
         });
         return;
     }
@@ -432,7 +447,8 @@ export async function handleFunctionError({
         syncConfig: nangoProps.syncConfig,
         endUser: nangoProps.endUser,
         telemetryBag,
-        functionRuntime
+        functionRuntime,
+        inline: nangoProps.execMode === 'transform'
     });
 }
 
@@ -449,7 +465,8 @@ function onFailure({
     error,
     endUser,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    inline
 }: {
     team?: DBTeam | undefined;
     environment?: DBEnvironment | undefined;
@@ -464,9 +481,11 @@ function onFailure({
     endUser: NangoProps['endUser'];
     telemetryBag?: TelemetryBag | undefined;
     functionRuntime?: FunctionRuntime | undefined;
+    inline: boolean;
 }): void {
     if (team && environment) {
-        if (activityLogId) {
+        // An inline run fails on code the customer did not write and cannot fix, so it never raises their Slack alert.
+        if (activityLogId && !inline) {
             try {
                 void slackService.reportFailure({
                     account: team,
@@ -570,6 +589,13 @@ async function getLogCtx(
     return logCtx;
 }
 
+function inlineLogFields(task: TaskFunction): Record<string, string> {
+    if (!task.source) {
+        return {};
+    }
+    return { source: task.source.kind, ...(task.source.description && { description: task.source.description }) };
+}
+
 // TODO: refactor NangoProps to support native function config
 function toLegacyConfig(fn: ResolvedFunction, { environmentId, configId }: { environmentId: number; configId: number }): DBSyncConfig {
     const version = fn.definition;
@@ -604,5 +630,37 @@ function toLegacyConfig(fn: ResolvedFunction, { environmentId, configId }: { env
         created_at: deployed?.created_at ?? now,
         updated_at: deployed?.updated_at ?? now,
         deleted_at: deployed?.deleted_at ?? null
+    };
+}
+
+function toInlineConfig({ environmentId, configId }: { environmentId: number; configId: number }): DBSyncConfig {
+    const now = new Date();
+    return {
+        id: 0,
+        sync_name: INLINE_FUNCTION_NAME,
+        nango_config_id: configId,
+        file_location: '',
+        version: '0.0.0',
+        models: [],
+        active: true,
+        runs: null,
+        model_schema: null,
+        environment_id: environmentId,
+        track_deletes: false,
+        type: 'action',
+        auto_start: false,
+        attributes: {},
+        source: 'standalone',
+        metadata: {},
+        input: null,
+        sync_type: null,
+        webhook_subscriptions: [],
+        enabled: true,
+        models_json_schema: null,
+        sdk_version: null,
+        features: [],
+        created_at: now,
+        updated_at: now,
+        deleted_at: null
     };
 }

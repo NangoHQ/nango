@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { TaskFunction } from '@nangohq/nango-orchestrator';
+import { INLINE_FUNCTION_UUID, TaskFunction } from '@nangohq/nango-orchestrator';
 import * as shared from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { slackService } from '../clients.js';
 import { handleFunctionSuccess, startFunction } from './function.js';
 
 import type { startScript as startScriptFn } from './operations/start.js';
@@ -95,6 +96,10 @@ function task(functionUuid = deployedFunction().uuid, input: Record<string, stri
         },
         async: false
     });
+}
+
+function inlineTask(code: string): TaskFunction {
+    return TaskFunction({ ...task(INLINE_FUNCTION_UUID), source: { kind: 'inline', code, description: 'Names of the open issues' } });
 }
 
 beforeEach(() => {
@@ -203,6 +208,40 @@ describe('startFunction', () => {
         expect(startScript).not.toHaveBeenCalled();
     });
 
+    it('starts an inline function without looking up a deployed one', async () => {
+        const code = 'return record.issueNumber;';
+
+        expect((await startFunction(inlineTask(code))).isOk()).toBe(true);
+        expect(shared.functionLookupService.resolveFunctionByUuid).not.toHaveBeenCalled();
+        const args = startScript.mock.calls[0]?.[0];
+        if (!args) throw new Error('Missing script invocation');
+        expect(args.code).toBe(code);
+        expect(args.nangoProps.scriptType).toBe('function');
+        expect(args.nangoProps.execMode).toBe('transform');
+        expect(args.nangoProps.syncConfig).toMatchObject({ id: 0, sync_name: 'inline', nango_config_id: 9, file_location: '', source: 'standalone' });
+        expect(logCtx.info).toHaveBeenCalledWith(
+            "Starting function 'inline'",
+            expect.objectContaining({ function: 'inline', source: 'inline', description: 'Names of the open issues' })
+        );
+    });
+
+    it('reports the usage of a failed inline function without alerting on Slack', async () => {
+        startScript.mockResolvedValue(Err(new Error('script failed')));
+
+        await startFunction(inlineTask('return record.value;'));
+
+        expect(slackService.reportFailure).not.toHaveBeenCalled();
+        expect(publish.mock.calls[0]?.[0].type).toBe('usage.function_executions');
+    });
+
+    it('alerts on Slack when a deployed function fails', async () => {
+        vi.mocked(shared.functionLookupService.resolveFunctionByUuid).mockResolvedValue(Ok(undefined));
+
+        await startFunction(task());
+
+        expect(slackService.reportFailure).toHaveBeenCalledOnce();
+    });
+
     it('returns a script error', async () => {
         startScript.mockResolvedValue(Err(new Error('script failed')));
 
@@ -211,7 +250,7 @@ describe('startFunction', () => {
 });
 
 describe('handleFunctionSuccess', () => {
-    it('completes a function task', async () => {
+    async function succeed(syncConfig: Partial<NangoProps['syncConfig']>, execMode?: NangoProps['execMode']) {
         const execution = task('22222222-2222-4222-8222-222222222222');
         setTaskSuccess.mockResolvedValue(Ok(execution));
         const nangoProps = {
@@ -224,7 +263,8 @@ describe('handleFunctionSuccess', () => {
             connectionId: 'connection-1',
             activityLogId: 'log-1',
             startedAt: new Date(),
-            syncConfig: { id: 42, sync_name: 'test', nango_config_id: 9, version: '1', source: 'repo' }
+            syncConfig,
+            execMode
         } as NangoProps;
 
         await handleFunctionSuccess({
@@ -235,9 +275,21 @@ describe('handleFunctionSuccess', () => {
             functionRuntime: 'runner',
             checkpoints: { from: null, to: null }
         });
+        return execution;
+    }
+
+    it('completes a function task', async () => {
+        const execution = await succeed({ id: 42, sync_name: 'test', nango_config_id: 9, version: '1', source: 'repo' });
 
         expect(setTaskSuccess).toHaveBeenCalledWith({ taskId: execution.id, output: { title: 'Issue' } });
         expect(logCtx.success).toHaveBeenCalledOnce();
+        expect(slackService.removeFailingConnection).toHaveBeenCalledOnce();
         expect(publish.mock.calls[0]?.[0].type).toBe('usage.function_executions');
+    });
+
+    it('leaves the Slack alert of the connection alone after an inline function', async () => {
+        await succeed({ id: 0, sync_name: 'inline', nango_config_id: 9, version: '0.0.0', source: 'standalone', file_location: '' }, 'transform');
+
+        expect(slackService.removeFailingConnection).not.toHaveBeenCalled();
     });
 });
