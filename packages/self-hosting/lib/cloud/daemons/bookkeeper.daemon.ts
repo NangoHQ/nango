@@ -2,10 +2,9 @@ import tracer from 'dd-trace';
 
 import { cancellableDaemon, getLogger, metrics } from '@nangohq/utils';
 
-import { listInstallationStatuses } from '../services/installation.service.js';
+import { INSTALLATION_MODES, INSTALLATION_STAGES, listInstallationStatuses } from '../services/installation.service.js';
 
 import type { RegistryDb } from '../services/db.js';
-import type { InstallationStatus } from '../services/installation.service.js';
 
 const logger = getLogger('daemon.bookkeeper');
 
@@ -33,8 +32,7 @@ export async function bookkeeperTick(db: RegistryDb): Promise<void> {
         }
 
         const now = Date.now();
-        const counts: Record<string, Pick<InstallationStatus, 'mode' | 'stage'> & { count: number }> = {};
-        for (const { name, customer, mode, stage, telemetry, last_seen_at, license_expires_at } of installations.value) {
+        for (const { name, customer, telemetry, last_seen_at, license_expires_at } of installations.value) {
             const tags = { installation: name, customer };
             if (license_expires_at) {
                 metrics.gauge(metrics.Types.SELF_HOSTING_LICENSE_EXPIRES_IN_DAYS, (license_expires_at.getTime() - now) / DAY_MS, tags);
@@ -43,10 +41,13 @@ export async function bookkeeperTick(db: RegistryDb): Promise<void> {
             if (telemetry && last_seen_at) {
                 metrics.gauge(metrics.Types.SELF_HOSTING_INSTALLATION_LAST_SEEN_HOURS, (now - last_seen_at.getTime()) / HOUR_MS, tags);
             }
-            (counts[`${mode}/${stage}`] ??= { mode, stage, count: 0 }).count++;
         }
-        for (const { mode, stage, count } of Object.values(counts)) {
-            metrics.gauge(metrics.Types.SELF_HOSTING_INSTALLATIONS, count, { mode, stage });
+        // Zero is reported too, or a group that lost its last installation would keep its last count in Datadog.
+        for (const mode of INSTALLATION_MODES) {
+            for (const stage of INSTALLATION_STAGES) {
+                const count = installations.value.filter((installation) => installation.mode === mode && installation.stage === stage).length;
+                metrics.gauge(metrics.Types.SELF_HOSTING_INSTALLATIONS, count, { mode, stage });
+            }
         }
     });
 }

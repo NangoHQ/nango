@@ -11,6 +11,9 @@ import type { Result } from '@nangohq/utils';
 
 const installations = (db: RegistryDb) => table<DBSelfHostingInstallation>(db, INSTALLATIONS_TABLE);
 
+export const INSTALLATION_MODES = ['byoc', 'self_managed'] as const satisfies readonly DBSelfHostingInstallation['mode'][];
+export const INSTALLATION_STAGES = ['production', 'staging', 'development'] as const satisfies readonly DBSelfHostingInstallation['stage'][];
+
 export interface DeleteInstallationPreview {
     installation: { uuid: string; name: string };
     keys: string[];

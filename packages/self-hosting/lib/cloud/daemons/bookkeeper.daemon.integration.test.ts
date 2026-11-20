@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 import knexFactory from 'knex';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import { migrate } from '../db/migrate.js';
 import { CUSTOMERS_TABLE } from '../db/schema.js';
@@ -121,8 +121,11 @@ describe('bookkeeperTick', () => {
 
         expect(reported('nango.self_hosting.installations')).toStrictEqual([
             [2, { mode: 'byoc', stage: 'production' }],
+            [1, { mode: 'byoc', stage: 'staging' }],
+            [0, { mode: 'byoc', stage: 'development' }],
             [1, { mode: 'self_managed', stage: 'production' }],
-            [1, { mode: 'byoc', stage: 'staging' }]
+            [0, { mode: 'self_managed', stage: 'staging' }],
+            [0, { mode: 'self_managed', stage: 'development' }]
         ]);
     });
 
@@ -130,12 +133,12 @@ describe('bookkeeperTick', () => {
         await installation('byoc-acme-production');
         const span = { setTag: vi.fn() };
         const trace = vi.spyOn(tracer, 'trace').mockImplementation(((_name: string, fn: (span: unknown) => unknown) => fn(span)) as typeof tracer.trace);
+        onTestFinished(() => trace.mockRestore());
 
         await bookkeeperTick({ knex, schema: 'self_hosting_missing' });
 
         expect(gauge).not.toHaveBeenCalled();
         expect(trace.mock.calls[0]?.[0]).toBe('nango.self_hosting.daemon.bookkeeper');
         expect(span.setTag).toHaveBeenCalledExactlyOnceWith('error', expect.objectContaining({ code: '42P01' }));
-        trace.mockRestore();
     });
 });
