@@ -1141,6 +1141,7 @@
               "api-integrations/getty-images",
               "integrations/all/ghost-admin",
               "integrations/all/ghost-content",
+              "api-integrations/getyoutubetranscript",
               "api-integrations/giphy",
               "api-integrations/github",
               "api-integrations/github-app",

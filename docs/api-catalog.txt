@@ -569,6 +569,7 @@ URL patterns:
 | `getty-images` | Getty Images | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/getty-images.md) |  | [setup](https://nango.dev/docs/api-integrations/getty-images/how-to-register-your-own-getty-images-oauth-app.md) | design |
 | `ghost-admin` | Ghost (Admin API) | JWT | [docs](https://nango.dev/docs/integrations/all/ghost-admin.md) |  |  | dev-tools, design, cms |
 | `ghost-content` | Ghost (Content API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/ghost-content.md) |  |  | dev-tools, design, cms |
+| `getyoutubetranscript` | GetYouTubeTranscript | API_KEY | [docs](https://nango.dev/docs/api-integrations/getyoutubetranscript.md) | [connect](https://nango.dev/docs/api-integrations/getyoutubetranscript/connect.md) |  | video, dev-tools |
 | `giphy` | GIPHY | API_KEY | [docs](https://nango.dev/docs/api-integrations/giphy.md) | [connect](https://nango.dev/docs/api-integrations/giphy/connect.md) |  | social |
 | `github` | GitHub (User OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/github.md) |  | [setup](https://nango.dev/docs/api-integrations/github/how-to-register-your-own-github-api-oauth-app.md) | dev-tools, support, ticketing |
 | `github-app` | GitHub (App) | APP | [docs](https://nango.dev/docs/api-integrations/github-app.md) |  | [setup](https://nango.dev/docs/api-integrations/github-app/how-to-register-your-own-github-app-api-app.md) | dev-tools, popular, ticketing |

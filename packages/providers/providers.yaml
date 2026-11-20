@@ -16164,6 +16164,31 @@ getty-images:
     docs: https://nango.dev/docs/api-integrations/getty-images
     setup_guide_url: https://nango.dev/docs/api-integrations/getty-images/how-to-register-your-own-getty-images-oauth-app
 
+getyoutubetranscript:
+    display_name: GetYouTubeTranscript
+    categories:
+        - video
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://getyoutubetranscript.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/credits
+    docs: https://nango.dev/docs/api-integrations/getyoutubetranscript
+    docs_connect: https://nango.dev/docs/api-integrations/getyoutubetranscript/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your GetYouTubeTranscript API key
+            pattern: '^sk_live_[A-Za-z0-9_-]{30,}$'
+            example: sk_live_4k9x*************************************q2m7
+            doc_section: '#step-1-create-an-api-key'
+
 giphy:
     display_name: GIPHY
     categories:

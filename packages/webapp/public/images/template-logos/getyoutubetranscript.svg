@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <linearGradient id="gyt-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ED4242"/>
+      <stop offset="1" stop-color="#BB1E1E"/>
+    </linearGradient>
+  </defs>
+  <rect width="500" height="500" rx="100" ry="100" fill="url(#gyt-bg)"/>
+  <g stroke="#FFFFFF" stroke-width="37" stroke-linecap="round" fill="none">
+    <line x1="119.5" y1="140" x2="380.5" y2="140"/>
+    <line x1="119.5" y1="213" x2="340.5" y2="213"/>
+    <line x1="119.5" y1="287" x2="380.5" y2="287"/>
+    <line x1="119.5" y1="360" x2="250.5" y2="360"/>
+  </g>
+</svg>
