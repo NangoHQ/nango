@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
 
-import type { InternalAuthPublicKey } from '@nangohq/types';
+import type { AuditTrailDataPlaneScope, InternalAuthPublicKey } from '@nangohq/types';
 
 const PUBSUB_SUBJECTS = ['user', 'usage', 'team', 'lambda_keep_warm', 'audit'] as const;
 
@@ -85,6 +85,36 @@ const runnerEgressNangoPortsSchema = z
             return z.NEVER;
         }
         return [...ports].sort((a, b) => a - b);
+    });
+
+// A Record, so adding a scope to the type fails to compile until it is listed here.
+const AUDIT_TRAIL_DATA_PLANE_SCOPES: Record<AuditTrailDataPlaneScope, true> = { read_credentials: true };
+
+function isAuditTrailDataPlaneScope(value: string): value is AuditTrailDataPlaneScope {
+    return Object.hasOwn(AUDIT_TRAIL_DATA_PLANE_SCOPES, value);
+}
+
+const auditTrailDataPlaneScopesSchema = z
+    .string()
+    .optional()
+    .transform((s, ctx): AuditTrailDataPlaneScope[] => {
+        const value = s?.trim() ?? '';
+        if (value === '' || value === 'all') {
+            return Object.keys(AUDIT_TRAIL_DATA_PLANE_SCOPES) as AuditTrailDataPlaneScope[];
+        }
+        if (value === 'none') {
+            return [];
+        }
+        const scopes = new Set<AuditTrailDataPlaneScope>();
+        for (const part of value.split(',')) {
+            const scope = part.trim();
+            if (!isAuditTrailDataPlaneScope(scope)) {
+                ctx.addIssue(`Invalid scope in FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: ${part}`);
+                return z.NEVER;
+            }
+            scopes.add(scope);
+        }
+        return [...scopes];
     });
 
 const runnerEgressNangoPodSelectorSchema = z
@@ -662,6 +692,7 @@ const ENVS_SHAPE = z.object({
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
+    FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: auditTrailDataPlaneScopesSchema,
     FLAG_HOSTED_TELEMETRY_ENABLED: z.stringbool().optional().default(true),
     FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
