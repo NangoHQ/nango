@@ -2,10 +2,10 @@ import tracer from 'dd-trace';
 
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
-import { executeAction } from '../../../services/action.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { InternalMcpError } from '../utils.js';
 import { actionExecutionErrorToMcp } from './errors.js';
+import { executeMcpAction } from './execute.js';
 import { triggerActionArgumentsSchema, triggerActionOutputSchema } from './schema.js';
 
 import type { ManagementMcpTool } from '../managementTool.js';
@@ -30,7 +30,7 @@ export const triggerActionTool: ManagementMcpTool<TriggerActionOutput> = defineM
     },
     async handler({ args, account, environment }) {
         return await tracer.trace('server.mcp.triggerAction', async (span) => {
-            const execution = await executeAction({
+            const execution = await executeMcpAction({
                 account,
                 environment,
                 connectionId: args.connection_id,
