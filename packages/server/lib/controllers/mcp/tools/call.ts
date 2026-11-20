@@ -7,7 +7,7 @@ import { getOrchestrator } from '../../../utils/utils.js';
 import { actionExecutionErrorToMcp } from '../actions/errors.js';
 import { executeMcpAction } from '../actions/execute.js';
 import { defineManagementMcpTool } from '../managementTool.js';
-import { InternalMcpError, PublicMcpError } from '../utils.js';
+import { InternalMcpError, PublicMcpError, safeFailureDetail } from '../utils.js';
 import { callToolArgumentsSchema, callToolOutputSchema } from './schema.js';
 
 import type { ManagementMcpTool } from '../managementTool.js';
@@ -31,7 +31,7 @@ function functionInvokeErrorToMcp(error: FunctionInvokeError): Error {
             if (!(cause instanceof NangoError) || cause.type === 'function_failure') {
                 logger.error('Failed to call tool function', { err: error });
             }
-            return new PublicMcpError(error.message);
+            return new PublicMcpError(cause instanceof NangoError ? safeFailureDetail(cause) : error.message);
         }
         case 'server_error':
             logger.error('Failed to call tool function', { err: error });
