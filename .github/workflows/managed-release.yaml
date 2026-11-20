@@ -31,6 +31,14 @@ jobs:
             app_version: ${{ steps.version-script.outputs.app_version }}
             commit_hash: ${{ inputs.commit_hash }}
         steps:
+            # The image signature is bound to the workflow's branch, and customers verify against
+            # master. Dry runs can still run from other branches to test changes to this workflow.
+            - name: Require master for releases
+              if: ${{ !env.ACT && !inputs.dry_run && github.ref != 'refs/heads/master' }}
+              run: |
+                  echo "Releases must be run from master, not ${GITHUB_REF}"
+                  exit 1
+
             - name: Get versions
               id: versions
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -437,6 +445,16 @@ jobs:
         needs: [manage-versions, test-deployment]
         if: success()
         runs-on: ubuntu-latest
+        # Git pushes here use the GitHub App token, so GITHUB_TOKEN only needs to read.
+        # id-token lets cosign sign the image keylessly with this workflow's identity.
+        permissions:
+            contents: read
+            id-token: write
+        env:
+            # The identity in the cosign certificate, e.g.
+            # https://github.com/NangoHQ/nango/.github/workflows/managed-release.yaml@refs/heads/master
+            CERT_IDENTITY: https://github.com/${{ github.workflow_ref }}
+            CERT_OIDC_ISSUER: https://token.actions.githubusercontent.com
         steps:
             - uses: actions/create-github-app-token@v2
               id: create_github_app_token
@@ -492,6 +510,12 @@ jobs:
               if: ${{ !env.ACT }}
               uses: docker/setup-buildx-action@v3
 
+            - name: Install cosign
+              if: ${{ !env.ACT }}
+              uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+              with:
+                  cosign-release: 'v3.1.4'
+
             - name: Log Docker operations (act)
               if: ${{ env.ACT }}
               run: |
@@ -532,15 +556,55 @@ jobs:
                           exit 1
                       fi
                       # The version is only known here, after the major bump decision. The tested
-                      # digest gets one more ENV layer and is pushed under the final tag; its
-                      # filesystem layers are reused as they are, on every platform it was built for
-                      docker buildx build --platform "$PLATFORMS" --provenance=false --tag "nangohq/nango:${PUSH_TAG}" --push - <<EOF
+                      # digest gets one more ENV layer, pushed untagged; its filesystem layers are
+                      # reused as they are, on every platform it was built for
+                      docker buildx build --platform "$PLATFORMS" --provenance=false \
+                          --output type=image,name=nangohq/nango,push-by-digest=true,name-canonical=true,push=true \
+                          --metadata-file "$RUNNER_TEMP/stamped-metadata.json" - <<EOF
                   FROM nangohq/nango@${DIGEST}
                   ENV NANGO_MANAGED_VERSION=${MANAGED_VERSION}
                   EOF
+                      # From here on the stamped image is the one signed, tagged and released
+                      DIGEST=$(jq -r '."containerimage.digest"' "$RUNNER_TEMP/stamped-metadata.json")
+                      if [[ "$DIGEST" != sha256:* ]]; then
+                          echo "No digest in $RUNNER_TEMP/stamped-metadata.json"
+                          exit 1
+                      fi
+
+                      # Sign before tagging, so the tag is only pushed once the image is signed.
+                      # --recursive also signs each platform's manifest, not just the index.
+                      cosign sign --yes --recursive "nangohq/nango@${DIGEST}"
+
+                      # Docker Hub can take a few seconds to list a new signature, so retry before failing
+                      for attempt in 1 2 3 4 5 6; do
+                          if cosign verify "nangohq/nango@${DIGEST}" \
+                              --certificate-identity "$CERT_IDENTITY" \
+                              --certificate-oidc-issuer "$CERT_OIDC_ISSUER" > /dev/null; then
+                              break
+                          fi
+                          if [ "$attempt" = 6 ]; then
+                              echo "nangohq/nango@${DIGEST} was signed, but its signature could not be verified"
+                              exit 1
+                          fi
+                          echo "Signature not found yet, retrying in 10s"
+                          sleep 10
+                      done
+
+                      # --prefer-index=false copies the manifest byte for byte, so the tag points at
+                      # the signed digest. Without it, an amd64-only build (a single manifest, not an
+                      # index) gets wrapped in a new index with a different, unsigned digest.
+                      docker buildx imagetools create --prefer-index=false -t "nangohq/nango:${PUSH_TAG}" "nangohq/nango@${DIGEST}"
+
+                      # Safety net: buildx copies a single source as-is, so this should never fire
+                      TAG_DIGEST=$(docker buildx imagetools inspect "nangohq/nango:${PUSH_TAG}" --format '{{json .Manifest}}' | jq -r '.digest')
+                      if [ "$TAG_DIGEST" != "$DIGEST" ]; then
+                          echo "nangohq/nango:${PUSH_TAG} resolves to $TAG_DIGEST, but $DIGEST was signed"
+                          exit 1
+                      fi
                   fi
 
                   echo "tag_name=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+                  echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
 
             - name: Tag commit with managed release
               if: ${{ !env.ACT && !inputs.dry_run }}
@@ -612,6 +676,7 @@ jobs:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
                   GH_HOST: github.com
                   TAG_NAME: ${{ steps.retag-image.outputs.tag_name }}
+                  IMAGE_DIGEST: ${{ steps.retag-image.outputs.digest }}
                   IMAGE_VERSION: ${{ steps.release-versions.outputs.image_version }}
                   APP_VERSION: ${{ steps.release-versions.outputs.app_version }}
                   COMMIT_HASH: ${{ needs.manage-versions.outputs.commit_hash }}

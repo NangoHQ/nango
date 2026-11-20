@@ -90,7 +90,7 @@ Connect to the Braze MCP server with Nango and call MCP tools in minutes. Braze 
 Nango uses **dynamic client registration** with Braze's MCP OAuth server, so you do not register an MCP application. Before your users can connect, check the following in Braze:
 
 - **Paid account:** the Braze MCP server is not available on free trial accounts.
-- **Admin approval:** a company admin must turn on MCP OAuth access and approve Nango's redirect URI (`https://api.nango.dev/oauth/callback`, or your own [custom callback URL](/guides/auth/overview#custom-oauth-callback-url-optional)) in **Settings** → **Admin Settings** → **External Connections**.
+- **Admin approval:** a company admin must turn on MCP OAuth access and approve Nango's redirect URI (`https://api.nango.dev/oauth/callback`, or your own [custom callback URL](/guides/auth/setup#custom-oauth-callback-url-optional)) in **Settings** → **Admin Settings** → **External Connections**.
 - **Permissions:** the user needs the **Use MCP Server** permission. The MCP tools act with the user's own dashboard permissions, so a user scoped to a team rather than a whole workspace may not be able to use every tool.
 - **No IP allowlisting:** companies that use dashboard IP allowlisting cannot use the Braze MCP server.
 

@@ -1,0 +1,52 @@
+---
+title: 'Chartly - How do I link my account?'
+sidebarTitle: 'Chartly'
+---
+
+## Overview
+
+To authenticate with Chartly, you need:
+
+1. **API Key** — a Chartly API key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Chartly account. [Sign up](https://chartly.dev/auth/signup) for free if you don't have one.
+
+### Step 1: Create an API key
+
+1. Log in to the [Chartly Dashboard](https://chartly.dev/dashboard). In the **API keys** section, click **Create key**.
+
+<img src="/api-integrations/chartly/dashboard_create_key.png" alt="Chartly Dashboard with the Create key button in the API keys section highlighted"/>
+
+2. Enter a **Label** for the key and click **Create key**.
+
+<img src="/api-integrations/chartly/create_api_key_dialog.png" alt="Chartly Create API key dialog with a label entered and the Create key button highlighted"/>
+
+3. Click **Copy** to copy the key, then click **I've saved it**. Chartly shows the key only once.
+
+<img src="/api-integrations/chartly/api_key_created.png" alt="Chartly Save your key dialog with the Copy button highlighted"/>
+
+<Tip>
+To try Chartly without an account, get a trial API key (it starts with `trial_`) from Chartly's [trial endpoint](https://docs.chartly.dev/api/):
+
+```bash
+curl -X POST https://api.chartly.dev/signup/anon \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+Use the `api_key` value from the response. Trial keys have limited usage and are meant for testing.
+</Tip>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Chartly.
+2. Enter your production or trial key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/chartly/form.png" alt="Chartly Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Chartly.

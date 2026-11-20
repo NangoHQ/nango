@@ -1,0 +1,82 @@
+---
+title: 'Cloudflare Browser Rendering'
+sidebarTitle: 'Cloudflare Browser Rendering'
+description: 'Integrate your application with the Cloudflare Browser Rendering API'
+---
+
+## 🚀 Quickstart
+
+Connect to Cloudflare Browser Rendering with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Cloudflare Browser Rendering_.
+    </Step>
+    <Step id="authorize-cloudflare-browser-rendering" title="Authorize Cloudflare Browser Rendering">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API token and account ID. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-cloudflare-browser-rendering-api" title="Call the Cloudflare Browser Rendering API">
+    Let's make your first request to the Cloudflare Browser Rendering API: list the active browser sessions on your account. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, and account ID (the `accountId` stored on the connection):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v4/accounts/<ACCOUNT-ID>/browser-rendering/devtools/session" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v4/accounts/<ACCOUNT-ID>/browser-rendering/devtools/session',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Cloudflare Browser Rendering integration guides
+
+- [How do I link my account?](/api-integrations/cloudflare-browser-rendering/connect)  
+Create an API token with the Browser Run Edit permission and find your account ID to connect your Cloudflare account.
+
+Official docs: [Cloudflare Browser Rendering API reference](https://developers.cloudflare.com/api/resources/browser_rendering/)
+
+## 🧩 Pre-built syncs & tools for Cloudflare Browser Rendering
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/cloudflare-browser-rendering/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango stores the account ID in the `accountId` connection config field but adds it to no request. Read it from the connection's `connection_config` and put it in the path, for example `/v4/accounts/<accountId>/browser-rendering/screenshot`.
+- Nango sends the token as `Authorization: Bearer <apiKey>` on every call. Calls that need it another way can read it from the connection's credentials (`credentials.apiKey`) and pass it as the Cloudflare docs show.
+
+---

@@ -4,13 +4,17 @@ sidebarTitle: 'Proxy requests'
 description: 'How to use the requests proxy from Nango'
 ---
 
-Use the requests proxy to make authenticated API requests to the external API.
+The proxy is Nango's lowest-level way to make authenticated HTTP requests to an external API. It uses an existing connection to authenticate the request.
+
+## When to use the proxy
+
+Start with [Agent sessions](/guides/agent-sessions) for agent workflows, or use [Tools](/guides/tools/overview), [Triggers](/guides/triggers/overview), and [Syncs](/guides/syncs/overview) when they cover what you need.
+
+Use the HTTP proxy when you need a raw request to a provider or need to upload or download binary files.
 
 ## How to use the proxy
 
-Make sure you have an [integration configured](/guides/auth/overview#guide) in your environment, and at least one [connection](/guides/auth/overview#overview) available for it.
-
-You can use the proxy with the [Node SDK](/reference/backend/backend-sdk/node#proxy) or [REST API](/reference/backend/http-api/proxy/get):
+Make sure you have a [configured integration](/guides/auth/setup#create-integration) and at least one connection for it.
 
 <Tabs>
     <Tab title="Node">
@@ -18,15 +22,12 @@ You can use the proxy with the [Node SDK](/reference/backend/backend-sdk/node#pr
         try {
             const res = await nango.proxy({
                 method: 'POST',
-                baseUrlOverride: 'https://api.example.com',
-                endpoint: '/external-endpoint',
-                providerConfigKey: '<string>',
-                connectionId: '<string>',
+                endpoint: '/<API-ENDPOINT>',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>',
                 retries: 5, // Retries with exponential backoff (optional, default 0)
                 data: {
-                    id: 1,
-                    colorId: 'blue',
-                    selected: true
+                    colorId: 'blue'
                 }
             });
 
@@ -49,7 +50,7 @@ You can use the proxy with the [Node SDK](/reference/backend/backend-sdk/node#pr
         -H 'Authorization: Bearer <NANGO-API-KEY>' \
         -H 'Provider-Config-Key: <INTEGRATION-ID>' \
         -H 'Connection-Id: <CONNECTION-ID>' \
-        -d '{"colorId: "blue"}' \
+        -d '{"colorId": "blue"}' \
         'https://api.nango.dev/proxy/<API-ENDPOINT>'
         ```
     </Tab>
@@ -57,7 +58,7 @@ You can use the proxy with the [Node SDK](/reference/backend/backend-sdk/node#pr
 
 ## Related guides
 
-- [Auth guide](/guides/auth/overview) - create the connection used by proxy requests.
-- [Node SDK reference](/reference/backend/backend-sdk/node#proxy) - proxy helper methods.
-- [Proxy API reference](/reference/backend/http-api/proxy/get) - REST endpoints for proxied requests.
-- [Rate limits](/guides/platform/functions/rate-limits) - handle provider throttling.
+- [Setup guide](/guides/auth/setup) - create the connection used by proxy requests
+- [Node SDK reference](/reference/backend/backend-sdk/node#proxy) - proxy helper methods
+- [Proxy API reference](/reference/backend/http-api/proxy/get) - REST endpoints for proxied requests
+- [Rate limits](/guides/platform/functions/rate-limits) - handle provider throttling
