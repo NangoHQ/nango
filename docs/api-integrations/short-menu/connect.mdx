@@ -1,0 +1,42 @@
+---
+title: 'Short Menu - How do I link my account?'
+sidebarTitle: 'Short Menu'
+---
+
+## Overview
+
+To authenticate with Short Menu, you need:
+
+1. **API Key** — an API key from your Short Menu settings.
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- A Short Menu account. You can [sign up](https://app.shortmenu.com/signup) if you don't have one.
+
+### Step 1: Create an API key
+
+1. Log in to [Short Menu](https://app.shortmenu.com/).
+2. Click **Settings** in the left sidebar, then open the **API Keys** tab. You can also go straight to [shm.to/create-api-key](https://shm.to/create-api-key).
+
+<img src="/api-integrations/short-menu/settings_api_keys_tab.png" alt="Short Menu Settings page with the API Keys tab selected"/>
+
+3. Click **Create API Key**.
+
+<img src="/api-integrations/short-menu/create_api_key_button.png" alt="Short Menu API Keys tab with the Create API Key button"/>
+
+4. Enter a name for the key and click **Create**.
+5. Your new key appears in the list. Click the copy icon next to it to copy the key.
+
+<img src="/api-integrations/short-menu/api_key_created.png" alt="Short Menu API Keys list with the copy icon next to the new key"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Short Menu.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form.
+
+<img src="/api-integrations/short-menu/form.png" alt="Short Menu Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the key. If the key is wrong, the first API request returns an authentication error.

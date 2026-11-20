@@ -66,3 +66,7 @@ export { default as eventzillaCredentialsVerification } from './providers/eventz
 export { default as baselinkerCredentialsVerification } from './providers/baselinker/credentials-verification.js';
 export { default as apiSportsCredentialsVerification } from './providers/api-sports/credentials-verification.js';
 export { default as benzingaCredentialsVerification } from './providers/benzinga/credentials-verification.js';
+export { default as classmarkerCredentialsVerification } from './providers/classmarker/credentials-verification.js';
+export { default as data247CredentialsVerification } from './providers/data247/credentials-verification.js';
+export { default as eterminCredentialsVerification } from './providers/etermin/credentials-verification.js';
+export { default as zerobounceCredentialsVerification } from './providers/zerobounce/credentials-verification.js';
