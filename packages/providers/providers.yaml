@@ -17807,6 +17807,28 @@ fuentio:
             example: sk_live_Qm7x************************Tz9K
             doc_section: '#step-1-get-your-free-api-key'
 
+fuentio-mcp:
+    display_name: Fuentio (MCP)
+    categories:
+        - mcp
+        - other
+    alias: fuentio
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://api.fuentio.com
+        headers:
+            x-api-key: ${apiKey}
+            accept: application/json,text/event-stream
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/usage
+    docs: https://nango.dev/docs/api-integrations/fuentio-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/fuentio-mcp/connect
+
 fullenrich:
     display_name: FullEnrich
     categories:
