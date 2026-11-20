@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { Err, FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, Ok, report, TTLFixedSizeMap } from '@nangohq/utils';
+import { Err, flagHasPlan, getLogger, isCloud, metrics, Ok, report, TTLFixedSizeMap } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { LogActionEnum } from '../models/Telemetry.js';
@@ -16,6 +16,7 @@ import {
     parseSandboxApiKeyToken,
     verifySandboxApiKeyToken
 } from './sandbox-api-key.js';
+import { SecretHashGuard } from './secret-hash-guard.js';
 import secretService from './secret.service.js';
 import userService from './user.service.js';
 
@@ -36,7 +37,13 @@ import type {
     SignupAdvertising
 } from '@nangohq/types';
 
-const hashLocalCache = new FixedSizeMap<string, string>(10_000);
+const secretHashGuard = new SecretHashGuard(async (secret) => {
+    const hashed = await secretService.hashSecret(secret);
+    if (hashed.isErr()) {
+        throw hashed.error;
+    }
+    return hashed.value;
+});
 const logger = getLogger('AccountService');
 
 /**
@@ -111,6 +118,19 @@ class AuthContextCache<T> {
 const persistSecretAuthCache = new AuthContextCache<PersistAuthContext>('persist_internal_secret', () => envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED);
 const persistEnvironmentAuthCache = new AuthContextCache<PersistAuthContext>('persist_environment', () => envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED);
 const taskTokenAuthCache = new AuthContextCache<TaskTokenAccountContext>('task_token', () => envs.AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED);
+
+interface CustomerKeyAuthRow {
+    account: DBTeam;
+    environment: DBEnvironment | null;
+    plan: DBPlan | null;
+    default_secret: DBAPISecret | null;
+    pending_secret: DBAPISecret | null;
+    environment_ids: number[];
+    auth_scopes: string[] | null;
+    auth_api_key_id: number;
+    auth_api_key_uuid: string;
+    auth_display_name: string;
+}
 
 interface PersistAuthContextRow {
     environment_id: number;
@@ -430,7 +450,13 @@ class AccountService {
         return result || null;
     }
 
-    async getAccountContextByApiKey(opts: { secretKey: string } | { internalSecretKey: string }): Promise<ApiKeyContext | null> {
+    /**
+     * `clientIp` is the address the key was presented from. Derivations for keys that match nothing
+     * are budgeted per client, and SecretHashThrottledError is thrown once that budget is spent.
+     */
+    async getAccountContextByApiKey(
+        opts: ({ secretKey: string } | { internalSecretKey: string }) & { clientIp?: string | undefined }
+    ): Promise<ApiKeyContext | null> {
         const key = 'secretKey' in opts ? opts.secretKey : opts.internalSecretKey;
 
         if (!isCloud) {
@@ -441,7 +467,7 @@ class AccountService {
         }
 
         if ('internalSecretKey' in opts) {
-            const context = await this.getAccountContextByInternalSecret(opts.internalSecretKey);
+            const context = await this.getAccountContextByInternalSecret(opts.internalSecretKey, opts.clientIp);
             return context ? this.toApiKeyContext(context) : null;
         }
 
@@ -454,7 +480,7 @@ class AccountService {
             return result.value ? this.toApiKeyContext(result.value) : null;
         }
 
-        return this.getApiKeyContextByCustomerKey(opts.secretKey);
+        return this.getApiKeyContextByCustomerKey(opts.secretKey, opts.clientIp);
     }
 
     private toApiKeyContext(context: AuthenticatedAccountContext): ApiKeyContext {
@@ -791,22 +817,7 @@ class AccountService {
         }
     }
 
-    private async hashSecretWithCache(secretKey: string): Promise<string> {
-        const cached = hashLocalCache.get(secretKey);
-        if (cached) {
-            metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'hit' });
-            return cached;
-        }
-        metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'miss' });
-        const hashed = await secretService.hashSecret(secretKey);
-        if (hashed.isErr()) {
-            throw hashed.error;
-        }
-        return hashed.value;
-    }
-
-    private async getApiKeyContextByCustomerKey(secretKey: string): Promise<ApiKeyContext | null> {
-        const hash = await this.hashSecretWithCache(secretKey);
+    private async findCustomerKeyRow(hash: string): Promise<CustomerKeyAuthRow | null> {
         const wouldHit = customerKeyShadowCache.wouldHit(hash);
 
         // This query debounces last_used_at in the same statement, so it must run on the primary.
@@ -814,20 +825,7 @@ class AccountService {
         // 1. read auth context from replica, 2. best-effort debounced update on primary.
         const {
             rows: [row]
-        } = await db.knex.raw<{
-            rows: {
-                account: DBTeam;
-                environment: DBEnvironment | null;
-                plan: DBPlan | null;
-                default_secret: DBAPISecret | null;
-                pending_secret: DBAPISecret | null;
-                environment_ids: number[];
-                auth_scopes: string[] | null;
-                auth_api_key_id: number;
-                auth_api_key_uuid: string;
-                auth_display_name: string;
-            }[];
-        }>(
+        } = await db.knex.raw<{ rows: CustomerKeyAuthRow[] }>(
             `
                 WITH matched_customer_key AS (
                     SELECT ck.id, ck.uuid, ck.account_id, ck.scopes, ck.display_name
@@ -894,8 +892,15 @@ class AccountService {
             return null;
         }
 
-        hashLocalCache.set(secretKey, hash);
         customerKeyShadowCache.populate(hash, wouldHit);
+        return row;
+    }
+
+    private async getApiKeyContextByCustomerKey(secretKey: string, clientIp?: string): Promise<ApiKeyContext | null> {
+        const row = await secretHashGuard.lookup(secretKey, clientIp, (hash) => this.findCustomerKeyRow(hash));
+        if (!row) {
+            return null;
+        }
 
         const defaultSecret = row.default_secret ? getEncryptionManager().decryptAPISecret(row.default_secret) : null;
         const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
@@ -959,17 +964,18 @@ class AccountService {
      * returns them as a PersistAuthContext. Unlike getAccountContextByApiKey it does not
      * fetch whole rows, join the secret tables a second time, or decrypt any secret.
      *
-     * Ok(null) means the key is unknown; Err carries unexpected failures.
+     * Ok(null) means the key is unknown; Err carries unexpected failures, or SecretHashThrottledError
+     * once `clientIp` has spent its budget of derivations for keys that match nothing.
      */
-    async getPersistAuthContext(secretKey: string): Promise<Result<PersistAuthContext | null>> {
+    async getPersistAuthContext(secretKey: string, opts: { clientIp?: string | undefined } = {}): Promise<Result<PersistAuthContext | null>> {
         try {
-            return Ok(await this.resolvePersistAuthContext(secretKey));
+            return Ok(await this.resolvePersistAuthContext(secretKey, opts.clientIp));
         } catch (err) {
             return Err(err instanceof Error ? err : new Error('failed_to_resolve_persist_auth_context', { cause: err }));
         }
     }
 
-    private async resolvePersistAuthContext(secretKey: string): Promise<PersistAuthContext | null> {
+    private async resolvePersistAuthContext(secretKey: string, clientIp: string | undefined): Promise<PersistAuthContext | null> {
         if (!isCloud) {
             // Mirror getAccountContextByApiKey: env-var keys resolve before any hashing or DB lookup
             const envMatch = await this.getAccountContextFromEnvVar(secretKey);
@@ -987,28 +993,26 @@ class AccountService {
             }
         }
 
-        const hash = await this.hashSecretWithCache(secretKey);
+        return await secretHashGuard.lookup(secretKey, clientIp, async (hash) => {
+            const cached = persistSecretAuthCache.get(hash);
+            if (cached) {
+                return cached;
+            }
 
-        const cached = persistSecretAuthCache.get(hash);
-        if (cached) {
-            return cached;
-        }
+            const row = await this.persistAuthContextQuery()
+                .join<DBAPISecret>('api_secrets', '_nango_environments.id', 'api_secrets.environment_id')
+                .where('api_secrets.hashed', hash)
+                .where('api_secrets.is_default', true)
+                .first();
 
-        const row = await this.persistAuthContextQuery()
-            .join<DBAPISecret>('api_secrets', '_nango_environments.id', 'api_secrets.environment_id')
-            .where('api_secrets.hashed', hash)
-            .where('api_secrets.is_default', true)
-            .first();
+            if (!row) {
+                return null;
+            }
 
-        if (!row) {
-            return null;
-        }
-
-        // Store only successful lookups to avoid polluting the cache
-        hashLocalCache.set(secretKey, hash);
-        const context = persistAuthContextFromRow(row);
-        persistSecretAuthCache.set(hash, context);
-        return context;
+            const context = persistAuthContextFromRow(row);
+            persistSecretAuthCache.set(hash, context);
+            return context;
+        });
     }
 
     /**
@@ -1121,44 +1125,41 @@ class AccountService {
      * Used by internal services (persist, runners) that authenticate with the
      * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
      */
-    private async getAccountContextByInternalSecret(secretKey: string): Promise<AuthenticatedAccountContext | null> {
-        const hash = await this.hashSecretWithCache(secretKey);
-
-        const row = await db.readOnly
-            .select<{
-                account: DBTeam;
-                environment: DBEnvironment;
-                plan: DBPlan | null;
-                default_secret: DBAPISecret;
-                pending_secret: DBAPISecret | null;
-            }>(
-                db.knex.raw('row_to_json(_nango_environments.*) as environment'),
-                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
-                db.knex.raw('row_to_json(plans.*) as plan'),
-                db.knex.raw('row_to_json(default_secret.*) as default_secret'),
-                db.knex.raw('row_to_json(pending_secret.*) as pending_secret')
-            )
-            .from<DBAPISecret>('api_secrets')
-            .join('_nango_environments', '_nango_environments.id', 'api_secrets.environment_id')
-            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
-            .join({ default_secret: 'api_secrets' }, (j) =>
-                j.on('default_secret.environment_id', '_nango_environments.id').andOn('default_secret.is_default', db.knex.raw('true'))
-            )
-            .leftJoin({ pending_secret: 'api_secrets' }, (j) =>
-                j.on('pending_secret.environment_id', '_nango_environments.id').andOn('pending_secret.is_default', db.knex.raw('false'))
-            )
-            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
-            .where('api_secrets.hashed', hash)
-            .where('api_secrets.is_default', true)
-            .where('_nango_environments.deleted', false)
-            .first();
-
+    private async getAccountContextByInternalSecret(secretKey: string, clientIp?: string): Promise<AuthenticatedAccountContext | null> {
+        const row = await secretHashGuard.lookup(secretKey, clientIp, async (hash) => {
+            const found = await db.readOnly
+                .select<{
+                    account: DBTeam;
+                    environment: DBEnvironment;
+                    plan: DBPlan | null;
+                    default_secret: DBAPISecret;
+                    pending_secret: DBAPISecret | null;
+                }>(
+                    db.knex.raw('row_to_json(_nango_environments.*) as environment'),
+                    db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                    db.knex.raw('row_to_json(plans.*) as plan'),
+                    db.knex.raw('row_to_json(default_secret.*) as default_secret'),
+                    db.knex.raw('row_to_json(pending_secret.*) as pending_secret')
+                )
+                .from<DBAPISecret>('api_secrets')
+                .join('_nango_environments', '_nango_environments.id', 'api_secrets.environment_id')
+                .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+                .join({ default_secret: 'api_secrets' }, (j) =>
+                    j.on('default_secret.environment_id', '_nango_environments.id').andOn('default_secret.is_default', db.knex.raw('true'))
+                )
+                .leftJoin({ pending_secret: 'api_secrets' }, (j) =>
+                    j.on('pending_secret.environment_id', '_nango_environments.id').andOn('pending_secret.is_default', db.knex.raw('false'))
+                )
+                .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+                .where('api_secrets.hashed', hash)
+                .where('api_secrets.is_default', true)
+                .where('_nango_environments.deleted', false)
+                .first();
+            return found ?? null;
+        });
         if (!row) {
             return null;
         }
-
-        // Store only successful lookups to avoid polluting the cache
-        hashLocalCache.set(secretKey, hash);
 
         const defaultSecret = getEncryptionManager().decryptAPISecret(row.default_secret);
         const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;

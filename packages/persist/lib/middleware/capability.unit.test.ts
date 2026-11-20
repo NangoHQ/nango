@@ -232,7 +232,7 @@ describe('persist task capability', () => {
 
             const withSecret = await fetch(`${bareUrl}/environment/9/unscoped`, { headers: { Authorization: 'Bearer secret-key' } });
             expect(withSecret.status).toBe(204);
-            expect(secretLookup).toHaveBeenCalledWith('secret-key');
+            expect(secretLookup).toHaveBeenCalledWith('secret-key', { clientIp: expect.any(String) });
         } finally {
             await closeBare();
         }
@@ -305,7 +305,7 @@ describe('persist task capability', () => {
             body: JSON.stringify(logBody)
         });
         expect(ok.status).toBe(204);
-        expect(secretLookup).toHaveBeenCalledWith('secret-key');
+        expect(secretLookup).toHaveBeenCalledWith('secret-key', { clientIp: expect.any(String) });
         expect(environmentLookup).not.toHaveBeenCalled();
 
         secretLookup.mockClear();
@@ -315,7 +315,7 @@ describe('persist task capability', () => {
             body: JSON.stringify(logBody)
         });
         expect(wrong.status).toBe(401);
-        expect(secretLookup).toHaveBeenCalledWith('wrong-secret');
+        expect(secretLookup).toHaveBeenCalledWith('wrong-secret', { clientIp: expect.any(String) });
 
         secretLookup.mockClear();
         const jwtLooking = hs256Secret();
@@ -325,7 +325,7 @@ describe('persist task capability', () => {
             body: JSON.stringify(logBody)
         });
         expect(hs.status).toBe(401);
-        expect(secretLookup).toHaveBeenCalledWith(jwtLooking);
+        expect(secretLookup).toHaveBeenCalledWith(jwtLooking, { clientIp: expect.any(String) });
         expect(environmentLookup).not.toHaveBeenCalled();
     });
 
