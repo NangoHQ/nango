@@ -51,7 +51,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let providerConfig: Config | null | undefined;
     let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
-    let functionName: string | undefined;
+    let functionName: string | undefined = task.source ? INLINE_FUNCTION_NAME : undefined;
 
     try {
         const accountContext = await tracer.trace('function.prepare.accountContext', async () =>
@@ -74,7 +74,6 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
 
         let inlineCode: string | undefined;
         if (task.source) {
-            functionName = INLINE_FUNCTION_NAME;
             const built = buildInlineFunction(task.source.code);
             if (built.isErr()) {
                 throw built.error;
