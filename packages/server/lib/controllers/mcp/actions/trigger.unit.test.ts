@@ -128,7 +128,7 @@ describe('triggerActionTool', () => {
     it('returns a schema validation error that the agent can correct', async () => {
         vi.spyOn(actionService, 'executeAction').mockResolvedValue({
             logCtx: undefined,
-            result: Err(new ActionExecutionError({ code: 'invalid_input', message: 'Invalid action input: input must be object' }))
+            result: Err(new ActionExecutionError({ code: 'invalid_input', message: 'Invalid input: input must be object' }))
         });
         const result = await triggerActionTool.handler(validArguments, context);
         expect(result.isErr()).toBe(true);

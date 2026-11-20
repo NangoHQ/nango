@@ -25,7 +25,7 @@ describe('validateActionInput', () => {
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error.code).toBe('invalid_input');
-            expect(result.error.message).toContain('input must be object');
+            expect(result.error.message).toBe('Invalid input: input must be object. Pass a JSON value matching the input schema.');
         }
         expect(validateActionInput(action, { calendarId: 'primary' }).isOk()).toBe(true);
     });

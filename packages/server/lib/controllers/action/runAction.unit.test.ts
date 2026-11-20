@@ -20,7 +20,7 @@ describe('runAction', () => {
     it('returns invalid action input as HTTP 400 with a useful message', async () => {
         vi.mocked(executeAction).mockResolvedValue({
             logCtx: undefined,
-            result: Err(new ActionExecutionError({ code: 'invalid_input', message: 'Invalid action input: input must be object' }))
+            result: Err(new ActionExecutionError({ code: 'invalid_input', message: 'Invalid input: input must be object' }))
         });
         const res = { status: vi.fn().mockReturnThis(), send: vi.fn() };
         await runAction({
@@ -36,6 +36,6 @@ describe('runAction', () => {
             span: {}
         } as unknown as Parameters<typeof runAction>[0]);
         expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.send).toHaveBeenCalledWith({ error: { code: 'invalid_input', message: 'Invalid action input: input must be object' } });
+        expect(res.send).toHaveBeenCalledWith({ error: { code: 'invalid_input', message: 'Invalid input: input must be object' } });
     });
 });

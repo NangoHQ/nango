@@ -189,7 +189,7 @@ describe(`POST ${route}`, () => {
         expect(response.res.status).toBe(400);
         isError(response.json);
         expect(response.json.error.code).toBe('invalid_input');
-        expect(response.json.error.message).toContain('Invalid action input:');
+        expect(response.json.error.message).toContain('Invalid input:');
         expect(Orchestrator.prototype.triggerAction).not.toHaveBeenCalled();
         expect(Orchestrator.prototype.invokeFunction).not.toHaveBeenCalled();
     });

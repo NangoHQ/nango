@@ -511,7 +511,7 @@ describe('executeSessionTool', () => {
     it.each(['', '.'])('returns invalid action input as a correctable error (suffix=%j)', async (suffix) => {
         executeAction.mockResolvedValue({
             logCtx: undefined,
-            result: Err(new ActionExecutionError({ code: 'invalid_input', message: `Invalid action input: input must be object${suffix}` }))
+            result: Err(new ActionExecutionError({ code: 'invalid_input', message: `Invalid input: input must be object${suffix}` }))
         });
         const result = await execute('read_doc', { input: '{"id":"1"}' });
         expect(codeOf(result)).toBe('invalid_input');

@@ -73,7 +73,7 @@ export function validateActionInput(action: Exclude<ResolvedLegacyAction, { kind
             return Err(
                 new ActionInputValidationError(
                     'invalid_input',
-                    `Invalid action input: ${ajv.errorsText(validate.errors, { dataVar: 'input' })}. Pass input as a JSON value matching the action's input schema.`
+                    `Invalid input: ${ajv.errorsText(validate.errors, { dataVar: 'input' })}. Pass a JSON value matching the input schema.`
                 )
             );
         }
