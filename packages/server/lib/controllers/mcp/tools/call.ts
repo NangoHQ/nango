@@ -3,9 +3,9 @@ import tracer from 'dd-trace';
 import { configService, invokeFunction, NangoError, toolService } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
+import { executeAction } from '../../../services/action.service.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { actionExecutionErrorToMcp } from '../actions/errors.js';
-import { executeMcpAction } from '../actions/execute.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { InternalMcpError, PublicMcpError, safeFailureDetail } from '../utils.js';
 import { callToolArgumentsSchema, callToolOutputSchema } from './schema.js';
@@ -99,13 +99,12 @@ export const callToolsTool: ManagementMcpTool<CallToolOutput> = defineManagement
         }
 
         return await tracer.trace('server.mcp.callTool.fallback', async (span) => {
-            const execution = await executeMcpAction({
+            const execution = await executeAction({
                 account,
                 environment,
                 connectionId: args.connection_id,
                 providerConfigKey: integration.unique_key,
                 actionName: args.name,
-                resolvedAction: tool,
                 input: args.input,
                 isAsync: false,
                 retryMax: 0,

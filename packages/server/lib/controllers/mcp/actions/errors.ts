@@ -2,15 +2,13 @@ import { getLogger } from '@nangohq/utils';
 
 import { InternalMcpError, PublicMcpError, safeFailureDetail } from '../utils.js';
 
-import type { McpActionExecutionError } from './execute.js';
+import type { ActionExecutionError } from '../../../services/action.service.js';
 
 const logger = getLogger('Server.MCP.Actions');
 
-export function actionExecutionErrorToMcp(error: McpActionExecutionError): Error {
+export function actionExecutionErrorToMcp(error: ActionExecutionError): Error {
     const code = error.code;
     switch (code) {
-        case 'invalid_input':
-            return new PublicMcpError(error.message, { code: 'invalid_input' });
         case 'unknown_connection':
         case 'unknown_provider':
         case 'unknown_action':
