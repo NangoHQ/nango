@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { format, records } from '@nangohq/records';
-import { seeders } from '@nangohq/shared';
+import { agentSessionResultModel, seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected } from '../../../../../utils/tests.js';
 
@@ -108,5 +108,37 @@ describe(`GET ${route}`, () => {
                 updated_at: expect.toBeIsoDate()
             }
         ]);
+    });
+
+    it('should not list agent session results', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
+        const model = agentSessionResultModel('0b5ff4f1-8d3b-4e0a-9d4c-3f0d6c1b2a10');
+
+        await records.upsert({
+            plan: null,
+            records: format
+                .formatRecords({
+                    data: [{ id: 'result-1', data: { ok: true } }],
+                    syncId: 'f827f095-b0a0-463d-8016-a1b567d31a18',
+                    syncJobId: 0,
+                    connectionId: connection.id,
+                    model
+                })
+                .unwrap(),
+            connectionId: connection.id,
+            environmentId: env.id,
+            model
+        });
+
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { connectionId: connection.connection_id },
+            query: { env: env.name, provider_config_key: 'github' }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual({ data: [] });
     });
 });
