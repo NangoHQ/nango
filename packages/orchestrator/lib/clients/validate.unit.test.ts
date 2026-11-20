@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { INLINE_FUNCTION_UUID } from '../constants.js';
 import { validateTask } from './validate.js';
 
 import type { Task } from '@nangohq/scheduler';
@@ -200,29 +201,29 @@ describe('validateTask', () => {
             } as Task);
 
         it('deserializes a function task that carries its source', () => {
-            const task = inlineTask({ source: { kind: 'inline', code: 'return record.value;' } }).unwrap();
+            const task = inlineTask({ functionUuid: INLINE_FUNCTION_UUID, source: { kind: 'inline', code: 'return record.value;' } }).unwrap();
 
             expect(task.isFunction()).toBe(true);
             if (task.isFunction()) {
                 expect(task.source).toStrictEqual({ kind: 'inline', code: 'return record.value;' });
-                expect(task.functionUuid).toBeUndefined();
-                expect('functionUuid' in task).toBe(false);
+                expect(task.functionUuid).toBe(INLINE_FUNCTION_UUID);
             }
         });
 
         it('keeps the description of the source', () => {
             const source = { kind: 'inline', code: 'return record.value;', description: 'Names of the unread emails' };
-            const task = inlineTask({ source }).unwrap();
+            const task = inlineTask({ functionUuid: INLINE_FUNCTION_UUID, source }).unwrap();
 
             expect(task.isFunction() && task.source).toStrictEqual(source);
         });
 
         it.each([
-            ['both a functionUuid and a source', { functionUuid: '11111111-1111-4111-8111-111111111111', source: { kind: 'inline', code: 'return 1;' } }],
-            ['neither a functionUuid nor a source', {}],
-            ['an empty source', { source: { kind: 'inline', code: '' } }],
-            ['an empty source description', { source: { kind: 'inline', code: 'return 1;', description: '' } }],
-            ['an unknown source kind', { source: { kind: 'remote', code: 'return 1;' } }]
+            ['a source on a deployed functionUuid', { functionUuid: '11111111-1111-4111-8111-111111111111', source: { kind: 'inline', code: 'return 1;' } }],
+            ['the inline functionUuid without a source', { functionUuid: INLINE_FUNCTION_UUID }],
+            ['no functionUuid', { source: { kind: 'inline', code: 'return 1;' } }],
+            ['an empty source', { functionUuid: INLINE_FUNCTION_UUID, source: { kind: 'inline', code: '' } }],
+            ['an empty source description', { functionUuid: INLINE_FUNCTION_UUID, source: { kind: 'inline', code: 'return 1;', description: '' } }],
+            ['an unknown source kind', { functionUuid: INLINE_FUNCTION_UUID, source: { kind: 'remote', code: 'return 1;' } }]
         ])('rejects a function task with %s', (_name, payload) => {
             expect(inlineTask(payload).isErr()).toBe(true);
         });
