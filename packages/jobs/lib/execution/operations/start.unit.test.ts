@@ -56,6 +56,28 @@ describe('startScript', () => {
             })
         );
     });
+
+    it('invokes code carried by the task without loading a deployed script', async () => {
+        const code = 'module.exports.default = {};';
+        const localFileSpy = vi.spyOn(shared.localFileService, 'getIntegrationFile');
+        const remoteFileSpy = vi.spyOn(shared.remoteFileService, 'getFile');
+        const invoke = vi.fn().mockResolvedValue(Ok(true));
+        getRuntimeAdapter.mockResolvedValue(Ok({ invoke }));
+        vi.spyOn(shared.connectionService, 'trackExecution').mockResolvedValue(Ok(undefined));
+
+        const result = await startScript({
+            taskId: 'task-1',
+            nangoProps: catalogNangoProps,
+            routingContext: { plan: null, features: [] },
+            logCtx: { error: vi.fn() } as unknown as LogContext,
+            code
+        });
+
+        expect(result.isOk()).toBe(true);
+        expect(remoteFileSpy).not.toHaveBeenCalled();
+        expect(localFileSpy).not.toHaveBeenCalled();
+        expect(invoke).toHaveBeenCalledWith(expect.objectContaining({ taskId: 'task-1', code }));
+    });
 });
 
 const catalogTool: CatalogTool = {

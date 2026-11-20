@@ -59,15 +59,15 @@ export type FunctionInlineSource = {
 };
 
 // A function task runs a deployed function (functionUuid) or code carried by the task (source), never both.
-interface FunctionArgs {
-    functionUuid?: string;
-    source?: FunctionInlineSource;
+type FunctionOrigin = { functionUuid: string; source?: never } | { source: FunctionInlineSource; functionUuid?: never };
+
+type FunctionArgs = FunctionOrigin & {
     connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     activityLogId?: string;
     variant?: string;
     trigger: FunctionTrigger;
     async: boolean;
-}
+};
 export type SchedulesReturn = Result<OrchestratorSchedule[]>;
 export type VoidReturn = Result<void, ClientError>;
 export type ExecuteProps = SetOptional<ImmediateProps, 'retry' | 'timeoutSettingsInSecs'>;
@@ -284,7 +284,7 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
     };
 }
 
-export interface TaskFunction extends TaskCommon, FunctionArgs {}
+export type TaskFunction = TaskCommon & FunctionArgs;
 export function TaskFunction(props: TaskCommonFields & FunctionArgs): TaskFunction {
     return {
         id: props.id,
@@ -293,8 +293,7 @@ export function TaskFunction(props: TaskCommonFields & FunctionArgs): TaskFuncti
         attempt: props.attempt,
         retryKey: props.retryKey,
         attemptMax: props.attemptMax,
-        ...(props.functionUuid !== undefined && { functionUuid: props.functionUuid }),
-        ...(props.source !== undefined && { source: props.source }),
+        ...(props.source !== undefined ? { source: props.source } : { functionUuid: props.functionUuid }),
         ...(props.variant !== undefined && { variant: props.variant }),
         connection: props.connection,
         ...(props.activityLogId !== undefined && { activityLogId: props.activityLogId }),

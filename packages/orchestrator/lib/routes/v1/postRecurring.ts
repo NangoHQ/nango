@@ -14,7 +14,7 @@ const method = 'POST';
 const recurringArgsSchema = z.discriminatedUnion('type', [
     syncArgsSchema,
     functionArgsSchema.refine(
-        (args) => args.trigger.kind === 'schedule' && args.async && args.functionUuid !== undefined,
+        (args) => args.trigger.kind === 'schedule' && args.async && 'functionUuid' in args,
         'Recurring functions must be deployed, use a schedule trigger and run asynchronously'
     )
 ]);
