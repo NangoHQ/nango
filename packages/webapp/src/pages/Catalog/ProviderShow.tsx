@@ -7,6 +7,7 @@ import { Alert, AlertDescription, Badge, Button, IconButton, SplitButton, SplitB
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { TestConnectionButton } from '@/components/patterns/TestConnectionButton';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -86,26 +87,20 @@ export const CatalogProviderShow: React.FC = () => {
             setSettingUp(false);
         }
     };
-    const renderSetupButton = (source: SetupButtonSource, size: 'sm' | 'md') => (
-        <PermissionGate asChild condition={existingIntegrationId ? canCreateConnection : canSetUp}>
+    const renderSetupButton = (source: SetupButtonSource, size: 'sm' | 'md') => {
+        if (configuredIntegrationIds && configuredIntegrationIds.length > 0) {
+            return <TestConnectionButton env={env} integrationIds={configuredIntegrationIds} canCreate={canCreateConnection} size={size} />;
+        }
+        return renderAddIntegrationButton(source, size);
+    };
+    const renderAddIntegrationButton = (source: SetupButtonSource, size: 'sm' | 'md') => (
+        <PermissionGate asChild condition={canSetUp}>
             {(allowed) => {
                 if (configuredIntegrationIds === null) {
                     return (
                         <Button variant="primary" size={size} loading disabled>
                             Add integration
                         </Button>
-                    );
-                }
-                if (existingIntegrationId) {
-                    return (
-                        <ButtonLink
-                            to={`/${env}/connections/create?integration_id=${encodeURIComponent(existingIntegrationId)}`}
-                            variant="primary"
-                            size={size}
-                            disabled={!allowed}
-                        >
-                            Add test connection
-                        </ButtonLink>
                     );
                 }
                 if (oneClickSetupBody && hasCustomSetup(provider)) {
