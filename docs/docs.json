@@ -191,7 +191,7 @@
     },
     {
       "source": "/guides/auth/share-connect-link",
-      "destination": "/guides/auth/setup#share-a-connect-link"
+      "destination": "/guides/auth/setup#auth-from-a-link-you-share"
     },
     {
       "source": "/guides/platform/proxy-requests",
@@ -586,7 +586,7 @@
             ]
           },
           {
-            "group": "1,300+ APIs & Integrations",
+            "group": "1,400+ APIs & Integrations",
             "pages": [
               "api-integrations/0codekit",
               "api-integrations/1password-events",
