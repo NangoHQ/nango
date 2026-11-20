@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { TaskFunction } from '@nangohq/nango-orchestrator';
+import { INLINE_FUNCTION_UUID, TaskFunction } from '@nangohq/nango-orchestrator';
 import * as shared from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
@@ -98,8 +98,7 @@ function task(functionUuid = deployedFunction().uuid, input: Record<string, stri
 }
 
 function inlineTask(code: string): TaskFunction {
-    const { functionUuid: _functionUuid, ...deployedTask } = task();
-    return TaskFunction({ ...deployedTask, source: { kind: 'inline', code, description: 'Names of the open issues' } });
+    return TaskFunction({ ...task(INLINE_FUNCTION_UUID), source: { kind: 'inline', code, description: 'Names of the open issues' } });
 }
 
 beforeEach(() => {

@@ -220,7 +220,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
                 environment_id: task.connection.environment_id,
                 provider_config_key: task.connection.provider_config_key
             },
-            functionName: functionName || task.functionUuid || INLINE_FUNCTION_NAME, // fallback to functionUuid if failure happened before fetching the function config
+            functionName: functionName || task.functionUuid, // fallback to functionUuid if failure happened before fetching the function config
             provider: providerConfig?.provider || 'unknown',
             providerConfigKey: task.connection.provider_config_key,
             activityLogId: logCtx?.id ?? task.activityLogId,
@@ -572,9 +572,6 @@ function inlineLogFields(task: TaskFunction): Record<string, string> {
 
 async function resolveFunction(task: TaskFunction, providerConfig: Config): Promise<ResolvedFunction> {
     const functionUuid = task.functionUuid;
-    if (!functionUuid) {
-        throw new Error('Function task has no functionUuid and no source');
-    }
     const resolved = await tracer.trace('function.prepare.functionConfig', async () =>
         functionLookupService.resolveFunctionByUuid({ environmentId: task.connection.environment_id, functionUuid })
     );
