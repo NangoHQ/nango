@@ -15,6 +15,8 @@ export type ScriptType = 'function' | 'sync' | 'action' | 'webhook' | 'on-event'
 
 export interface NangoProps {
     scriptType: ScriptType;
+    // 'transform': the code is a function body the runner compiles, not a module. Defaults to 'module'.
+    execMode?: 'module' | 'transform' | undefined;
     host?: string;
     secretKey: string;
     team: Pick<DBTeam, 'id' | 'name'>;
