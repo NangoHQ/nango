@@ -22,7 +22,7 @@ export const formatRecords = ({
     data: UnencryptedRecordData[];
     connectionId: number;
     model: string;
-    syncId: string;
+    syncId?: string | undefined;
     syncJobId: number;
     softDelete?: boolean;
 }): Result<FormattedRecord[]> => {
@@ -55,7 +55,7 @@ export const formatRecords = ({
             data_hash,
             model,
             connection_id: connectionId,
-            sync_id: syncId,
+            sync_id: syncId ?? null,
             sync_job_id: syncJobId
         };
 

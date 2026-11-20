@@ -333,6 +333,36 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json.error.payload).toStrictEqual({ meta_tools: ['nango_teleport'] });
     });
 
+    it('rejects nango_run_code as unknown for an account without the feature', async () => {
+        const { token } = await seedTenant();
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token,
+            body: { tenant: { connections: { any: [{ tags: { tenant: 'acme' } }] } }, meta_tools: { nango_run_code: false } }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json.error.code).toBe('unknown_meta_tool');
+        expect(res.json.error.payload).toStrictEqual({ meta_tools: ['nango_run_code'] });
+        expect(res.json.error.message).not.toContain('nango_run_code');
+    });
+
+    it('accepts nango_run_code for an account with the feature', async () => {
+        const { token } = await seedTenant();
+        vi.spyOn(getFlags(), 'isAgentSessionRunCodeEnabled').mockResolvedValueOnce(true);
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token,
+            body: { tenant: { connections: { any: [{ tags: { tenant: 'acme', workspace: 'marketing' } }] } }, meta_tools: { nango_run_code: true } }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.data.meta_tools).toMatchObject({ nango_run_code: true });
+    });
+
     it('rejects a body with no connection selector at all', async () => {
         const { token } = await seedTenant();
 
