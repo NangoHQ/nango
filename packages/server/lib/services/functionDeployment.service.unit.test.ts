@@ -397,7 +397,6 @@ describe('functionDeploymentService', () => {
         const result = await deployTemplate({
             account,
             environment,
-            plan: null,
             body: { type: 'template', integration_id: 'airtable', template: 'tables' }
         });
 
@@ -422,7 +421,6 @@ describe('functionDeploymentService', () => {
         const result = await deployTemplate({
             account,
             environment,
-            plan: null,
             body: { type: 'template', integration_id: 'google-calendar', template: 'settings' }
         });
 
@@ -441,7 +439,6 @@ describe('functionDeploymentService', () => {
         const result = await deployTemplate({
             account,
             environment,
-            plan: null,
             body: { type: 'template', integration_id: 'google-calendar', template: 'settings', function_type }
         });
 
