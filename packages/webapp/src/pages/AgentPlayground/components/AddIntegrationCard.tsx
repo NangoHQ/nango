@@ -25,9 +25,11 @@ interface AddIntegrationCardProps {
 function reason(outcome: AgentPlaygroundIntegrationSetup['outcome'], name: string): string {
     switch (outcome) {
         case 'needs_developer_app':
-            return `${name} needs your own developer app.`;
+            return `${name} needs your own developer app, so the playground can't add it by itself.`;
         case 'needs_setup':
-            return `${name} needs a few settings first.`;
+            return `${name} needs a few settings first, so the playground can't add it by itself.`;
+        case 'needs_confirmation':
+            return "In production, the playground can't add it by itself.";
         default:
             return 'The agent needs it to continue.';
     }
