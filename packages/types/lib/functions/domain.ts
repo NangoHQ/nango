@@ -63,15 +63,18 @@ export interface ListedFunctionAvailability {
 export type ListedNangoSyncFunction = NangoSyncFunction & ListedFunctionAvailability;
 export type ListedNangoActionFunction = NangoActionFunction & ListedFunctionAvailability;
 export type ListedNangoOnEventFunction = NangoOnEventFunction & ListedFunctionAvailability;
-export type ListedNangoToolFunction = NangoFunctionBase &
+export interface NangoToolFunction extends NangoFunctionBase {
+    type: 'tool';
+    description: string;
+    input_json_schema: JSONSchema7 | null;
+    output_json_schema: JSONSchema7 | null;
+}
+
+export type ListedNangoToolFunction = NangoToolFunction &
     ListedFunctionAvailability & {
-        type: 'tool';
         uuid: string;
         integration_id: string;
         provider: string;
-        description: string;
-        input_json_schema: JSONSchema7 | null;
-        output_json_schema: JSONSchema7 | null;
         meta: Pick<ToolTags, 'instructions' | 'required_scopes'> & {
             tags: FunctionTags;
         };
