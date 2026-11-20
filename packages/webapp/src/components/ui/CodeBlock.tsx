@@ -175,65 +175,67 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                     <CopyButton value={copyText} size="xs" />
                 </div>
             )}
-            <header className={cn('flex justify-between items-center py-1.5 px-3 bg-surface-code border-b border-border-muted rounded-t', bare && 'hidden')}>
-                <span className="text-text-muted text-s">{title}</span>
-                <div className="flex gap-2 items-center">
-                    {headerElement}
-                    {displayLanguage && (
-                        <Badge>
-                            {icon && icon}
-                            {displayLanguage}
-                        </Badge>
-                    )}
-                    {!editing && onExecute && (
-                        <Button variant="outline" onClick={onClickExecute} disabled={isExecuting}>
-                            {isExecuting ? (
-                                <>
-                                    <Loader className="size-4 animate-spin text-text-secondary" />
-                                    Running...
-                                </>
-                            ) : (
-                                <>
-                                    <Play className="size-4 text-text-brand" />
-                                    Run
-                                </>
-                            )}
-                        </Button>
-                    )}
-                    {!editing && secret && (
-                        <IconButton variant="ghost" size="sm" label="Toggle visibility" onClick={toggleSecretVisibility}>
-                            {isSecretVisible ? <EyeOff /> : <Eye />}
-                        </IconButton>
-                    )}
-                    {showEditControls && !editing && (
-                        <PermissionGate asChild condition={canEdit} tooltipSide="bottom">
-                            {(allowed) => (
-                                <IconButton variant="ghost" size="sm" label="Edit" onClick={onEditClicked} disabled={!allowed}>
-                                    <Edit />
+            {!bare && (
+                <header className="flex justify-between items-center py-1.5 px-3 bg-surface-code border-b border-border-muted rounded-t">
+                    <span className="text-text-muted text-s">{title}</span>
+                    <div className="flex gap-2 items-center">
+                        {headerElement}
+                        {displayLanguage && (
+                            <Badge>
+                                {icon && icon}
+                                {displayLanguage}
+                            </Badge>
+                        )}
+                        {!editing && onExecute && (
+                            <Button variant="outline" onClick={onClickExecute} disabled={isExecuting}>
+                                {isExecuting ? (
+                                    <>
+                                        <Loader className="size-4 animate-spin text-text-secondary" />
+                                        Running...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Play className="size-4 text-text-brand" />
+                                        Run
+                                    </>
+                                )}
+                            </Button>
+                        )}
+                        {!editing && secret && (
+                            <IconButton variant="ghost" size="sm" label="Toggle visibility" onClick={toggleSecretVisibility}>
+                                {isSecretVisible ? <EyeOff /> : <Eye />}
+                            </IconButton>
+                        )}
+                        {showEditControls && !editing && (
+                            <PermissionGate asChild condition={canEdit} tooltipSide="bottom">
+                                {(allowed) => (
+                                    <IconButton variant="ghost" size="sm" label="Edit" onClick={onEditClicked} disabled={!allowed}>
+                                        <Edit />
+                                    </IconButton>
+                                )}
+                            </PermissionGate>
+                        )}
+                        {editing && (
+                            <>
+                                <IconButton variant="ghost" size="sm" label="Cancel" onClick={onCancelClicked} disabled={saving}>
+                                    <X />
                                 </IconButton>
-                            )}
-                        </PermissionGate>
-                    )}
-                    {editing && (
-                        <>
-                            <IconButton variant="ghost" size="sm" label="Cancel" onClick={onCancelClicked} disabled={saving}>
-                                <X />
-                            </IconButton>
-                            <IconButton
-                                variant="ghost"
-                                size="sm"
-                                label="Save"
-                                onClick={onSaveClicked}
-                                disabled={saving || !!error}
-                                loading={showLoadingOnSave && saving}
-                            >
-                                <Check />
-                            </IconButton>
-                        </>
-                    )}
-                    {!editing && copyable && <CopyButton value={copyText} size="sm" />}
-                </div>
-            </header>
+                                <IconButton
+                                    variant="ghost"
+                                    size="sm"
+                                    label="Save"
+                                    onClick={onSaveClicked}
+                                    disabled={saving || !!error}
+                                    loading={showLoadingOnSave && saving}
+                                >
+                                    <Check />
+                                </IconButton>
+                            </>
+                        )}
+                        {!editing && copyable && <CopyButton value={copyText} size="sm" />}
+                    </div>
+                </header>
+            )}
             <div className={cn(constrainHeight && 'max-h-128 overflow-auto')}>
                 {editing ? (
                     <div className="relative">
