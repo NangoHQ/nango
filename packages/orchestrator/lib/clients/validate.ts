@@ -3,8 +3,9 @@ import * as z from 'zod';
 import { taskStates } from '@nangohq/scheduler';
 import { Err, Ok } from '@nangohq/utils';
 
-import { INLINE_FUNCTION_UUID, maxInlineSourceCodeLength } from '../constants.js';
+import { maxInlineSourceCodeLength } from '../constants.js';
 import { jsonSchema } from '../utils/validation.js';
+import { isInlineFunctionUuid } from './inlineFunctionUuid.js';
 import { TaskAbort, TaskAction, TaskFunction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
 
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
@@ -139,10 +140,7 @@ const functionArgsObjectSchema = z
     .strict();
 
 export const functionArgsSchema = functionArgsObjectSchema
-    .refine(
-        (args) => (args.source !== undefined) === (args.functionUuid === INLINE_FUNCTION_UUID),
-        'A source and the inline function uuid must be used together'
-    )
+    .refine((args) => (args.source !== undefined) === isInlineFunctionUuid(args.functionUuid), 'A source and an inline function uuid must be used together')
     .transform(({ source, activityLogId, variant, ...args }) => ({
         ...args,
         ...(source !== undefined && { source }),

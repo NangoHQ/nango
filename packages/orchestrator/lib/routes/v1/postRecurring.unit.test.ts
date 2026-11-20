@@ -6,11 +6,13 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
 import { Err, Ok } from '@nangohq/utils';
 
-import { INLINE_FUNCTION_UUID } from '../../constants.js';
+import { generateInlineFunctionUuid } from '../../clients/inlineFunctionUuid.js';
 import { getServer } from '../../server.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
 import type { Server } from 'node:http';
+
+const INLINE_FUNCTION_UUID = generateInlineFunctionUuid();
 
 const scheduleId = '01994dc2-b6a7-7e46-964d-5f520e57a082';
 const recurring = vi.fn(() => Promise.resolve(Ok([{ id: scheduleId }])));

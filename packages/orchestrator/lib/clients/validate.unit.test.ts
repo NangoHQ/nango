@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { INLINE_FUNCTION_UUID, maxInlineSourceCodeLength } from '../constants.js';
+import { maxInlineSourceCodeLength } from '../constants.js';
+import { generateInlineFunctionUuid } from './inlineFunctionUuid.js';
 import { validateTask } from './validate.js';
 
 import type { Task } from '@nangohq/scheduler';
+
+const INLINE_FUNCTION_UUID = generateInlineFunctionUuid();
 
 describe('validateTask', () => {
     it.each([undefined, 'custom'])('deserializes a scheduled function with variant %s and no activity log', (variant) => {
@@ -219,7 +222,7 @@ describe('validateTask', () => {
 
         it.each([
             ['a source on a deployed functionUuid', { functionUuid: '11111111-1111-4111-8111-111111111111', source: { kind: 'inline', code: 'return 1;' } }],
-            ['the inline functionUuid without a source', { functionUuid: INLINE_FUNCTION_UUID }],
+            ['an inline functionUuid without a source', { functionUuid: INLINE_FUNCTION_UUID }],
             ['no functionUuid', { source: { kind: 'inline', code: 'return 1;' } }],
             ['an empty source', { functionUuid: INLINE_FUNCTION_UUID, source: { kind: 'inline', code: '' } }],
             [
