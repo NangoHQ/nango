@@ -1,5 +1,5 @@
 import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
-import { configService, connectionService, pubsub, resolveLegacyAction, validateActionInput } from '@nangohq/shared';
+import { configService, connectionService, pubsub, resolveLegacyAction } from '@nangohq/shared';
 import { Err, Ok, truncateJson } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -12,14 +12,7 @@ import type { Span } from 'dd-trace';
 
 export type ActionExecutionSuccess = AsyncActionResponse | { data: unknown };
 
-export type ActionExecutionErrorCode =
-    | 'unknown_connection'
-    | 'unknown_provider'
-    | 'unknown_action'
-    | 'disabled_action'
-    | 'action_failed'
-    | 'invalid_input'
-    | 'internal_error';
+export type ActionExecutionErrorCode = 'unknown_connection' | 'unknown_provider' | 'unknown_action' | 'disabled_action' | 'action_failed' | 'internal_error';
 
 export class ActionExecutionError extends Error {
     readonly code: ActionExecutionErrorCode;
@@ -95,14 +88,6 @@ export async function executeAction({
 
         if (resolved.kind === 'deployed' && !resolved.config.enabled) {
             return { logCtx, functionSource, result: Err(new ActionExecutionError({ code: 'disabled_action', message: 'The action is disabled' })) };
-        }
-
-        const validation = validateActionInput(resolved, input);
-        if (validation.isErr()) {
-            if (validation.error.code === 'invalid_input') {
-                return { logCtx, functionSource, result: Err(new ActionExecutionError({ code: 'invalid_input', message: validation.error.message })) };
-            }
-            throw validation.error;
         }
 
         const loggedSyncConfig = resolved.kind === 'deployed' ? { id: resolved.config.id, name: resolved.config.sync_name } : { name: resolved.tool.name };

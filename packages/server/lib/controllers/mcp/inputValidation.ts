@@ -3,7 +3,7 @@ import addFormats from 'ajv-formats';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import type { ResolvedLegacyAction } from './resolveLegacyAction.js';
+import type { ResolvedLegacyAction } from '@nangohq/shared';
 import type { Result } from '@nangohq/types';
 import type { AnySchema, ValidateFunction } from 'ajv';
 
@@ -15,7 +15,7 @@ addFormats(ajv);
 const validators = new Map<string, ValidateFunction>();
 const MAX_VALIDATORS = 1000;
 
-export class ActionInputValidationError extends Error {
+export class McpInputValidationError extends Error {
     constructor(
         readonly code: 'invalid_input' | 'invalid_schema',
         message: string,
@@ -25,7 +25,7 @@ export class ActionInputValidationError extends Error {
     }
 }
 
-export function validateActionInput(action: Exclude<ResolvedLegacyAction, { kind: 'missing' }>, input: unknown): Result<void, ActionInputValidationError> {
+export function validateMcpActionInput(action: Exclude<ResolvedLegacyAction, { kind: 'missing' }>, input: unknown): Result<void, McpInputValidationError> {
     const model = action.kind === 'catalog' ? action.tool.input : action.config.input;
     const schema = action.kind === 'catalog' ? action.tool.jsonSchema : action.config.models_json_schema;
     // Older deployments may not have a JSON schema. Keep their existing behavior.
@@ -71,7 +71,7 @@ export function validateActionInput(action: Exclude<ResolvedLegacyAction, { kind
         const valid = omittedInput ? validate(null) || validate(input ?? {}) : validate(input);
         if (!valid) {
             return Err(
-                new ActionInputValidationError(
+                new McpInputValidationError(
                     'invalid_input',
                     `Invalid input: ${ajv.errorsText(validate.errors, { dataVar: 'input' })}. Pass a JSON value matching the input schema.`
                 )
@@ -79,6 +79,6 @@ export function validateActionInput(action: Exclude<ResolvedLegacyAction, { kind
         }
         return Ok(undefined);
     } catch (err) {
-        return Err(new ActionInputValidationError('invalid_schema', 'Failed to validate the action input schema', { cause: err }));
+        return Err(new McpInputValidationError('invalid_schema', 'Failed to validate the action input schema', { cause: err }));
     }
 }

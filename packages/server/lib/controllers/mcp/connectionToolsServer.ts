@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 import { configService, functionLookupService } from '@nangohq/shared';
 import { Err, metrics, Ok } from '@nangohq/utils';
 
-import { executeAction } from '../../services/action.service.js';
+import { executeMcpAction } from './actions/execute.js';
 import { mcpToolError, safeFailureDetail } from './utils.js';
 
 import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/server';
@@ -127,7 +127,7 @@ function callToolRequestHandler(
             .setTag('nango.providerConfigKey', providerConfig.unique_key);
 
         const input = toolArguments ?? {};
-        const execution = await executeAction({
+        const execution = await executeMcpAction({
             account,
             environment,
             connectionId: connection.connection_id,

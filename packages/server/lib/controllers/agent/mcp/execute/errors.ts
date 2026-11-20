@@ -7,8 +7,8 @@ import { InternalMcpError, PublicMcpError, safeFailureDetail } from '../../../mc
 import { proxyErrorToMcp } from '../proxy/errors.js';
 import { connectionDeletedError } from '../sessionConnection.js';
 
-import type { ActionExecutionError } from '../../../../services/action.service.js';
 import type { RemoteMcpError } from '../../../../services/remoteMcp.service.js';
+import type { McpActionExecutionError } from '../../../mcp/actions/execute.js';
 import type { FunctionInvokeError } from '@nangohq/shared';
 
 const logger = getLogger('Server.MCP.AgentSession.Execute');
@@ -34,7 +34,15 @@ function toolFailedError({ integrationId, toolName, detail }: { integrationId: s
     );
 }
 
-export function actionExecutionErrorToMcp({ error, integrationId, toolName }: { error: ActionExecutionError; integrationId: string; toolName: string }): Error {
+export function actionExecutionErrorToMcp({
+    error,
+    integrationId,
+    toolName
+}: {
+    error: McpActionExecutionError;
+    integrationId: string;
+    toolName: string;
+}): Error {
     const code = error.code;
     switch (code) {
         case 'unknown_connection':

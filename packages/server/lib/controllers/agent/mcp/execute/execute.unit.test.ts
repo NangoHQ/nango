@@ -5,11 +5,12 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { ActionExecutionError } from '../../../../services/action.service.js';
 import * as agentSessionConnectionsService from '../../../../services/agentSessionConnections.service.js';
+import { McpActionInputError } from '../../../mcp/actions/execute.js';
 import { InternalMcpError, PublicMcpError } from '../../../mcp/utils.js';
 import { buildSessionTools } from '../sessionServer.js';
 import { executeInputSchema } from './schema.js';
 
-import type * as actionService from '../../../../services/action.service.js';
+import type * as actionService from '../../../mcp/actions/execute.js';
 import type { AgentSessionMcpContext } from '../sessionTool.js';
 import type * as NangoShared from '@nangohq/shared';
 import type { FunctionInvokeError, ResolvedTool } from '@nangohq/shared';
@@ -26,9 +27,9 @@ import type {
 import type { Result } from '@nangohq/utils';
 
 const executeAction = vi.fn();
-vi.mock('../../../../services/action.service.js', async (importOriginal) => ({
+vi.mock('../../../mcp/actions/execute.js', async (importOriginal) => ({
     ...(await importOriginal<typeof actionService>()),
-    executeAction: (...args: unknown[]) => executeAction(...args)
+    executeMcpAction: (...args: unknown[]) => executeAction(...args)
 }));
 
 const invokeFunction = vi.fn();
@@ -511,7 +512,7 @@ describe('executeSessionTool', () => {
     it.each(['', '.'])('returns invalid action input as a correctable error (suffix=%j)', async (suffix) => {
         executeAction.mockResolvedValue({
             logCtx: undefined,
-            result: Err(new ActionExecutionError({ code: 'invalid_input', message: `Invalid input: input must be object${suffix}` }))
+            result: Err(new McpActionInputError(`Invalid input: input must be object${suffix}`))
         });
         const result = await execute('read_doc', { input: '{"id":"1"}' });
         expect(codeOf(result)).toBe('invalid_input');

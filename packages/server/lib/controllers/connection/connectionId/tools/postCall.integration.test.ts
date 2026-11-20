@@ -177,7 +177,7 @@ describe(`POST ${route}`, () => {
         { name: 'JSON-encoded input', input: JSON.stringify(catalogActionInput) },
         { name: 'missing required fields', input: {} },
         { name: 'wrong property types', input: { ...catalogActionInput, issue_number: 'one' } }
-    ])('rejects $name before scheduling a catalog action', async ({ input: invalidInput }) => {
+    ])('passes $name through to a legacy catalog action', async ({ input: invalidInput }) => {
         const seed = await seedTool();
         vi.mocked(getFlags().hasCatalogTools).mockResolvedValue(true);
         const response = await api.fetch(route, {
@@ -186,11 +186,8 @@ describe(`POST ${route}`, () => {
             params: { ...seed.params, name: catalogActionName },
             body: { input: invalidInput }
         });
-        expect(response.res.status).toBe(400);
-        isError(response.json);
-        expect(response.json.error.code).toBe('invalid_input');
-        expect(response.json.error.message).toContain('Invalid input:');
-        expect(Orchestrator.prototype.triggerAction).not.toHaveBeenCalled();
+        expect(response.res.status).toBe(200);
+        expect(Orchestrator.prototype.triggerAction).toHaveBeenCalledWith(expect.objectContaining({ actionName: catalogActionName, input: invalidInput }));
         expect(Orchestrator.prototype.invokeFunction).not.toHaveBeenCalled();
     });
 

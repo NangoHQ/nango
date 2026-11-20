@@ -13,7 +13,6 @@ const httpErrors: Record<Exclude<ActionExecutionErrorCode, 'action_failed'>, { s
     unknown_provider: { status: 400, code: 'unknown_provider' },
     unknown_action: { status: 404, code: 'not_found' },
     disabled_action: { status: 404, code: 'disabled_resource' },
-    invalid_input: { status: 400, code: 'invalid_input' },
     internal_error: { status: 500, code: 'internal_server_error' }
 };
 

@@ -15,8 +15,8 @@ const mocks = vi.hoisted(() => ({
     executeAction: vi.fn()
 }));
 
-vi.mock('../../services/action.service.js', () => ({
-    executeAction: mocks.executeAction
+vi.mock('./actions/execute.js', () => ({
+    executeMcpAction: mocks.executeAction
 }));
 
 describe('createConnectionToolsMcpServer', () => {

@@ -2,11 +2,11 @@ import { getLogger } from '@nangohq/utils';
 
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 
-import type { ActionExecutionError } from '../../../services/action.service.js';
+import type { McpActionExecutionError } from './execute.js';
 
 const logger = getLogger('Server.MCP.Actions');
 
-export function actionExecutionErrorToMcp(error: ActionExecutionError): Error {
+export function actionExecutionErrorToMcp(error: McpActionExecutionError): Error {
     const code = error.code;
     switch (code) {
         case 'invalid_input':

@@ -57,23 +57,18 @@ function setup() {
     };
 }
 
-describe('executeAction input validation', () => {
+describe('executeAction legacy input compatibility', () => {
     afterEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
     });
 
-    it.each([false, true])('rejects encoded input before scheduling (async=%s)', async (isAsync) => {
-        const { run, createLog, publish } = setup();
-        const { result } = await run('{"calendarId":"primary"}', isAsync);
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe('invalid_input');
-            expect(result.error.message).toContain('input must be object');
-        }
-        expect(mocks.triggerAction).not.toHaveBeenCalled();
-        expect(createLog).not.toHaveBeenCalled();
-        expect(publish).not.toHaveBeenCalled();
+    it.each(['{"calendarId":"primary"}', {}, { calendarId: 123 }])('passes legacy input through without schema validation: %j', async (input) => {
+        const { run } = setup();
+        const { result } = await run(input);
+        expect(result.isOk()).toBe(true);
+        expect(mocks.triggerAction).toHaveBeenCalledWith(expect.objectContaining({ input }));
+        expect(mocks.triggerAction.mock.calls[0]?.[0].input).toBe(input);
     });
 
     it('passes valid input to the orchestrator unchanged', async () => {
