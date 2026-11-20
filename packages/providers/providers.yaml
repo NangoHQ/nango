@@ -16604,12 +16604,22 @@ fleetio:
         headers:
             authorization: 'Token ${credentials.username}'
             account-token: ${credentials.password}
+            x-api-version: ${connectionConfig.version} || 2025-05-05
         retry:
             after:
                 - 'retry-after'
-    credentials_verification_script: fleetioCredentialsVerification
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
     docs: https://nango.dev/docs/api-integrations/fleetio
     docs_connect: https://nango.dev/docs/api-integrations/fleetio/connect
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
     credentials:
         username:
             type: string
