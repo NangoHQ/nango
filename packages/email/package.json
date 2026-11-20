@@ -21,6 +21,6 @@
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "@types/ws": "8.18.1",
-        "vitest": "4.1.11"
+        "vitest": "4.1.12"
     }
 }

@@ -102,7 +102,7 @@
         "vite": "8.3.5",
         "vite-plugin-checker": "0.14.1",
         "vite-plugin-svgr": "5.2.0",
-        "vitest": "4.1.11",
+        "vitest": "4.1.12",
         "web-vitals": "2.1.4",
         "zod": "4.6.7",
         "zustand": "5.0.3"
