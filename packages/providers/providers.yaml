@@ -4879,6 +4879,35 @@ aws-sigv4:
                 equals: basic
             order: 11
 
+axiscare:
+    display_name: AxisCare
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.siteNumber}.axiscare.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/axiscare
+    docs_connect: https://nango.dev/docs/api-integrations/axiscare/connect
+    connection_config:
+        siteNumber:
+            type: string
+            title: Site Number
+            description: Your AxisCare site number, the first part of your AxisCare URL.
+            example: '123456'
+            pattern: '^[A-Za-z0-9-]+$'
+            prefix: https://
+            suffix: .axiscare.com
+            order: 1
+            doc_section: '#step-1-find-your-site-number'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: An API token created in your AxisCare account.
+            doc_section: '#step-2-get-an-api-token'
+
 ayrshare:
     display_name: Ayrshare
     categories:
@@ -13915,6 +13944,39 @@ eagle-doc:
             example: API-3f9a*****************************************************c2e1
             doc_section: '#step-1-get-your-api-key'
 
+elasticsearch:
+    display_name: Elasticsearch
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.instanceUrl}
+        headers:
+            authorization: ApiKey ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /_security/_authenticate
+    docs: https://nango.dev/docs/api-integrations/elasticsearch
+    docs_connect: https://nango.dev/docs/api-integrations/elasticsearch/connect
+    connection_config:
+        instanceUrl:
+            type: string
+            title: Elasticsearch Endpoint
+            description: The URL of your Elasticsearch endpoint.
+            example: https://my-deployment-a1b2c3.es.us-central1.gcp.elastic-cloud.com
+            format: uri
+            order: 1
+            doc_section: '#step-1-find-your-elasticsearch-endpoint'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Elasticsearch API key, in the Encoded format.
+            pattern: '^[A-Za-z0-9+/_-]+={0,2}$'
+            example: E6kC****************************************************2g==
+            doc_section: '#step-2-create-an-api-key'
+
 emailable:
     display_name: Emailable
     categories:
@@ -17718,6 +17780,33 @@ front-api-key:
             example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.****
             doc_section: '#step-1-finding-your-api-token'
 
+fuentio:
+    display_name: Fuentio
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fuentio.com
+        headers:
+            x-api-key: ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/usage
+    docs: https://nango.dev/docs/api-integrations/fuentio
+    docs_connect: https://nango.dev/docs/api-integrations/fuentio/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fuentio API key.
+            pattern: '^sk_[a-z]+_[A-Za-z0-9_-]{16,}$'
+            example: sk_live_Qm7x************************Tz9K
+            doc_section: '#step-1-get-your-free-api-key'
+
 fullenrich:
     display_name: FullEnrich
     categories:
@@ -20335,6 +20424,25 @@ holded-v2:
             pattern: '^pat_[a-f0-9]{24}_[a-f0-9]{64}$'
             example: pat_************************_************************************************************24d4
 
+homeworks:
+    display_name: Homeworks
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://api.home.works/oauth/authorize
+    token_url: https://api.home.works/oauth/token
+    token_request_auth_method: none
+    scope_separator: ' '
+    default_scopes:
+        - openid
+        - company
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://api.home.works
+    docs: https://nango.dev/docs/api-integrations/homeworks
+    setup_guide_url: https://nango.dev/docs/api-integrations/homeworks/how-to-register-your-own-homeworks-oauth-app
+
 honeybadger:
     display_name: Honeybadger
     categories:
@@ -22138,6 +22246,46 @@ kintone:
             doc_section: '#step-1-finding-your-subdomain'
             example: urdzw8p24agp
             pattern: '^[a-z0-9_-]+$'
+
+kintone-api-key:
+    display_name: Kintone (API Token)
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.${connectionConfig.domain}
+        headers:
+            x-cybozu-api-token: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/kintone-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/kintone-api-key/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The part of your Kintone URL before the domain.
+            example: example
+            pattern: '^[a-z0-9_-]+$'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-subdomain-and-region'
+        domain:
+            type: string
+            title: Region
+            description: The domain in your Kintone URL.
+            format: hostname
+            enum:
+                - kintone.com
+                - cybozu.com
+            order: 2
+            doc_section: '#step-1-find-your-subdomain-and-region'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: An API token generated in your Kintone App's settings.
+            example: Xq7m********************************Rk2w
+            pattern: '^[A-Za-z0-9]+(,[A-Za-z0-9]+)*$'
+            doc_section: '#step-2-generate-an-api-token'
 
 kintone-user-api:
     display_name: Kintone User API
@@ -25607,6 +25755,25 @@ modmed-fhir:
             pattern: '^[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.prod\.fhir\.ema-api\.com$'
             doc_section: '#step-1-finding-your-fhir-host'
             order: 1
+
+moneyforward-cloud-invoice:
+    display_name: Money Forward Cloud Invoice
+    categories:
+        - invoicing
+        - accounting
+    auth_mode: OAUTH2
+    authorization_url: https://api.biz.moneyforward.com/authorize
+    token_url: https://api.biz.moneyforward.com/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    default_scopes:
+        - mfc/invoice/data.read
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://invoice.moneyforward.com
+    docs: https://nango.dev/docs/api-integrations/moneyforward-cloud-invoice
+    setup_guide_url: https://nango.dev/docs/api-integrations/moneyforward-cloud-invoice/how-to-register-your-own-money-forward-oauth-app
 
 mural:
     display_name: Mural
@@ -36158,6 +36325,94 @@ tavily:
             example: tvly-dev-1a2b********************3c4d
             doc_section: '#step-1-create-an-api-key'
 
+td-synnex:
+    display_name: TD SYNNEX
+    categories:
+        - e-commerce
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://sso.us.tdsynnex.com/oauth2/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.region}
+        headers:
+            authorization: Bearer ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/td-synnex
+    docs_connect: https://nango.dev/docs/api-integrations/td-synnex/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: Your TD SYNNEX API server (sandbox servers contain -uat).
+            format: hostname
+            enum:
+                - api.us.tdsynnex.com
+                - api.ca.tdsynnex.com
+                - api-br.lac.tdsynnex.com
+                - api-mx.lac.tdsynnex.com
+                - api-uat.us.tdsynnex.com
+                - api-uat.ca.tdsynnex.com
+                - api-br-uat.lac.tdsynnex.com
+                - api-mx-uat.lac.tdsynnex.com
+            doc_section: '#step-2-select-your-region'
+            order: 1
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your TD SYNNEX Developer Portal client ID.
+            doc_section: '#step-1-create-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your TD SYNNEX Developer Portal client secret.
+            secret: true
+            doc_section: '#step-1-create-client-credentials'
+
+td-synnex-streamone-ion:
+    display_name: TD SYNNEX StreamOne Ion
+    categories:
+        - e-commerce
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://ion.tdsynnex.com/oauth/token
+    token_params:
+        grant_type: refresh_token
+        refresh_token: ${credentials.refreshToken}
+    refresh_token_params:
+        grant_type: refresh_token
+        refresh_token: ${refresh_token}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        refresh_token: refresh_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://ion.tdsynnex.com
+        connection_config:
+            accountId: ${connectionConfig.accountId}
+    docs: https://nango.dev/docs/api-integrations/td-synnex-streamone-ion
+    docs_connect: https://nango.dev/docs/api-integrations/td-synnex-streamone-ion/connect
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: Your StreamOne Ion reseller Account ID.
+            example: '10505'
+            order: 1
+            doc_section: '#step-1-find-your-account-id'
+    credentials:
+        refreshToken:
+            type: string
+            title: Refresh Token
+            description: The refresh token generated for your StreamOne Ion API user.
+            secret: true
+            order: 1
+            doc_section: '#step-2-generate-a-refresh-token'
+
 teamtailor:
     display_name: Teamtailor
     categories:
@@ -39307,6 +39562,55 @@ wistia:
             example: 7fe2********************************************************80f9
             doc_section: '#step-1-create-an-api-token'
 
+wix:
+    display_name: Wix
+    categories:
+        - cms
+        - e-commerce
+    auth_mode: TWO_STEP
+    token_url: https://www.wixapis.com/oauth2/token
+    token_params:
+        grant_type: client_credentials
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+        instance_id: ${credentials.instanceId}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://www.wixapis.com
+        headers:
+            authorization: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/wix
+    docs_connect: https://nango.dev/docs/api-integrations/wix/connect
+    credentials:
+        clientId:
+            type: string
+            title: App ID
+            description: The app ID from the OAuth page of your Wix app.
+            pattern: '^[A-Za-z0-9-]+$'
+            example: 4f1c****************************7c31
+            order: 1
+            doc_section: '#step-2-copy-your-app-id-and-app-secret'
+        clientSecret:
+            type: string
+            title: App secret
+            description: The app secret from the OAuth page of your Wix app.
+            secret: true
+            pattern: '^[A-Za-z0-9-]+$'
+            example: b83e****************************a90d
+            order: 2
+            doc_section: '#step-2-copy-your-app-id-and-app-secret'
+        instanceId:
+            type: string
+            title: App instance ID
+            description: The instance ID of your app's installation on the Wix site.
+            order: 3
+            doc_section: '#step-3-get-the-app-instance-id'
+
 wiza:
     display_name: Wiza
     categories:
@@ -40454,6 +40758,24 @@ zigpoll:
             format: uuid
             example: 3f7b2d4e-****-****-****-************
             doc_section: '#step-1-get-your-api-token'
+
+zip:
+    display_name: Zip
+    categories:
+        - erp
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ziphq.com
+        headers:
+            zip-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/zip
+    docs_connect: https://nango.dev/docs/api-integrations/zip/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: A Standard or Restricted API key from your Zip company settings.
+            doc_section: '#step-1-create-an-api-key'
 
 zoho:
     display_name: Zoho
