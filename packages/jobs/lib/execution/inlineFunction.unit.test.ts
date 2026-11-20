@@ -67,6 +67,12 @@ describe('buildInlineFunction', () => {
         expect(res.unwrap().output).toBeNull();
     });
 
+    it('lets the code name a local nango', async () => {
+        const res = await run(`const nango = record.value; return nango;`, { value: 3 });
+
+        expect(res.unwrap().output).toBe(3);
+    });
+
     it('does not expose nango to the code', async () => {
         const scoped = await run(`return typeof nango;`);
         const throughCaller = await run(`return module.exports.default.exec.arguments;`);
@@ -90,7 +96,7 @@ describe('buildInlineFunction', () => {
     });
 
     it.each([
-        ['a syntax error', `return data.`],
+        ['a syntax error', `return record.`],
         [
             'code that closes the template function',
             `}; module.exports.default = { type: 'function', exec: (nango) => nango.getConnection() }; var ignored = async function () {`

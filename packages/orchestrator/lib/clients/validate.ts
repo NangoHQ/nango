@@ -133,15 +133,18 @@ const functionArgsObjectSchema = z
     })
     .strict();
 
-export const functionArgsSchema = functionArgsObjectSchema
-    .refine((args) => (args.functionUuid === undefined) !== (args.source === undefined), 'A function runs from either a functionUuid or a source')
-    .transform(({ functionUuid, source, activityLogId, variant, ...args }) => ({
+export const functionArgsSchema = functionArgsObjectSchema.transform(({ functionUuid, source, activityLogId, variant, ...args }, ctx) => {
+    if ((functionUuid === undefined) === (source === undefined)) {
+        ctx.addIssue({ code: 'custom', message: 'A function runs from either a functionUuid or a source' });
+        return z.NEVER;
+    }
+    return {
         ...args,
-        ...(functionUuid !== undefined && { functionUuid }),
-        ...(source !== undefined && { source }),
+        ...(source !== undefined ? { source } : { functionUuid: functionUuid as string }),
         ...(activityLogId !== undefined && { activityLogId }),
         ...(variant !== undefined && { variant })
-    }));
+    };
+});
 
 const commonSchemaFields = {
     id: z.string().uuid(),
@@ -308,8 +311,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 name: func.data.name,
                 attempt: func.data.retryCount + 1,
                 attemptMax: func.data.retryMax + 1,
-                ...(func.data.payload.functionUuid !== undefined && { functionUuid: func.data.payload.functionUuid }),
-                ...(func.data.payload.source !== undefined && { source: func.data.payload.source }),
+                ...('source' in func.data.payload ? { source: func.data.payload.source } : { functionUuid: func.data.payload.functionUuid }),
                 ...(func.data.payload.variant !== undefined && { variant: func.data.payload.variant }),
                 connection: func.data.payload.connection,
                 ...(func.data.payload.activityLogId !== undefined && { activityLogId: func.data.payload.activityLogId }),

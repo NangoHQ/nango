@@ -13,14 +13,14 @@ const AsyncFunction = (async () => Promise.resolve()).constructor as new (...arg
  */
 export function buildInlineFunction(code: string): Result<string> {
     try {
-        // Compiles the body on its own without running it. Code that parses here cannot close the template's function to reach `nango`.
+        // Compiles the body with the template's parameters without running it. Code that parses here cannot close the template's function to reach `nango`.
         new AsyncFunction('record', code);
     } catch (err) {
         return Err(new Error(`Invalid inline source: ${err instanceof Error ? err.message : String(err)}`));
     }
 
     // The code starts on the first line so the line numbers of its stack traces match the source.
-    return Ok(`var __inlineSource = async function (record, nango) {${code}
+    return Ok(`var __inlineSource = async function (record) {${code}
 };
 module.exports.default = {
     type: 'function',
