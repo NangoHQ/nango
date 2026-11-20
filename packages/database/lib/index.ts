@@ -29,6 +29,15 @@ export class KnexDatabase {
         }
     }
 
+    // A row written moments ago can still be missing from the replica, so a miss is retried on the primary.
+    async readWithPrimaryFallback<T>(query: (knex: Knex) => Promise<T | null | undefined>): Promise<T | null> {
+        const fromReplica = await query(this.readOnly);
+        if (fromReplica != null || this.readOnly === this.knex) {
+            return fromReplica ?? null;
+        }
+        return (await query(this.knex)) ?? null;
+    }
+
     async migrate(): Promise<any> {
         return retry(
             async () => {

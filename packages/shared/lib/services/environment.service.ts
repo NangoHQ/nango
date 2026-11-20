@@ -193,14 +193,16 @@ class EnvironmentService {
     }
 
     async getByEnvironmentName(accountId: number, name: string): Promise<DBEnvironment | null> {
-        return await db.readOnly.transaction(async (trx) => {
-            const [environment] = await trx<DBEnvironment>(TABLE).select('*').where({ account_id: accountId, name, deleted: false });
-            if (!environment) {
-                return null;
-            }
-            await this.setSecretsOnEnv(trx, environment);
-            return environment;
-        });
+        return await db.readWithPrimaryFallback((knex) =>
+            knex.transaction(async (trx) => {
+                const [environment] = await trx<DBEnvironment>(TABLE).select('*').where({ account_id: accountId, name, deleted: false });
+                if (!environment) {
+                    return null;
+                }
+                await this.setSecretsOnEnv(trx, environment);
+                return environment;
+            })
+        );
     }
 
     async createEnvironment(

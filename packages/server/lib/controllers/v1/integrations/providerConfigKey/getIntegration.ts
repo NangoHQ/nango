@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { getProviderScopes } from '@nangohq/providers';
 import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
@@ -38,7 +39,8 @@ export const getIntegration = asyncWrapperWithEnvironment<GetIntegration>(async 
     const { environment } = res.locals;
     const params: GetIntegration['Params'] = valParams.data;
 
-    const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id);
+    // The replica fallback only covers missing rows. A read right after a PATCH needs the primary to see the update.
+    const integration = await configService.getProviderConfig(params.providerConfigKey, environment.id, db.knex);
     if (!integration) {
         res.status(404).send({ error: { code: 'not_found', message: `Integration "${params.providerConfigKey}" does not exist` } });
         return;
