@@ -22,7 +22,7 @@ function provider(overrides: Partial<ApiProviderListItem> & Pick<ApiProviderList
         docs: '',
         preConfigured: false,
         preConfiguredScopes: [],
-        functionCounts: { actions: 0, syncs: 0 },
+        functionCounts: { tools: 0, syncs: 0 },
         ...overrides
     };
 }
@@ -154,18 +154,18 @@ describe('getCategoryLabel', () => {
 
 describe('formatFunctionCounts', () => {
     it('leaves out zero parts and pluralizes', () => {
-        expect(formatFunctionCounts({ actions: 32, syncs: 5 })).toBe('32 tools · 5 syncs');
-        expect(formatFunctionCounts({ actions: 1, syncs: 0 })).toBe('1 tool');
-        expect(formatFunctionCounts({ actions: 0, syncs: 2 })).toBe('2 syncs');
-        expect(formatFunctionCounts({ actions: 0, syncs: 0 })).toBeNull();
+        expect(formatFunctionCounts({ tools: 32, syncs: 5 })).toBe('32 tools · 5 syncs');
+        expect(formatFunctionCounts({ tools: 1, syncs: 0 })).toBe('1 tool');
+        expect(formatFunctionCounts({ tools: 0, syncs: 2 })).toBe('2 syncs');
+        expect(formatFunctionCounts({ tools: 0, syncs: 0 })).toBeNull();
     });
 });
 
 describe('getCardMeta', () => {
     it('shows function counts, never categories', () => {
-        expect(getCardMeta({ functionCounts: { actions: 3, syncs: 1 }, categories: ['crm'] })).toBe('3 tools · 1 sync');
-        expect(getCardMeta({ functionCounts: { actions: 0, syncs: 0 }, categories: ['popular', 'crm', 'dev-tools'] })).toBe('No pre-built tools yet');
-        expect(getCardMeta({ functionCounts: { actions: 0, syncs: 0 }, categories: ['productivity', 'mcp'] })).toBe('All MCP tools');
+        expect(getCardMeta({ functionCounts: { tools: 3, syncs: 1 }, categories: ['crm'] })).toBe('3 tools · 1 sync');
+        expect(getCardMeta({ functionCounts: { tools: 0, syncs: 0 }, categories: ['popular', 'crm', 'dev-tools'] })).toBe('No pre-built tools yet');
+        expect(getCardMeta({ functionCounts: { tools: 0, syncs: 0 }, categories: ['productivity', 'mcp'] })).toBe('All MCP tools');
     });
 });
 

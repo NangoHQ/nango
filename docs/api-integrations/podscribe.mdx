@@ -114,4 +114,8 @@ import PreBuiltUseCases from "/snippets/generated/podscribe/PreBuiltUseCases.mdx
 
 <PreBuiltUseCases />
 
+## API gotchas
+
+- Nango does not check the key when a connection is created, so a wrong or revoked key still connects and fails on its first call.
+
 ---

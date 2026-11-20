@@ -14,24 +14,24 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## Getting started
 
-- [Introduction](https://nango.dev/docs/getting-started/intro-to-nango.md): The tool calling layer for AI agents across 1,300+ APIs.
-- [Quickstart](https://nango.dev/docs/getting-started/quickstart.md): Give your AI agent access to Gmail, Slack, Notion, and 1,300+ other APIs
+- [Introduction](https://nango.dev/docs/getting-started/intro-to-nango.md): The tool calling layer for AI agents across 1,400+ APIs.
+- [Quickstart](https://nango.dev/docs/getting-started/quickstart.md): Give your AI agent access to 1,400+ APIs, including Gmail, Slack, and Notion
 - [Coding agent setup](https://nango.dev/docs/getting-started/coding-agent-setup.md): Connect your coding agent to Nango
 
 ## Guides
 
-- [Agent sessions: Agent sessions](https://nango.dev/docs/guides/agent-sessions.md): Connect your AI agent to 1,300+ APIs.
+- [Agent sessions: Agent sessions](https://nango.dev/docs/guides/agent-sessions.md): Connect your AI agent to 1,400+ APIs.
 - [Agent sessions: Tenant](https://nango.dev/docs/guides/agent-sessions/tenant.md): Choose on whose behalf an agent session acts
 - [Agent sessions: Toolsets & tools](https://nango.dev/docs/guides/agent-sessions/toolsets.md): Configure tools for an agent session.
 - [Agent sessions: Meta tools](https://nango.dev/docs/guides/agent-sessions/meta-tools.md): Built-in tools for agent sessions
 - [Auth: Auth](https://nango.dev/docs/guides/auth/overview.md): Let users connect their external accounts to your app or agent
-- [Auth: Set Nango Auth up in your app](https://nango.dev/docs/guides/auth/setup.md): Let users connect external accounts from your app or with a link
+- [Auth: Set up Nango Auth](https://nango.dev/docs/guides/auth/setup.md): Let users connect external accounts from your AI agent, your app, or a link you share
 - [Auth: Customize Connect UI](https://nango.dev/docs/guides/auth/customize-connect-ui.md): Brand Connect UI or build your own auth UI
 - [Auth: Connection tags, config, and metadata](https://nango.dev/docs/guides/auth/connection-tags-configuration-metadata.md): Find the right connection and store the settings your app and integrations need
 - [Auth: Token refreshing & validity](https://nango.dev/docs/guides/auth/token-refreshing.md): How Nango handles OAuth token refresh and what to do when tokens are revoked
 - [Auth: Proxy requests](https://nango.dev/docs/guides/auth/proxy-requests.md): How to use the requests proxy from Nango
-- [Tools: Tool calling for AI agents](https://nango.dev/docs/guides/tools/overview.md): Give agents scoped, observable access to external APIs through Nango tools.
-- [Tools: Tools](https://nango.dev/docs/guides/tools/customize-tools.md): Build, test, deploy, and call tools from your backend or AI agent.
+- [Tools: Tools](https://nango.dev/docs/guides/tools/overview.md): Read and write data across external APIs from your agent or backend
+- [Tools: Extend and customize tools](https://nango.dev/docs/guides/tools/customize-tools.md): Extend catalog tools or build custom
 - [Triggers: Process external webhooks](https://nango.dev/docs/guides/triggers/overview.md): Receive provider webhooks through Nango, then forward or process them with functions.
 - [Triggers: External webhook forwarding](https://nango.dev/docs/guides/triggers/webhook-forwarding.md): Forward external API webhooks through Nango to your app, with connection attribution.
 - [Triggers: Webhook functions](https://nango.dev/docs/guides/triggers/webhook-functions.md): Process external API webhooks inside Nango functions.
@@ -150,7 +150,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 1435 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 1437 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
 
 ## Resources

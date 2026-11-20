@@ -431,7 +431,7 @@ export const ConnectionList = () => {
                             <p className="text-text-secondary text-body-medium-regular">
                                 Connections can be created by using{' '}
                                 <LinkButton asChild size="lg">
-                                    <a href="https://nango.dev/docs/guides/auth/setup" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://nango.dev/docs/guides/auth/setup#auth-from-your-app" target="_blank" rel="noopener noreferrer">
                                         Nango Connect
                                         <ExternalLink />
                                     </a>

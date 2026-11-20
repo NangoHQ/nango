@@ -14,6 +14,8 @@ import type { DBFunctionConfigVersion, DBSyncConfig } from '@nangohq/types';
 const route = '/connections/:connectionId/tools/:name/calls';
 const name = 'calendar_delete_event';
 const input = { eventId: 'event123' };
+const catalogActionName = 'add-issue-comment';
+const catalogActionInput = { owner: 'NangoHQ', repo: 'nango', issue_number: 1, body: 'Test comment' };
 let api: Awaited<ReturnType<typeof runServer>>;
 
 const version = {
@@ -157,16 +159,36 @@ describe(`POST ${route}`, () => {
     it('falls back to a catalog action', async () => {
         const seed = await seedTool();
         vi.mocked(getFlags().hasCatalogTools).mockResolvedValue(true);
-        const tool = listCatalogTools('github')[0]!;
+        const tool = listCatalogTools('github').find((tool) => tool.name === catalogActionName);
         expect(tool).toBeDefined();
         const response = await api.fetch(route, {
             method: 'POST',
             token: seed.apiKey.secret,
-            params: { ...seed.params, name: tool.name },
-            body: { input }
+            params: { ...seed.params, name: catalogActionName },
+            body: { input: catalogActionInput }
         });
         expect(response.res.status).toBe(200);
-        expect(Orchestrator.prototype.triggerAction).toHaveBeenCalledWith(expect.objectContaining({ actionName: tool.name, input }));
+        expect(Orchestrator.prototype.triggerAction).toHaveBeenCalledWith(
+            expect.objectContaining({ actionName: catalogActionName, input: catalogActionInput })
+        );
+    });
+
+    it.each([
+        { name: 'JSON-encoded input', input: JSON.stringify(catalogActionInput) },
+        { name: 'missing required fields', input: {} },
+        { name: 'wrong property types', input: { ...catalogActionInput, issue_number: 'one' } }
+    ])('passes $name through to a legacy catalog action', async ({ input: invalidInput }) => {
+        const seed = await seedTool();
+        vi.mocked(getFlags().hasCatalogTools).mockResolvedValue(true);
+        const response = await api.fetch(route, {
+            method: 'POST',
+            token: seed.apiKey.secret,
+            params: { ...seed.params, name: catalogActionName },
+            body: { input: invalidInput }
+        });
+        expect(response.res.status).toBe(200);
+        expect(Orchestrator.prototype.triggerAction).toHaveBeenCalledWith(expect.objectContaining({ actionName: catalogActionName, input: invalidInput }));
+        expect(Orchestrator.prototype.invokeFunction).not.toHaveBeenCalled();
     });
 
     it('returns function_not_found when neither a function nor an action matches', async () => {

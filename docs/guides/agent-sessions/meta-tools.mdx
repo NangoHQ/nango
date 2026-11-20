@@ -71,7 +71,7 @@ The response includes the provider's `status`, `headers`, and `body`. The body c
 
 By default, the agent can use only the connections available when the session starts. Enable `nango_create_connection` so the agent can ask the user to connect an integration when it first needs it or reconnect an integration if its connection stops working.
 
-The agent shares the returned `connect_url` with the user. Once the user opens the [Connect link](/guides/auth/setup#share-a-connect-link) and authorizes the connection, the agent can use the integration's tools immediately in the same session.
+The agent shares the returned `connect_url` with the user. Once the user opens the [Connect link](/guides/auth/setup#auth-from-a-link-you-share) and authorizes the connection, the agent can use the integration's tools immediately in the same session.
 
 ```json
 { "integration": "notion" }
