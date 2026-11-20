@@ -27378,6 +27378,8 @@ okta:
             type: 'link'
             limit_name_in_request: 'limit'
             link_rel_in_response_header: 'next'
+    webhook_routing_script: oktaWebhookRouting
+    webhook_get_verification: true
     docs: https://nango.dev/docs/integrations/all/okta
     connection_config:
         subdomain:
@@ -27406,6 +27408,8 @@ okta-api-key:
             method: GET
             endpoints:
                 - /api/v1/users/me
+    webhook_routing_script: oktaWebhookRouting
+    webhook_get_verification: true
     docs: https://nango.dev/docs/api-integrations/okta-api-key
     docs_connect: https://nango.dev/docs/api-integrations/okta-api-key/connect
     credentials:
@@ -27446,6 +27450,8 @@ okta-cc:
             type: 'link'
             limit_name_in_request: 'limit'
             link_rel_in_response_header: 'next'
+    webhook_routing_script: oktaWebhookRouting
+    webhook_get_verification: true
     docs: https://nango.dev/docs/api-integrations/okta-cc
     docs_connect: https://nango.dev/docs/api-integrations/okta-cc/connect
     credentials:
