@@ -834,9 +834,12 @@ const ENVS_SHAPE = z.object({
     // Per-request byte budget for getRecords. Compared against the sum of
     // pg_column_size(records_data.data) (compressed on-disk size, smaller
     // than wire bytes by 1.5–3×). 0 disables the budget and returns all the requested records.
-    RECORDS_MAX_RESPONSE_SIZE_BYTES: z.coerce.number().optional().default(0),
+    RECORDS_MAX_RESPONSE_SIZE_BYTES: z.coerce
+        .number()
+        .optional()
+        .default(4 * 1024 * 1024),
     // When true, the budget only emits a metric instead of truncating — used to size the limit before enforcing.
-    RECORDS_MAX_RESPONSE_SIZE_DRY_RUN: z.stringbool().optional().default(true),
+    RECORDS_MAX_RESPONSE_SIZE_DRY_RUN: z.stringbool().optional().default(false),
     // Max number of records decrypted concurrently in getRecords. decryptAsync offloads to the
     // libuv threadpool (UV_THREADPOOL_SIZE, default 4), so awaiting one record at a time leaves
     // the other threads idle. Bounding the fan-out keeps every thread busy without materializing
