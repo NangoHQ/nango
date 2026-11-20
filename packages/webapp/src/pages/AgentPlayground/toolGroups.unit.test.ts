@@ -77,6 +77,12 @@ describe('groupReplyParts', () => {
         ]);
     });
 
+    it('keeps the playground set-up step out of groups', () => {
+        const setUp = call('setup', { toolName: 'set_up_integrations' });
+
+        expect(shape([call('a'), call('b'), setUp, call('c'), call('d')])).toEqual([['a', 'b'], 'setup', ['c', 'd']]);
+    });
+
     it('groups calls the server approved automatically', () => {
         const auto = call('auto', { approval: { id: 'z', approved: true, isAutomatic: true } } as Partial<DynamicToolUIPart>);
 
