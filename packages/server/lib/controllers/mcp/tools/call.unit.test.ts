@@ -112,7 +112,7 @@ describe('callToolsTool', () => {
         { payload: { error: { message: 'x'.repeat(600) } }, detail: `: ${'x'.repeat(500)}` },
         { payload: { request: { authorization: 'secret' } }, detail: '' }
     ])('includes bounded function failure details: $detail', async ({ payload, detail }) => {
-        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'function', fn: functionFixture }));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(functionFixture));
         const cause = new NangoError('script_http_error', payload);
         mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Err(functionInvokeError('function_failed', cause)) });
 
@@ -126,7 +126,7 @@ describe('callToolsTool', () => {
     });
 
     it('keeps the function failure message when its cause is not a NangoError', async () => {
-        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'function', fn: functionFixture }));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(functionFixture));
         mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Err(functionInvokeError('function_failed', new Error('private details'))) });
 
         const result = await callToolsTool.handler(validArguments, context);
