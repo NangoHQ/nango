@@ -31,8 +31,7 @@ export const getIntegrationFlows = asyncWrapperWithEnvironment<GetIntegrationFlo
         return;
     }
 
-    const availablePublicFlows = flowService.getAllAvailableFlowsAsStandardConfig();
-    const [template] = availablePublicFlows.filter((flow) => flow.providerConfigKey === integration.provider);
+    const template = flowService.getProviderTemplates(integration.provider);
     const allFlows = await getSyncConfigsAsStandardConfig(environment.id, params.providerConfigKey);
 
     const dbFlows: NangoSyncConfig[] = [...(allFlows?.actions || []), ...(allFlows?.syncs || [])];

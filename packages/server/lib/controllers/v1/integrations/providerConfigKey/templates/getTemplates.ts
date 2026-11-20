@@ -30,8 +30,7 @@ export const getIntegrationTemplates = asyncWrapperWithEnvironment<GetIntegratio
         return;
     }
 
-    const all = flowService.getAllAvailableFlowsAsStandardConfig();
-    const entry = all.find((value) => value.providerConfigKey === integration.provider);
+    const entry = flowService.getProviderTemplates(integration.provider);
 
     const templates = entry ? [...entry.actions, ...entry.syncs].flatMap((config) => toNangoFunction(config) ?? []) : [];
     const result = await functionLookupService.listTemplates({ environmentId: environment.id, providerConfigKey, templates });

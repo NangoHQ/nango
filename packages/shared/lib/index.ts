@@ -71,6 +71,8 @@ export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
 export { listCatalogTools, getCatalogTool, isTemplatesZeroPath } from './services/catalog/actions.js';
+export { catalogStore, startCatalogFlagRefresh, stopCatalogFlagRefresh } from './services/catalog/store.js';
+export type { CatalogCounts } from './services/catalog/store.js';
 export type { CatalogTool } from './services/catalog/actions.js';
 export { findCatalogFunctions } from './services/catalog/functions.js';
 export type { CatalogFunction } from './services/catalog/functions.js';

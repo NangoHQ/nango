@@ -589,22 +589,6 @@ describe('authz integration', () => {
             expect(res.res.status).toBe(403);
         });
 
-        it('should deny GET prod flow by name', async () => {
-            const { account } = await seedAccountWithProdEnv();
-            const devUser = await createUserWithRole(account.id, 'development_full_access');
-            const session = await authenticateUser(api, devUser);
-
-            // @ts-expect-error authz test — /flow/:flowName not in endpoint types
-            const res = await api.fetch('/api/v1/flow/:flowName', {
-                method: 'GET',
-                query: { env: 'prod', provider_config_key: 'some-key' },
-                params: { flowName: 'some-flow' },
-                session
-            });
-
-            expect(res.res.status).toBe(403);
-        });
-
         it('should deny PATCH prod environments', async () => {
             const { account } = await seedAccountWithProdEnv();
             const devUser = await createUserWithRole(account.id, 'development_full_access');

@@ -183,3 +183,20 @@ export type FlowZeroJson = Omit<NangoYamlParsedIntegration, 'functions'> & {
     symLinkTargetName?: string;
 };
 export type FlowsZeroJson = FlowZeroJson[];
+
+// --- catalog.json: the same catalog as flows.zero.json, split per provider (written by integration-templates)
+export interface CatalogIndexProvider {
+    /** Path of the provider's definitions (a FlowZeroJson without `symLinkTargetName`), relative to catalog.json's folder. */
+    file: string;
+    /** sha256 of the file's bytes. */
+    sha256: string;
+    counts: { actions: number; syncs: number; functions: number };
+}
+/** A provider that symlinks another one in integration-templates. It has no file of its own. */
+export interface CatalogIndexAlias {
+    aliasOf: string;
+}
+export interface CatalogIndex {
+    formatVersion: 1;
+    providers: Record<string, CatalogIndexProvider | CatalogIndexAlias>;
+}
