@@ -2108,6 +2108,7 @@ export class ConnectionService {
         integrationConfig?: Record<string, string> | null
     ): Promise<ServiceResponse<TwoStepCredentials>> {
         const preconfiguredFields = getPreconfiguredTwoStepFields(provider, integrationConfig);
+        const ownPreconfiguredValues = pickDefinedFields(dynamicCredentials, preconfiguredFields);
         dynamicCredentials = applyIntegrationConfigToTwoStepCredentials(provider, dynamicCredentials, integrationConfig);
 
         if (provider.signature) {
@@ -2365,6 +2366,13 @@ export class ConnectionService {
             for (const [key, value] of Object.entries(dynamicCredentials)) {
                 if (value !== undefined && !preconfiguredFields.has(key)) {
                     parsedCreds[key] = value;
+                }
+            }
+            Object.assign(parsedCreds, ownPreconfiguredValues);
+            for (const field of preconfiguredFields) {
+                const schema = provider.integration_config?.[field];
+                if (parsedCreds[field] === undefined && schema?.optional && !schema.secret) {
+                    parsedCreds[field] = integrationConfig![field];
                 }
             }
 
@@ -2709,8 +2717,19 @@ export class ConnectionService {
     }
 }
 
+function pickDefinedFields(values: Record<string, unknown>, fields: Set<string>): Record<string, unknown> {
+    const picked: Record<string, unknown> = {};
+    for (const field of fields) {
+        if (values[field] !== undefined) {
+            picked[field] = values[field];
+        }
+    }
+    return picked;
+}
+
 // Names of `integration_config` fields that have a value set on the integration itself (`custom`) —
-// these take precedence over anything submitted per-connection and must never be persisted onto a connection.
+// these take precedence over anything submitted per-connection. A connection's own value for the field is kept
+// as is; the integration's value is only persisted as a fallback for optional, non-secret fields.
 export function getPreconfiguredTwoStepFields(provider: ProviderTwoStep, integrationConfig: Record<string, string> | null | undefined): Set<string> {
     if (!integrationConfig || !provider.integration_config) {
         return new Set();
