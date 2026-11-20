@@ -20434,6 +20434,25 @@ holded-v2:
             pattern: '^pat_[a-f0-9]{24}_[a-f0-9]{64}$'
             example: pat_************************_************************************************************24d4
 
+homeworks:
+    display_name: Homeworks
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://api.home.works/oauth/authorize
+    token_url: https://api.home.works/oauth/token
+    token_request_auth_method: none
+    scope_separator: ' '
+    default_scopes:
+        - openid
+        - company
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://api.home.works
+    docs: https://nango.dev/docs/api-integrations/homeworks
+    setup_guide_url: https://nango.dev/docs/api-integrations/homeworks/how-to-register-your-own-homeworks-oauth-app
+
 honeybadger:
     display_name: Honeybadger
     categories:
@@ -20498,6 +20517,29 @@ hover:
     proxy:
         base_url: https://api.hover.to
     docs: https://nango.dev/docs/integrations/all/hover
+
+hubrise:
+    display_name: HubRise
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://manager.hubrise.com/oauth2/v1/authorize
+    token_url: https://manager.hubrise.com/oauth2/v1/token
+    token_request_auth_method: basic
+    scope_separator: ','
+    token_params:
+        grant_type: authorization_code
+    token_response_metadata:
+        - account_id
+        - location_id
+        - catalog_id
+        - customer_list_id
+    proxy:
+        base_url: https://api.hubrise.com
+        headers:
+            x-access-token: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/hubrise
+    setup_guide_url: https://nango.dev/docs/api-integrations/hubrise/how-to-register-your-own-hubrise-oauth-app
 
 humaans-io:
     display_name: Humaans.io
