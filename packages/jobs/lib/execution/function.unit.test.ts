@@ -215,8 +215,9 @@ describe('startFunction', () => {
         expect(shared.functionLookupService.resolveFunctionByUuid).not.toHaveBeenCalled();
         const args = startScript.mock.calls[0]?.[0];
         if (!args) throw new Error('Missing script invocation');
-        expect(args.code).toContain(code);
+        expect(args.code).toBe(code);
         expect(args.nangoProps.scriptType).toBe('function');
+        expect(args.nangoProps.execMode).toBe('transform');
         expect(args.nangoProps.syncConfig).toMatchObject({ id: 0, sync_name: 'inline', nango_config_id: 9, file_location: '', source: 'standalone' });
         expect(logCtx.info).toHaveBeenCalledWith(
             "Starting function 'inline'",
@@ -224,13 +225,10 @@ describe('startFunction', () => {
         );
     });
 
-    it('rejects an inline source that does not parse', async () => {
-        expect((await startFunction(inlineTask('return record.'))).isErr()).toBe(true);
-        expect(startScript).not.toHaveBeenCalled();
-    });
-
     it('reports the usage of a failed inline function without alerting on Slack', async () => {
-        await startFunction(inlineTask('return record.'));
+        startScript.mockResolvedValue(Err(new Error('script failed')));
+
+        await startFunction(inlineTask('return record.value;'));
 
         expect(slackService.reportFailure).not.toHaveBeenCalled();
         expect(publish.mock.calls[0]?.[0].type).toBe('usage.function_executions');
@@ -252,7 +250,7 @@ describe('startFunction', () => {
 });
 
 describe('handleFunctionSuccess', () => {
-    async function succeed(syncConfig: Partial<NangoProps['syncConfig']>) {
+    async function succeed(syncConfig: Partial<NangoProps['syncConfig']>, execMode?: NangoProps['execMode']) {
         const execution = task('22222222-2222-4222-8222-222222222222');
         setTaskSuccess.mockResolvedValue(Ok(execution));
         const nangoProps = {
@@ -265,7 +263,8 @@ describe('handleFunctionSuccess', () => {
             connectionId: 'connection-1',
             activityLogId: 'log-1',
             startedAt: new Date(),
-            syncConfig
+            syncConfig,
+            execMode
         } as NangoProps;
 
         await handleFunctionSuccess({
@@ -289,7 +288,7 @@ describe('handleFunctionSuccess', () => {
     });
 
     it('leaves the Slack alert of the connection alone after an inline function', async () => {
-        await succeed({ id: 0, sync_name: 'inline', nango_config_id: 9, version: '0.0.0', source: 'standalone', file_location: '' });
+        await succeed({ id: 0, sync_name: 'inline', nango_config_id: 9, version: '0.0.0', source: 'standalone', file_location: '' }, 'transform');
 
         expect(slackService.removeFailingConnection).not.toHaveBeenCalled();
     });
