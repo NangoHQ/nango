@@ -241,6 +241,8 @@ export async function getFreshOAuth2Credentials({
                 client_id: credentials.config_override.client_id,
                 client_secret: credentials.config_override.client_secret
             };
+        } else if (credentials.config_override?.client_id && provider.auth_mode === 'OAUTH2' && provider.token_request_auth_method === 'none') {
+            newCredentials.config_override = { client_id: credentials.config_override.client_id };
         }
 
         return { success: true, error: null, response: newCredentials };
