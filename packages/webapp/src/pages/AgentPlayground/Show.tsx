@@ -432,6 +432,7 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
                                     ));
                                 }
                                 const chatActive = message === lastMessage && busy;
+                                const approvalSending = message === lastMessage && status === 'ready';
                                 const renderEntry = (entry: ReplyEntry) => {
                                     if (entry.kind === 'text') {
                                         const { text, state } = entry.part;
@@ -444,7 +445,7 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
                                             part={part}
                                             labels={labels}
                                             chatActive={chatActive}
-                                            approvalSending={message === lastMessage && status === 'ready'}
+                                            approvalSending={approvalSending}
                                             connectedIntegrations={connectedIntegrations}
                                             onConnected={onConnected}
                                             onRequestNewLink={onRequestNewLink}
@@ -464,6 +465,7 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
                                         entries={item.entries}
                                         labels={labels}
                                         chatActive={chatActive}
+                                        approvalSending={approvalSending}
                                         renderEntry={renderEntry}
                                     />
                                 );
@@ -733,13 +735,26 @@ const AddedIntegrationRow: React.FC<{ provider: string; text: string; href: stri
     </div>
 );
 
+function sessionNoticeText(reason: AgentPlaygroundSessionCreated['reason'], replaced: boolean): string {
+    switch (reason) {
+        case 'integrations_changed':
+            return 'restarted to pick up your integration changes';
+        case 'connections_changed':
+            return 'restarted to pick up your new connections';
+        case 'expired':
+            return 'restarted because the last one expired';
+        default:
+            return replaced ? 'restarted' : 'started';
+    }
+}
+
 const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced: boolean }> = ({ created, replaced }) => {
     return (
         <Collapsible className="group/session flex flex-col gap-3">
             <CollapsibleTrigger className="mr-[17px] flex min-h-7 items-center gap-2 rounded-ds-xs text-left focus-visible:outline-offset-4 text-body-medium-regular text-text-secondary hover:text-text-default">
                 <LogoInverted className="size-4 shrink-0 text-text-strong" />
                 <span className="min-w-0 truncate">
-                    <span className="text-body-medium-medium text-text-default">Session</span> {replaced ? 'restarted' : 'started'}
+                    <span className="text-body-medium-medium text-text-default">Session</span> {sessionNoticeText(created.reason, replaced)}
                 </span>
                 <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
                     <StatusIcon running={false} stopped={false} failed={false} />

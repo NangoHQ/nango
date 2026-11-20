@@ -20,13 +20,15 @@ export const ToolCallGroup: React.FC<{
     entries: ReplyEntry[];
     labels: IntegrationLabels | undefined;
     chatActive: boolean;
+    approvalSending: boolean;
     renderEntry: (entry: ReplyEntry) => React.ReactNode;
-}> = ({ calls, entries, labels, chatActive, renderEntry }) => {
+}> = ({ calls, entries, labels, chatActive, approvalSending, renderEntry }) => {
     const displays = calls.map((part) => describeTool(part.toolName, part.input, labels));
     const icons = [...new Set(displays.map(iconFor))].slice(0, MAX_ICONS);
     const unfinishedIndex = calls.map(isUnfinished).lastIndexOf(true);
-    const running = unfinishedIndex !== -1 && chatActive;
-    const stopped = unfinishedIndex !== -1 && !chatActive;
+    const unfinished = calls[unfinishedIndex];
+    const running = unfinished !== undefined && chatActive;
+    const stopped = unfinished !== undefined && !chatActive && !(unfinished.state === 'approval-responded' && approvalSending);
     const failed = calls.filter(isFailed).length;
 
     const title = running ? displays[unfinishedIndex]?.title : `Ran ${calls.length} tools`;
