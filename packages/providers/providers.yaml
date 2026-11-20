@@ -25771,7 +25771,7 @@ moneyforward-cloud-invoice:
     authorization_params:
         response_type: code
     proxy:
-        base_url: https://invoice.moneyforward.com/api/v3
+        base_url: https://invoice.moneyforward.com
     docs: https://nango.dev/docs/api-integrations/moneyforward-cloud-invoice
     setup_guide_url: https://nango.dev/docs/api-integrations/moneyforward-cloud-invoice/how-to-register-your-own-money-forward-oauth-app
 
