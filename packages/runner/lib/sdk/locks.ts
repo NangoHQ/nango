@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { Err, Ok } from '@nangohq/utils';
 
-import type { PersistClient } from '../clients/persist.js';
+import type { PersistClient } from '@nangohq/internal-clients/persist';
 import type { Result } from '@nangohq/utils';
 
 export interface Locks {

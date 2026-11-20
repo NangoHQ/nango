@@ -2,8 +2,10 @@ import { gunzipSync } from 'node:zlib';
 
 import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
-import { abortCheckIntervalMs, exec, heartbeatIntervalMs, HttpLocks, jobsClient, PersistClient, syncConflictTtlMs } from '@nangohq/runner';
-import { loadProviders } from '@nangohq/shared';
+import { JobsClient } from '@nangohq/internal-clients/jobs';
+import { PersistClient } from '@nangohq/internal-clients/persist';
+import { envs, exec, HttpLocks, syncConflictTtlMs } from '@nangohq/runner/runner';
+import { getJobsUrl, getPersistAPIUrl, loadProviders } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { lambdaInvocationSchema } from './schemas.js';
@@ -14,6 +16,7 @@ import type { Context } from 'aws-lambda';
 
 const logger = getLogger('lambda-function-runner');
 const s3 = new S3Client();
+const jobsClient = new JobsClient({ baseUrl: getJobsUrl(), nodeToken: envs.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN });
 
 function getNangoHost() {
     return process.env['NANGO_HOST'] || 'http://server.internal.nango';
@@ -86,7 +89,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
     const request: FunctionExecutionRequest = parsedRequest;
 
     const nangoProps = { ...(request.nangoProps as unknown as NangoProps) };
-    const persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
+    const persistClient = new PersistClient({ secretKey: nangoProps.secretKey, baseUrl: getPersistAPIUrl() });
     const locks = new HttpLocks({ persistClient, environmentId: nangoProps.environmentId });
 
     if (nangoProps.scriptType === 'sync' && nangoProps.syncId) {
@@ -106,7 +109,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
     const startTime = Date.now();
 
     const abortController = new AbortController();
-    const heartbeatTimeoutMs = request.nangoProps.heartbeatTimeoutSecs ? request.nangoProps.heartbeatTimeoutSecs * 1000 : heartbeatIntervalMs * 3;
+    const heartbeatTimeoutMs = request.nangoProps.heartbeatTimeoutSecs ? request.nangoProps.heartbeatTimeoutSecs * 1000 : envs.RUNNER_HEARTBEAT_INTERVAL_MS * 3;
 
     const abort = setInterval(async () => {
         try {
@@ -119,7 +122,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
         } catch {
             // best-effort abort poll; retry on next interval
         }
-    }, abortCheckIntervalMs);
+    }, envs.RUNNER_ABORT_CHECK_INTERVAL_MS);
 
     const heartbeat = setInterval(async () => {
         if (lastSuccessHeartbeatAt && lastSuccessHeartbeatAt + heartbeatTimeoutMs < Date.now()) {
@@ -146,7 +149,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
                 logger.error('Failed to refresh sync conflict lock', { error: refreshRes.error });
             }
         }
-    }, heartbeatIntervalMs);
+    }, envs.RUNNER_HEARTBEAT_INTERVAL_MS);
     try {
         const [code, codeParams] = await Promise.all([getCode(request), getCodeParams(request)]);
         if (code === '') {

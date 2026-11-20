@@ -1,11 +1,11 @@
 import { createInterface } from 'node:readline';
 import { Readable } from 'node:stream';
 
-import { networkError, retryWithBackoff, stringifyError, withInternalTls } from '@nangohq/utils';
-
-import { logger } from '../logger.js';
+import { getLogger, networkError, retryWithBackoff, stringifyError, withInternalTls } from '@nangohq/utils';
 
 import type { ReadableStream as WebReadableStream } from 'node:stream/web';
+
+const logger = getLogger('InternalClients.Http');
 
 function getErrorCode(error: unknown): string | undefined {
     if (typeof error !== 'object' || error === null) return undefined;
