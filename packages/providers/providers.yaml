@@ -5063,6 +5063,9 @@ bamboohr:
         request: token
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+    webhook_routing_script: bambooHrWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/bamboohr
     setup_guide_url: https://nango.dev/docs/api-integrations/bamboohr/how-to-register-your-own-bamboohr-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/bamboohr/connect
@@ -5090,6 +5093,9 @@ bamboohr-basic:
             method: GET
             endpoints:
                 - /v1/meta/fields
+    webhook_routing_script: bambooHrWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/integrations/all/bamboohr-basic
     docs_connect: https://nango.dev/docs/integrations/all/bamboohr-basic/connect
     connection_config:
