@@ -16,7 +16,7 @@ For example, to fetch GitHub's `get-repository` tool:
 nango pull --catalog github get-repository
 ```
 
-The CLI adds the tool's source to your project and imports it from `index.ts`. From there you can edit it by following the steps in [create a custom tool](#create-a-tool).
+The CLI adds the tool's source to your project and imports it from `index.ts`. From there you can edit it by following the steps in [create a custom tool](#create-a-custom-tool).
 
 Nango updates catalog tools automatically, which can change what they accept or return. For backend calls, use `nango pull --catalog` and deploy the copy as a custom tool. You can deploy it as-is. Your integration uses the version you deployed, and you decide when to update it.
 
@@ -92,6 +92,7 @@ nango deploy dev github/tools/create-issue.ts
 A dry run calls real provider APIs and can create or change data. See [Testing](/guides/platform/functions/testing) and [CI/CD](/guides/platform/functions/ci-cd).
 
 <a id="call-a-tool"></a>
+<a id="expose-tools-to-an-agent"></a>
 
 ## Call a custom tool
 

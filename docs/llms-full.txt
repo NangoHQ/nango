@@ -2249,6 +2249,10 @@ Tools are functions you call on demand to read or write data in external APIs.
 - **Detailed execution logs** — Connection, agent session and underlying API requests for every run
 - **Extend and customize** — Extend pre-built tools, or create custom ones, in code with a git-first workflow
 
+<a id="when-this-fits"></a>
+<a id="how-nango-fits-in"></a>
+<a id="technical-setup"></a>
+
 ## Call tools
 
 ### From your AI agent
@@ -2309,6 +2313,8 @@ You can find catalog tools on the [website](https://nango.dev/api-integrations) 
 
 **Custom tools** live in your Nango functions project. Write one from scratch or pull a catalog tool and deploy it as-is or with changes. Nango runs the version you last deployed to your environment, so your backend can rely on the inputs and outputs you define. Agent sessions discover and call custom tools just like catalog tools.
 
+<a id="what-to-read-next"></a>
+
 ## Extend and customize tools
 
 You can extend catalog tools, or write entirely custom tools with code that run on Nango. See [customize tools](/guides/tools/customize-tools).
@@ -2330,7 +2336,7 @@ For example, to fetch GitHub's `get-repository` tool:
 nango pull --catalog github get-repository
 ```
 
-The CLI adds the tool's source to your project and imports it from `index.ts`. From there you can edit it by following the steps in [create a custom tool](#create-a-tool).
+The CLI adds the tool's source to your project and imports it from `index.ts`. From there you can edit it by following the steps in [create a custom tool](#create-a-custom-tool).
 
 Nango updates catalog tools automatically, which can change what they accept or return. For backend calls, use `nango pull --catalog` and deploy the copy as a custom tool. You can deploy it as-is. Your integration uses the version you deployed, and you decide when to update it.
 
@@ -2406,6 +2412,7 @@ nango deploy dev github/tools/create-issue.ts
 A dry run calls real provider APIs and can create or change data. See [Testing](/guides/platform/functions/testing) and [CI/CD](/guides/platform/functions/ci-cd).
 
 <a id="call-a-tool"></a>
+<a id="expose-tools-to-an-agent"></a>
 
 ## Call a custom tool
 
@@ -6307,6 +6314,8 @@ Existing users of deprecated async actions can enable **Async action completed**
 
 Forwarded external webhooks use the same webhook URLs, signing, retries, and logs as other Nango webhooks. See [Webhook forwarding](/guides/triggers/webhook-forwarding) for setup, routing behavior, and payload shapes.
 
+<a id="webhook-retries-debugging"></a>
+
 ## Webhook retries & debugging
 
 Nango retries each webhook with non-2xx responses 2 times with exponential backoff (starting delay: 100ms, time multiple: 2, view details in the [code](https://github.com/NangoHQ/nango/blob/master/packages/webhooks/lib/utils.ts)).
@@ -6917,6 +6926,8 @@ Both run the same Nango codebase you get on Cloud, with all paid Cloud features 
 
 ## Choose your path
 
+For Self-Managed instances, see the instructions to <a id="audit-trail" href="/guides/platform/self-hosting/self-managed#audit-trail">enable audit trail</a> or <a id="operating-your-instance" href="/guides/platform/self-hosting/self-managed#updates">update your instance</a>.
+
 | | **BYOC** (recommended) | **Self-Managed** |
 | --- | --- | --- |
 | Runs in | Your AWS account, GCP project or Azure subscription | Your infrastructure — any cloud or on-prem |
@@ -7160,6 +7171,8 @@ Nango does not keep a separate copy of any of this anywhere. See [Encryption & c
 | Application configuration (integrations, syncs, auth settings) | — | Configure it, same as on Cloud |
 
 In short: with BYOC, your team's ongoing workload is reviewing what Nango proposes and owning the cloud account it runs in — not running the platform day to day.
+
+<a id="encryption-credentials"></a>
 
 ## Encryption & credentials
 
@@ -9035,6 +9048,8 @@ For backends that create connect sessions for the auth flow:
 | Scope |
 |-------|
 | `environment:connect_sessions:write` |
+
+<a id="cicd-deploy"></a>
 
 #### CI/CD deploy
 
