@@ -1,0 +1,217 @@
+---
+title: 'How to set up webhooks with Microsoft on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive Microsoft Graph change notifications, such as Outlook mail and calendar events, in your app using Nango webhooks'
+---
+
+## How it works
+
+1. You create a [Microsoft Graph subscription](https://learn.microsoft.com/en-us/graph/change-notifications-delivery-webhooks) for each resource you want to watch, for example `me/messages` and `me/events`, with your Nango webhook URL as the `notificationUrl`.
+2. Graph sends a POST request to that URL when the resource changes. Every notification carries the subscription's `clientState` and `subscriptionId`.
+3. Nango drops notifications whose `clientState` does not match the integration's webhook secret, and removes `clientState` before routing.
+4. Nango routes each notification to the connection whose `metadata.subscriptionIds` contains its `subscriptionId`, using `changeType` (or `lifecycleEvent`) as the webhook type.
+
+One Microsoft integration has one webhook URL. Mail, calendar, and other Graph subscriptions all use it, and are told apart by their `subscriptionId`.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Microsoft integration and copy the **Webhook URL**.
+
+### 2. Set the webhook secret in Nango
+
+On the same page, set a **Webhook secret**, for example generated with `openssl rand -hex 32`. Nango requires it and rejects every notification while it is empty. You pass the same value as `clientState` in the next step.
+
+### 3. Subscribe when a connection is created
+
+Create one Graph subscription per resource you want to watch, and store each subscription `id` in the connection's `metadata.subscriptionIds`. The examples watch `me/messages`. Repeat with `me/events` for calendar events, and give the connection the matching read permission, for example `Mail.Read` or `Calendars.Read`.
+
+Graph validates the URL with a `validationToken` request when you create a subscription, and Nango answers it automatically.
+
+<Tabs>
+  <Tab title="Event function">
+    Subscribe new connections with a [post-connection-creation function](/guides/functions/event-functions):
+
+    ```typescript
+    import { createOnEvent } from 'nango';
+    import * as z from 'zod';
+
+    const Metadata = z.object({ subscriptionIds: z.array(z.string()).optional() });
+
+    export default createOnEvent({
+        event: 'post-connection-creation',
+        description: 'Subscribe to Outlook mail change notifications',
+        metadata: Metadata,
+        exec: async (nango) => {
+            const integration = await nango.getIntegration({ include: ['credentials'] });
+            const clientState = integration.credentials && 'webhook_secret' in integration.credentials ? integration.credentials.webhook_secret : null;
+            if (!clientState) {
+                await nango.log('Set the webhook secret on the Microsoft integration first', { level: 'error' });
+                return;
+            }
+
+            const webhookUrl = await nango.getWebhookURL();
+            const response = await nango.post({
+                endpoint: '/v1.0/subscriptions',
+                data: {
+                    changeType: 'created,updated,deleted',
+                    resource: 'me/messages',
+                    notificationUrl: webhookUrl,
+                    lifecycleNotificationUrl: webhookUrl,
+                    // Outlook resources allow up to 7 days. The renewal sync in step 4 extends it.
+                    expirationDateTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+                    clientState
+                }
+            });
+
+            await nango.updateMetadata({ subscriptionIds: [response.data.id] });
+        }
+    });
+    ```
+  </Tab>
+  <Tab title="API">
+    Create the subscription through Nango's proxy:
+
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/v1.0/subscriptions" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "changeType": "created,updated,deleted",
+        "resource": "me/messages",
+        "notificationUrl": "<NANGO-WEBHOOK-URL>",
+        "lifecycleNotificationUrl": "<NANGO-WEBHOOK-URL>",
+        "expirationDateTime": "<ISO-8601-DATETIME>",
+        "clientState": "<WEBHOOK-SECRET>"
+      }'
+    ```
+
+    Then save the `id` from each response in the connection's metadata with [Update connection metadata](/reference/backend/http-api/connections/update-metadata):
+
+    ```bash
+    curl -X PATCH "https://api.nango.dev/connections/metadata" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "connection_id": "<CONNECTION-ID>",
+        "provider_config_key": "<INTEGRATION-ID>",
+        "metadata": { "subscriptionIds": ["<MAIL-SUBSCRIPTION-ID>", "<CALENDAR-SUBSCRIPTION-ID>"] }
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+Setting `subscriptionIds` replaces the whole array. Include every active subscription ID for the connection, or notifications for the missing ones stop matching it.
+</Warning>
+
+### 4. Renew the subscriptions
+
+Graph subscriptions expire, and Graph doesn't renew them. Check the maximum `expirationDateTime` per resource in [Microsoft's docs](https://learn.microsoft.com/en-us/graph/api/resources/subscription#subscription-lifetime), and extend each subscription before then.
+
+<Tabs>
+  <Tab title="Sync">
+    Run a daily sync that extends every subscription in `metadata.subscriptionIds`:
+
+    ```typescript
+    import { createSync } from 'nango';
+    import * as z from 'zod';
+
+    const Metadata = z.object({ subscriptionIds: z.array(z.string()).optional() });
+
+    export default createSync({
+        description: 'Renew Microsoft Graph subscriptions before they expire',
+        frequency: '1d',
+        syncType: 'full',
+        models: {},
+        metadata: Metadata,
+        exec: async (nango) => {
+            const metadata = await nango.getMetadata<z.infer<typeof Metadata>>();
+            const expirationDateTime = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+
+            for (const id of metadata?.subscriptionIds ?? []) {
+                try {
+                    await nango.patch({ endpoint: `/v1.0/subscriptions/${id}`, data: { expirationDateTime } });
+                } catch (err) {
+                    // An expired or deleted subscription can't be renewed. Recreate it as in step 3.
+                    await nango.log(`Failed to renew subscription ${id}: ${String(err)}`, { level: 'error' });
+                }
+            }
+        }
+    });
+    ```
+
+    Graph also sends a `reauthorizationRequired` lifecycle notification when a subscription needs attention. You can handle it in a sync's `onWebhook` to renew right away.
+  </Tab>
+  <Tab title="API">
+    ```bash
+    curl -X PATCH "https://api.nango.dev/proxy/v1.0/subscriptions/<SUBSCRIPTION-ID>" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{ "expirationDateTime": "<ISO-8601-DATETIME>" }'
+    ```
+  </Tab>
+</Tabs>
+
+### 5. Unsubscribe when a connection is deleted
+
+Delete a connection's subscriptions before the connection itself, so Graph stops sending its notifications.
+
+<Tabs>
+  <Tab title="Event function">
+    ```typescript
+    import { createOnEvent } from 'nango';
+    import * as z from 'zod';
+
+    const Metadata = z.object({ subscriptionIds: z.array(z.string()).optional() });
+
+    export default createOnEvent({
+        event: 'pre-connection-deletion',
+        description: 'Delete Microsoft Graph subscriptions before the connection is deleted',
+        metadata: Metadata,
+        exec: async (nango) => {
+            const metadata = await nango.getMetadata<z.infer<typeof Metadata>>();
+
+            for (const id of metadata?.subscriptionIds ?? []) {
+                try {
+                    await nango.delete({ endpoint: `/v1.0/subscriptions/${id}` });
+                } catch (err) {
+                    // Don't block the connection deletion if a subscription is already gone.
+                    await nango.log(`Failed to delete subscription ${id}: ${String(err)}`, { level: 'error' });
+                }
+            }
+        }
+    });
+    ```
+  </Tab>
+  <Tab title="API">
+    ```bash
+    curl -X DELETE "https://api.nango.dev/proxy/v1.0/subscriptions/<SUBSCRIPTION-ID>" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>"
+    ```
+
+    Then remove its ID from the connection's `metadata.subscriptionIds`.
+  </Tab>
+</Tabs>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the notification to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to `created`, `updated` or `deleted`, and to lifecycle events such as `reauthorizationRequired` to renew subscriptions. For change notifications, use the `resource` field, for example `Users/<id>/Messages/<id>` or `Users/<id>/Events/<id>`, to tell mail and calendar apart. Lifecycle notifications have no `resource`: use their `subscriptionId` to find the subscription. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+Graph can batch notifications from several subscriptions into one request. Nango forwards each connection only its own notifications. If no connection lists a notification's `subscriptionId`, Nango still forwards it, but separately and without a `connectionId`. Subscription validation requests are answered but never forwarded.
+
+## Rollback strategy
+
+Delete each subscription as in [step 5](#5-unsubscribe-when-a-connection-is-deleted), then remove its ID from the connection's `metadata.subscriptionIds`.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
