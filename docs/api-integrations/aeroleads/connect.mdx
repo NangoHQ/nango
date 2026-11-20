@@ -1,0 +1,37 @@
+---
+title: 'AeroLeads - How do I link my account?'
+sidebarTitle: 'AeroLeads'
+---
+
+## Overview
+
+To authenticate with AeroLeads, you need:
+
+1. **API Key** — the API key of your AeroLeads account.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- An AeroLeads account. You can [create one](https://aeroleads.com/users/register) with 10 free credits, no credit card required.
+
+### Step 1: Copy your API key
+
+1. Log in to your [AeroLeads account](https://aeroleads.com/users/login).
+2. Open [Settings](https://aeroleads.com/users/settings?source=api_key) and select the **API Key** tab.
+
+<img src="/api-integrations/aeroleads/settings_api_key_tab.png" alt="AeroLeads Settings page with the API Key tab selected"/>
+
+3. Click **Copy** next to the API key field.
+
+<img src="/api-integrations/aeroleads/copy_api_key.png" alt="AeroLeads API Key tab with the Copy button in the API key field"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with AeroLeads.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form.
+
+<img src="/api-integrations/aeroleads/form.png" alt="AeroLeads Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the key. If the key is wrong, the first API request returns an authentication error.

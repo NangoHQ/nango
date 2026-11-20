@@ -1,0 +1,61 @@
+---
+title: 'Agility CMS - How do I link my account?'
+sidebarTitle: 'Agility CMS'
+---
+
+## Overview
+
+To authenticate with Agility CMS, you need:
+
+1. **Region** — the Management API host for the region your instance is hosted in.
+2. **Instance GUID** — the unique identifier of your Agility instance.
+3. **Personal Access Token** — a token that lets apps call the Agility Management API as you.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An Agility CMS account. You can sign up at [app.agilitycms.com](https://app.agilitycms.com/).
+- The **Develop** or **Manage** permission on the instance you connect.
+
+### Step 1: Find your instance GUID and region
+
+1. Sign in to [Agility](https://app.agilitycms.com/) and open your instance.
+2. Copy the instance GUID from the URL: `app.agilitycms.com/instance/<GUID>/...`. Enter it in the **Instance GUID** field.
+3. The suffix of the GUID (the part after the last `-`) tells the region your instance is hosted in. Select the matching **Region**:
+
+| GUID suffix | Region | Value to select |
+|-------------|--------|-----------------|
+| `-u` | US | `mgmt.aglty.io` |
+| `-us2` | US 2 | `mgmt-usa2.aglty.io` |
+| `-c` | Canada | `mgmt-ca.aglty.io` |
+| `-e` | Europe | `mgmt-eu.aglty.io` |
+| `-a` | Australia | `mgmt-aus.aglty.io` |
+
+For example, an instance GUID ending in `-u` uses `mgmt.aglty.io`.
+
+### Step 2: Create a Personal Access Token
+
+1. Inside your instance, select your avatar in the top-right corner, then select **Personal Access Tokens**.
+
+<img src="/api-integrations/agility-cms/profile_menu_personal_access_tokens.png" alt="Agility avatar menu with Personal Access Tokens highlighted"/>
+
+2. Select **Create Token**. In **Name**, say where the token will be used. In **Expiration**, choose how long the token lasts: 30 days, 90 days (the default), 6 months, 1 year or 2 years. Then select **Create Token**.
+
+<img src="/api-integrations/agility-cms/create_personal_access_token.png" alt="Agility Create Token dialog with the Name and Expiration fields and the Create Token button"/>
+
+3. Select **Copy Token** and store the token somewhere safe. It is shown only once and cannot be retrieved later. Then select **Done**.
+
+<img src="/api-integrations/agility-cms/copy_personal_access_token.png" alt="Agility Personal Access Token Created dialog with the Copy Token button"/>
+
+The token acts as you, with your permissions on every Agility instance you can reach.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Agility CMS.
+2. Select your **Region**, then enter your **Instance GUID** and **Personal Access Token** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/agility-cms/form.png" alt="Agility CMS connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Agility CMS.
