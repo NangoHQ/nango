@@ -83,8 +83,6 @@ export const buttonVariants = cva(
                 ]
             },
             size: {
-                // 20px square — smallest icon-only size (use with IconButton); icon sizing comes from the base
-                '2xs': 'size-5 p-1 gap-1 text-ds-xs',
                 xs: ['h-6 px-2 gap-1 text-ds-xs', "[&_svg:not([class*='size-'])]:size-3"],
                 sm: ['h-7 px-2.5 gap-1.5 text-ds-xs', "[&_svg:not([class*='size-'])]:size-3.5"],
                 md: 'h-8 px-3 gap-1.5 text-ds-sm',
@@ -101,7 +99,7 @@ export const buttonVariants = cva(
 // ─── Button ───────────────────────────────────────────────────────────────────
 
 // Spinner matches each size's icon so it can stand in for the leading icon.
-const SPINNER_SIZE = { '2xs': 'md', xs: 'xs', sm: 'sm', md: 'md', lg: 'md' } as const satisfies Record<
+const SPINNER_SIZE = { xs: 'xs', sm: 'sm', md: 'md', lg: 'md' } as const satisfies Record<
     NonNullable<VariantProps<typeof buttonVariants>['size']>,
     SpinnerSize
 >;
@@ -220,8 +218,9 @@ export type IconButtonSize = (typeof ICON_BUTTON_SIZES)[number];
 
 export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label'> {
     variant?: ButtonVariant | null;
-    /** `2xs` is outside the IconButton spec and kept for existing call sites only. */
     size?: ButtonSize | null;
+    /** 20px box with the size's icon, for a button in a line of text. Only `xs` and `sm` icons fit it. */
+    inline?: boolean;
     asChild?: boolean;
     loading?: boolean;
     /** Accessible name, applied as `aria-label`, and as the `title` tooltip unless one is passed. */
@@ -229,7 +228,7 @@ export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLBut
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, label, title, children, onClickCapture, ...props }, ref) => {
+    ({ className, variant, size, inline = false, asChild = false, loading = false, disabled, label, title, children, onClickCapture, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
         const renderChildren = (icon: React.ReactNode) => (loading ? <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} /> : icon);
@@ -242,7 +241,13 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
-                className={cn(buttonVariants({ variant, size }), 'aspect-square px-0', isDisabled && asChild && 'pointer-events-none', className)}
+                className={cn(
+                    buttonVariants({ variant, size }),
+                    'aspect-square px-0',
+                    inline && 'size-5',
+                    isDisabled && asChild && 'pointer-events-none',
+                    className
+                )}
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}

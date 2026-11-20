@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { remoteFileService, seeders } from '@nangohq/shared';
+import { listCatalogEntries, remoteFileService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -34,6 +34,27 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual({ type: 'sync', code: 'sync source' });
         expect(getFileSpy).toHaveBeenCalledWith('templates-zero/github/syncs/issues.ts');
+    });
+
+    it.skip.each([undefined, 'tool'] as const)('returns catalog tool source: %s', async (type) => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const definition = listCatalogEntries('replicate').find((entry) => entry.type === 'tool');
+        if (definition?.type !== 'tool') {
+            throw new Error('Expected a catalog tool fixture');
+        }
+        const getFileSpy = vi.spyOn(remoteFileService, 'getFile').mockResolvedValue('tool source');
+
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { provider: definition.provider, name: definition.name },
+            query: type ? { type } : {}
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual({ type: 'tool', code: 'tool source' });
+        expect(getFileSpy).toHaveBeenCalledWith(definition.location.ts);
     });
 
     it('should read aliased providers from the folder they point to', async () => {

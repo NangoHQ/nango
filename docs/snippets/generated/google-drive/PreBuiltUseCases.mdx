@@ -2,57 +2,57 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `documents` | Sync file metadata for IDs in connection metadata files, or recursively for all files under folder IDs in folders. Supports shared drives. | [Sync](/guides/functions/syncs/sync-functions) |
+| `documents` | Sync file metadata for IDs in connection metadata files, or recursively for all files under folder IDs in folders. Supports shared drives. | [Sync](/guides/syncs/sync-functions) |
 
 ### Folders
 
 | Function name | Description | Type |
 | - | - | - |
-| `folders` | Sync root-level Google Drive folders from My Drive and shared drives | [Sync](/guides/functions/syncs/sync-functions) |
+| `folders` | Sync root-level Google Drive folders from My Drive and shared drives | [Sync](/guides/syncs/sync-functions) |
 
 ### Permissions
 
 | Function name | Description | Type |
 | - | - | - |
-| `permissions` | Sync file permissions from Google Drive | [Sync](/guides/functions/syncs/sync-functions) |
+| `permissions` | Sync file permissions from Google Drive | [Sync](/guides/syncs/sync-functions) |
 
 ### Shared Drives
 
 | Function name | Description | Type |
 | - | - | - |
-| `shared-drives` | Sync shared drives from Google Drive | [Sync](/guides/functions/syncs/sync-functions) |
+| `shared-drives` | Sync shared drives from Google Drive | [Sync](/guides/syncs/sync-functions) |
 
 ### Others
 
 | Function name | Description | Type |
 | - | - | - |
-| `copy-file` | Copy a file to a destination | [Tool](/guides/functions/tools) |
-| `create-comment` | Add a comment to a file | [Tool](/guides/functions/tools) |
-| `create-folder` | Create a new folder in Google Drive | [Tool](/guides/functions/tools) |
-| `create-shared-drive` | Create a shared drive | [Tool](/guides/functions/tools) |
-| `delete-comment` | Delete a comment from a file | [Tool](/guides/functions/tools) |
-| `delete-file` | Delete a file or folder from Google Drive | [Tool](/guides/functions/tools) |
-| `delete-permission` | Remove a permission from a file | [Tool](/guides/functions/tools) |
-| `delete-shared-drive` | Delete a shared drive | [Tool](/guides/functions/tools) |
-| `empty-trash` | Permanently delete all trashed files | [Tool](/guides/functions/tools) |
-| `find-file` | Search for files by name or query in Google Drive | [Tool](/guides/functions/tools) |
-| `find-folder` | Search for a folder by name or query | [Tool](/guides/functions/tools) |
-| `get-about` | Get the user's drive info and storage quota | [Tool](/guides/functions/tools) |
-| `get-changes-start-page-token` | Get the starting token for listing future changes | [Tool](/guides/functions/tools) |
-| `get-comment` | Get a comment by ID | [Tool](/guides/functions/tools) |
-| `get-permission` | Get a permission by ID | [Tool](/guides/functions/tools) |
-| `get-revision` | Get a file revision by ID | [Tool](/guides/functions/tools) |
-| `get-shared-drive` | Get a shared drive by ID | [Tool](/guides/functions/tools) |
-| `hide-shared-drive` | Hide a shared drive from the default view | [Tool](/guides/functions/tools) |
-| `list-changes` | List changes to files and shared drives | [Tool](/guides/functions/tools) |
-| `list-comments` | List comments on a file | [Tool](/guides/functions/tools) |
-| `list-files-non-unified` | List immediate files and folders for a folder ID, or root when omitted, with cursor pagination and shared-drive support. | [Tool](/guides/functions/tools) |
-| `list-permissions` | List permissions on a file | [Tool](/guides/functions/tools) |
-| `list-drives` | List shared drives the user can access, with cursor pagination and drive metadata like hidden, capabilities, and restrictions. | [Tool](/guides/functions/tools) |
-| `move-file` | Move a file to a different folder | [Tool](/guides/functions/tools) |
-| `unhide-shared-drive` | Restore a hidden shared drive to default view | [Tool](/guides/functions/tools) |
-| `update-comment` | Update a comment on a file | [Tool](/guides/functions/tools) |
-| `update-file` | Update a file's metadata | [Tool](/guides/functions/tools) |
-| `update-permission` | Update a permission on a file | [Tool](/guides/functions/tools) |
-| `update-shared-drive` | Update a shared drive's metadata | [Tool](/guides/functions/tools) |
-| `upload-document` | Upload plain text or base64 file content up to 5 MB, optionally into a folder with a description; defaults to root | [Tool](/guides/functions/tools) |
+| `copy-file` | Copy a file to a destination | [Tool](/guides/tools/customize-tools) |
+| `create-comment` | Add a comment to a file | [Tool](/guides/tools/customize-tools) |
+| `create-folder` | Create a new folder in Google Drive | [Tool](/guides/tools/customize-tools) |
+| `create-shared-drive` | Create a shared drive | [Tool](/guides/tools/customize-tools) |
+| `delete-comment` | Delete a comment from a file | [Tool](/guides/tools/customize-tools) |
+| `delete-file` | Delete a file or folder from Google Drive | [Tool](/guides/tools/customize-tools) |
+| `delete-permission` | Remove a permission from a file | [Tool](/guides/tools/customize-tools) |
+| `delete-shared-drive` | Delete a shared drive | [Tool](/guides/tools/customize-tools) |
+| `empty-trash` | Permanently delete all trashed files | [Tool](/guides/tools/customize-tools) |
+| `find-file` | Search for files by name or query in Google Drive | [Tool](/guides/tools/customize-tools) |
+| `find-folder` | Search for a folder by name or query | [Tool](/guides/tools/customize-tools) |
+| `get-about` | Get the user's drive info and storage quota | [Tool](/guides/tools/customize-tools) |
+| `get-changes-start-page-token` | Get the starting token for listing future changes | [Tool](/guides/tools/customize-tools) |
+| `get-comment` | Get a comment by ID | [Tool](/guides/tools/customize-tools) |
+| `get-permission` | Get a permission by ID | [Tool](/guides/tools/customize-tools) |
+| `get-revision` | Get a file revision by ID | [Tool](/guides/tools/customize-tools) |
+| `get-shared-drive` | Get a shared drive by ID | [Tool](/guides/tools/customize-tools) |
+| `hide-shared-drive` | Hide a shared drive from the default view | [Tool](/guides/tools/customize-tools) |
+| `list-changes` | List changes to files and shared drives | [Tool](/guides/tools/customize-tools) |
+| `list-comments` | List comments on a file | [Tool](/guides/tools/customize-tools) |
+| `list-files-non-unified` | List immediate files and folders for a folder ID, or root when omitted, with cursor pagination and shared-drive support. | [Tool](/guides/tools/customize-tools) |
+| `list-permissions` | List permissions on a file | [Tool](/guides/tools/customize-tools) |
+| `list-drives` | List shared drives the user can access, with cursor pagination and drive metadata like hidden, capabilities, and restrictions. | [Tool](/guides/tools/customize-tools) |
+| `move-file` | Move a file to a different folder | [Tool](/guides/tools/customize-tools) |
+| `unhide-shared-drive` | Restore a hidden shared drive to default view | [Tool](/guides/tools/customize-tools) |
+| `update-comment` | Update a comment on a file | [Tool](/guides/tools/customize-tools) |
+| `update-file` | Update a file's metadata | [Tool](/guides/tools/customize-tools) |
+| `update-permission` | Update a permission on a file | [Tool](/guides/tools/customize-tools) |
+| `update-shared-drive` | Update a shared drive's metadata | [Tool](/guides/tools/customize-tools) |
+| `upload-document` | Upload plain text or base64 file content up to 5 MB, optionally into a folder with a description; defaults to root | [Tool](/guides/tools/customize-tools) |

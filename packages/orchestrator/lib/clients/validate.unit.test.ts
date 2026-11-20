@@ -50,66 +50,69 @@ describe('validateTask', () => {
         }
     });
 
-    it('deserializes a dequeued function task', () => {
-        const result = validateTask({
-            id: '4a14038c-3a57-4a4d-bb9e-c8a5e85474ae',
-            name: 'function-task',
-            groupKey: 'function:environment:2:connection:1:function:11111111-1111-4111-8111-111111111111',
-            groupMaxConcurrency: 1,
-            state: 'STARTED',
-            retryKey: 'retry-key',
-            retryCount: 0,
-            retryMax: 2,
-            ownerKey: 'environment:2',
-            heartbeatTimeoutSecs: 60,
-            startsAfter: new Date(),
-            createdToStartedTimeoutSecs: 30,
-            startedToCompletedTimeoutSecs: 120,
-            createdAt: new Date(),
-            lastStateTransitionAt: new Date(),
-            lastHeartbeatAt: new Date(),
-            output: null,
-            terminated: false,
-            scheduleId: null,
-            payload: {
-                type: 'function',
-                functionUuid: '11111111-1111-4111-8111-111111111111',
-                activityLogId: 'activity-log-id',
-                trigger: {
-                    kind: 'http',
-                    input: { value: 42 },
-                    request: {
-                        method: 'POST',
-                        path: '/connections/22222222-2222-4222-8222-222222222222/functions/11111111-1111-4111-8111-111111111111/invocations',
-                        headers: {},
-                        query: {},
-                        body: { value: 42 }
+    it.each(['11111111-1111-4111-8111-111111111111', 'ca7a10c0-9582-8b46-8c47-f39eee45f2b3'])(
+        'deserializes a dequeued function task with UUID %s',
+        (functionUuid) => {
+            const result = validateTask({
+                id: '4a14038c-3a57-4a4d-bb9e-c8a5e85474ae',
+                name: 'function-task',
+                groupKey: `function:environment:2:connection:1:function:${functionUuid}`,
+                groupMaxConcurrency: 1,
+                state: 'STARTED',
+                retryKey: 'retry-key',
+                retryCount: 0,
+                retryMax: 2,
+                ownerKey: 'environment:2',
+                heartbeatTimeoutSecs: 60,
+                startsAfter: new Date(),
+                createdToStartedTimeoutSecs: 30,
+                startedToCompletedTimeoutSecs: 120,
+                createdAt: new Date(),
+                lastStateTransitionAt: new Date(),
+                lastHeartbeatAt: new Date(),
+                output: null,
+                terminated: false,
+                scheduleId: null,
+                payload: {
+                    type: 'function',
+                    functionUuid,
+                    activityLogId: 'activity-log-id',
+                    trigger: {
+                        kind: 'http',
+                        input: { value: 42 },
+                        request: {
+                            method: 'POST',
+                            path: `/connections/22222222-2222-4222-8222-222222222222/functions/${functionUuid}/invocations`,
+                            headers: {},
+                            query: {},
+                            body: { value: 42 }
+                        },
+                        subscriptions: ['issues'],
+                        connection: { connectionId: 'connection-id', integrationId: 'integration-id' }
                     },
-                    subscriptions: ['issues'],
-                    connection: { connectionId: 'connection-id', integrationId: 'integration-id' }
-                },
-                async: false,
-                connection: {
-                    id: 1,
-                    connection_id: 'connection-id',
-                    provider_config_key: 'integration-id',
-                    environment_id: 2
+                    async: false,
+                    connection: {
+                        id: 1,
+                        connection_id: 'connection-id',
+                        provider_config_key: 'integration-id',
+                        environment_id: 2
+                    }
                 }
-            }
-        } as Task);
+            } as Task);
 
-        const task = result.unwrap();
-        expect(task.isFunction()).toBe(true);
-        if (task.isFunction()) {
-            expect(task).toMatchObject({
-                functionUuid: '11111111-1111-4111-8111-111111111111',
-                trigger: expect.objectContaining({ kind: 'http', input: { value: 42 }, subscriptions: ['issues'] }),
-                async: false,
-                attempt: 1,
-                attemptMax: 3
-            });
+            const task = result.unwrap();
+            expect(task.isFunction()).toBe(true);
+            if (task.isFunction()) {
+                expect(task).toMatchObject({
+                    functionUuid,
+                    async: false,
+                    attempt: 1,
+                    attemptMax: 3
+                });
+                expect(task.trigger).toMatchObject({ kind: 'http', input: { value: 42 }, subscriptions: ['issues'] });
+            }
         }
-    });
+    );
 
     it.each(['GET', 'DELETE'] as const)('deserializes a body-less %s function task', (method) => {
         const result = validateTask({

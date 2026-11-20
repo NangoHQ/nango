@@ -152,7 +152,7 @@ export const Addons: Story = {
                         <InputGroup size={size}>
                             <InputGroupInput mono readOnly value={ENV_ID} />
                             <InputGroupAddon align="inline-end">
-                                <CopyButton value={ENV_ID} size="xs" />
+                                <CopyButton value={ENV_ID} />
                             </InputGroupAddon>
                         </InputGroup>
                     </Row>

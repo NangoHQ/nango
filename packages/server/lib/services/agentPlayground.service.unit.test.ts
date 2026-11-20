@@ -22,7 +22,7 @@ import {
 import { sessionOwner } from './agentPlaygroundTags.js';
 
 import type { PlaygroundUIMessage } from './agentPlayground.service.js';
-import type { AgentSession } from '@nangohq/types';
+import type { AgentSession, DBSyncConfig } from '@nangohq/types';
 
 const executeAction = vi.hoisted(() => vi.fn());
 vi.mock('./action.service.js', () => ({ executeAction }));
@@ -237,7 +237,7 @@ describe('buildMcpTools', () => {
     let close: (() => Promise<void>) | undefined;
 
     beforeEach(async () => {
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'deployed', config: { enabled: true } as DBSyncConfig }));
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { title: 'Roadmap' } }) });
 
         const server = createAgentSessionMcpServer({

@@ -1,0 +1,49 @@
+---
+title: 'BoloForms - How do I link my account?'
+sidebarTitle: 'BoloForms'
+---
+
+## Overview
+
+To authenticate with BoloForms, you need:
+
+1. **API Key** - a BoloForms API key.
+2. **Workspace ID** - the ID of the BoloForms workspace the key belongs to.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A BoloForms account. You can sign up at [signature.boloforms.com](https://signature.boloforms.com/register). The 7-day free trial gives full access, with no credit card required.
+
+### Step 1: Generate an API key
+
+1. Sign in to [BoloForms](https://signature.boloforms.com) and click **Settings** at the bottom of the left sidebar.
+
+<img src="/api-integrations/boloforms/open_settings.png" alt="BoloForms left sidebar with the Settings link"/>
+
+2. Open the **Developer** tab. It opens on the **API Key** sub-tab.
+3. Click **Generate API Key**, enter a name for the key, then click **Generate API Key** again to confirm.
+
+<img src="/api-integrations/boloforms/generate_api_key_dialog.png" alt="BoloForms Generate API Key dialog with the API key name field"/>
+
+4. In the **API Key** table, click the copy icon next to the new key.
+
+<img src="/api-integrations/boloforms/copy_api_key.png" alt="BoloForms API Key table with the copy icon next to the new key"/>
+
+### Step 2: Copy your workspace ID
+
+1. On the same **Developer** > **API Key** page, click the copy icon next to **Workspace ID**, above the API key table.
+2. Paste only the ID itself, a UUID such as `550e8400-e29b-41d4-a716-446655440000`, without the **Workspace ID** label.
+
+<img src="/api-integrations/boloforms/developer_api_key_workspace_id.png" alt="BoloForms Developer settings with the copy icon next to Workspace ID"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with BoloForms.
+2. Enter your **Workspace ID** and **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/boloforms/form.png" alt="BoloForms connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to BoloForms.

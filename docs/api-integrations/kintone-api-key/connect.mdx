@@ -1,0 +1,55 @@
+---
+title: 'Kintone (API Token) - How do I link my account?'
+sidebarTitle: 'Kintone (API Token)'
+---
+
+## Overview
+
+To authenticate with Kintone using an API token, you need:
+
+1. **Subdomain** — the first part of your Kintone URL.
+2. **Region** — the domain of your Kintone URL.
+3. **API Token** — a token generated in the Kintone App you want to connect.
+
+This guide will show you how to find and generate them.
+
+### Prerequisites
+
+- A Kintone environment with at least one App. You can get a free [Kintone developer license](https://kintone.dev/en/developer-license-registration-form/) or start a [free trial](https://www.kintone.com/en-us/trial/).
+
+### Step 1: Find your subdomain and region
+
+Sign in to Kintone and look at the URL in your browser, for example `https://example.kintone.com`:
+
+- Your **subdomain** is the part before the domain, here `example`.
+- Your **region** is the domain: `kintone.com`, or `cybozu.com` if your URL ends in `.cybozu.com`.
+
+### Step 2: Generate an API token
+
+An API token only works with the App it was generated in, and only for the permissions you tick.
+
+1. Open the Kintone App you want to connect and click the **App settings** (gear) icon at the upper right of the View screen.
+
+<img src="/api-integrations/kintone-api-key/open_app_settings.png" alt="Kintone App View screen with the App settings gear icon at the upper right"/>
+
+2. On the **App settings** tab, click **API token** under **Customization and integration**.
+
+<img src="/api-integrations/kintone-api-key/app_settings_api_token.png" alt="Kintone App settings tab with API token under Customization and integration"/>
+
+3. Click **Generate**, tick only the permissions you need (**View records** alone gives read-only access), copy the token, then click **Save**.
+
+<img src="/api-integrations/kintone-api-key/generate_api_token.png" alt="Kintone API token screen with a generated token, the View records permission ticked and the Save button"/>
+
+4. Click **Update app** at the upper right and confirm. The token only works after the App is updated.
+
+<img src="/api-integrations/kintone-api-key/update_app.png" alt="Kintone App settings with the Update app button at the upper right"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Kintone (API Token).
+2. Enter your **Subdomain**, select your **Region**, and enter your **API Token**.
+3. Submit the form. The connection is saved without checking the token: if the token is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/kintone-api-key/form.png" alt="Kintone (API Token) Connect UI form with the Subdomain, Region and API Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Kintone (API Token).

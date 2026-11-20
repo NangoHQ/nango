@@ -1,0 +1,41 @@
+---
+title: 'Filescan - How do I link my account?'
+sidebarTitle: 'Filescan'
+---
+
+## Overview
+
+To authenticate with Filescan, you need:
+
+1. **API Key** — an API key from your Filescan.io profile settings.
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- A Filescan.io account. The free Community account works ([sign up](https://www.filescan.io/auth/signup)).
+
+### Step 1: Create an API key
+
+1. Sign in to [Filescan.io](https://www.filescan.io/auth/signin) and open your profile settings (**My settings**) at [filescan.io/users/profile](https://www.filescan.io/users/profile).
+2. Open the **API Key** tab.
+
+<img src="/api-integrations/filescan/profile_api_key_tab.png" alt="Filescan.io profile settings with the API Key tab"/>
+
+3. Click **Create API Key**.
+
+<img src="/api-integrations/filescan/create_api_key.png" alt="Filescan.io API Key tab with the Create API Key button"/>
+
+4. In the **New API key** window, copy the key with the copy button. The key is shown only once, so copy it before you click **Close**.
+
+<img src="/api-integrations/filescan/api_key_created.png" alt="Filescan.io New API key window with the copy button next to the key"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Filescan.
+2. Paste the key into the **API Key** field.
+3. Submit the form. Nango checks the key with Filescan and rejects it if it is wrong.
+
+<img src="/api-integrations/filescan/form.png" alt="Filescan Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Filescan.

@@ -350,7 +350,7 @@ const GoFurther: React.FC<{ env: string }> = ({ env }) => {
             icon: RefreshCw,
             title: 'Sync data into your app',
             description: 'Keep provider data fresh with scheduled syncs.',
-            to: 'https://nango.dev/docs/guides/functions/syncs/sync-functions',
+            to: 'https://nango.dev/docs/guides/syncs/sync-functions',
             external: true
         }
     ];

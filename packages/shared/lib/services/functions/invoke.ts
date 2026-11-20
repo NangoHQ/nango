@@ -6,14 +6,16 @@ import { Err, Ok, truncateJson } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import connectionService from '../connection.service.js';
-import * as functionConfigService from './models/functions.js';
+import * as functionLookupService from './lookup/index.js';
 import { validateFunctionInput } from './models/validate.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
+import type { ResolvedFunction } from './lookup/service.js';
 import type { FunctionInputValidationError } from './models/validate.js';
 import type { LogContextOrigin } from '@nangohq/logs';
 import type {
     AsyncFunctionResponse,
+    ConnectionJobs,
     DBEnvironment,
     DBFunctionConfigVersion,
     DBTeam,
@@ -27,7 +29,28 @@ import type {
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
-type ValidationErrors = FunctionInputValidationError['validationErrors'];
+export class FunctionInvokeError extends Error {
+    readonly code: FunctionInvocationErrorCode;
+    readonly errors: FunctionInputValidationError['validationErrors'];
+
+    constructor({
+        message,
+        code,
+        cause,
+        errors
+    }: {
+        message: string;
+        code: FunctionInvocationErrorCode;
+        cause?: unknown;
+        errors?: FunctionInputValidationError['validationErrors'];
+    }) {
+        super(message, { cause });
+        this.name = 'FunctionInvokeError';
+        this.code = code;
+        this.errors = errors ?? [];
+        Error.captureStackTrace?.(this, FunctionInvokeError);
+    }
+}
 
 export type FunctionInvocationResult = AsyncFunctionResponse | { data: JsonValue };
 
@@ -37,23 +60,11 @@ export interface FunctionInvocation {
     result: Result<FunctionInvocationResult, FunctionInvokeError>;
 }
 
-export class FunctionInvokeError extends Error {
-    readonly code: FunctionInvocationErrorCode;
-    readonly errors: ValidationErrors;
-
-    constructor({ message, code, cause, errors }: { message: string; code: FunctionInvocationErrorCode; cause?: unknown; errors?: ValidationErrors }) {
-        super(message, { cause });
-        this.name = 'FunctionInvokeError';
-        this.code = code;
-        this.errors = errors ?? [];
-        Error.captureStackTrace?.(this, FunctionInvokeError);
-    }
-}
-
 export async function invokeFunction({
     account,
     environment,
     connectionId,
+    integrationId,
     functionUuid,
     input,
     request,
@@ -67,6 +78,8 @@ export async function invokeFunction({
     account: DBTeam;
     environment: DBEnvironment;
     connectionId: string;
+    /** connectionId is historically NOT guaranteed unique across integrations. Required for functions that are not deployed and therefore not tied to a specific integration. */
+    integrationId?: string | undefined;
     functionUuid: string;
     input?: unknown | undefined;
     request: Omit<Extract<FunctionTrigger, { kind: 'http' }>['request'], 'body'>;
@@ -88,47 +101,24 @@ export async function invokeFunction({
             invocationType
         });
 
-        const functionRes = await functionConfigService.search(db.knex, {
-            environmentId: environment.id,
-            filter: { uuid: functionUuid }
-        });
-
+        const functionRes = await functionLookupService.resolveFunctionByUuid({ environmentId: environment.id, functionUuid });
         if (functionRes.isErr()) {
-            return Err(
-                new FunctionInvokeError({
-                    code: 'server_error',
-                    message: 'Failed to find function',
-                    cause: functionRes.error
-                })
-            );
+            return Err(new FunctionInvokeError({ code: 'server_error', message: 'Failed to find function', cause: functionRes.error }));
         }
-
-        if (functionRes.value.length !== 1) {
-            return Err(
-                new FunctionInvokeError({
-                    code: 'function_not_found',
-                    message: `Function '${functionUuid}' was not found`
-                })
-            );
+        const fn = functionRes.value;
+        if (!fn) {
+            return Err(new FunctionInvokeError({ code: 'function_not_found', message: `Function '${functionUuid}' was not found` }));
         }
-
-        if (!functionRes.value[0]?.config.enabled) {
-            return Err(
-                new FunctionInvokeError({
-                    code: 'function_disabled',
-                    message: `Function '${functionUuid}' is disabled`
-                })
-            );
+        if (!fn.enabled) {
+            return Err(new FunctionInvokeError({ code: 'function_disabled', message: `Function '${functionUuid}' is disabled` }));
         }
-
-        const { currentVersion, integration, config } = functionRes.value[0];
-        const integrationId = integration.unique_key;
-        span.addTags({ integrationId });
-        const connectionRes = await connectionService.getConnection(connectionId, integrationId, environment.id);
-        const connection = connectionRes.response;
-        if (!connection) {
-            return Err(new FunctionInvokeError({ code: 'connection_not_found', message: `Connection '${connectionId}' was not found` }));
+        const currentVersion = fn.definition;
+        const context = await resolveFunctionConnection({ fn, environmentId: environment.id, connectionId, integrationId });
+        if (context.isErr()) {
+            return Err(context.error);
         }
+        const { integration, connection } = context.value;
+        span.addTags({ integrationId: integration.unique_key });
 
         const canInvokeRes = canInvoke(currentVersion, invocationType);
         if (canInvokeRes.isErr()) {
@@ -153,7 +143,7 @@ export async function invokeFunction({
             request,
             connection: {
                 connectionId: connection.connection_id,
-                integrationId
+                integrationId: integration.unique_key
             }
         });
         if (trigger.isErr()) {
@@ -168,7 +158,7 @@ export async function invokeFunction({
                 environment,
                 integration: { id: integration.id, name: integration.unique_key, provider: integration.provider },
                 connection: { id: connection.id, name: connection.connection_id },
-                syncConfig: { id: currentVersion.id, name: config.name },
+                syncConfig: { ...(fn.kind === 'deployed' && { id: fn.definition.id }), name: fn.name },
                 meta: {
                     ...logMeta,
                     invocation_type: invocationType,
@@ -185,7 +175,7 @@ export async function invokeFunction({
         const invocation = await orchestrator.invokeFunction({
             environment,
             connection,
-            functionUuid: config.uuid,
+            functionUuid: fn.uuid,
             trigger: trigger.value,
             async: invocationType === 'no_wait',
             retryMax: 0,
@@ -213,8 +203,47 @@ export async function invokeFunction({
     return { logCtx, result };
 }
 
+export async function resolveFunctionConnection({
+    fn,
+    environmentId,
+    connectionId,
+    integrationId
+}: {
+    fn: ResolvedFunction;
+    environmentId: number;
+    connectionId: string;
+    /** connectionId is historically NOT guaranteed unique across integrations. Required for functions that are not deployed and therefore not tied to a specific integration. */
+    integrationId?: string | undefined;
+}): Promise<Result<{ connection: ConnectionJobs; integration: { id: number; unique_key: string; provider: string } }, FunctionInvokeError>> {
+    const notFound = () => new FunctionInvokeError({ code: 'connection_not_found', message: `Connection '${connectionId}' was not found` });
+    try {
+        if (fn.kind === 'deployed') {
+            const connection = await connectionService.getConnection(connectionId, fn.integration.unique_key, environmentId);
+            return connection.response ? Ok({ connection: connection.response, integration: fn.integration }) : Err(notFound());
+        }
+        const connections = await connectionService.search(db.knex, {
+            environmentId,
+            filter: { connectionId, provider: fn.definition.provider, ...(integrationId !== undefined && { integrationId }) },
+            limit: 2
+        });
+        if (connections.isErr()) {
+            return Err(new FunctionInvokeError({ code: 'server_error', message: 'Failed to find connection', cause: connections.error }));
+        }
+        const [connection, other] = connections.value;
+        if (!connection) {
+            return Err(notFound());
+        }
+        if (other) {
+            return Err(new FunctionInvokeError({ code: 'invalid_invocation', message: `Connection '${connectionId}' is ambiguous across integrations` }));
+        }
+        return Ok({ connection, integration: { id: connection.config_id, unique_key: connection.provider_config_key, provider: fn.definition.provider } });
+    } catch (err) {
+        return Err(new FunctionInvokeError({ code: 'server_error', message: 'Failed to find connection', cause: err }));
+    }
+}
+
 /** Convert a function's per-connection concurrency setting to the orchestrator convention (0 means unbounded). */
-export function getFunctionMaxConcurrency(version: DBFunctionConfigVersion): number {
+export function getFunctionMaxConcurrency(version: Pick<DBFunctionConfigVersion, 'limits'>): number {
     return version.limits?.concurrency?.perConnection === 1 ? 1 : 0;
 }
 
@@ -224,7 +253,7 @@ function buildInvokeTrigger({
     request,
     connection
 }: {
-    version: DBFunctionConfigVersion;
+    version: Pick<DBFunctionConfigVersion, 'trigger'>;
     input: JsonValue;
     request: Omit<Extract<FunctionTrigger, { kind: 'http' }>['request'], 'body'>;
     connection: NonNullable<Extract<FunctionTrigger, { kind: 'invoke' }>['connection']>;
@@ -253,7 +282,7 @@ function executionTimeoutMs(invocationType: FunctionInvocationType): number {
         : 24 * 60 * 60 * 1000; // 24 hours for asynchronous invocations
 }
 
-function canInvoke(version: DBFunctionConfigVersion, invocationType: FunctionInvocationType): Result<void, FunctionInvokeError> {
+function canInvoke(version: Pick<DBFunctionConfigVersion, 'trigger'>, invocationType: FunctionInvocationType): Result<void, FunctionInvokeError> {
     const reject = (message: string): Result<void, FunctionInvokeError> => Err(new FunctionInvokeError({ code: 'invalid_invocation', message }));
     const allowOnly = (allowed: FunctionInvocationType[]): Result<void, FunctionInvokeError> =>
         allowed.includes(invocationType) ? Ok(undefined) : reject(`Function is not invokable with '${invocationType}'`);

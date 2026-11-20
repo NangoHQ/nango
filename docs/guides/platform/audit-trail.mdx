@@ -4,7 +4,7 @@ sidebarTitle: "Audit trail"
 description: "Review who changed what in your Nango account."
 ---
 
-The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: connection changes, integration settings, teammate roles, sign-ins.
+The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: connection changes, integration settings, teammate roles, sign-ins. From the **data plane**, it records credential reads, such as fetching a connection's credentials through the API.
 
 Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review.
 
@@ -70,7 +70,11 @@ Secrets, such as API keys and passwords, are stripped from audit log entries.
 
 Two kinds of reads are recorded: queries to the audit trail itself, and reads that return credentials. A credentials read is recorded as `credentials_read`, so you can see who accessed a secret.
 
-Only control plane credential reads are recorded: those made from the dashboard or through the API endpoints that manage integrations, API keys, and environments. Data plane reads, such as fetching a connection's credentials with `GET /connections/{connectionId}`, are not. Control plane credential reads cover:
+Credential reads are recorded from the dashboard and through the API endpoints that manage integrations, API keys, and environments. Requests rejected for lack of permission are recorded too, with the `denied` outcome.
+
+On the data plane, fetching a connection's credentials with `GET /connections/{connectionId}` is recorded as `connection.credentials_read`.
+
+Credential reads cover:
 
 | Resource | Credentials |
 |----------|-------------|
@@ -80,7 +84,7 @@ Only control plane credential reads are recorded: those made from the dashboard 
 | `environment` | Environment secrets, such as the webhook signing key |
 
 <Note>
-The audit trail currently does not cover data plane operations, such as reading connection credentials or fetching sync records. See [Limitations](#limitations) for details.
+Apart from credential reads, the audit trail does not cover data plane operations, such as fetching sync records or proxy requests. See [Limitations](#limitations) for details.
 </Note>
 
 ## Actors
@@ -106,13 +110,12 @@ Nango staff may access your account to investigate a support request. Actions ta
 We can expand audit trail coverage on request. If you need items logged that aren't covered today, please [reach out](https://nango.dev/demo)!
 </Note>
 
-The audit trail currently covers the control plane, but not the **data plane**: API requests used to work with integrations and exchange data with external APIs.
+The audit trail covers the control plane and credential reads, but not the rest of the **data plane**: API requests used to work with integrations and exchange data with external APIs.
 
 For example, the following activities are not covered:
 
 | Not recorded | Example |
 |--------------|----------|
-| Reading connection credentials via the API | `GET /connections/{connectionId}` |
 | Reading records from Nango | `GET /records` |
 | Deleting/pruning records in Nango | `PATCH /records` pruning |
 | Setting or updating connection metadata via the API | `POST` / `PATCH /connection/metadata` |

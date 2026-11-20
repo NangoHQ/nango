@@ -126,7 +126,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     </span>
                 ))}
                 <div className="ml-auto flex items-center gap-1 shrink-0">
-                    {scopes.length > 0 && <CopyButton value={scopes.join(',')} label="Copy all" size="2xs" />}
+                    {scopes.length > 0 && <CopyButton value={scopes.join(',')} label="Copy all" size="sm" />}
                     {isSharedCredentials ? <Badge>Nango-managed</Badge> : null}
                 </div>
             </div>
@@ -164,12 +164,12 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     <div className="ml-auto flex items-center gap-1 shrink-0 pl-1">
                         {scopes.length > 0 && !loading && (
                             <>
-                                <CopyButton value={scopes.join(',')} label="Copy all" size="2xs" />
+                                <CopyButton value={scopes.join(',')} label="Copy all" size="sm" />
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <IconButton
                                             type="button"
-                                            size="2xs"
+                                            size="sm"
                                             variant="ghost"
                                             label="Delete all scopes"
                                             onMouseDown={(event) => {
@@ -193,7 +193,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                             <TooltipTrigger asChild>
                                 <IconButton
                                     type="button"
-                                    size="2xs"
+                                    size="sm"
                                     variant="ghost"
                                     label="Add scope"
                                     loading={loading}

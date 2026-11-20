@@ -1,3 +1,4 @@
+import type { CatalogFunctionManifestEntry } from '../function/catalog.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
 import type { Feature } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
@@ -175,8 +176,8 @@ export interface FlowsYaml {
 }
 
 // --- flows.zero.json is a parsed nango.yaml
-// TODO: drop the functions override once flows.zero.json is regenerated with `functions` (NAN-5943)
-export type FlowZeroJson = Omit<NangoYamlParsedIntegration, 'functions'> & {
+export type FlowZeroJson = NangoYamlParsedIntegration & {
+    functions?: CatalogFunctionManifestEntry[];
     jsonSchema?: JSONSchema7;
     sdkVersion: string;
     // Set when this integration symlinks to a canonical templates-repo folder (e.g. `quickbooks-sandbox` → `quickbooks`).

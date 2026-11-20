@@ -1,0 +1,43 @@
+---
+title: 'Better Stack - How do I link my account?'
+sidebarTitle: 'Better Stack'
+---
+
+## Overview
+
+To authenticate with Better Stack, you need:
+
+1. **API Token** — a Better Stack global API token, or a team-scoped Incidents API token.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Better Stack account. If you don't have one, [sign up](https://betterstack.com/users/sign-up).
+
+### Step 1: Create an API token
+
+A global API token is valid across all your teams, for managing anything in Better Stack. To create one:
+
+1. Sign in to Better Stack and open [Settings → API tokens](https://betterstack.com/settings/global-api-tokens).
+2. In the **Global API tokens** section, enter a token name, choose an access level and click **Create**.
+
+<img src="/api-integrations/better-stack/create_global_api_token.png" alt="Better Stack API tokens page with a token name entered and the Create button highlighted in the Global API tokens section"/>
+
+3. Click **Copy** next to the new token.
+
+<img src="/api-integrations/better-stack/global_api_token_created.png" alt="Better Stack Global API tokens list with the Copy button of the new token highlighted"/>
+
+To use a team-scoped token instead, open the **Team-based tokens** tab, select your team, then create or copy a token in the **Incidents API tokens** section. Tokens from the **Telemetry API tokens** section only manage Telemetry resources, so they don't work here.
+
+<img src="/api-integrations/better-stack/telemetry_api_token_created.png" alt="Better Stack Team-based tokens tab with the team selector and the Incidents API tokens section above the Telemetry API tokens section"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Better Stack.
+2. Enter your token in the **API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/better-stack/form.png" alt="Better Stack Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Better Stack.

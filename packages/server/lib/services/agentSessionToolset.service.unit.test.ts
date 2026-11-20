@@ -4,17 +4,18 @@ import { compileToolsetFromFunctions, withDiscoveredMcpTools } from './agentSess
 
 import type { McpServerDiscovery } from './agentSessionMcpDiscovery.service.js';
 import type { AgentSessionToolsetCompilationError } from './agentSessionToolset.service.js';
-import type { IntegrationFunctionRow } from '@nangohq/shared';
+import type { ToolsetInventoryRow } from '@nangohq/shared';
 import type {
     AgentSessionCompiledIntegration,
     AgentSessionCompiledTool,
     AgentSessionCompiledToolset,
     AgentSessionPinnedTools,
-    AgentSessionToolsetPolicy
+    AgentSessionToolsetPolicy,
+    ToolTags
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-function action(integrationId: string, name: string, overrides: Partial<IntegrationFunctionRow> = {}): IntegrationFunctionRow {
+function action(integrationId: string, name: string, overrides: Partial<ToolsetInventoryRow> = {}): ToolsetInventoryRow {
     return {
         integration_id: integrationId,
         provider: integrationId,
@@ -26,11 +27,11 @@ function action(integrationId: string, name: string, overrides: Partial<Integrat
     };
 }
 
-function emptyIntegration(integrationId: string): IntegrationFunctionRow {
+function emptyIntegration(integrationId: string): ToolsetInventoryRow {
     return { integration_id: integrationId, provider: integrationId, name: null, type: null, description: null, enabled: null };
 }
 
-const functions: IntegrationFunctionRow[] = [
+const functions: ToolsetInventoryRow[] = [
     action('notion', 'read_doc'),
     action('notion', 'upsert_doc'),
     action('notion', 'delete_doc'),
@@ -75,6 +76,29 @@ function expectError(result: Result<AgentSessionCompiledToolset, AgentSessionToo
 }
 
 describe('compileToolset', () => {
+    it('keeps tool instructions and tags', () => {
+        const name = 'read_doc';
+        const searchableName = 'search_docs';
+        const instructions = 'Read before updating.';
+        const tags: ToolTags = {
+            read_only_hint: 'true',
+            category: 'documents',
+            labels: ['read', 'notes'],
+            required_scopes: { all: ['documents:read'] }
+        };
+        const compiled = compileToolsetFromFunctions({
+            toolset: undefined,
+            pinnedTools: { notion: [name] },
+            connectedIntegrations: ['notion'],
+            functions: [action('notion', name, { type: 'tool', instructions, tags }), action('notion', searchableName, { type: 'tool', instructions, tags })]
+        });
+
+        expect(integration(compiled.unwrap(), 'notion').pinned).toEqual([{ name, description: `${name} description`, instructions, tags }]);
+        expect(integration(compiled.unwrap(), 'notion').searchable).toEqual([
+            { name: searchableName, description: `${searchableName} description`, instructions, tags }
+        ]);
+    });
+
     it('defaults to every connected integration, all searchable', () => {
         const compiled = compile({ toolset: undefined });
 
@@ -252,7 +276,7 @@ describe('compileToolsetFromFunctions with MCP servers', () => {
         return { name, description: `${name} description`, inputSchema };
     }
 
-    const linearFunctions: IntegrationFunctionRow[] = [emptyIntegration('linear-mcp'), action('linear-mcp', 'deployed_action')];
+    const linearFunctions: ToolsetInventoryRow[] = [emptyIntegration('linear-mcp'), action('linear-mcp', 'deployed_action')];
 
     function compileMcp({
         toolset,
@@ -355,7 +379,7 @@ describe('MCP servers connected mid-session', () => {
         return { name, description: `${name} description`, inputSchema };
     }
 
-    const notionMcpFunctions: IntegrationFunctionRow[] = [emptyIntegration('notion-mcp'), action('notion-mcp', 'deployed_action')];
+    const notionMcpFunctions: ToolsetInventoryRow[] = [emptyIntegration('notion-mcp'), action('notion-mcp', 'deployed_action')];
 
     function compilePending({ toolset, pinnedTools }: { toolset: AgentSessionToolsetPolicy; pinnedTools?: AgentSessionPinnedTools | undefined }) {
         return compileToolsetFromFunctions({
