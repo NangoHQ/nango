@@ -1,0 +1,52 @@
+---
+title: 'Elasticsearch - How do I link my account?'
+sidebarTitle: 'Elasticsearch'
+---
+
+## Overview
+
+To authenticate with Elasticsearch, you need:
+
+1. **Elasticsearch Endpoint** — the URL of your Elasticsearch project, deployment or cluster.
+2. **API Key** — an Elasticsearch API key in the Encoded format.
+
+This guide will show you how to find and create them.
+
+### Prerequisites
+
+- An Elasticsearch cluster, or an Elastic Cloud project or deployment. You can [sign up for Elastic Cloud](https://www.elastic.co/cloud/elasticsearch-service/signup) with a free trial, no credit card required.
+
+### Step 1: Find your Elasticsearch endpoint
+
+1. Sign in to the [Elastic Cloud Console](https://cloud.elastic.co) and select **Open** on your project or deployment to open Kibana.
+2. Open the **Help** menu at the top right and select **Connection details**.
+
+<img src="/api-integrations/elasticsearch/help_menu_connection_details.png" alt="Kibana Help menu with Connection details highlighted"/>
+
+3. On the **Endpoints** tab, copy the **Elasticsearch endpoint**, for example `https://my-deployment-a1b2c3.es.us-central1.gcp.elastic-cloud.com`.
+
+On a self-managed cluster, your endpoint takes the form `<scheme>://<host>:<port>`. Enter it without a trailing slash.
+
+### Step 2: Create an API key
+
+1. In the **Connection details** panel, select the **API key** tab. To create a key with your own privileges, enter a name and select **Create API key**. To restrict what the key can do, select **Manage API keys** instead.
+
+<img src="/api-integrations/elasticsearch/connection_details_api_key_tab.png" alt="Kibana Connection details panel on the API key tab with the API key name field, Manage API keys link and Create API key button"/>
+
+2. On the **API keys** page, select **Create API key** and enter a name. Turn on **Control security privileges** and set the privileges your integration needs. For read-only access, select the **Read-only** boilerplate. Then select **Create API key**.
+
+<img src="/api-integrations/elasticsearch/create_api_key_form.png" alt="Kibana Create API key flyout with Control security privileges turned on and a read-only role descriptor"/>
+
+3. Keep the **Encoded** format selected and copy the key. It isn't available after you close the panel.
+
+<img src="/api-integrations/elasticsearch/api_key_created.png" alt="Kibana API keys page with the created key, the Encoded format selected and the copy button"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Elasticsearch.
+2. Enter your **Elasticsearch Endpoint** and your **API Key**.
+3. Submit the form. Nango checks the key against your endpoint, and you should be successfully authenticated.
+
+<img src="/api-integrations/elasticsearch/form.png" alt="Elasticsearch Connect UI form with the Elasticsearch Endpoint and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Elasticsearch.

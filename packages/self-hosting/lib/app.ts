@@ -1,15 +1,21 @@
 import './tracer.js';
 
+import { setTimeout } from 'node:timers/promises';
+
+import { destroyHostedTelemetryDb } from '@nangohq/hosted-telemetry';
 import { metrics, once, report } from '@nangohq/utils';
 
 import { boot as bootCloud } from './cloud/boot.js';
 import { destroyCloudDb } from './cloud/db/client.js';
+import { createCloudServer } from './cloud/server.js';
 import { envs } from './env.js';
 import { boot as bootInstallation } from './installation/boot.js';
+import { createInstallationServer } from './installation/server.js';
 import { mode } from './mode.js';
-import { server } from './server.js';
 import { logger } from './utils.js';
 
+import type { ClickHouseClient } from '@clickhouse/client';
+import type { Express } from 'express';
 import type { Server } from 'node:http';
 
 process.on('unhandledRejection', (reason) => {
@@ -23,12 +29,20 @@ process.on('uncaughtException', (err) => {
 });
 
 let api: Server;
+let clickhouse: ClickHouseClient | undefined;
+let uploadTelemetry: { abort: () => Promise<void> } | undefined;
+const UPLOAD_TELEMETRY_STOP_TIMEOUT_MS = 5_000;
 
 try {
+    let server: Express;
     if (mode === 'cloud') {
-        await bootCloud();
+        const cloud = await bootCloud();
+        clickhouse = cloud.clickhouse;
+        server = createCloudServer(cloud);
     } else {
-        await bootInstallation();
+        const installation = await bootInstallation();
+        uploadTelemetry = installation.uploadTelemetry;
+        server = createInstallationServer(installation);
     }
 
     const port = envs.NANGO_SELF_HOSTING_PORT;
@@ -49,9 +63,14 @@ try {
 
 const close = once(() => {
     logger.info('Closing...');
+    const uploadTelemetryStopped = uploadTelemetry?.abort();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     api.close(async () => {
+        // A page being sent can take minutes when Nango is slow. It is sent again later, so we do not wait for it.
+        await Promise.race([uploadTelemetryStopped, setTimeout(UPLOAD_TELEMETRY_STOP_TIMEOUT_MS, undefined, { ref: false })]);
         await destroyCloudDb();
+        await clickhouse?.close();
+        await destroyHostedTelemetryDb();
 
         logger.close();
 

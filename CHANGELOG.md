@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.72.6] - 2026-11-16
+
+### Added
+
+- *(self-hosting)* Telemetry upload endpoint for installations (#8243) by @pfreixes
+- *(audit)* Record data-plane connection credential reads behind a rollout flag (#8272) by @pfreixes
+- *(CLI)* Compilation to output functions version hash (#8314) by @TBonnin
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/60e41920a22b33d8272a4813b91dc456d50d4fe3 by Victor Lang'at by @github-actions[bot]
+- *(agent-sessions)* Note that tools may change at any time (#8309) by @rguldener
+- Update version in manifest by @actions-user
+
 ## [v0.72.5] - 2026-11-16
 
 ### Added
@@ -8784,6 +8798,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.72.6]: https://github.com/NangoHQ/nango/compare/v0.72.5..v0.72.6
 [v0.72.5]: https://github.com/NangoHQ/nango/compare/v0.72.4..v0.72.5
 [v0.72.4]: https://github.com/NangoHQ/nango/compare/v0.72.3..v0.72.4
 [v0.72.3]: https://github.com/NangoHQ/nango/compare/v0.72.2..v0.72.3

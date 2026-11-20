@@ -82,6 +82,7 @@ import type {
     DBEndUser,
     DBEnvironment,
     DBTeam,
+    EnvironmentWithoutSecrets,
     JwtCredentials,
     MaybePromise,
     Metadata,
@@ -655,7 +656,11 @@ export class ConnectionService {
 
     public async search(
         db: Knex,
-        { environmentId, filter, limit }: { environmentId: number; filter: { connectionId?: string; integrationId?: string | undefined }; limit?: number }
+        {
+            environmentId,
+            filter,
+            limit
+        }: { environmentId: number; filter: { connectionId?: string; integrationId?: string | undefined; provider?: string | undefined }; limit?: number }
     ): Promise<Result<DBConnection[]>> {
         try {
             const query = db.from<DBConnection>('_nango_connections').select('*').where({ environment_id: environmentId, deleted: false }).orderBy('id');
@@ -664,6 +669,17 @@ export class ConnectionService {
             }
             if (filter.integrationId !== undefined) {
                 query.where('provider_config_key', filter.integrationId);
+            }
+            if (filter.provider !== undefined) {
+                query.whereExists(
+                    db
+                        .select(db.raw('1'))
+                        .from('_nango_configs')
+                        .whereRaw('_nango_configs.id = _nango_connections.config_id')
+                        .whereRaw('_nango_configs.environment_id = _nango_connections.environment_id')
+                        .where('_nango_configs.provider', filter.provider)
+                        .where('_nango_configs.deleted', false)
+                );
             }
             if (limit !== undefined) {
                 query.limit(limit);
@@ -797,7 +813,7 @@ export class ConnectionService {
         refreshGithubAppJwtToken = false
     }: {
         account: DBTeam;
-        environment: DBEnvironment;
+        environment: EnvironmentWithoutSecrets;
         connectionId: string;
         integrationId: string;
         forceRefresh?: boolean;

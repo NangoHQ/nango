@@ -114,7 +114,7 @@ function buildConfig(appId: string, darkMode: boolean, user?: ApiUser, emailHash
             alt: 'Nango'
         },
         links: [
-            { icon: 'book', text: 'View docs & ask AI', url: 'https://docs.nango.dev' },
+            { icon: 'book', text: 'View docs & ask AI', url: 'https://nango.dev/docs' },
             { icon: 'slack', text: 'Join Slack & ask our engineers', url: 'https://nango.dev/slack' }
         ],
         chatButtons: [

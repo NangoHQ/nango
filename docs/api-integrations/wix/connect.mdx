@@ -1,0 +1,61 @@
+---
+title: 'Wix - How do I link my account?'
+sidebarTitle: 'Wix'
+---
+
+## Overview
+
+To authenticate with Wix, you need:
+1. **App ID** - The ID of your self-managed Wix app.
+2. **App secret** - The secret of that app.
+3. **App instance ID** - The `instanceId` of your app's installation on the Wix site to connect.
+
+Each app instance belongs to one site. To connect several sites, create one connection for each.
+
+## Prerequisites
+
+- A Wix Studio account. If you don't have one, [sign up](https://manage.wix.com/account/custom-apps).
+- Your app installed on the Wix site you want to connect.
+
+## Instructions
+
+### Step 1: Create a Wix app
+
+1. Log in to Wix Studio and open [Custom Apps](https://manage.wix.com/account/custom-apps).
+2. Click **Create New App**, then under **Self-managed** choose **Start From Scratch** and click **Create App**. To use an existing app, open it from the list instead.
+
+<img src="/api-integrations/wix/custom_apps_create.png" alt="Wix Studio Custom Apps page with the Create New App button" />
+
+3. On your app's **Permissions** page, add the permissions your API calls need. For example, getting the app instance needs **Manage Your App**.
+
+### Step 2: Copy your app ID and app secret
+
+1. In your app's dashboard, go to **Develop** -> **OAuth**.
+2. Copy the **App ID** with the copy button next to it.
+3. Click the eye icon next to **App secret** to reveal it, then copy it. Keep the secret confidential.
+
+<img src="/api-integrations/wix/oauth_app_keys.png" alt="App keys on the OAuth page of a Wix app, with the App ID copy button and the App secret eye icon" />
+
+<img src="/api-integrations/wix/wix_oauth_app_keys.png" alt="App ID and App secret fields on the OAuth page of a Wix app, with the secret revealed" />
+
+### Step 3: Get the app instance ID
+
+The app instance ID identifies your app's installation on one site. Install the app on the site (to test on a development site, click **Test App** -> **Test on dev site**), then get its `instanceId` from one of these:
+
+- The [App Instance Installed](https://dev.wix.com/docs/rest/app-management/app-instance/app-instance-installed) event, sent when your app is installed on a site. Wix suggests subscribing to it to save the `instanceId`. If your app subscribes to it, go to **Develop** -> **Webhooks** -> **Logs**: the **App Installed** row shows the **Instance ID**.
+- The payloads of other events Wix sends your app.
+- The app instance query parameter that Wix passes to your app's iframes and external pages.
+
+<img src="/api-integrations/wix/wix_instance_id_webhook_log.png" alt="Webhook logs of a Wix app, with the Instance ID column of the App Installed event" />
+
+See [About app instances](https://dev.wix.com/docs/build-apps/develop-your-app/auth/app-instances/about-app-instances) for details.
+
+### Step 4: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Wix.
+2. Enter your **App ID**, **App secret**, and **App instance ID**.
+3. Click **Connect**. Nango requests an access token from Wix with these values, so wrong credentials are rejected.
+
+<img src="/api-integrations/wix/form.png" alt="Nango Connect UI form for entering a Wix app ID, app secret, and app instance ID" style={{maxWidth: "450px" }}/>
+
+You are now connected to Wix.

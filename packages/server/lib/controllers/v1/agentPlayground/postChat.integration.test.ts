@@ -235,6 +235,75 @@ describe('POST /api/v1/agent-playground/chat', () => {
         }
     });
 
+    function labellingModel(): MockLanguageModelV4 {
+        return new MockLanguageModelV4({
+            modelId: 'gpt-6-luna',
+            doGenerate: () =>
+                Promise.resolve({
+                    content: [{ type: 'text', text: JSON.stringify({ intent: 'copy tasks into issues', apps: ['Asana', 'Linear', 'Not A Real App'] }) }],
+                    finishReason: { unified: 'stop', raw: undefined },
+                    usage: stepUsage,
+                    warnings: []
+                }),
+            doStream: () =>
+                Promise.resolve({
+                    stream: simulateReadableStream<LanguageModelV4StreamPart>({
+                        chunks: [
+                            { type: 'text-start', id: 'text-1' },
+                            { type: 'text-delta', id: 'text-1', delta: 'Asana is not set up here.' },
+                            { type: 'text-end', id: 'text-1' },
+                            { type: 'finish', finishReason: { unified: 'stop', raw: undefined }, usage: stepUsage }
+                        ]
+                    })
+                })
+        });
+    }
+
+    it('labels what a typed first message asks for, alongside the reply', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        const model = labellingModel();
+        modelOverride.current = () => model;
+        const track = vi.spyOn(productTracking, 'track');
+
+        const turn = await chat(session, { messages: [userMessage('Copy my Asana tasks into Linear')] });
+
+        expect(turn.text).toContain('Asana is not set up here.');
+        await vi.waitFor(() => {
+            expect(playgroundTurnEvents(track)).toEqual([
+                expect.objectContaining({
+                    is_first_turn: true,
+                    step_count: 1,
+                    intent: 'copy tasks into issues',
+                    requested_providers: ['asana', 'linear'],
+                    requested_provider_count: 2,
+                    has_unsupported_provider: true
+                })
+            ]);
+        });
+        expect(model.doGenerateCalls).toHaveLength(1);
+        expect(JSON.stringify(track.mock.calls)).not.toContain('Copy my Asana tasks into Linear');
+    });
+
+    it('does not label a later message', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        const model = labellingModel();
+        modelOverride.current = () => model;
+        const track = vi.spyOn(productTracking, 'track');
+        const reply = { id: crypto.randomUUID(), role: 'assistant', parts: [{ type: 'text', text: 'Asana is not set up here.' }] };
+
+        await chat(session, { messages: [userMessage('Copy my Asana tasks into Linear'), reply, userMessage('Use GitHub then')] });
+
+        await vi.waitFor(() => {
+            expect(playgroundTurnEvents(track)).toHaveLength(1);
+        });
+        expect(playgroundTurnEvents(track)[0]).not.toHaveProperty('intent');
+        expect(model.doGenerateCalls).toHaveLength(0);
+    });
+
     it('tracks a turn that fails mid-stream once, as a failure, with the failing step', async () => {
         vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();

@@ -2,62 +2,62 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `batch-delete-messages` | Permanently delete multiple Gmail messages by ID | [Tool](/guides/functions/tools) |
-| `batch-modify-messages` | Add and remove labels on multiple Gmail messages at once. | [Tool](/guides/functions/tools) |
-| `create-draft` | Create a Gmail draft message from RFC 2822 MIME content. | [Tool](/guides/functions/tools) |
-| `create-filter` | Create a mailbox filter with match criteria and label actions. | [Tool](/guides/functions/tools) |
-| `create-label` | Create a new user label with visibility settings. | [Tool](/guides/functions/tools) |
-| `create-send-as-alias` | Create a custom send-as alias for the mailbox | [Tool](/guides/functions/tools) |
-| `delete-draft` | Delete an existing draft by draft ID | [Tool](/guides/functions/tools) |
-| `delete-filter` | Delete a mailbox filter by filter ID | [Tool](/guides/functions/tools) |
-| `delete-forwarding-address` | Delete a forwarding address from Gmail settings. | [Tool](/guides/functions/tools) |
-| `delete-label` | Delete a user-created label | [Tool](/guides/functions/tools) |
-| `delete-message` | Permanently delete a Gmail message by ID. | [Tool](/guides/functions/tools) |
-| `delete-send-as-alias` | Delete a custom send-as alias from the mailbox. | [Tool](/guides/functions/tools) |
-| `delete-thread` | Permanently delete a Gmail thread and its messages. | [Tool](/guides/functions/tools) |
-| `get-attachment` | Retrieve a specific message attachment payload by attachment ID. | [Tool](/guides/functions/tools) |
-| `get-auto-forwarding-settings` | Retrieve the mailbox auto-forwarding configuration. | [Tool](/guides/functions/tools) |
-| `get-draft` | Retrieve a draft and its embedded message payload. | [Tool](/guides/functions/tools) |
-| `get-filter` | Retrieve a mailbox filter by filter ID. | [Tool](/guides/functions/tools) |
-| `get-forwarding-address` | Retrieve a forwarding address configured for the mailbox. | [Tool](/guides/functions/tools) |
-| `get-imap-settings` | Retrieve IMAP settings for the mailbox | [Tool](/guides/functions/tools) |
-| `get-label` | Retrieve a single Gmail label by label ID. | [Tool](/guides/functions/tools) |
-| `get-language-settings` | Retrieve Gmail language settings for the mailbox. | [Tool](/guides/functions/tools) |
-| `get-message` | Retrieve a specific Gmail message with optional format selection. | [Tool](/guides/functions/tools) |
-| `get-pop-settings` | Retrieve POP settings for the mailbox. | [Tool](/guides/functions/tools) |
-| `get-send-as-alias` | Retrieve a configured send-as alias | [Tool](/guides/functions/tools) |
-| `get-thread` | Retrieve a Gmail thread and its messages. | [Tool](/guides/functions/tools) |
-| `get-vacation-settings` | Retrieve the mailbox vacation responder settings. | [Tool](/guides/functions/tools) |
-| `list-drafts` | List drafts in the mailbox with pagination support. | [Tool](/guides/functions/tools) |
-| `list-filters` | List mailbox filters configured for the authenticated user | [Tool](/guides/functions/tools) |
-| `list-forwarding-addresses` | List forwarding addresses configured for the mailbox. | [Tool](/guides/functions/tools) |
-| `list-labels` | List built-in and user-created mailbox labels. | [Tool](/guides/functions/tools) |
-| `list-messages` | List messages matching Gmail query and label filters. | [Tool](/guides/functions/tools) |
-| `list-send-as-aliases` | List send-as aliases available for the mailbox. | [Tool](/guides/functions/tools) |
-| `list-threads` | List conversation threads matching Gmail query and label filters. | [Tool](/guides/functions/tools) |
-| `list-watch-history` | List mailbox history records after a given history ID | [Tool](/guides/functions/tools) |
-| `modify-message` | Add and remove labels on a Gmail message | [Tool](/guides/functions/tools) |
-| `modify-thread` | Add and remove labels across a Gmail thread. | [Tool](/guides/functions/tools) |
-| `send-draft` | Send an existing draft message | [Tool](/guides/functions/tools) |
-| `send-message` | Send an email message through Gmail using raw MIME content. | [Tool](/guides/functions/tools) |
-| `stop-watch` | Stop Gmail push notification watch state for the mailbox. | [Tool](/guides/functions/tools) |
-| `trash-message` | Move a Gmail message to trash | [Tool](/guides/functions/tools) |
-| `trash-thread` | Move a Gmail thread to trash. | [Tool](/guides/functions/tools) |
-| `untrash-message` | Restore a trashed Gmail message to the mailbox. | [Tool](/guides/functions/tools) |
-| `untrash-thread` | Restore a trashed Gmail thread to the mailbox. | [Tool](/guides/functions/tools) |
-| `update-auto-forwarding-settings` | Update Gmail auto-forwarding behavior and disposition | [Tool](/guides/functions/tools) |
-| `update-draft` | Replace an existing draft with new MIME content. | [Tool](/guides/functions/tools) |
-| `update-imap-settings` | Update IMAP enablement and visibility settings. | [Tool](/guides/functions/tools) |
-| `update-label` | Update a user-created label's name or visibility settings. | [Tool](/guides/functions/tools) |
-| `update-language-settings` | Update the mailbox display language | [Tool](/guides/functions/tools) |
-| `update-pop-settings` | Update POP access settings for the mailbox | [Tool](/guides/functions/tools) |
-| `update-send-as-alias` | Update send-as alias settings such as display name or reply-to. | [Tool](/guides/functions/tools) |
-| `update-send-as-smtp-msa` | Update the SMTP MSA settings for a send-as alias. | [Tool](/guides/functions/tools) |
-| `update-vacation-settings` | Update the mailbox vacation responder configuration. | [Tool](/guides/functions/tools) |
-| `verify-send-as-alias` | Trigger verification for a custom send-as alias | [Tool](/guides/functions/tools) |
-| `watch-mailbox` | Start Gmail push notifications for mailbox changes. | [Tool](/guides/functions/tools) |
-| `filters` | Sync Gmail mailbox filters and their criteria or actions. | [Sync](/guides/functions/syncs/sync-functions) |
-| `labels` | Sync built-in and user-created Gmail labels. | [Sync](/guides/functions/syncs/sync-functions) |
-| `messages` | Sync Gmail messages with an initial backfill followed by history-based incremental updates. | [Sync](/guides/functions/syncs/sync-functions) |
-| `send-as-aliases` | Sync configured Gmail send-as aliases and alias settings | [Sync](/guides/functions/syncs/sync-functions) |
-| `threads` | Sync Gmail conversation threads with full message hydration | [Sync](/guides/functions/syncs/sync-functions) |
+| `batch-delete-messages` | Permanently delete multiple Gmail messages by ID | [Tool](/guides/tools/customize-tools) |
+| `batch-modify-messages` | Add and remove labels on multiple Gmail messages at once. | [Tool](/guides/tools/customize-tools) |
+| `create-draft` | Create a Gmail draft message from RFC 2822 MIME content. | [Tool](/guides/tools/customize-tools) |
+| `create-filter` | Create a mailbox filter with match criteria and label actions. | [Tool](/guides/tools/customize-tools) |
+| `create-label` | Create a new user label with visibility settings. | [Tool](/guides/tools/customize-tools) |
+| `create-send-as-alias` | Create a custom send-as alias for the mailbox | [Tool](/guides/tools/customize-tools) |
+| `delete-draft` | Delete an existing draft by draft ID | [Tool](/guides/tools/customize-tools) |
+| `delete-filter` | Delete a mailbox filter by filter ID | [Tool](/guides/tools/customize-tools) |
+| `delete-forwarding-address` | Delete a forwarding address from Gmail settings. | [Tool](/guides/tools/customize-tools) |
+| `delete-label` | Delete a user-created label | [Tool](/guides/tools/customize-tools) |
+| `delete-message` | Permanently delete a Gmail message by ID. | [Tool](/guides/tools/customize-tools) |
+| `delete-send-as-alias` | Delete a custom send-as alias from the mailbox. | [Tool](/guides/tools/customize-tools) |
+| `delete-thread` | Permanently delete a Gmail thread and its messages. | [Tool](/guides/tools/customize-tools) |
+| `get-attachment` | Retrieve a specific message attachment payload by attachment ID. | [Tool](/guides/tools/customize-tools) |
+| `get-auto-forwarding-settings` | Retrieve the mailbox auto-forwarding configuration. | [Tool](/guides/tools/customize-tools) |
+| `get-draft` | Retrieve a draft and its embedded message payload. | [Tool](/guides/tools/customize-tools) |
+| `get-filter` | Retrieve a mailbox filter by filter ID. | [Tool](/guides/tools/customize-tools) |
+| `get-forwarding-address` | Retrieve a forwarding address configured for the mailbox. | [Tool](/guides/tools/customize-tools) |
+| `get-imap-settings` | Retrieve IMAP settings for the mailbox | [Tool](/guides/tools/customize-tools) |
+| `get-label` | Retrieve a single Gmail label by label ID. | [Tool](/guides/tools/customize-tools) |
+| `get-language-settings` | Retrieve Gmail language settings for the mailbox. | [Tool](/guides/tools/customize-tools) |
+| `get-message` | Retrieve a specific Gmail message with optional format selection. | [Tool](/guides/tools/customize-tools) |
+| `get-pop-settings` | Retrieve POP settings for the mailbox. | [Tool](/guides/tools/customize-tools) |
+| `get-send-as-alias` | Retrieve a configured send-as alias | [Tool](/guides/tools/customize-tools) |
+| `get-thread` | Retrieve a Gmail thread and its messages. | [Tool](/guides/tools/customize-tools) |
+| `get-vacation-settings` | Retrieve the mailbox vacation responder settings. | [Tool](/guides/tools/customize-tools) |
+| `list-drafts` | List drafts in the mailbox with pagination support. | [Tool](/guides/tools/customize-tools) |
+| `list-filters` | List mailbox filters configured for the authenticated user | [Tool](/guides/tools/customize-tools) |
+| `list-forwarding-addresses` | List forwarding addresses configured for the mailbox. | [Tool](/guides/tools/customize-tools) |
+| `list-labels` | List built-in and user-created mailbox labels. | [Tool](/guides/tools/customize-tools) |
+| `list-messages` | List messages matching Gmail query and label filters. | [Tool](/guides/tools/customize-tools) |
+| `list-send-as-aliases` | List send-as aliases available for the mailbox. | [Tool](/guides/tools/customize-tools) |
+| `list-threads` | List conversation threads matching Gmail query and label filters. | [Tool](/guides/tools/customize-tools) |
+| `list-watch-history` | List mailbox history records after a given history ID | [Tool](/guides/tools/customize-tools) |
+| `modify-message` | Add and remove labels on a Gmail message | [Tool](/guides/tools/customize-tools) |
+| `modify-thread` | Add and remove labels across a Gmail thread. | [Tool](/guides/tools/customize-tools) |
+| `send-draft` | Send an existing draft message | [Tool](/guides/tools/customize-tools) |
+| `send-message` | Send an email message through Gmail using raw MIME content. | [Tool](/guides/tools/customize-tools) |
+| `stop-watch` | Stop Gmail push notification watch state for the mailbox. | [Tool](/guides/tools/customize-tools) |
+| `trash-message` | Move a Gmail message to trash | [Tool](/guides/tools/customize-tools) |
+| `trash-thread` | Move a Gmail thread to trash. | [Tool](/guides/tools/customize-tools) |
+| `untrash-message` | Restore a trashed Gmail message to the mailbox. | [Tool](/guides/tools/customize-tools) |
+| `untrash-thread` | Restore a trashed Gmail thread to the mailbox. | [Tool](/guides/tools/customize-tools) |
+| `update-auto-forwarding-settings` | Update Gmail auto-forwarding behavior and disposition | [Tool](/guides/tools/customize-tools) |
+| `update-draft` | Replace an existing draft with new MIME content. | [Tool](/guides/tools/customize-tools) |
+| `update-imap-settings` | Update IMAP enablement and visibility settings. | [Tool](/guides/tools/customize-tools) |
+| `update-label` | Update a user-created label's name or visibility settings. | [Tool](/guides/tools/customize-tools) |
+| `update-language-settings` | Update the mailbox display language | [Tool](/guides/tools/customize-tools) |
+| `update-pop-settings` | Update POP access settings for the mailbox | [Tool](/guides/tools/customize-tools) |
+| `update-send-as-alias` | Update send-as alias settings such as display name or reply-to. | [Tool](/guides/tools/customize-tools) |
+| `update-send-as-smtp-msa` | Update the SMTP MSA settings for a send-as alias. | [Tool](/guides/tools/customize-tools) |
+| `update-vacation-settings` | Update the mailbox vacation responder configuration. | [Tool](/guides/tools/customize-tools) |
+| `verify-send-as-alias` | Trigger verification for a custom send-as alias | [Tool](/guides/tools/customize-tools) |
+| `watch-mailbox` | Start Gmail push notifications for mailbox changes. | [Tool](/guides/tools/customize-tools) |
+| `filters` | Sync Gmail mailbox filters and their criteria or actions. | [Sync](/guides/syncs/sync-functions) |
+| `labels` | Sync built-in and user-created Gmail labels. | [Sync](/guides/syncs/sync-functions) |
+| `messages` | Sync Gmail messages with an initial backfill followed by history-based incremental updates. | [Sync](/guides/syncs/sync-functions) |
+| `send-as-aliases` | Sync configured Gmail send-as aliases and alias settings | [Sync](/guides/syncs/sync-functions) |
+| `threads` | Sync Gmail conversation threads with full message hydration | [Sync](/guides/syncs/sync-functions) |

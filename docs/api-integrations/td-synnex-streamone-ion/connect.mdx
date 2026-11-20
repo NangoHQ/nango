@@ -1,0 +1,45 @@
+---
+title: 'TD SYNNEX StreamOne Ion - How do I link my account?'
+sidebarTitle: 'TD SYNNEX StreamOne Ion'
+---
+
+## Overview
+
+To authenticate with TD SYNNEX StreamOne Ion, you need:
+1. **Account ID** - Your StreamOne Ion reseller account ID.
+2. **Refresh Token** - The OAuth refresh token generated for a StreamOne Ion user.
+
+## Prerequisites
+
+- A StreamOne Ion partner account. Access is granted through TD SYNNEX partner onboarding; there is no self-service sign-up.
+- Permission to edit users in the StreamOne Ion portal.
+
+## Instructions
+
+### Step 1: Find your account ID
+
+1. Log in to the [StreamOne Ion portal](https://ion.tdsynnex.com).
+2. Go to **Quick Access** -> **Account Information**.
+3. Copy your **Account ID**, for example `10505`.
+
+### Step 2: Generate a refresh token
+
+TD SYNNEX recommends a dedicated API user for integrations.
+
+1. In the StreamOne Ion portal, click the **Settings** icon in the top-right corner.
+2. Click **Users**.
+3. Select the user the integration should act as and click **Edit**.
+4. Under **Oauth credentials**, click **Request New Credentials**.
+5. Copy the **Refresh Token**.
+
+A refresh token can be used only once. Paste it into Nango without using it anywhere else first. From then on, Nango stores and uses the new refresh token that StreamOne Ion returns with each access token.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with TD SYNNEX StreamOne Ion.
+2. Enter your **Account ID** and **Refresh Token**.
+3. Click **Connect**. Nango exchanges the refresh token for an access token, so a wrong or already used refresh token is rejected.
+
+<img src="/api-integrations/td-synnex-streamone-ion/form.png" alt="Nango Connect UI form for entering a TD SYNNEX StreamOne Ion account ID and refresh token" style={{maxWidth: "450px" }}/>
+
+You are now connected to TD SYNNEX StreamOne Ion.

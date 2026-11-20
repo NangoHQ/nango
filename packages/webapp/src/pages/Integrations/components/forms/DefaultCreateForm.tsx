@@ -35,7 +35,7 @@ export const DefaultCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
                         })
                     }
                 >
-                    Create
+                    Add integration
                 </Button>
             </div>
         </div>

@@ -8,7 +8,7 @@ import {
     environmentService,
     errorManager,
     ErrorSourceEnum,
-    functionConfigService,
+    functionLookupService,
     getApiUrl,
     getEndUserByConnectionId,
     LogActionEnum,
@@ -27,13 +27,11 @@ import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskFunction } from '@nangohq/nango-orchestrator';
-import type { Config } from '@nangohq/shared';
+import type { Config, ResolvedFunction } from '@nangohq/shared';
 import type {
     CheckpointRange,
     ConnectionJobs,
     DBEnvironment,
-    DBFunctionConfig,
-    DBFunctionConfigVersion,
     DBSyncConfig,
     DBTeam,
     FunctionRuntime,
@@ -52,7 +50,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let providerConfig: Config | null | undefined;
     let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
-    let functionName: DBFunctionConfig['name'] | undefined;
+    let functionName: string | undefined;
 
     try {
         const accountContext = await tracer.trace('function.prepare.accountContext', async () =>
@@ -69,35 +67,42 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
         providerConfig = await tracer.trace('function.prepare.providerConfig', async () =>
             configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id)
         );
-        if (providerConfig === null) {
+        if (!providerConfig?.id) {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
         }
 
-        const functions = await tracer.trace('function.prepare.functionConfig', async () =>
-            functionConfigService.search(db.knex, {
+        const resolved = await tracer.trace('function.prepare.functionConfig', async () =>
+            functionLookupService.resolveFunctionByUuid({
                 environmentId: task.connection.environment_id,
-                filter: { integrationKey: task.connection.provider_config_key, uuid: task.functionUuid }
+                functionUuid: task.functionUuid
             })
         );
-        if (functions.isErr()) {
-            throw functions.error;
+        if (resolved.isErr()) {
+            throw resolved.error;
         }
-        const func = functions.value[0];
-        if (functions.value.length !== 1 || !func) {
+        const fn = resolved.value;
+        if (!fn) {
             throw new Error(`Function not found: ${task.functionUuid}`);
         }
-        const functionConfig = func.config;
-        functionName = functionConfig.name;
-        tracer.scope().active()?.addTags({
-            'function.name': functionConfig.name,
-            'function.id': functionConfig.id,
-            'function.uuid': functionConfig.uuid
-        });
-        const functionVersion = func.currentVersion;
-        if (!functionConfig.enabled) {
-            throw new Error(`Function is disabled: ${functionConfig.name}`);
+        if (!fn.enabled) {
+            throw new Error(`Function is disabled: ${fn.name}`);
         }
-        syncConfig = toLegacyConfig(functionConfig, functionVersion);
+        if (
+            (fn.kind === 'deployed' && fn.integration.unique_key !== task.connection.provider_config_key) ||
+            (fn.kind === 'catalog' && fn.definition.provider !== providerConfig.provider)
+        ) {
+            throw new Error(`Function '${task.functionUuid}' does not belong to integration '${task.connection.provider_config_key}'`);
+        }
+        functionName = fn.name;
+        tracer
+            .scope()
+            .active()
+            ?.addTags({
+                'function.name': fn.name,
+                ...(fn.kind === 'deployed' && { 'function.id': fn.definition.function_config_id }),
+                'function.uuid': fn.uuid
+            });
+        syncConfig = toLegacyConfig(fn, { environmentId: task.connection.environment_id, configId: providerConfig.id });
 
         const getEndUser = await tracer.trace('function.prepare.endUser', async () => getEndUserByConnectionId(db.knex, { connectionId: task.connection.id }));
         if (getEndUser.isOk()) {
@@ -137,9 +142,9 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             void logCtx.warn(message, { cappingFunctionLogsStatus });
         }
 
-        void logCtx.info(`Starting function '${functionConfig.name}'${formatAttempts(task)}`, {
+        void logCtx.info(`Starting function '${fn.name}'${formatAttempts(task)}`, {
             input: envs.NANGO_LOG_FUNCTION_INPUT ? task.trigger.input : 'REDACTED',
-            function: functionConfig.name,
+            function: fn.name,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key
         });
@@ -551,7 +556,7 @@ async function getLogCtx(
         environment: { id: opts.environmentId, name: opts.environmentName },
         integration: { id: opts.syncConfig.nango_config_id, name: opts.providerConfigKey, provider: opts.provider },
         connection: { id: opts.nangoConnectionId, name: opts.connectionId },
-        syncConfig: { id: opts.syncConfig.id, name: opts.syncConfig.sync_name },
+        syncConfig: { ...(opts.syncConfig.id !== 0 && { id: opts.syncConfig.id }), name: opts.syncConfig.sync_name },
         ...(opts.meta && { meta: opts.meta })
     };
     const logCtx = opts.activityLogId
@@ -566,19 +571,23 @@ async function getLogCtx(
 }
 
 // TODO: refactor NangoProps to support native function config
-function toLegacyConfig(config: DBFunctionConfig, version: DBFunctionConfigVersion): DBSyncConfig {
+function toLegacyConfig(fn: ResolvedFunction, { environmentId, configId }: { environmentId: number; configId: number }): DBSyncConfig {
+    const version = fn.definition;
+    const deployed = fn.kind === 'deployed' ? fn.definition : undefined;
+    const now = new Date();
     const features: DBSyncConfig['features'] = version.capabilities.usesCheckpoints ? ['checkpoints'] : [];
     return {
-        id: version.id,
-        sync_name: config.name,
-        nango_config_id: config.nango_config_id,
-        file_location: version.file_location,
+        // Catalog functions have no database version ID; 0 is only a legacy runner-config placeholder.
+        id: deployed?.id ?? 0,
+        sync_name: fn.name,
+        nango_config_id: configId,
+        file_location: fn.kind === 'deployed' ? fn.definition.file_location : fn.definition.location.js,
         version: version.version,
         models: [],
         active: true,
         runs: null,
         model_schema: null,
-        environment_id: config.environment_id,
+        environment_id: environmentId,
         track_deletes: false,
         type: 'action', // TODO: change to 'function' when runner-sdk supports it
         auto_start: false,
@@ -588,12 +597,12 @@ function toLegacyConfig(config: DBFunctionConfig, version: DBFunctionConfigVersi
         input: version.input_schema_ref,
         sync_type: null,
         webhook_subscriptions: [],
-        enabled: config.enabled,
+        enabled: true,
         models_json_schema: version.json_schema,
-        sdk_version: null,
+        sdk_version: fn.kind === 'catalog' ? fn.definition.sdkVersion : null,
         features,
-        created_at: version.created_at,
-        updated_at: version.updated_at,
-        deleted_at: version.deleted_at
+        created_at: deployed?.created_at ?? now,
+        updated_at: deployed?.updated_at ?? now,
+        deleted_at: deployed?.deleted_at ?? null
     };
 }

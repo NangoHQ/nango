@@ -1,0 +1,46 @@
+---
+title: Epicor Prophet 21 - How do I link my account?
+sidebarTitle: Epicor Prophet 21
+---
+
+## Overview
+
+To authenticate with Epicor Prophet 21, you need:
+1. **P21 Server Hostname** - The hostname of the P21 server that hosts the P21 API.
+2. **Username** - The username of the P21 user the integration acts as.
+3. **Password** - That user's password.
+
+Nango exchanges the username and password for an access token on your P21 server and renews it when it expires.
+
+## Prerequisites
+
+- A Prophet 21 server reachable from the internet over HTTPS.
+- Access to the P21 Desktop Client with permission to edit users and roles, to set up the API user.
+
+## Instructions
+
+### Step 1: Find your P21 server hostname
+
+1. Find the address of your P21 API server, for example `https://play.example.com`. It is the same host that serves the SOA Admin page at `https://<hostname>/api/admin`.
+2. Copy the hostname only, for example `play.example.com`. Do not include `https://` or a path.
+
+### Step 2: Set up a P21 API user
+
+Use a dedicated service account for the integration. The user must be a valid, non-deleted Prophet 21 user associated with a Windows, AAD, or SQL user.
+
+A valid username and password are not enough to read data: the user also needs API permissions in the P21 Desktop Client. Without them, API calls fail with `You are not authorized to access API`.
+
+1. In the P21 Desktop Client, open **User Maintenance** and pull up the user.
+2. On the **Application Security** tab, set **Allow OData API Service** to **Yes**.
+3. Open **Role Maintenance** and pull up the role assigned to the user.
+4. On the **Dataservice Permission** tab, set each table and view the integration needs to **Allow**.
+
+### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Epicor Prophet 21.
+2. Enter your **P21 Server Hostname**, **Username**, and **Password** in their respective fields.
+3. Submit the form. Nango requests an access token from your P21 server, so a wrong username or password is rejected right away.
+
+<img src="/api-integrations/epicor-prophet-21/form.png" alt="Epicor Prophet 21 Connect UI form with P21 Server Hostname, Username, and Password fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Epicor Prophet 21.

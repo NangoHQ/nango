@@ -1,0 +1,34 @@
+---
+title: 'FraudLabs Pro - How do I link my account?'
+sidebarTitle: 'FraudLabs Pro'
+---
+
+## Overview
+
+To authenticate with FraudLabs Pro, you need:
+
+1. **API Key** — the API key of your FraudLabs Pro account.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A FraudLabs Pro account. If you don't have one, sign up for the [free Micro plan](https://www.fraudlabspro.com/checkout-micro).
+
+### Step 1: Copy your API key
+
+1. Sign in to the [FraudLabs Pro merchant area](https://www.fraudlabspro.com/merchant/sign-in).
+2. On the **Dashboard**, find the **License Overview** panel.
+3. Copy the value in the **API Key** row. FraudLabs Pro creates the key for your account automatically.
+
+<img src="/api-integrations/fraudlabs-pro/dashboard_api_key.png" alt="FraudLabs Pro Dashboard with the API Key row in the License Overview panel"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with FraudLabs Pro.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form.
+
+<img src="/api-integrations/fraudlabs-pro/form.png" alt="FraudLabs Pro Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the key. If the key is wrong, the first API request returns an authentication error.

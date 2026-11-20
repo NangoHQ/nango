@@ -1,80 +1,84 @@
 ---
 title: 'Introduction'
 sidebarTitle: 'Introduction'
-description: 'Build product integrations with AI, using code you control and infrastructure built for scale.'
+description: 'The tool calling layer for AI agents across 1,300+ APIs.'
 ---
 
 ## What is Nango?
 
-Nango is the integration layer for AI-built, code-owned product integrations.
+Nango is the tool calling layer for AI agents.
 
-Your users connect external APIs through Nango. You generate and customize TypeScript functions with your favorite coding agent. Your app, backend jobs, or agents then consume those functions through Nango's API, SDKs, or MCP server.
+It makes your agents powerful with tools, and smart with context, across [1,300+ APIs](/integrations/overview).
 
-Nango supports [1,000+ APIs](/integrations/overview) and handles auth, credentials, execution, retries, rate limits, observability, environments, and tenant isolation so you can ship integrations without rebuilding the same infrastructure for every provider.
+Your agent gets a catalog of 10,000+ pre-built tools with built-in auth, Nango-managed OAuth apps, a token-efficient execution engine for fast and secure tool calls, and built-in governance, observability, and audit logs for every call.
 
 ## Why it matters
 
-Integration work used to mean choosing between slow custom builds and rigid pre-built connectors.
+**Launch hundreds of integrations today.**  
+Pre-built tools and auth work out of the box, so you add APIs as your customers ask for them, without building each one.
 
-With Nango, you can describe the integration you need, generate working code in seconds, extend coverage as customers ask for new APIs, and customize behavior per customer while keeping the implementation in code you can review, test, and version control.
+**Your agents are only as good as their tools.**  
+Nango tunes its tools on hundreds of millions of production runs. It learns which tasks agents actually run, then shapes the tools, their inputs and their responses around those tasks. It adds plans for multi-step work and instructions for undocumented API quirks. Your agents complete more tasks with fewer tokens and errors, and they get better with every run. Official MCP servers and hand-rolled tools don’t learn from production.
+
+Nango runs on Nango Cloud, in your own cloud account (BYOC), or self-hosted.
 
 ## How it works
 
 <Steps>
-  <Step id="users-connect-apis" title="Users connect APIs">
-    Embed Nango Auth in your product so users can connect accounts from external APIs. Nango handles OAuth, API keys, token refresh, scopes, permissions, and credential storage.
+  <Step id="add-nango" title="Add Nango to your agent">
+    One integration gives your agent access to every API in Nango: [Quickstart](/getting-started/quickstart)
   </Step>
 
-  <Step id="generate-functions" title="You generate functions">
-    Build the integration logic as Nango Functions: TypeScript functions that call provider APIs, transform data, sync records, process webhooks, or run on-demand operations. Generate them with AI, then edit them like normal application code.
+  <Step id="access-apis" title="Your agent acts across 1,300+ APIs">
+    Your users connect their accounts through Nango Auth. Your agent searches the catalog, finds the right tools, and calls them on the user's behalf, without ever seeing credentials.
   </Step>
 
-  <Step id="use-functions" title="Your app or agents use them">
-    Call functions from your backend, trigger them on schedules or webhooks, or expose selected tools for AI agents through schemas and MCP.
+  <Step id="observe-control" title="You control and observe every call">
+    Scope what each agent can see and do for each user. See logs and a full audit trail for every tool call, across all APIs, in one dashboard.
   </Step>
 </Steps>
 
-Nango's two core primitives are **Auth** for connecting user accounts and **Functions** for running integration logic on production infrastructure.
-
 ## What you can build
 
-Explore the main product integration use cases:
-
 <CardGroup cols={3}>
-  <Card title="Tool calling for AI agents" icon="robot" href="/getting-started/use-cases/tool-calling">
-    Give agents scoped, observable access to external APIs through Nango tools.
+  <Card title="Tool calling for AI agents" icon="robot" href="/guides/tools/overview">
+    Give agents pre-built tools for 1,300+ APIs, scoped per user and agent.
   </Card>
-  <Card title="Sync external API data" icon="arrows-rotate" href="/getting-started/use-cases/syncs">
-    Keep external API data fresh for your product, RAG pipeline, or change-detection workflow.
+
+  <Card title="Context sync" icon="brain" href="/guides/syncs/overview">
+    Keep external API data fresh in your database or RAG pipeline, so agents have the right context.
   </Card>
-  <Card title="Run external API operations" icon="play" href="/getting-started/use-cases/actions">
-    Use Nango functions to read, write, and automate external APIs on demand.
+
+  <Card title="Triggers" icon="bolt" href="/guides/triggers/overview">
+    React to changes in external APIs and wake your agents up, through webhooks or polling.
   </Card>
-  <Card title="Process external webhooks" icon="bell" href="/getting-started/use-cases/webhooks-from-external-apis">
-    Receive provider webhooks through Nango, then forward or process them with functions.
+
+  <Card title="Custom tools" icon="sliders" href="/guides/tools/customize-tools">
+    Add your own tools in TypeScript and add customer-specific config.
   </Card>
-  <Card title="Build a unified API" icon="layer-group" href="/getting-started/use-cases/unified-apis">
-    Normalize several external APIs behind your own stable product interface.
-  </Card>
-  <Card title="Customize per customer" icon="sliders" href="/getting-started/use-cases/customer-configuration">
-    Adapt integration behavior for each customer without forking code.
+
+  <Card title="Two-way data sync" icon="arrows-rotate" href="/guides/syncs/overview">
+    Keep your product in sync with external APIs, or build a unified API across several of them.
   </Card>
 </CardGroup>
 
 ## What Nango handles
 
 <CardGroup cols={2}>
-  <Card title="Auth and permissions" icon="lock" href="/guides/auth/auth-guide">
-    OAuth flows, API keys, token refresh, scopes, provider quirks, and per-user access to external APIs.
+  <Card title="Pre-built catalog" icon="boxes-stacked" href="/integrations/overview">
+    10,000+ tools, auth flows, and Nango-managed OAuth apps, updated automatically.
   </Card>
-  <Card title="Integration runtime" icon="server" href="/guides/functions/functions-guide">
-    Tools, syncs, webhooks, schedules, retries, rate-limit backoff, checkpoints, and resumable execution.
+
+  <Card title="Efficient tool runtime" icon="server" href="/guides/agent-sessions">
+    Tool search, token-efficient responses, fine-grained governance, retries, and tenant isolation.
   </Card>
-  <Card title="Agent-ready access" icon="robot" href="/guides/agent-sessions">
-    Tool schemas, MCP support, and scoped tools your agents can call without handling provider credentials.
+
+  <Card title="Self-improving tools" icon="arrows-spin">
+    Nango observes production runs, then fixes, adds, and tunes tools for what each agent actually does.
   </Card>
-  <Card title="Production controls" icon="chart-line" href="/guides/platform/observability">
-    Logs, metrics, alerts, isolated environments, CI/CD workflows, tenant isolation, open-source deployment, and compliance controls.
+
+  <Card title="Observability and audit" icon="chart-line" href="/guides/platform/observability">
+    Every tool call logged: which agent, which user, which input, and what happened.
   </Card>
 </CardGroup>
 

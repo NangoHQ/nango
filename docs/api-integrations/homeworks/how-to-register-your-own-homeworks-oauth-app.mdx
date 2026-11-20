@@ -1,0 +1,39 @@
+---
+title: 'How to register your own Homeworks OAuth app'
+sidebarTitle: 'Homeworks Setup'
+description: 'Register a public Homeworks OAuth client and connect it to Nango'
+---
+
+This guide shows you how to register an OAuth client with Homeworks (formerly Copilot CRM) to get a client ID.
+
+<Steps>
+  <Step title="Check API access">
+    Homeworks API access requires an Enterprise plan or an active Growth trial.
+  </Step>
+  <Step title="Register an OAuth client">
+    Homeworks registers clients through its registration endpoint. Send one request per app and environment:
+
+    ```bash
+    curl -X POST "https://api.home.works/oauth/register" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "client_name": "<YOUR-APP-NAME>",
+        "redirect_uris": ["https://api.nango.dev/oauth/callback"],
+        "grant_types": ["authorization_code", "refresh_token"],
+        "response_types": ["code"]
+      }'
+    ```
+
+    Use your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional) in `redirect_uris` if you have one. Copy the `client_id` from the response.
+  </Step>
+  <Step title="Add the client ID in Nango">
+    Paste the client ID into your Homeworks integration in Nango and leave the client secret empty. Nango uses PKCE (S256) and requests the `openid` and `company` scopes.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+Access tokens expire after one hour and refresh tokens after 14 days. Refresh tokens rotate on each use; Nango stores the new refresh token every time it refreshes. For more details, see the [Homeworks API OAuth authentication guide](https://help.copilotcrm.com/en/articles/16314241-homeworks-api-oauth-authentication-guide).
+
+---

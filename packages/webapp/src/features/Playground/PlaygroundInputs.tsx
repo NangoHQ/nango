@@ -45,7 +45,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, isSync, inputFields, in
                                 </AlertButtonLink>
                             )}
                             <AlertButtonLink
-                                to="https://nango.dev/docs/getting-started/use-cases/customer-configuration"
+                                to="https://nango.dev/docs/guides/auth/connection-tags-configuration-metadata#connection-metadata"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >

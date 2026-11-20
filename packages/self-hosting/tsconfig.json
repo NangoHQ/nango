@@ -9,6 +9,9 @@
             "path": "../clickhouse-migrations"
         },
         {
+            "path": "../hosted-telemetry"
+        },
+        {
             "path": "../license"
         },
         {

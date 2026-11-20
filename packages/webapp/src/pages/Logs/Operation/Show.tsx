@@ -4,9 +4,8 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useInterval } from 'react-use';
 
-import { Alert, AlertDescription } from '@nangohq/design-system';
+import { Alert, AlertDescription, CopyButton } from '@nangohq/design-system';
 
-import { CopyButton } from '@/components/ui/CopyButton';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useGetOperation } from '../../../hooks/useLogs';
@@ -180,7 +179,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                             <div className="font-semibold text-sm">Session</div>
                             <div className="flex gap-1 items-center text-text-muted text-s font-code truncate">
                                 <div className="truncate">{sessionId}</div>
-                                <CopyButton text={sessionId} />
+                                <CopyButton value={sessionId} size="sm" inline />
                             </div>
                         </div>
                     </>

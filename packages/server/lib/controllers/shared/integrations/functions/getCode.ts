@@ -7,7 +7,7 @@ import {
     functionConfigService,
     functionLookupService,
     functionSourceFile,
-    getCatalogTool,
+    getCatalogEntry,
     getSyncConfigById,
     localFileService,
     onEventScriptService,
@@ -67,6 +67,14 @@ async function findFunctionSource({
     providerConfig: ProviderConfig;
 }): Promise<Result<SourceFileRef | null>> {
     const providerConfigKey = providerConfig.unique_key;
+    if (fn.source === 'tools-catalog') {
+        const entry = getCatalogEntry(providerConfig.provider, fn.name);
+        if (!entry) {
+            return Ok(null);
+        }
+        return Ok({ kind: 'remote', path: entry.type === 'action' ? entry.sourceLocation : entry.location.ts });
+    }
+
     if (fn.type === 'tool') {
         const tools = await functionConfigService.search(db.knex, {
             environmentId: environment.id,
@@ -80,11 +88,6 @@ async function findFunctionSource({
             return Ok(null);
         }
         return Ok(functionSourceFile({ integrationId: providerConfigKey, name: fn.name, fileLocation: tool.currentVersion.file_location }));
-    }
-
-    if (fn.source === 'tools-catalog') {
-        const tool = getCatalogTool(providerConfig.provider, fn.name);
-        return Ok(tool ? { kind: 'remote', path: tool.sourceLocation } : null);
     }
 
     if (fn.type === 'on-event') {

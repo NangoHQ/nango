@@ -1,10 +1,11 @@
-import { createHmac, createSign, randomUUID } from 'crypto';
+import { createHash, createHmac, createSign, randomUUID, X509Certificate } from 'crypto';
 
 import braintree from 'braintree';
 import qs from 'qs';
 
 import { axiosInstance, getLogger, stringifyError } from '@nangohq/utils';
 
+import { signJWT } from '../auth/jwt.js';
 import { assertSafeOAuthUrl, getOAuthAxiosRequestConfig } from '../services/proxy/outbound-policy.js';
 import { NangoError } from '../utils/error.js';
 import { formatPem, getGlobalOAuthCallbackUrl, isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
@@ -57,6 +58,7 @@ class ProviderClient {
             case 'linear-mcp':
             case 'sentry-mcp':
             case 'microsoft-admin':
+            case 'microsoft-admin-cert':
             case 'microsoft-teams':
             case 'microsoft-teams-bot':
             case 'one-drive':
@@ -159,7 +161,14 @@ class ProviderClient {
             case 'microsoft-teams-bot':
                 return this.createMicrosoftTeamsBotToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'microsoft-admin':
-                return this.createMicrosoftAdminToken(tokenUrl, config.oauth_client_id, config.oauth_client_secret, config.oauth_scopes);
+                return this.createMicrosoftAdminToken(tokenUrl, config.oauth_client_id, { client_secret: config.oauth_client_secret }, config.oauth_scopes);
+            case 'microsoft-admin-cert':
+                return this.createMicrosoftAdminToken(
+                    tokenUrl,
+                    config.oauth_client_id,
+                    this.microsoftCertificateAuth(tokenUrl, config.oauth_client_id, config.oauth_client_secret, config.custom?.['certificate']),
+                    config.oauth_scopes
+                );
             case 'sentry-oauth':
                 return this.createSentryOauthToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'stripe-app':
@@ -250,6 +259,7 @@ class ProviderClient {
             config.provider !== 'meta-mcp' &&
             !credentials.refresh_token &&
             config.provider !== 'microsoft-admin' &&
+            config.provider !== 'microsoft-admin-cert' &&
             config.provider !== 'instagram' &&
             config.provider !== 'shopline-oauth' &&
             config.provider !== 'threads'
@@ -332,7 +342,24 @@ class ProviderClient {
             case 'microsoft-teams-bot':
                 return this.refreshMicrosoftTeamsBotToken(interpolatedTokenUrl.href, config.oauth_client_id, config.oauth_client_secret, connection);
             case 'microsoft-admin':
-                return this.refreshMicrosoftAdminToken(interpolatedTokenUrl.href, config.oauth_client_id, config.oauth_client_secret, config.oauth_scopes);
+                return this.refreshMicrosoftAdminToken(
+                    interpolatedTokenUrl.href,
+                    config.oauth_client_id,
+                    { client_secret: config.oauth_client_secret },
+                    config.oauth_scopes
+                );
+            case 'microsoft-admin-cert':
+                return this.refreshMicrosoftAdminToken(
+                    interpolatedTokenUrl.href,
+                    config.oauth_client_id,
+                    this.microsoftCertificateAuth(
+                        interpolatedTokenUrl.href,
+                        config.oauth_client_id,
+                        config.oauth_client_secret,
+                        config.custom?.['certificate']
+                    ),
+                    config.oauth_scopes
+                );
             case 'tiktok-accounts':
                 return this.refreshTiktokAccountsToken(
                     provider.refresh_url as string,
@@ -1821,7 +1848,9 @@ class ProviderClient {
     // "endpoint" in the token response). The generic OAuth2 client always refreshes on token_url.
     private async deputyTokenRequest(url: string, params: Record<string, string>): Promise<RefreshTokenResponse> {
         try {
-            const response = await axios.post(url, new URLSearchParams(params).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+            const response = await axios.post(url, new URLSearchParams(params).toString(), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
             if (response.status === 200 && response.data?.access_token) {
                 return { ...response.data };
             }
@@ -2376,10 +2405,33 @@ class ProviderClient {
         }
     }
 
+    // Microsoft certificate credentials: a JWT signed with the app's private key, naming the certificate by its SHA-256 thumbprint.
+    // https://learn.microsoft.com/en-us/entra/identity-platform/certificate-credentials
+    private microsoftCertificateAuth(tokenUrl: string, clientId: string, privateKeyPem: string, certificatePem: string | undefined): Record<string, string> {
+        if (!privateKeyPem || !certificatePem) {
+            throw new NangoError('microsoft_admin_token_request_error', 'The integration needs both the private key and the certificate');
+        }
+        const thumbprint = createHash('sha256')
+            .update(new X509Certificate(formatPem(certificatePem, 'CERTIFICATE')).raw)
+            .digest();
+        const now = Math.floor(Date.now() / 1000);
+        const keyType = privateKeyPem.includes('RSA PRIVATE KEY') ? 'RSA PRIVATE KEY' : 'PRIVATE KEY';
+        const clientAssertion = signJWT({
+            payload: { aud: tokenUrl, iss: clientId, sub: clientId, jti: randomUUID(), nbf: now, iat: now, exp: now + 300 },
+            secretOrPrivateKey: formatPem(privateKeyPem, keyType),
+            options: { algorithm: 'PS256', header: { alg: 'PS256', typ: 'JWT', 'x5t#S256': this.base64url(thumbprint) } }
+        });
+
+        return {
+            client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+            client_assertion: clientAssertion
+        };
+    }
+
     private async createMicrosoftAdminToken(
         tokenUrl: string,
         clientId: string,
-        clientSecret: string,
+        clientAuth: Record<string, string>,
         oauthScopes?: string
     ): Promise<AuthorizationTokenResponse> {
         try {
@@ -2391,7 +2443,7 @@ class ProviderClient {
 
             const body = {
                 client_id: clientId,
-                client_secret: clientSecret,
+                ...clientAuth,
                 grant_type: 'client_credentials',
                 scope
             };
@@ -2416,7 +2468,7 @@ class ProviderClient {
     private async refreshMicrosoftAdminToken(
         tokenUrl: string,
         clientId: string,
-        clientSecret: string,
+        clientAuth: Record<string, string>,
         oauthScopes?: string
     ): Promise<AuthorizationTokenResponse> {
         try {
@@ -2428,7 +2480,7 @@ class ProviderClient {
 
             const body = {
                 client_id: clientId,
-                client_secret: clientSecret,
+                ...clientAuth,
                 grant_type: 'client_credentials',
                 scope
             };

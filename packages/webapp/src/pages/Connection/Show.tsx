@@ -9,7 +9,9 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConnection } from '@/hooks/useConnections';
 import { useGetIntegration } from '@/hooks/useIntegration';
+import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
+import { TryInPlaygroundButton } from '@/pages/AgentPlayground/components/TryInPlaygroundButton';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
@@ -39,6 +41,7 @@ export const ConnectionShow = () => {
     const { connectionId, providerConfigKey } = useParams();
     const location = useLocation();
     const canOpenPlayground = useCanRunFunctions();
+    const { user } = useUser();
     const {
         data: connectionResponse,
         error: connectionError,
@@ -92,6 +95,9 @@ export const ConnectionShow = () => {
     });
 
     const email = getEndUserEmail(connectionResponse.endUser, connectionResponse.connection.tags);
+    const integrationName = integrationData.integration.display_name || integrationData.template.display_name;
+    // The playground only uses connections tagged with the signed-in user's email.
+    const isOwnConnection = Boolean(user) && connectionResponse.connection.tags?.['end_user_email'] === user?.email;
 
     const basePath = `/${env}/connections/${encodeURIComponent(providerConfigKey || '')}/${encodeURIComponent(connectionId || '')}`;
     const activeSegment = getActiveTabSegment(location.pathname, basePath);
@@ -114,7 +120,7 @@ export const ConnectionShow = () => {
                         <IntegrationLogoWithProfile providerConfigKey={providerKey} provider={connectionResponse.provider} profile={displayName} />
                         <div className="flex flex-col">
                             <h1 className="text-body-large-semi text-text-strong">
-                                {integrationData.integration.display_name || integrationData.template.display_name} x {displayName}
+                                {integrationName} x {displayName}
                             </h1>
                             <span className="text-body-medium-regular text-text-secondary">{email ?? connectionResponse.connection.connection_id}</span>
                         </div>
@@ -128,22 +134,33 @@ export const ConnectionShow = () => {
                                 </TabsTrigger>
                             ))}
                         </TabsList>
-                        {canOpenPlayground && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                    openPlaygroundWithContext({
-                                        source: 'connection',
-                                        integration: integrationData.integration.unique_key,
-                                        connection: connectionResponse.connection.connection_id
-                                    })
-                                }
-                            >
-                                <Play />
-                                Test run
-                            </Button>
-                        )}
+                        <div className="flex items-center gap-2">
+                            {canOpenPlayground && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        openPlaygroundWithContext({
+                                            source: 'connection',
+                                            integration: integrationData.integration.unique_key,
+                                            connection: connectionResponse.connection.connection_id
+                                        })
+                                    }
+                                >
+                                    <Play />
+                                    Test run
+                                </Button>
+                            )}
+                            {isOwnConnection && (
+                                <TryInPlaygroundButton
+                                    provider={connectionResponse.provider}
+                                    integrationName={integrationName}
+                                    source="connection"
+                                    variant="primary"
+                                    size="sm"
+                                />
+                            )}
+                        </div>
                     </div>
                 </div>
 
