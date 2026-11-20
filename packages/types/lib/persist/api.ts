@@ -72,7 +72,8 @@ export interface GetCursorSuccess {
 
 export interface GetRecordsSuccess {
     records: NangoRecord[];
-    nextCursor?: string;
+    // Persist forwards the records store response as is, so the key is snake_case.
+    next_cursor?: string | null;
 }
 
 export interface GetCheckpointSuccess {
