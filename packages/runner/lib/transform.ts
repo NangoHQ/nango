@@ -11,10 +11,9 @@ export interface TransformFunction {
     exec: (nango: unknown, trigger: { input?: unknown }) => Promise<unknown>;
 }
 
-// Rejects code that closes the function it is compiled into. It comes from a throwaway context and what it builds is never called.
 const AsyncFunction = vm.runInNewContext('(async function () {}).constructor') as new (...args: string[]) => unknown;
 
-// The input and the output cross the context as JSON strings, so the code never holds an object of the runner.
+// Input and output cross as JSON so the code never holds a runner object.
 const driver = `(run) => async (input) => {
     const output = await run(JSON.parse(input));
     return output === undefined ? undefined : JSON.stringify(output);
