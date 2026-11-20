@@ -3,7 +3,15 @@ import type { AuditPolicy } from '../audit-trail/event.js';
 import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTags, FunctionTriggerDefinition } from '../function/config.js';
 import type { ToolTags } from '../function/tool.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
-import type { FunctionListType, FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
+import type {
+    FunctionListType,
+    FunctionType,
+    ListedNangoFunction,
+    NangoActionFunction,
+    NangoFunctionTemplate,
+    NangoSyncFunction,
+    NangoToolFunction
+} from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'> | 'tool' | 'function';
@@ -422,7 +430,7 @@ export interface FunctionDeletionSuccess {
 }
 
 export interface ProviderTemplatesSuccess {
-    data: (NangoSyncFunction | NangoActionFunction)[];
+    data: (NangoSyncFunction | NangoActionFunction | NangoToolFunction)[];
 }
 
 export type GetIntegrationFunctions = ApiEndpoint<{
