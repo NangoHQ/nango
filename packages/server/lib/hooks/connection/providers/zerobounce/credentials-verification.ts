@@ -20,7 +20,7 @@ export default async function execute(nango: Nango) {
 
 function isInvalidKey(response: unknown): boolean {
     if (typeof response !== 'object' || response === null || !('data' in response)) {
-        return false;
+        return true;
     }
 
     let data: unknown = response.data;
@@ -29,14 +29,16 @@ function isInvalidKey(response: unknown): boolean {
         try {
             data = JSON.parse(data);
         } catch {
-            return false;
+            return true;
         }
     }
 
+    // fail closed: only a readable Credits value other than -1 means the key was accepted
     if (typeof data !== 'object' || data === null || !('Credits' in data)) {
-        return false;
+        return true;
     }
 
     // Credits is sent as a string, e.g. "2375323" or "-1"
-    return Number(data.Credits) === -1;
+    const credits = Number(data.Credits);
+    return Number.isNaN(credits) || credits === -1;
 }

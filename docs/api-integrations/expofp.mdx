@@ -79,6 +79,6 @@ import PreBuiltUseCases from "/snippets/generated/expofp/PreBuiltUseCases.mdx"
 
 ## API gotchas
 
-- Nango sends the API token as the `token` field in the JSON body of every call. The multipart upload endpoints (`set-exhibitor-logo`, `set-exhibitor-leading-image`, `upload-gallery-image`) take `token` as a multipart form field instead: read it from the connection's credentials (`credentials.apiKey`) and send it that way on those calls.
+- Nango adds the API token as the `token` field of every request body, including multipart form data, so don't add `token` yourself.
 
 ---

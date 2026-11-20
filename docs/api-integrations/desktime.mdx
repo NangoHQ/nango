@@ -76,6 +76,6 @@ import PreBuiltUseCases from "/snippets/generated/desktime/PreBuiltUseCases.mdx"
 
 ## API gotchas
 
-- Nango sends the key in the `x-api-key` header on every call. Calls that need it as the `apiKey` query parameter can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key in the `x-api-key` header on every call. If an endpoint expects the `apiKey` query parameter instead, as in the [DeskTime API docs](https://help.desktime.com/hc/en-us/articles/25494558790685-What-is-API), read `credentials.apiKey` from the connection and pass it in the request's `params`. The key then appears in the request URL, so don't log that URL.
 
 ---
