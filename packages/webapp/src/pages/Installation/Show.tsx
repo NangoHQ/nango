@@ -3,10 +3,13 @@ import { Helmet } from 'react-helmet';
 import { Badge, FieldSeparator } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
+import { NoticePanel } from '@/components/patterns/NoticePanel';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useInstallation } from '@/hooks/useInstallation';
+import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { apiErrorCode } from '@/utils/api';
+import { globalEnv } from '@/utils/env';
 
 import type { InstallationLicense } from '@nangohq/types';
 
@@ -72,8 +75,28 @@ const LicenseRows: React.FC<{ license: InstallationLicense }> = ({ license }) =>
     );
 };
 
+const Notice: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+    <DashboardLayout width="wide">
+        <Helmet>
+            <title>Installation info - Nango</title>
+        </Helmet>
+        <NoticePanel title={title}>{children}</NoticePanel>
+    </DashboardLayout>
+);
+
 export const InstallationShow: React.FC = () => {
-    const { data, error, isLoading } = useInstallation();
+    const { can } = usePermissions();
+    const canReadInstallation = can('account:installation:read');
+    const { data, error, isLoading } = useInstallation({ enabled: globalEnv.isManaged && canReadInstallation });
+
+    // The menu entry hides on both, but a typed URL lands here. The 400 covers a window env cached from a managed build.
+    if (!globalEnv.isManaged || apiErrorCode(error) === 'no_license_public_key') {
+        return <Notice title="Not a managed release">Installation info is only available on a managed release of Nango.</Notice>;
+    }
+
+    if (!canReadInstallation) {
+        return <Notice title="Access denied">Your role does not have access to the installation info.</Notice>;
+    }
 
     if (isLoading) {
         return (
@@ -85,17 +108,6 @@ export const InstallationShow: React.FC = () => {
                     <Skeleton className="w-[250px]" />
                     <Skeleton className="w-[250px]" />
                 </div>
-            </DashboardLayout>
-        );
-    }
-
-    if (apiErrorCode(error) === 'no_license_public_key') {
-        return (
-            <DashboardLayout width="wide">
-                <Helmet>
-                    <title>Installation info - Nango</title>
-                </Helmet>
-                <p className="type-text-regular-sm text-text-secondary">Installation info is only available on a managed release of Nango.</p>
             </DashboardLayout>
         );
     }
