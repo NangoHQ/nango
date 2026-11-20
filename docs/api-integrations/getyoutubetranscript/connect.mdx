@@ -1,0 +1,32 @@
+---
+title: 'GetYouTubeTranscript - How do I link my account?'
+sidebarTitle: 'GetYouTubeTranscript'
+---
+
+## Overview
+
+To authenticate with GetYouTubeTranscript, you need:
+
+1. **API Key** — an API key of your GetYouTubeTranscript account.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A GetYouTubeTranscript account. New accounts get free credits for testing. If you don't have an account, [sign up](https://getyoutubetranscript.com/sign-in).
+
+### Step 1: Create an API key
+
+1. Sign in to [GetYouTubeTranscript](https://getyoutubetranscript.com/sign-in) and open the [Developers](https://getyoutubetranscript.com/developers) page.
+2. Optionally enter a key name (for example, `nango-integration`) and click **New key**.
+3. Copy the key right away. It starts with `sk_live_` and is shown only once.
+
+You can also create an account and key without the website: send `POST https://getyoutubetranscript.com/api/v1/signup` with your email, then `POST /api/v1/signup/verify` with the 6-digit code you receive. The response contains a new API key.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with GetYouTubeTranscript.
+2. Enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to GetYouTubeTranscript.
