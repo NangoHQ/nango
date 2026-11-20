@@ -51,7 +51,7 @@ export async function exec(): Promise<void> {
         try {
             logger.info('Starting');
 
-            const ttlMs = cronMinutes * 60 * 1000;
+            const ttlMs = envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES * 60 * 1000;
             const lockKey = 'lock:lambdaKeepWarm:cron';
 
             try {

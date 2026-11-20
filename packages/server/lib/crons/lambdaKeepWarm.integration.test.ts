@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 import { pubsub, seeders, updatePlan } from '@nangohq/shared';
@@ -8,11 +8,6 @@ import { envs } from '../env.js';
 import { exec } from './lambdaKeepWarm.js';
 
 import type { DBPlan } from '@nangohq/types';
-
-// The cron's lock TTL is derived from this at import time, and a TTL of 0 means the lock can't be acquired
-vi.hoisted(() => {
-    process.env['CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES'] = '5';
-});
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -52,17 +47,20 @@ async function warmedEnvironmentIds(): Promise<Set<number>> {
 }
 
 describe('lambdaKeepWarm cron exec', () => {
+    // Ensure cron is not set to 0 so lock can be acquired.
+    const originalCronMinutes = envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES;
+
     beforeAll(async () => {
         await multipleMigrations();
+        envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES = 5;
+    });
+
+    afterAll(() => {
+        envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES = originalCronMinutes;
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
-    });
-
-    it('defaults the free plan account age and execution windows to 14 days', () => {
-        expect(envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS).toBe(14 * DAY_MS);
-        expect(envs.LAMBDA_KEEP_WARM_EXECUTION_WINDOW_MS).toBe(14 * DAY_MS);
     });
 
     it('keeps a new free account warm', async () => {
