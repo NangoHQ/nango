@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { taskStates } from '@nangohq/scheduler';
 import { Err, Ok } from '@nangohq/utils';
 
-import { INLINE_FUNCTION_UUID } from '../constants.js';
+import { INLINE_FUNCTION_UUID, maxInlineSourceCodeLength } from '../constants.js';
 import { jsonSchema } from '../utils/validation.js';
 import { TaskAbort, TaskAction, TaskFunction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
 
@@ -79,7 +79,11 @@ const functionBaseFields = {
     type: z.literal('function'),
     functionUuid: z.uuid(),
     source: z
-        .object({ kind: z.literal('inline'), code: z.string().min(1), description: z.string().min(1).max(1024).optional() })
+        .object({
+            kind: z.literal('inline'),
+            code: z.string().min(1).max(maxInlineSourceCodeLength, `Inline code is limited to ${maxInlineSourceCodeLength} characters`),
+            description: z.string().min(1).max(1024).optional()
+        })
         .strict()
         .transform(({ description, ...source }) => ({ ...source, ...(description !== undefined && { description }) }))
         .optional()

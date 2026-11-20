@@ -5,3 +5,5 @@ export const maxScheduleNamesPerSearch = 1000;
 
 // The functionUuid of a function task that carries its code in `source`. It never resolves to a deployed function.
 export const INLINE_FUNCTION_UUID = '00000000-0000-0000-0000-000000000000';
+
+export const maxInlineSourceCodeLength = 8192;
