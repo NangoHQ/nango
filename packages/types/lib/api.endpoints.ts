@@ -158,7 +158,6 @@ import type {
     GetSpendAlert,
     GetUpcomingInvoice,
     PostPlanChange,
-    PostPlanExtendTrial,
     PutBillingInvoicingDetails,
     PutSpendAlert
 } from './plans/http.api.js';
@@ -289,7 +288,6 @@ export type PrivateApiEndpoints =
     | PostLogout
     | GetTeam
     | PutTeam
-    | PostPlanExtendTrial
     | PostPlanChange
     | PutBillingInvoicingDetails
     | GetOverdueInvoices

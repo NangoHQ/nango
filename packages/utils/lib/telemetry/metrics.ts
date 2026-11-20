@@ -28,8 +28,6 @@ export enum Types {
     JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
     JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
     JOBS_DELETE_OLD_DATA = 'nango.jobs.cron.deleteOldData',
-    CRON_TRIAL = 'nango.cron.trial',
-
     LOGS_LOG = 'nango.logs.log',
 
     MFA_VERIFY_SUCCESS = 'nango.mfa.verify.success',
