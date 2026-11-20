@@ -5647,6 +5647,44 @@ bettercontact:
             pattern: '^[a-z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
+beyondtrust-pra:
+    display_name: BeyondTrust Privileged Remote Access
+    categories:
+        - iam
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        retry:
+            remaining: 'x-ratelimit-remaining'
+    docs: https://nango.dev/docs/api-integrations/beyondtrust-pra
+    docs_connect: https://nango.dev/docs/api-integrations/beyondtrust-pra/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Site Hostname
+            description: The public hostname of your BeyondTrust PRA site.
+            format: hostname
+            prefix: https://
+            example: access.example.com
+            order: 1
+            doc_section: '#step-2-find-your-site-hostname'
+    credentials:
+        client_id:
+            type: string
+            title: OAuth Client ID
+            description: The OAuth client ID of your PRA API account.
+            doc_section: '#step-1-create-an-api-account'
+        client_secret:
+            type: string
+            title: OAuth Client Secret
+            description: The OAuth client secret of your PRA API account.
+            secret: true
+            doc_section: '#step-1-create-an-api-account'
+
 bidsketch:
     display_name: Bidsketch
     categories:
@@ -24530,6 +24568,31 @@ microsoft-admin-cert:
             doc_section: '#step-1-finding-your-tenant-id'
             order: 1
 
+microsoft-exchange-online-cc:
+    display_name: Microsoft Exchange Online Admin (Client Credentials)
+    categories:
+        - iam
+        - communication
+    auth_mode: OAUTH2_CC
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - https://outlook.office365.com/.default
+    proxy:
+        base_url: https://outlook.office365.com/adminapi
+    docs: https://nango.dev/docs/api-integrations/microsoft-exchange-online-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-exchange-online-cc/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: Your Microsoft Entra tenant ID.
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-register-an-app-in-microsoft-entra-id'
+            order: 1
+
 microsoft-teams-bot:
     display_name: Microsoft Teams Bot
     auth_mode: OAUTH2
@@ -29861,7 +29924,7 @@ podscribe:
             type: string
             title: API Key
             description: The API key for your Podscribe account
-            pattern: '^[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9_-]+$'
+            pattern: '^([a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9_-]+|ps_api_[A-Za-z0-9._-]+)$'
             example: xkPqbW**********.*********.*******T8mz
             doc_section: '#step-1-generating-your-api-key'
 
