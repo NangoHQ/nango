@@ -87,7 +87,11 @@ describe('microsoft-admin client_credentials', () => {
 });
 
 describe('deputy', () => {
-    async function withDeputyServer(fn: (host: string, requests: { url: string; body: string }[]) => Promise<void>): Promise<void> {
+    const defaultResponse = { access_token: 'new', refresh_token: 'rotated', expires_in: 86400, endpoint: 'acme.na.deputy.com' };
+    async function withDeputyServer(
+        fn: (host: string, requests: { url: string; body: string }[]) => Promise<void>,
+        responseBody: Record<string, unknown> = defaultResponse
+    ): Promise<void> {
         const requests: { url: string; body: string }[] = [];
         const server = http.createServer((req, res) => {
             let body = '';
@@ -95,7 +99,7 @@ describe('deputy', () => {
             req.on('end', () => {
                 requests.push({ url: req.url ?? '', body });
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ access_token: 'new', refresh_token: 'rotated', expires_in: 86400, endpoint: 'acme.na.deputy.com' }));
+                res.end(JSON.stringify(responseBody));
             });
         });
         await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -145,6 +149,47 @@ describe('deputy', () => {
             });
             expect(token).toMatchObject({ access_token: 'new', refresh_token: 'rotated' });
         });
+    });
+
+    it('strips a scheme and trailing slash from the endpoint', async () => {
+        await withDeputyServer(
+            async (host) => {
+                const token = await providerClient.getToken(deputy, provider, `http://${host}/my/oauth/access_token`, 'the-code', 'https://cb', '');
+                expect(token).toMatchObject({ endpoint: 'acme.na.deputy.com' });
+            },
+            { ...defaultResponse, endpoint: 'https://acme.na.deputy.com/' }
+        );
+    });
+
+    it('falls back to the global callback URL for redirect_uri on refresh', async () => {
+        await withDeputyServer(async (host, requests) => {
+            const connection = {
+                credentials: { type: 'OAUTH2', access_token: 'old', refresh_token: 'refresh', raw: {} },
+                connection_config: { endpoint: host }
+            } as unknown as DBConnectionDecrypted;
+            await providerClient.refreshToken(provider, deputy, connection, null);
+            expect(new URLSearchParams(requests[0]!.body).get('redirect_uri')).toMatch(/\/oauth\/callback$/);
+        });
+    });
+
+    it("keeps Deputy's error fields, but not tokens, when there is no access token", async () => {
+        await withDeputyServer(
+            async (host) => {
+                await expect(
+                    providerClient.getToken(deputy, provider, `http://${host}/my/oauth/access_token`, 'the-code', 'https://cb', '')
+                ).rejects.toMatchObject({
+                    type: 'deputy_token_request_error',
+                    status: 400
+                });
+                const err = (await providerClient
+                    .getToken(deputy, provider, `http://${host}/my/oauth/access_token`, 'the-code', 'https://cb', '')
+                    .catch((err: unknown) => err)) as Error;
+                expect(err.message).toContain('invalid_grant');
+                expect(err.message).toContain('The code has expired');
+                expect(err.message).not.toContain('leaked-refresh-token');
+            },
+            { error: 'invalid_grant', error_description: 'The code has expired', refresh_token: 'leaked-refresh-token' }
+        );
     });
 });
 

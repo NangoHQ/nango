@@ -443,7 +443,7 @@ class ProviderClient {
                     ...(provider.refresh_params as Record<string, string>),
                     client_id: config.oauth_client_id,
                     client_secret: config.oauth_client_secret,
-                    ...(callbackUrl ? { redirect_uri: callbackUrl } : {}),
+                    redirect_uri: callbackUrl || getGlobalOAuthCallbackUrl(),
                     refresh_token: credentials.refresh_token!
                 });
             default:
@@ -1844,20 +1844,25 @@ class ProviderClient {
         }
     }
 
-    // Deputy exchanges the code on once.deputy.com but only refreshes on the install the user picked (refresh_url, from the
-    // "endpoint" in the token response). The generic OAuth2 client always refreshes on token_url.
     private async deputyTokenRequest(url: string, params: Record<string, string>): Promise<RefreshTokenResponse> {
+        let response;
         try {
-            const response = await axios.post(url, new URLSearchParams(params).toString(), {
+            response = await axios.post(url, new URLSearchParams(params).toString(), {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
             });
-            if (response.status === 200 && response.data?.access_token) {
-                return { ...response.data };
-            }
-            throw new NangoError('deputy_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('deputy_token_request_error', stringifyError(err));
         }
+
+        if (response.status !== 200 || !response.data?.access_token) {
+            throw new NangoError('deputy_token_request_error', stringifyError({ message: 'No access token in the Deputy response', response }));
+        }
+
+        const { endpoint } = response.data;
+        return {
+            ...response.data,
+            ...(typeof endpoint === 'string' ? { endpoint: endpoint.replace(/^https?:\/\//, '').replace(/\/+$/, '') } : {})
+        };
     }
 
     private async refreshPosthogOauthToken(tokenUrl: string, refreshToken: string, client_id: string): Promise<RefreshTokenResponse> {
