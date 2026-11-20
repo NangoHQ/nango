@@ -1,0 +1,47 @@
+---
+title: 'BeyondTrust Privileged Remote Access - How do I link my account?'
+sidebarTitle: 'BeyondTrust Privileged Remote Access'
+---
+
+## Overview
+
+To authenticate with BeyondTrust Privileged Remote Access (PRA), you need:
+
+1. **OAuth Client ID** and **OAuth Client Secret** — the credentials of a PRA API account.
+2. **Site Hostname** — the public hostname of your PRA site.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An administrator account on your BeyondTrust PRA site.
+
+### Step 1: Create an API account
+
+1. Sign in to [app.beyondtrust.io](https://app.beyondtrust.io).
+2. From the main menu, click **Privileged Remote Access** > **Management**.
+3. Open the **API Configuration** tab.
+4. In the **API Accounts** section, click **Add**.
+5. Make sure **Enabled** is selected and enter a **Name** for the account.
+6. Select the API permissions your application needs, such as **Command API** or **Reporting API** access, and save the account.
+7. Copy the **OAuth Client ID** and **OAuth Client Secret**.
+
+<Note>
+If you list network address prefixes under **Network Restrictions**, the account can only authenticate from those addresses.
+</Note>
+
+### Step 2: Find your site hostname
+
+Your PRA URL is in your BeyondTrust welcome email: your site URL followed by `/login`. The **Site Hostname** is the part between `https://` and `/login`. For example, for `https://access.example.com/login`, enter `access.example.com`.
+
+Leave out `https://` and any path.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with BeyondTrust Privileged Remote Access.
+2. Enter your **Site Hostname**, **OAuth Client ID** and **OAuth Client Secret**.
+3. Submit the form. Nango requests an access token from your site, so wrong credentials are rejected right away.
+
+<img src="/api-integrations/beyondtrust-pra/form.png" alt="Nango Connect UI form with Site Hostname, OAuth Client ID and OAuth Client Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to BeyondTrust Privileged Remote Access.
