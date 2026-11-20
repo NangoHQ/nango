@@ -1,5 +1,6 @@
 import { basePublicUrl } from '@nangohq/utils';
 
+import { getInstantSetup } from '../services/instantSetup.js';
 import { toNangoFunction } from './function.js';
 
 import type { RetrievedProvider } from '../services/provider.service.js';
@@ -47,6 +48,7 @@ export function providerListItemToAPI(
         docs_connect: properties.docs_connect,
         preConfigured,
         preConfiguredScopes,
+        instantSetup: getInstantSetup(properties, preConfigured),
         functionCounts: functionCounts ?? { actions: 0, syncs: 0 },
         ...(properties.integration_config && { integration_config: properties.integration_config }),
         ...(properties.auth_mode === 'MCP_OAUTH2' && {
