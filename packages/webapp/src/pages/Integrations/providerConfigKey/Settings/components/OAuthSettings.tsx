@@ -130,20 +130,23 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                 )}
             </SettingsField>
 
-            <SettingsField label="Client secret" htmlFor="client_secret">
-                {isSharedCredentials ? (
-                    <NangoProvidedInput fakeValueSize={48} />
-                ) : (
-                    <EditableInput
-                        secret
-                        initialValue={integration.oauth_client_secret || ''}
-                        onSave={(value) => onSave({ clientSecret: value })}
-                        validate={validateNotEmpty}
-                        canEdit={canEdit}
-                        canRead={canEdit}
-                    />
-                )}
-            </SettingsField>
+            {/* Public OAuth 2.0 clients authenticate with the client ID alone */}
+            {!(template.auth_mode === 'OAUTH2' && template.token_request_auth_method === 'none') && (
+                <SettingsField label="Client secret" htmlFor="client_secret">
+                    {isSharedCredentials ? (
+                        <NangoProvidedInput fakeValueSize={48} />
+                    ) : (
+                        <EditableInput
+                            secret
+                            initialValue={integration.oauth_client_secret || ''}
+                            onSave={(value) => onSave({ clientSecret: value })}
+                            validate={validateNotEmpty}
+                            canEdit={canEdit}
+                            canRead={canEdit}
+                        />
+                    )}
+                </SettingsField>
+            )}
 
             {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (
                 <SettingsField label="Scopes" htmlFor="scopes">
