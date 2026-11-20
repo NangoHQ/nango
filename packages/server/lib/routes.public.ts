@@ -2,7 +2,6 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import multer from 'multer';
 
 import { connectUrl, flagEnforceCLIVersion, metrics } from '@nangohq/utils';
 
@@ -144,6 +143,7 @@ import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { apiAuth, envAuth } from './middleware/env-auth.js';
 import { withEnvironmentTarget } from './middleware/environment-target.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
+import { multipartBodyParser } from './middleware/multipart.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { withTaskCapability } from './middleware/task-capability.js';
 import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
@@ -230,10 +230,7 @@ publicAPI.use(
     })
 );
 
-type ExtendedMulterLimits = multer.Options['limits'] & {
-    fieldNestingDepth?: number;
-};
-const upload = multer({ storage: multer.memoryStorage(), limits: { fieldNestingDepth: 50 } as ExtendedMulterLimits });
+const upload = multipartBodyParser(bodyLimit);
 
 const publicAPICorsHandler = cors({
     maxAge: 600,
