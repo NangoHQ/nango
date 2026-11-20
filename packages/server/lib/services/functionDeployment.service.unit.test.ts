@@ -459,7 +459,6 @@ describe('functionDeploymentService', () => {
         const result = await deployTemplate({
             account,
             environment,
-            plan: null,
             body: {
                 type: 'template',
                 integration_id: 'custom-replicate',
