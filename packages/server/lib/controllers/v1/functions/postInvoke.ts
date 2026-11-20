@@ -1,9 +1,8 @@
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
-import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { errorManager, functionConfigService, invokeFunction, SyncCommand, syncManager } from '@nangohq/shared';
+import { errorManager, functionLookupService, invokeFunction, SyncCommand, syncManager } from '@nangohq/shared';
 import { getHeaders, metrics, redactHeaders, report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
@@ -51,17 +50,19 @@ export const postInvokeFunction = asyncWrapperWithEnvironment<PostInternalInvoke
     const { type, function_name, provider_config_key, connection_id } = valBody.data;
 
     if (type === 'tool') {
-        const functions = await functionConfigService.search(db.knex, {
+        const functionResult = await functionLookupService.getFunction({
             environmentId: environment.id,
-            filter: { integrationKey: provider_config_key, name: function_name, trigger: { kind: 'http', subscriptions: 'none' } }
+            providerConfigKey: provider_config_key,
+            name: function_name,
+            type: 'tool'
         });
-        if (functions.isErr()) {
-            report(functions.error);
+        if (functionResult.isErr()) {
+            report(functionResult.error);
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch tool' } });
             return;
         }
-        const fn = functions.value[0];
-        if (!fn) {
+        const fn = functionResult.value;
+        if (!fn || fn.type !== 'tool') {
             res.status(404).send({ error: { code: 'function_not_found', message: `Tool '${function_name}' was not found` } });
             return;
         }
@@ -70,7 +71,7 @@ export const postInvokeFunction = asyncWrapperWithEnvironment<PostInternalInvoke
             account,
             environment,
             connectionId: connection_id,
-            functionUuid: fn.config.uuid,
+            functionUuid: fn.uuid,
             input: valBody.data.input,
             request: { method: 'POST', path: req.path, headers: redactHeaders({ headers: getHeaders(req.headers) }), query: {} },
             invocationType: 'wait',
