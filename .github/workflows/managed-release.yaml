@@ -80,6 +80,7 @@ jobs:
         outputs:
             status: ${{ steps.cluster-state.outputs.status }}
             digest: ${{ steps.build.outputs.digest }}
+            platforms: ${{ steps.build.outputs.platforms }}
         steps:
             - name: Setup kind
               uses: helm/kind-action@v1
@@ -124,8 +125,8 @@ jobs:
                   password: ${{ secrets.DOCKER_PASSWORD }}
 
             # Built once for every platform the base image has, and pushed untagged.
-            # finalize-release tags this exact digest, so what the kind test runs below
-            # is what gets released.
+            # finalize-release stamps the release version onto this exact digest, so
+            # what the kind test runs below is what gets released.
             - name: Build managed image
               id: build
               env:
@@ -178,6 +179,7 @@ jobs:
                           .
                       IMAGE="$CANDIDATE"
                   fi
+                  echo "platforms=$PLATFORMS" >> "$GITHUB_OUTPUT"
 
                   # Fails the release if the image has no license key, on any platform
                   for platform in ${PLATFORMS//,/ }; do
@@ -504,6 +506,10 @@ jobs:
                   username: ${{ secrets.DOCKER_USERNAME }}
                   password: ${{ secrets.DOCKER_PASSWORD }}
 
+            - name: Set up Docker Buildx
+              if: ${{ !env.ACT }}
+              uses: docker/setup-buildx-action@v3
+
             - name: Install cosign
               if: ${{ !env.ACT }}
               uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
@@ -526,13 +532,16 @@ jobs:
               if: ${{ !env.ACT }}
               env:
                   DIGEST: ${{ needs.test-deployment.outputs.digest }}
+                  PLATFORMS: ${{ needs.test-deployment.outputs.platforms }}
               run: |
                   if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
                       echo "Test deployment failed, using bumped major version"
-                      IMAGE_TAG="managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
+                      MANAGED_VERSION="${{ steps.bump-major.outputs.image_version }}"
+                      IMAGE_TAG="managed-${MANAGED_VERSION}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   else
                       echo "Test deployment successful, using original versions"
-                      IMAGE_TAG="managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
+                      MANAGED_VERSION="${{ needs.manage-versions.outputs.image_version }}"
+                      IMAGE_TAG="managed-${MANAGED_VERSION}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   fi
 
                   if [ "${{ inputs.dry_run }}" != "true" ]; then
@@ -544,6 +553,21 @@ jobs:
                   if [ -n "$PUSH_TAG" ]; then
                       if [ -z "$DIGEST" ]; then
                           echo "test-deployment pushed no image"
+                          exit 1
+                      fi
+                      # The version is only known here, after the major bump decision. The tested
+                      # digest gets one more ENV layer, pushed untagged; its filesystem layers are
+                      # reused as they are, on every platform it was built for
+                      docker buildx build --platform "$PLATFORMS" --provenance=false \
+                          --output type=image,name=nangohq/nango,push-by-digest=true,name-canonical=true,push=true \
+                          --metadata-file "$RUNNER_TEMP/stamped-metadata.json" - <<EOF
+                  FROM nangohq/nango@${DIGEST}
+                  ENV NANGO_MANAGED_VERSION=${MANAGED_VERSION}
+                  EOF
+                      # From here on the stamped image is the one signed, tagged and released
+                      DIGEST=$(jq -r '."containerimage.digest"' "$RUNNER_TEMP/stamped-metadata.json")
+                      if [[ "$DIGEST" != sha256:* ]]; then
+                          echo "No digest in $RUNNER_TEMP/stamped-metadata.json"
                           exit 1
                       fi
 
