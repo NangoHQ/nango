@@ -33,7 +33,17 @@ export interface WebhookResponseNoContent {
     statusCode: 204;
 }
 
-export type WebhookResponse = WebhookResponseOnly | WebhookResponseWithConnectionIds | WebhookResponseWithForward | WebhookResponseNoContent;
+/** Answers the provider, e.g. a subscription validation handshake, without forwarding the request. */
+export interface WebhookResponseNoForward extends WebhookResponseOnly {
+    noForward: true;
+}
+
+export type WebhookResponse =
+    | WebhookResponseOnly
+    | WebhookResponseWithConnectionIds
+    | WebhookResponseWithForward
+    | WebhookResponseNoContent
+    | WebhookResponseNoForward;
 
 export type WebhookHandlersMap = Record<string, WebhookHandler>;
 

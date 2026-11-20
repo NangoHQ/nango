@@ -82,7 +82,7 @@ describe('okta webhook routing', () => {
 
         const result = await OktaWebhookRouting.default(nango, { 'x-okta-verification-challenge': 'challenge-value' }, {} as OktaEventHookPayload, '', {});
 
-        expect(value(result)).toEqual({ content: { verification: 'challenge-value' }, statusCode: 200 });
+        expect(value(result)).toEqual({ content: { verification: 'challenge-value' }, statusCode: 200, noForward: true });
         expect(lookup).not.toHaveBeenCalled();
         expect(execute).not.toHaveBeenCalled();
     });

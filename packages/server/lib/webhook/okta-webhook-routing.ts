@@ -54,7 +54,7 @@ const route: WebhookHandler<OktaEventHookPayload> = async (nango, headers, body,
         if (!challenge) {
             return Err(new NangoError('webhook_invalid_body'));
         }
-        return Ok({ content: { verification: challenge }, statusCode: 200 });
+        return Ok({ content: { verification: challenge }, statusCode: 200, noForward: true });
     }
 
     const hostname = orgHostname(body?.source);
