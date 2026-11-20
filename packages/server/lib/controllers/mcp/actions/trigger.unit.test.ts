@@ -2,10 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import * as actionService from '../../../services/action.service.js';
 import { ActionExecutionError } from '../../../services/action.service.js';
 import { InternalMcpError, PublicMcpError } from '../utils.js';
-import * as actionService from './execute.js';
-import { McpActionInputError } from './execute.js';
 import { triggerActionTool } from './trigger.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
@@ -17,7 +16,7 @@ describe('triggerActionTool', () => {
 
     it('returns the synchronous action response exactly', async () => {
         const response = { issue_id: 'issue-123', created: true };
-        const executeSpy = vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: response }) });
+        const executeSpy = vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: response }) });
 
         const result = await triggerActionTool.handler(
             {
@@ -48,7 +47,7 @@ describe('triggerActionTool', () => {
     });
 
     it('wraps a string action response in the data field', async () => {
-        vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: 'created' }) });
+        vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: 'created' }) });
 
         const result = await triggerActionTool.handler(validArguments, context);
 
@@ -59,7 +58,7 @@ describe('triggerActionTool', () => {
     });
 
     it('allows actions to be triggered without input', async () => {
-        const executeSpy = vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: null }) });
+        const executeSpy = vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: null }) });
 
         const result = await triggerActionTool.handler(
             {
@@ -75,7 +74,7 @@ describe('triggerActionTool', () => {
     });
 
     it('rejects action responses that are not JSON values', async () => {
-        vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: undefined }) });
+        vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: undefined }) });
 
         const result = await triggerActionTool.handler(validArguments, context);
 
@@ -98,7 +97,7 @@ describe('triggerActionTool', () => {
             args: { action_name: 'create-issue', input: {}, integration_id: 'github', connection_id: 'connection-id', max_retries: 1 }
         }
     ])('rejects $name before executing the action', async ({ args }) => {
-        const executeSpy = vi.spyOn(actionService, 'executeMcpAction');
+        const executeSpy = vi.spyOn(actionService, 'executeAction');
 
         const result = await triggerActionTool.handler(args, context);
 
@@ -111,7 +110,7 @@ describe('triggerActionTool', () => {
     });
 
     it('returns expected action execution errors as public MCP errors', async () => {
-        vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({
+        vi.spyOn(actionService, 'executeAction').mockResolvedValue({
             logCtx: undefined,
             result: Err(new ActionExecutionError({ code: 'unknown_action', message: 'Action not found' }))
         });
@@ -122,26 +121,11 @@ describe('triggerActionTool', () => {
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(PublicMcpError);
             expect(result.error.message).toBe('Action not found');
-            expect((result.error as PublicMcpError).code).toBeUndefined();
-        }
-    });
-
-    it('returns a schema validation error that the agent can correct', async () => {
-        vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({
-            logCtx: undefined,
-            result: Err(new McpActionInputError('Invalid input: input must be object'))
-        });
-        const result = await triggerActionTool.handler(validArguments, context);
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error).toBeInstanceOf(PublicMcpError);
-            expect(result.error.message).toContain('input must be object');
-            expect((result.error as PublicMcpError).code).toBe('invalid_input');
         }
     });
 
     it('maps internal action execution failures to internal MCP errors', async () => {
-        vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({
+        vi.spyOn(actionService, 'executeAction').mockResolvedValue({
             logCtx: undefined,
             result: Err(new ActionExecutionError({ code: 'internal_error', message: 'sensitive action failure' }))
         });
