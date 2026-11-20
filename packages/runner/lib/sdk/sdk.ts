@@ -823,26 +823,29 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             return objects;
         }
 
-        let cursor: string | undefined = undefined;
         for (let i = 0; i < ids.length; i += this.getRecordsBatchSize) {
-            this.throwIfAbortedOrKilled();
             const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
 
-            const pageOptions: { cursor?: string; externalIds: string[] } = {
-                externalIds: Array.from(externalIdMap.keys()),
-                ...(cursor ? { cursor } : {})
-            };
+            // A batch can span several pages when the response byte budget truncates it.
+            let cursor: string | undefined = undefined;
+            do {
+                this.throwIfAbortedOrKilled();
+                const pageOptions: { cursor?: string; externalIds: string[] } = {
+                    externalIds: Array.from(externalIdMap.keys()),
+                    ...(cursor ? { cursor } : {})
+                };
 
-            const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
-            cursor = next_cursor ?? undefined;
+                const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
+                cursor = next_cursor ?? undefined;
 
-            for (const record of records) {
-                const stringId = String(record.id);
-                const realId = externalIdMap.get(stringId);
-                if (realId !== undefined) {
-                    objects.set(realId, record);
+                for (const record of records) {
+                    const stringId = String(record.id);
+                    const realId = externalIdMap.get(stringId);
+                    if (realId !== undefined) {
+                        objects.set(realId, record);
+                    }
                 }
-            }
+            } while (cursor);
         }
 
         return objects;
