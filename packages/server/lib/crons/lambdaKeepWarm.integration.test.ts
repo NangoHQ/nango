@@ -60,8 +60,9 @@ describe('lambdaKeepWarm cron exec', () => {
         vi.restoreAllMocks();
     });
 
-    it('defaults the free plan window to 14 days', () => {
+    it('defaults the free plan account age and execution windows to 14 days', () => {
         expect(envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS).toBe(14 * DAY_MS);
+        expect(envs.LAMBDA_KEEP_WARM_EXECUTION_WINDOW_MS).toBe(14 * DAY_MS);
     });
 
     it('keeps a new free account warm', async () => {

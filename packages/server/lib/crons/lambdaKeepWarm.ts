@@ -62,7 +62,8 @@ export async function exec(): Promise<void> {
             }
 
             // Free plans are only kept warm while the account is new, or while one of the environment's connections recently ran a function.
-            const activeSince = new Date(Date.now() - envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS);
+            const createdAfter = new Date(Date.now() - envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS);
+            const executedAfter = new Date(Date.now() - envs.LAMBDA_KEEP_WARM_EXECUTION_WINDOW_MS);
 
             const rows = await db.readOnly
                 .select<{ account_id: number; id: number; plan_name: DBPlan['name']; is_production: DBEnvironment['is_production'] }[]>(
@@ -79,13 +80,13 @@ export async function exec(): Promise<void> {
                 .where((b) => {
                     b.whereNot('plans.name', 'free').orWhere((b2) => {
                         b2.where('plans.name', 'free').where((b3) => {
-                            b3.where('_nango_accounts.created_at', '>', activeSince).orWhereExists(
+                            b3.where('_nango_accounts.created_at', '>', createdAfter).orWhereExists(
                                 db.readOnly
                                     .select(db.readOnly.raw('1'))
                                     .from('_nango_connections as c')
                                     .whereRaw('c.environment_id = _nango_environments.id')
                                     .whereNull('c.deleted_at')
-                                    .where('c.last_execution_at', '>', activeSince)
+                                    .where('c.last_execution_at', '>', executedAfter)
                             );
                         });
                     });
