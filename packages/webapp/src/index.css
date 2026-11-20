@@ -290,7 +290,26 @@
     white-space: 'normal';
 }
 
+:root {
+    --surface-code: var(--surface-canvas);
+}
+
+[data-theme='dark'] {
+    --surface-code: var(--surface-panel-muted);
+}
+
+/* These selectors match Tailwind's surface classes. Code inside a white surface takes its lighter tint from here. */
+.bg-surface-panel,
+.bg-surface-raised,
+.bg-surface-overlay {
+    --surface-code: var(--surface-panel-muted);
+}
+
+@theme inline {
+    --color-surface-code: var(--surface-code);
+}
+
 .mantine-Prism-code {
     font-family: 'Geist Mono';
-    background-color: var(--surface-canvas) !important;
+    background-color: var(--surface-code) !important;
 }

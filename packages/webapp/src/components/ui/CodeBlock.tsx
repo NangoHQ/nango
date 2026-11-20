@@ -162,7 +162,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 
     return (
         <div {...props} className={cn('border border-border-muted rounded', props.className)}>
-            <header className="flex justify-between items-center py-1.5 px-3 bg-surface-panel-inset rounded-t">
+            <header className="flex justify-between items-center py-1.5 px-3 bg-surface-code border-b border-border-muted rounded-t">
                 <span className="text-text-muted text-s">{title}</span>
                 <div className="flex gap-2 items-center">
                     {headerElement}
