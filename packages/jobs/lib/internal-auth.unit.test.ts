@@ -73,14 +73,14 @@ function capabilityProps(scriptType: NangoProps['scriptType']): NangoProps {
 }
 
 describe('mintTaskAuthToken', () => {
-    it('returns null when the signing key is unset', async () => {
-        expect(await mintTaskAuthToken('task-1', {})).toBeNull();
+    it('returns null when the signing key is unset', () => {
+        expect(mintTaskAuthToken('task-1', {})).toBeNull();
     });
 
-    it('mints a jobs-audience token when the signing key is set', async () => {
+    it('mints a jobs-audience token when the signing key is set', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const issuedAt = Math.floor(Date.now() / 1000);
-        const token = await mintTaskAuthToken('task-1', {});
+        const token = mintTaskAuthToken('task-1', {});
         expect(token).toBeTruthy();
         if (!token) {
             return;
@@ -92,10 +92,10 @@ describe('mintTaskAuthToken', () => {
         expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS + 5);
     });
 
-    it('uses killAfterMs plus a buffer when lifecycle is set', async () => {
+    it('uses killAfterMs plus a buffer when lifecycle is set', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const issuedAt = Math.floor(Date.now() / 1000);
-        const token = await mintTaskAuthToken('task-1', { lifecycle: { killAfterMs: 5_000, interruptAfterMs: 1_000 } });
+        const token = mintTaskAuthToken('task-1', { lifecycle: { killAfterMs: 5_000, interruptAfterMs: 1_000 } });
         if (!token) {
             throw new Error('expected a token');
         }
@@ -104,10 +104,10 @@ describe('mintTaskAuthToken', () => {
         expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS);
     });
 
-    it('uses the bounded expiry when killAfterMs is 0', async () => {
+    it('uses the bounded expiry when killAfterMs is 0', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const issuedAt = Math.floor(Date.now() / 1000);
-        const token = await mintTaskAuthToken('task-1', { lifecycle: { killAfterMs: 0, interruptAfterMs: 0 } });
+        const token = mintTaskAuthToken('task-1', { lifecycle: { killAfterMs: 0, interruptAfterMs: 0 } });
         if (!token) {
             throw new Error('expected a token');
         }
@@ -136,6 +136,16 @@ describe('runnerAuth', () => {
         expect(result.nangoProps.secretKey).toBe('sk');
         expect(result.nangoProps).toBe(props);
         expect(result.internalAuthToken).toEqual(expect.any(String));
+        expect(verifyInternalServiceToken(result.internalAuthToken!, 'jobs', 'sign')).toMatchObject({ kind: 'hmac', op: 'task', taskId: 'task-1' });
+    });
+
+    it('drops an incoming task token when no Ed25519 jobs key is configured', async () => {
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        const props = { ...capabilityProps('action'), taskAuthToken: 'old-token' };
+        const result = await runnerAuth('task-1', props);
+        expect(result.nangoProps.taskAuthToken).toBeUndefined();
+        expect(result.nangoProps).not.toBe(props);
+        expect(result.nangoProps.secretKey).toBe('sk');
         expect(verifyInternalServiceToken(result.internalAuthToken!, 'jobs', 'sign')).toMatchObject({ kind: 'hmac', op: 'task', taskId: 'task-1' });
     });
 
@@ -317,9 +327,9 @@ describe('unified mint', () => {
         const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: raw }], INTERNAL_SERVICE_ISSUER_JOBS);
         const issuedAt = Math.floor(Date.now() / 1000);
 
-        const taskToken = await mintTaskAuthToken('task-1', {});
-        expect(taskToken).toEqual(expect.any(String));
-        const taskAuth = await verifyInternalServiceCredential(taskToken!, INTERNAL_SERVICE_AUDIENCE_JOBS, { registry });
+        const { internalAuthToken } = await runnerAuth('task-1', capabilityProps('action'));
+        expect(internalAuthToken).toEqual(expect.any(String));
+        const taskAuth = await verifyInternalServiceCredential(internalAuthToken!, INTERNAL_SERVICE_AUDIENCE_JOBS, { registry });
         expect(taskAuth).toMatchObject({ kind: 'jwt', sub: taskSubject('task-1'), issuer: INTERNAL_SERVICE_ISSUER_JOBS });
 
         const dispatch = await mintRunnerDispatchToken({ taskId: 'task-1' });

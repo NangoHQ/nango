@@ -30,16 +30,11 @@ function jobsSigner() {
 }
 
 /**
- * Mint a task-bound token for putTask/heartbeat. Uses the jobs Ed25519 key when configured,
- * otherwise the legacy HMAC signing key. Returns null when neither is set.
+ * Mint the legacy HMAC task token for putTask/heartbeat. Returns null when the signing key is unset.
+ * `runnerAuth` mints the Ed25519 capability token when the jobs key is configured, and only calls this otherwise.
  */
-export async function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, 'lifecycle'>): Promise<string | null> {
-    const expiresInSecs = taskExpiresInSecs(nangoProps);
-    const signer = jobsSigner();
-    if (signer) {
-        return mint(signer, { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: expiresInSecs });
-    }
-    return createInternalServiceToken({ taskId, expiresInSecs }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+export function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, 'lifecycle'>): string | null {
+    return createInternalServiceToken({ taskId, expiresInSecs: taskExpiresInSecs(nangoProps) }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
 }
 
 const TASK_CAPABILITY_AUDIENCES = [INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_PERSIST, INTERNAL_SERVICE_AUDIENCE_SERVER] as const;
@@ -55,7 +50,8 @@ export async function runnerAuth(taskId: string, props: NangoProps): Promise<{ n
         throw new Error('NANGO_INTERNAL_AUTH_OMIT_SECRET_KEY is true, but jobs has no Ed25519 key to mint a task capability token.');
     }
     if (!signer) {
-        return { nangoProps: props, internalAuthToken: await mintTaskAuthToken(taskId, props) };
+        const { taskAuthToken: _stale, ...withoutToken } = props;
+        return { nangoProps: props.taskAuthToken ? withoutToken : props, internalAuthToken: mintTaskAuthToken(taskId, props) };
     }
     const token = await mint(signer, {
         sub: taskSubject(taskId),

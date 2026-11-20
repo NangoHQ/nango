@@ -124,6 +124,11 @@ describe('taskPropsBoundToCapability', () => {
         expect(taskPropsBoundToCapability(capabilityAuth(), boundProps, taskId, { ...syncJob, run_id: '22222222-2222-4222-8222-222222222222' })).toBe(false);
     });
 
+    it('rejects a token issued by another service', () => {
+        const server: InternalServiceAuth = { ...capabilityAuth(), issuer: 'service:server' };
+        expect(taskPropsBoundToCapability(server, boundProps, taskId, syncJob)).toBe(false);
+    });
+
     it('rejects a sync id when the token is not bound to a sync', () => {
         const action = capabilityAuth({ environmentId: 1, connectionId: 2 });
         expect(taskPropsBoundToCapability(action, { environmentId: 1, nangoConnectionId: 2, syncId: resource.syncId, syncJobId: 7 }, taskId, syncJob)).toBe(
