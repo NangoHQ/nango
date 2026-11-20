@@ -10,7 +10,7 @@ export interface RetryConfig<T = unknown> {
     maxAttempts: number;
     maxWaitMs?: number;
     delayMs: number | ((attempt: number) => number);
-    retryIf?: (t: T) => boolean;
+    retryIf?: (t: Awaited<T>) => boolean;
     retryOnError?: (error: Error) => boolean;
 }
 

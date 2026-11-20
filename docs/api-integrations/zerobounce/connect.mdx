@@ -1,0 +1,54 @@
+---
+title: 'ZeroBounce - How do I link my account?'
+sidebarTitle: 'ZeroBounce'
+---
+
+## Overview
+
+To authenticate with ZeroBounce, you need:
+
+1. **Region** — the ZeroBounce API host where your requests are processed.
+2. **API Key** — a ZeroBounce API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A ZeroBounce account. You can [sign up for free](https://www.zerobounce.net/members/signin/register).
+
+### Step 1: Choose your region
+
+ZeroBounce has one API host per data location. Select the one where your validations should be processed:
+
+| Region | Value to select |
+|--------|-----------------|
+| United States | `api-us.zerobounce.net` |
+| European Union | `api-eu.zerobounce.net` |
+| Default (previous endpoint, processed in the EU) | `api.zerobounce.net` |
+
+See [API Endpoints](https://www.zerobounce.net/docs/api-dashboard/api-endpoints) for details.
+
+### Step 2: Create an API key
+
+1. Sign in to your [ZeroBounce account](https://www.zerobounce.net/members/signin) and open the **API** page from the left sidebar.
+2. In the **API Keys** section, click **Create a new API Key**.
+
+<img src="/api-integrations/zerobounce/api_keys_page.png" alt="ZeroBounce API page with the Create a new API Key button"/>
+
+3. Enter a name for the key, leave **Active** switched on, then click **Create new key**.
+
+<img src="/api-integrations/zerobounce/create_api_key_dialog.png" alt="ZeroBounce create API key dialog with the name field and Active switch"/>
+
+4. Find the new key in the **API Keys** list and click its copy icon to copy the key.
+
+<img src="/api-integrations/zerobounce/api_key_created.png" alt="ZeroBounce API Keys list with the copy icon next to the new key"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ZeroBounce.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/zerobounce/form.png" alt="ZeroBounce connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to ZeroBounce.

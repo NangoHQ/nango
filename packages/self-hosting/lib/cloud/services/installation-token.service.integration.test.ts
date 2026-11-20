@@ -4,6 +4,7 @@ import { SignJWT } from 'jose';
 import knexFactory from 'knex';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { signManualTelemetryExport } from '../../installation/manual-telemetry-export.js';
 import { digestBody, INSTALLATION_TOKEN_TYPE, mintInstallationToken } from '../../installation/token.js';
 import { migrate } from '../db/migrate.js';
 import { INSTALLATION_KEYS_TABLE } from '../db/schema.js';
@@ -204,6 +205,7 @@ describe('installation tokens', () => {
         expect(code(await verify(await forged(kid, privateKeyPem, { typ: 'JWT' })))).toBe('malformed');
         expect(code(await verify(await forged(kid, privateKeyPem, { claims: { ver: 2 } })))).toBe('malformed');
         expect(code(await verify(await forged(kid, privateKeyPem, { claims: { body_sha256: undefined } })))).toBe('malformed');
+        expect(code(await verify(await signManualTelemetryExport(privateKeyPem, { bodySha256: digestBody(body) })))).toBe('malformed');
         expect(code(await verify(await forged(kid, privateKeyPem, {})))).toBe('ok');
     });
 });

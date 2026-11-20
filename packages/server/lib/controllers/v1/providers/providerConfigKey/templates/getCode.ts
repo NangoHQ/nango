@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { envSchema, functionTypeSchema, providerNameSchema, scriptNameSchema } from '../../../../../helpers/validation.js';
+import { envSchema, functionListTypeSchema, providerNameSchema, scriptNameSchema } from '../../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 import { handleGetProviderTemplateCode } from '../../../../shared/providers/templates/getCode.js';
 
@@ -18,7 +18,7 @@ const validationParams = z
 const validationQuery = z
     .object({
         env: envSchema,
-        type: functionTypeSchema.optional()
+        type: functionListTypeSchema.optional()
     })
     .strict();
 

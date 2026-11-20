@@ -15,8 +15,8 @@ const mocks = vi.hoisted(() => ({
     executeAction: vi.fn()
 }));
 
-vi.mock('../../services/action.service.js', () => ({
-    executeAction: mocks.executeAction
+vi.mock('./actions/execute.js', () => ({
+    executeMcpAction: mocks.executeAction
 }));
 
 describe('createConnectionToolsMcpServer', () => {
@@ -68,6 +68,24 @@ describe('createConnectionToolsMcpServer', () => {
         }
     });
 
+    it('returns invalid action input as a correctable tool error', async () => {
+        vi.spyOn(shared.functionLookupService, 'listActions').mockResolvedValue(Ok({ actions: [actionFixture({ enabled: true })], provider: 'github' }));
+        mocks.executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(Object.assign(new Error('Invalid input: input must be object'), { code: 'invalid_input' }))
+        });
+        const { client, server } = await createTestClient();
+        try {
+            const result = await client.callTool({ name: 'delete-repository', arguments: {} });
+            expect(result.isError).toBe(true);
+            expect(result.content).toEqual([{ type: 'text', text: 'Invalid input: input must be object' }]);
+            expect(result._meta).toEqual({ 'nango/error_code': 'invalid_input', 'nango/integration_id': 'github' });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('continues to advertise and execute an enabled action', async () => {
         const action = actionFixture({ enabled: true });
         vi.spyOn(shared.functionLookupService, 'listActions').mockResolvedValue(Ok({ actions: [action], provider: 'github' }));
@@ -81,7 +99,7 @@ describe('createConnectionToolsMcpServer', () => {
             const result = await client.callTool({ name: 'delete-repository', arguments: { id: 'repo-1' } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify({ deleted: true }, null, 2) }]
+                content: [{ type: 'text', text: JSON.stringify({ deleted: true }) }]
             });
             expect(mocks.executeAction).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -115,7 +133,7 @@ describe('createConnectionToolsMcpServer', () => {
             const result = await client.callTool({ name: 'delete-file', arguments: { id: 'repo-1' } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify({ deleted: true }, null, 2) }]
+                content: [{ type: 'text', text: JSON.stringify({ deleted: true }) }]
             });
             expect(mocks.executeAction).toHaveBeenCalledWith(
                 expect.objectContaining({

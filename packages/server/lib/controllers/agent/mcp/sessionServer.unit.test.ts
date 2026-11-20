@@ -9,7 +9,7 @@ import { directCallInputSchema } from './directCallSchema.js';
 import { actionInputSchemaOf, buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
 
 import type * as ToolSearchService from '../../../services/agentSessionToolSearch.service.js';
-import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools, AgentSessionToolInput } from '@nangohq/types';
+import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools, AgentSessionToolInput, DBSyncConfig } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 const executeAction = vi.hoisted(() => vi.fn());
@@ -24,6 +24,7 @@ vi.mock('../../../services/agentSessionToolSearch.service.js', async (importOrig
 const DRAFT_07 = 'http://json-schema.org/draft-07/schema#';
 
 const OPEN_INPUT_SCHEMA = directCallInputSchema(undefined);
+const LEGACY_ACTION = { kind: 'deployed', config: { enabled: true } as DBSyncConfig } as const;
 
 function session({
     compiledToolset = {},
@@ -57,7 +58,7 @@ describe('createAgentSessionMcpServer', () => {
     beforeEach(() => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
         findActionInputs.mockReset().mockResolvedValue(new Map());
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(LEGACY_ACTION));
     });
 
     async function listTools(compiledToolset: AgentSessionCompiledToolset) {
@@ -211,7 +212,7 @@ describe('direct tool calls', () => {
 
     beforeEach(() => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(LEGACY_ACTION));
     });
 
     async function callTool(args: Record<string, unknown>) {

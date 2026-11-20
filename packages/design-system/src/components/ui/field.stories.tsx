@@ -78,7 +78,7 @@ const EnvIdInput = () => (
     <InputGroup>
         <InputGroupInput readOnly mono value={ENV_ID} />
         <InputGroupAddon align="inline-end">
-            <CopyButton value={ENV_ID} size="xs" />
+            <CopyButton value={ENV_ID} />
         </InputGroupAddon>
     </InputGroup>
 );

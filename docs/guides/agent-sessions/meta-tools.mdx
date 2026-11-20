@@ -1,0 +1,113 @@
+---
+title: 'Meta tools'
+sidebarTitle: 'Meta tools'
+description: 'Built-in tools for agent sessions'
+---
+
+Enabled meta tools appear in the session's MCP tool list alongside pinned tools.
+
+| Tool | What it does | Default |
+| --- | --- | --- |
+| [`nango_tool_search`](#nango_tool_search) | Finds tools in the session's toolset | On |
+| [`nango_execute`](#nango_execute) | Runs a session tool by name | On |
+| [`nango_proxy`](#nango_proxy) | Makes an authenticated request to a provider API | Off |
+| [`nango_create_connection`](#nango_create_connection) | Creates a link to connect or reauthorize an integration | Off |
+
+Use `meta_tools` when you create a session to enable or disable individual tools.
+
+```json
+{ "meta_tools": { "nango_execute": false, "nango_proxy": true } }
+```
+
+## nango_tool_search
+
+Keep the agent's context small even when the toolset contains hundreds of tools. The agent finds the tools it needs on demand and runs them with [`nango_execute`](#nango_execute).
+
+Search the session's toolset with up to five `queries` in one call. Use a few keywords per tool and pass the user's overall task as `goal`.
+
+```json
+{
+    "queries": ["find emails by subject", "forward an email"],
+    "goal": "find the invoice email from last week and forward it to accounting"
+}
+```
+
+The response lists connection status in `integrations` and returns one result per query, in request order. Each result includes `matches` with tool names, descriptions, and input schemas when available.
+
+## nango_execute
+
+Run a session tool by name and return its result. This lets the agent call tools it finds through search, including tools that aren't pinned.
+
+<Note>
+Keep `nango_execute` enabled when `nango_tool_search` is on. With execution disabled, the agent can still find unpinned tools through search, but it can't call them.
+</Note>
+
+Calls run synchronously and appear in Nango logs. See [function execution limits](/guides/platform/limits#function-execution-limits).
+
+## nango_proxy
+
+Call the provider's API directly when the session has no tool for the operation you need. Nango authenticates the HTTP request using the integration's connection.
+
+<Warning>
+`nango_proxy` can reach any endpoint of a connected integration in the toolset within the connection's permissions. It bypasses `allow` and `deny` rules, including for direct calls to MCP server tools. Keep it disabled to enforce those rules.
+</Warning>
+
+```json
+{
+    "integration": "notion",
+    "method": "POST",
+    "path": "/v1/search",
+    "body": { "query": "roadmap" },
+    "goal": "find the roadmap doc and summarize what ships this quarter",
+    "intent": "no tool searches pages by title, a search pages tool would"
+}
+```
+
+Use `query_params` and `headers` for additional request parameters. Nango rejects credential headers such as `authorization` and `x-api-key`.
+
+The response includes the provider's `status`, `headers`, and `body`. The body can be JSON or UTF-8 text up to 5 MB. Use the [HTTP proxy](/reference/backend/http-api/proxy) for binary or larger responses and file uploads.
+
+## nango_create_connection
+
+By default, the agent can use only the connections available when the session starts. Enable `nango_create_connection` so the agent can ask the user to connect an integration when it first needs it or reconnect an integration if its connection stops working.
+
+The agent shares the returned `connect_url` with the user. Once the user opens the [Connect link](/guides/auth/setup#auth-from-a-link-you-share) and authorizes the connection, the agent can use the integration's tools immediately in the same session.
+
+```json
+{ "integration": "notion" }
+```
+
+```json
+{
+  "guidance": "Give this link to the user and wait...",
+  "integration": "notion",
+  "provider": "notion",
+  "connect_url": "https://connect.nango.dev/?session_token=...",
+  "expires_at": "2026-09-21T17:06:41.145Z"
+}
+```
+
+### Tag connections for future sessions
+
+Nango adds the `nango/agent_session` tag so the current session can find the new connection. Add your own [connection tags](/guides/auth/connection-tags-configuration-metadata#connection-tags) when you enable `nango_create_connection`. Use identifiers that matter to your app, such as a user or organization ID, so you can select the connection in future sessions and filter for it elsewhere in Nango.
+
+```json
+{
+  "meta_tools": {
+    "nango_create_connection": {
+      "enabled": true,
+      "tags": {
+        "organization_id": "acme"
+      }
+    }
+  }
+}
+```
+
+To reuse the connection in a later session for Acme, match `organization_id: acme` in `tenant.connections.any[].tags`. See [Select connections by tags](/guides/agent-sessions/tenant#select-connections-by-tags-recommended).
+
+### Reconnecting a connection
+
+Connections can stop working when tokens expire and can't be refreshed, or when the user revokes access. Pass `reconnect: true` to create a reauthorization link for an integration already connected in the session. Once the user reauthorizes, the agent can resume using the integration's tools in the same session. The connection keeps its ID, tags, and metadata.
+
+See [Build re-authorization](/guides/auth/setup#build-reauthorization) for the general Nango flow.

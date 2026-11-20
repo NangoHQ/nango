@@ -2,7 +2,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Contrast, Download, Hash, Link2, Lis
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { RgbaColorPicker } from 'react-colorful';
 
-import { Button, Input, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { Button, IconButton, Input, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
@@ -778,16 +778,18 @@ function TokenRow({ entry, override, refOverride, linked, onCommit, onReset, onT
                 {/* Link toggle + reset inside the picker group */}
                 <Tooltip delayDuration={500}>
                     <TooltipTrigger asChild>
-                        <Button
+                        <IconButton
                             variant="ghost"
-                            size="2xs"
+                            size="sm"
+                            label={linked ? 'Unlink from source primitive' : 'Link to source primitive'}
+                            title=""
                             onClick={() => onToggleLink(entry.cssVar)}
-                            className={`size-5 shrink-0 hover:text-text-default ${
+                            className={`shrink-0 hover:text-text-default ${
                                 !canLink ? 'invisible' : !isUnlinked ? 'text-text-muted' : 'text-transparent group-hover/picker:text-text-muted'
                             }`}
                         >
-                            <Link2 className="size-3.5" />
-                        </Button>
+                            <Link2 />
+                        </IconButton>
                     </TooltipTrigger>
                     {canLink && (
                         <TooltipContent side="top">
@@ -799,14 +801,16 @@ function TokenRow({ entry, override, refOverride, linked, onCommit, onReset, onT
                 </Tooltip>
                 <Tooltip delayDuration={500}>
                     <TooltipTrigger asChild>
-                        <Button
+                        <IconButton
                             variant="ghost"
-                            size="2xs"
+                            size="sm"
+                            label="Reset to default"
+                            title=""
                             onClick={() => onReset(entry.cssVar)}
-                            className={`size-5 shrink-0 text-text-muted hover:text-text-default ${isModified ? '' : 'invisible'}`}
+                            className={`shrink-0 text-text-muted hover:text-text-default ${isModified ? '' : 'invisible'}`}
                         >
-                            <RotateCcw className="size-3.5" />
-                        </Button>
+                            <RotateCcw />
+                        </IconButton>
                     </TooltipTrigger>
                     <TooltipContent side="top">Reset to default</TooltipContent>
                 </Tooltip>
@@ -1116,9 +1120,16 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                 <div className="flex items-center gap-1">
                     <Tooltip delayDuration={500}>
                         <TooltipTrigger asChild>
-                            <Button variant="ghost" size="2xs" onClick={onBack} className="size-6 text-text-muted hover:text-text-default">
-                                <ArrowLeft className="size-3.5" />
-                            </Button>
+                            <IconButton
+                                variant="ghost"
+                                size="sm"
+                                label="Back to Dev Tools"
+                                title=""
+                                onClick={onBack}
+                                className="text-text-muted hover:text-text-default"
+                            >
+                                <ArrowLeft />
+                            </IconButton>
                         </TooltipTrigger>
                         <TooltipContent side="top">Back to Dev Tools</TooltipContent>
                     </Tooltip>
@@ -1129,9 +1140,9 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                 </div>
                 <Tooltip delayDuration={500}>
                     <TooltipTrigger asChild>
-                        <Button variant="ghost" size="2xs" onClick={onClose} className="size-6 text-text-muted hover:text-text-default">
-                            <X className="size-3.5" />
-                        </Button>
+                        <IconButton variant="ghost" size="sm" label="Close" title="" onClick={onClose} className="text-text-muted hover:text-text-default">
+                            <X />
+                        </IconButton>
                     </TooltipTrigger>
                     <TooltipContent side="top">Close</TooltipContent>
                 </Tooltip>
@@ -1167,31 +1178,33 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                     <>
                         <Tooltip delayDuration={500}>
                             <TooltipTrigger asChild>
-                                <Button
+                                <IconButton
                                     variant="ghost"
-                                    size="2xs"
+                                    size="sm"
                                     onClick={() => setUsageOn((v) => !v)}
-                                    aria-label={usageOn ? 'Hide usage counts' : 'Show usage counts'}
+                                    label={usageOn ? 'Hide usage counts' : 'Show usage counts'}
+                                    title=""
                                     aria-pressed={usageOn}
-                                    className={`size-8 shrink-0 ${usageOn ? 'text-text-default' : 'text-text-muted hover:text-text-default'}`}
+                                    className={`shrink-0 ${usageOn ? 'text-text-default' : 'text-text-muted hover:text-text-default'}`}
                                 >
-                                    <Hash className="size-3.5" />
-                                </Button>
+                                    <Hash />
+                                </IconButton>
                             </TooltipTrigger>
                             <TooltipContent side="top">{usageOn ? 'Hide usage counts' : 'Show usage counts'}</TooltipContent>
                         </Tooltip>
                         <Tooltip delayDuration={500}>
                             <TooltipTrigger asChild>
-                                <Button
+                                <IconButton
                                     variant="ghost"
-                                    size="2xs"
+                                    size="sm"
                                     onClick={() => setContrastOn((v) => !v)}
-                                    aria-label={contrastOn ? 'Hide contrast ratios' : 'Show contrast ratios'}
+                                    label={contrastOn ? 'Hide contrast ratios' : 'Show contrast ratios'}
+                                    title=""
                                     aria-pressed={contrastOn}
-                                    className={`size-8 shrink-0 ${contrastOn ? 'text-text-default' : 'text-text-muted hover:text-text-default'}`}
+                                    className={`shrink-0 ${contrastOn ? 'text-text-default' : 'text-text-muted hover:text-text-default'}`}
                                 >
-                                    <Contrast className="size-3.5" />
-                                </Button>
+                                    <Contrast />
+                                </IconButton>
                             </TooltipTrigger>
                             <TooltipContent side="top">{contrastOn ? 'Hide contrast ratios' : 'Show contrast ratios'}</TooltipContent>
                         </Tooltip>
@@ -1199,9 +1212,16 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                 )}
                 <Tooltip delayDuration={500}>
                     <TooltipTrigger asChild>
-                        <Button variant="ghost" size="2xs" onClick={toggleDarkMode} className="size-8 shrink-0 text-text-muted hover:text-text-default">
-                            {darkMode ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
-                        </Button>
+                        <IconButton
+                            variant="ghost"
+                            size="sm"
+                            label={darkMode ? 'Switch to light' : 'Switch to dark'}
+                            title=""
+                            onClick={toggleDarkMode}
+                            className="shrink-0 text-text-muted hover:text-text-default"
+                        >
+                            {darkMode ? <Moon /> : <Sun />}
+                        </IconButton>
                     </TooltipTrigger>
                     <TooltipContent side="top">{darkMode ? 'Switch to light' : 'Switch to dark'}</TooltipContent>
                 </Tooltip>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_S3_BUCKET, DEFAULT_S3_REGION, resolveObjectStoreConfig } from './resolve.js';
+import { DEFAULT_S3_BUCKET, DEFAULT_S3_REGION, resolveObjectStoreConfig, resolveTemplatesObjectStoreConfig } from './resolve.js';
 
 describe(resolveObjectStoreConfig, () => {
     it('defaults to S3 when nothing is configured', () => {
@@ -177,5 +177,37 @@ describe(resolveObjectStoreConfig, () => {
                 AZURE_INTEGRATIONS_CONTAINER_NAME: 'container'
             })
         ).toThrow(/mutually exclusive/);
+    });
+});
+
+describe(resolveTemplatesObjectStoreConfig, () => {
+    it('returns null when no templates bucket is set, so templates come from the integrations bucket', () => {
+        expect(resolveTemplatesObjectStoreConfig({})).toBeNull();
+        expect(resolveTemplatesObjectStoreConfig({ AWS_TEMPLATES_REGION: 'eu-west-1' })).toBeNull();
+    });
+
+    it('resolves the templates bucket and region', () => {
+        expect(resolveTemplatesObjectStoreConfig({ AWS_TEMPLATES_BUCKET_NAME: 'templates', AWS_TEMPLATES_REGION: 'eu-west-1' })).toEqual({
+            provider: 's3',
+            bucket: 'templates',
+            region: 'eu-west-1'
+        });
+    });
+
+    it('defaults the region', () => {
+        expect(resolveTemplatesObjectStoreConfig({ AWS_TEMPLATES_BUCKET_NAME: 'templates' })).toEqual({
+            provider: 's3',
+            bucket: 'templates',
+            region: DEFAULT_S3_REGION
+        });
+    });
+
+    it('never uses the integrations bucket credentials', () => {
+        const config = resolveTemplatesObjectStoreConfig({
+            AWS_TEMPLATES_BUCKET_NAME: 'templates',
+            AWS_INTEGRATIONS_ACCESS_KEY_ID: 'id',
+            AWS_INTEGRATIONS_SECRET_ACCESS_KEY: 'secret'
+        } as Parameters<typeof resolveTemplatesObjectStoreConfig>[0]);
+        expect(config).not.toHaveProperty('credentials');
     });
 });

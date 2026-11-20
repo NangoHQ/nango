@@ -1,0 +1,37 @@
+---
+title: 'Documentero - How do I link my account?'
+sidebarTitle: 'Documentero'
+---
+
+## Overview
+
+To authenticate with Documentero, you need:
+
+1. **API Key** — your Documentero account API key.
+
+This guide will show you how to find it.
+
+### Prerequisites
+
+- A Documentero account. The free plan includes the Cloud API, and no credit card is needed. If you don't have an account, [sign up](https://app.documentero.com/).
+
+### Step 1: Copy your API key
+
+1. Sign in to [Documentero](https://app.documentero.com/).
+2. Click your user avatar in the header and select **Your Account** ([direct link](https://app.documentero.com/admin/account)).
+
+<img src="/api-integrations/documentero/user_menu_account.png" alt="Documentero header user menu with the Your Account link"/>
+
+3. Under **General Settings**, click **Copy API key**. Click **Generate New Key** only if you want to replace the key.
+
+<img src="/api-integrations/documentero/copy_api_key.png" alt="Documentero Your Account page with the Copy API key and Generate New Key links under General Settings"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Documentero.
+2. Enter your key in the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an error.
+
+<img src="/api-integrations/documentero/form.png" alt="Documentero Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Documentero.

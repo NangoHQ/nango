@@ -12,6 +12,8 @@ import type { Knex } from 'knex';
 
 const schema = 'hosted_telemetry_provider_test';
 const exportIntervalMs = 3_600_000;
+// The catalog has no counter or gauge yet, so these tests record them under the name of the histogram.
+const anyKind = 'nango.hosted_metric.active_concurrency' as never;
 
 let knex: Knex;
 
@@ -51,9 +53,9 @@ describe('hosted telemetry producer', () => {
 
     it('is a no-op without a store, and the shared instance is one until it is initialised', async () => {
         const telemetry = createHostedTelemetry();
-        telemetry.increment('nango.hosted_metric.active_concurrency', 1, { environment_id: 7 });
+        telemetry.increment(anyKind, 1, { environment_id: 7 });
         await expect(telemetry.shutdown()).resolves.toBeUndefined();
-        hostedTelemetry.increment('nango.hosted_metric.active_concurrency', 1, { environment_id: 7 });
+        hostedTelemetry.increment(anyKind, 1, { environment_id: 7 });
         await expect(hostedTelemetry.shutdown()).resolves.toBeUndefined();
         expect(await rows()).toEqual([]);
     });
@@ -61,12 +63,12 @@ describe('hosted telemetry producer', () => {
     it('writes the aggregation of each metric since the last export, stamped with the producer and when it started', async () => {
         const before = Date.now();
         const telemetry = createHostedTelemetry({ knex, schema, exportIntervalMs });
-        telemetry.increment('nango.hosted_metric.active_concurrency', 2, { environment_id: 7 });
-        telemetry.increment('nango.hosted_metric.active_concurrency', 3, { environment_id: 7 });
+        telemetry.increment(anyKind, 2, { environment_id: 7 });
+        telemetry.increment(anyKind, 3, { environment_id: 7 });
         for (const sample of [7, 12, 14]) {
             telemetry.histogram('nango.hosted_metric.active_concurrency', sample, { environment_id: 8 });
         }
-        telemetry.gauge('nango.hosted_metric.active_concurrency', 1283, { account_id: 3, environment_id: 9, integration_id: 'hubspot' });
+        telemetry.gauge(anyKind, 1283, { account_id: 3, environment_id: 9, integration_id: 'hubspot' });
 
         await telemetry.shutdown();
 
@@ -95,11 +97,11 @@ describe('hosted telemetry producer', () => {
         vi.useFakeTimers({ toFake: ['Date'] });
         const now = Date.now();
         const first = createHostedTelemetry({ knex, schema, exportIntervalMs });
-        first.increment('nango.hosted_metric.active_concurrency', 2, { environment_id: 7 });
+        first.increment(anyKind, 2, { environment_id: 7 });
         await first.shutdown();
         vi.setSystemTime(now + 1000);
         const second = createHostedTelemetry({ knex, schema, exportIntervalMs });
-        second.increment('nango.hosted_metric.active_concurrency', 4, { environment_id: 7 });
+        second.increment(anyKind, 4, { environment_id: 7 });
         await second.shutdown();
 
         expect((await rows()).map((r) => r.value)).toEqual([2, 4]);
@@ -118,7 +120,7 @@ describe('hosted telemetry producer', () => {
     it('records through the shared instance once it is initialised', async () => {
         await knex.raw('TRUNCATE ??.??', [schema, HOSTED_TELEMETRY_TABLE]);
         initHostedTelemetry({ knex, schema });
-        hostedTelemetry.increment('nango.hosted_metric.active_concurrency', 3, { environment_id: 7 });
+        hostedTelemetry.increment(anyKind, 3, { environment_id: 7 });
         await hostedTelemetry.shutdown();
 
         expect((await rows()).map((r) => [r.metric, r.value])).toEqual([['nango.hosted_metric.active_concurrency', 3]]);

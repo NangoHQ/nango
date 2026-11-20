@@ -3,11 +3,11 @@ import tracer from 'dd-trace';
 import { configService, invokeFunction, NangoError, toolService } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
-import { executeAction } from '../../../services/action.service.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { actionExecutionErrorToMcp } from '../actions/errors.js';
+import { executeMcpAction } from '../actions/execute.js';
 import { defineManagementMcpTool } from '../managementTool.js';
-import { InternalMcpError, PublicMcpError } from '../utils.js';
+import { InternalMcpError, PublicMcpError, safeFailureDetail } from '../utils.js';
 import { callToolArgumentsSchema, callToolOutputSchema } from './schema.js';
 
 import type { ManagementMcpTool } from '../managementTool.js';
@@ -31,7 +31,7 @@ function functionInvokeErrorToMcp(error: FunctionInvokeError): Error {
             if (!(cause instanceof NangoError) || cause.type === 'function_failure') {
                 logger.error('Failed to call tool function', { err: error });
             }
-            return new PublicMcpError(error.message);
+            return new PublicMcpError(cause instanceof NangoError ? safeFailureDetail(cause) : error.message);
         }
         case 'server_error':
             logger.error('Failed to call tool function', { err: error });
@@ -80,7 +80,8 @@ export const callToolsTool: ManagementMcpTool<CallToolOutput> = defineManagement
                 account,
                 environment,
                 connectionId: args.connection_id,
-                functionUuid: tool.fn.config.uuid,
+                integrationId: integration.unique_key,
+                functionUuid: tool.uuid,
                 input: args.input,
                 request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
                 invocationType: 'wait',
@@ -98,12 +99,13 @@ export const callToolsTool: ManagementMcpTool<CallToolOutput> = defineManagement
         }
 
         return await tracer.trace('server.mcp.callTool.fallback', async (span) => {
-            const execution = await executeAction({
+            const execution = await executeMcpAction({
                 account,
                 environment,
                 connectionId: args.connection_id,
                 providerConfigKey: integration.unique_key,
                 actionName: args.name,
+                resolvedAction: tool,
                 input: args.input,
                 isAsync: false,
                 retryMax: 0,

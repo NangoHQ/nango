@@ -237,7 +237,7 @@ export async function exec({
                     output = await def(functionNango, inputParams);
                 }
 
-                assertOutputSizeAllowed(output, 'See the deprecation announcement: https://nango.dev/docs/updates/dev#august-22-2025');
+                assertOutputSizeAllowed(output, 'See the deprecation announcement: https://nango.dev/docs/updates/changelog#august-22-2025');
 
                 return Ok({
                     output,
