@@ -3873,7 +3873,7 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                  description: The number of retries in case of failure (with exponential back-off), an integer from 0 to 5. Optional, default 0.
                 - in: header
                   name: Retry-On
                   schema:
@@ -3922,7 +3922,7 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                  description: The number of retries in case of failure (with exponential back-off), an integer from 0 to 5. Optional, default 0.
                 - in: header
                   name: Base-Url-Override
                   schema:
@@ -3974,7 +3974,7 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                  description: The number of retries in case of failure (with exponential back-off), an integer from 0 to 5. Optional, default 0.
                 - in: header
                   name: Base-Url-Override
                   schema:
@@ -4026,7 +4026,7 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                  description: The number of retries in case of failure (with exponential back-off), an integer from 0 to 5. Optional, default 0.
                 - in: header
                   name: Base-Url-Override
                   schema:
@@ -4083,7 +4083,7 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                  description: The number of retries in case of failure (with exponential back-off), an integer from 0 to 5. Optional, default 0.
                 - in: header
                   name: Base-Url-Override
                   schema:
