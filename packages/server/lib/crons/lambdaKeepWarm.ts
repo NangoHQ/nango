@@ -61,6 +61,9 @@ export async function exec(): Promise<void> {
                 return;
             }
 
+            // Free plans are only kept warm while the account is new, or while one of the environment's connections recently ran a function.
+            const activeSince = new Date(Date.now() - envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS);
+
             const rows = await db.readOnly
                 .select<{ account_id: number; id: number; plan_name: DBPlan['name']; is_production: DBEnvironment['is_production'] }[]>(
                     '_nango_environments.account_id',
@@ -70,11 +73,21 @@ export async function exec(): Promise<void> {
                 )
                 .from<DBEnvironment>('_nango_environments')
                 .join('plans', 'plans.account_id', '_nango_environments.account_id')
+                .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
                 .where('_nango_environments.deleted', false)
                 .where('plans.lambda_tenant_isolation', true)
                 .where((b) => {
                     b.whereNot('plans.name', 'free').orWhere((b2) => {
-                        b2.where('plans.name', 'free').where('plans.trial_end_at', '>', db.readOnly.fn.now());
+                        b2.where('plans.name', 'free').where((b3) => {
+                            b3.where('_nango_accounts.created_at', '>', activeSince).orWhereExists(
+                                db.readOnly
+                                    .select(db.readOnly.raw('1'))
+                                    .from('_nango_connections as c')
+                                    .whereRaw('c.environment_id = _nango_environments.id')
+                                    .whereNull('c.deleted_at')
+                                    .where('c.last_execution_at', '>', activeSince)
+                            );
+                        });
                     });
                 });
 
