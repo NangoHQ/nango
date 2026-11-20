@@ -36,6 +36,7 @@ export type * from './connection/db.js';
 export type * from './connectUISettings/dto.js';
 export type * from './connectUISettings/db.js';
 export type * from './connectUISettings/api.js';
+export type * from './installation/api.js';
 export type * from './meta/api.js';
 export type * from './invitations/api.js';
 export type * from './invitations/db.js';
