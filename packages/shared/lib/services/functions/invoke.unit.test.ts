@@ -85,11 +85,12 @@ function deployedFunction(): ResolvedFunction {
     };
 }
 
-function invoke(fn = deployedFunction(), invocationType: 'wait' | 'no_wait' = 'wait', input: unknown = { modelId: 'owner/model' }) {
+function invoke(fn = deployedFunction(), invocationType: 'wait' | 'no_wait' = 'wait', input: unknown = { modelId: 'owner/model' }, integrationId?: string) {
     return invokeFunction({
         account: { id: 1 } as DBTeam,
         environment: { id: 2, name: 'dev' } as DBEnvironment,
         connectionId: connection.connection_id,
+        integrationId,
         functionUuid: fn.uuid,
         input,
         request: { method: 'POST', path: '/test', headers: {}, query: {} },
@@ -136,6 +137,64 @@ describe('invokeFunction', () => {
         });
         expect(createLog.mock.calls[0]?.[1].syncConfig).toEqual({ name: fn.name });
         expect(logCtx.success).toHaveBeenCalledOnce();
+    });
+
+    describe('catalog integration scope', () => {
+        function scopedCatalogFunction(): ResolvedFunction {
+            const uuid = generateCatalogFunctionUuid({ provider: 'github', name: 'test-tool' });
+            return {
+                kind: 'catalog',
+                uuid,
+                name: 'test-tool',
+                enabled: true,
+                definition: {
+                    ...deployedFunction().definition,
+                    uuid,
+                    name: 'test-tool',
+                    type: 'tool',
+                    source: 'catalog',
+                    provider: 'github',
+                    sdkVersion: '0.0.0',
+                    location: { js: 'test-tool.cjs', ts: 'test-tool.ts' }
+                }
+            };
+        }
+
+        it('uses the selected integration when connection IDs are reused', async () => {
+            const fn = scopedCatalogFunction();
+            lookup.mockResolvedValue(Ok(fn));
+            const otherConnection = { ...connection, id: 4, config_id: 10, provider_config_key: 'other-github' };
+            searchConnections.mockImplementation((_db, { filter }) =>
+                Promise.resolve(
+                    Ok([connection, otherConnection].filter((candidate) => !filter.integrationId || candidate.provider_config_key === filter.integrationId))
+                )
+            );
+
+            const result = await invoke(fn, 'wait', { modelId: 'owner/model' }, connection.provider_config_key);
+
+            expect(result.result.isOk()).toBe(true);
+            expect(searchConnections).toHaveBeenCalledWith(expect.anything(), {
+                environmentId: 2,
+                filter: { connectionId: connection.connection_id, provider: 'github', integrationId: connection.provider_config_key },
+                limit: 2
+            });
+            expect(schedule).toHaveBeenCalledWith(expect.objectContaining({ connection }));
+        });
+
+        it('does not use a connection from another integration', async () => {
+            const fn = scopedCatalogFunction();
+            lookup.mockResolvedValue(Ok(fn));
+            searchConnections.mockImplementation((_db, { filter }) =>
+                Promise.resolve(Ok([connection].filter((candidate) => !filter.integrationId || candidate.provider_config_key === filter.integrationId)))
+            );
+
+            const result = await invoke(fn, 'wait', { modelId: 'owner/model' }, 'other-github');
+
+            if (result.result.isOk()) throw new Error('Expected an error');
+            expect(result.result.error.code).toBe('connection_not_found');
+            expect(schedule).not.toHaveBeenCalled();
+            expect(createLog).not.toHaveBeenCalled();
+        });
     });
 
     it('invokes a deployed function', async () => {

@@ -64,6 +64,7 @@ export async function invokeFunction({
     account,
     environment,
     connectionId,
+    integrationId,
     functionUuid,
     input,
     request,
@@ -77,6 +78,8 @@ export async function invokeFunction({
     account: DBTeam;
     environment: DBEnvironment;
     connectionId: string;
+    /** connectionId is historically NOT guaranteed unique across integrations. Required for functions that are not deployed and therefore not tied to a specific integration. */
+    integrationId?: string | undefined;
     functionUuid: string;
     input?: unknown | undefined;
     request: Omit<Extract<FunctionTrigger, { kind: 'http' }>['request'], 'body'>;
@@ -110,13 +113,12 @@ export async function invokeFunction({
             return Err(new FunctionInvokeError({ code: 'function_disabled', message: `Function '${functionUuid}' is disabled` }));
         }
         const currentVersion = fn.definition;
-        const context = await resolveFunctionConnection({ fn, environmentId: environment.id, connectionId });
+        const context = await resolveFunctionConnection({ fn, environmentId: environment.id, connectionId, integrationId });
         if (context.isErr()) {
             return Err(context.error);
         }
         const { integration, connection } = context.value;
-        const integrationId = integration.unique_key;
-        span.addTags({ integrationId });
+        span.addTags({ integrationId: integration.unique_key });
 
         const canInvokeRes = canInvoke(currentVersion, invocationType);
         if (canInvokeRes.isErr()) {
@@ -141,7 +143,7 @@ export async function invokeFunction({
             request,
             connection: {
                 connectionId: connection.connection_id,
-                integrationId
+                integrationId: integration.unique_key
             }
         });
         if (trigger.isErr()) {
@@ -204,11 +206,14 @@ export async function invokeFunction({
 export async function resolveFunctionConnection({
     fn,
     environmentId,
-    connectionId
+    connectionId,
+    integrationId
 }: {
     fn: ResolvedFunction;
     environmentId: number;
     connectionId: string;
+    /** connectionId is historically NOT guaranteed unique across integrations. Required for functions that are not deployed and therefore not tied to a specific integration. */
+    integrationId?: string | undefined;
 }): Promise<Result<{ connection: ConnectionJobs; integration: { id: number; unique_key: string; provider: string } }, FunctionInvokeError>> {
     const notFound = () => new FunctionInvokeError({ code: 'connection_not_found', message: `Connection '${connectionId}' was not found` });
     try {
@@ -216,7 +221,11 @@ export async function resolveFunctionConnection({
             const connection = await connectionService.getConnection(connectionId, fn.integration.unique_key, environmentId);
             return connection.response ? Ok({ connection: connection.response, integration: fn.integration }) : Err(notFound());
         }
-        const connections = await connectionService.search(db.knex, { environmentId, filter: { connectionId, provider: fn.definition.provider }, limit: 2 });
+        const connections = await connectionService.search(db.knex, {
+            environmentId,
+            filter: { connectionId, provider: fn.definition.provider, ...(integrationId !== undefined && { integrationId }) },
+            limit: 2
+        });
         if (connections.isErr()) {
             return Err(new FunctionInvokeError({ code: 'server_error', message: 'Failed to find connection', cause: connections.error }));
         }

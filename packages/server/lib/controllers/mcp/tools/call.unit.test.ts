@@ -44,6 +44,7 @@ describe('callToolsTool', () => {
             account: context.account,
             environment: context.environment,
             connectionId: 'connection-id',
+            integrationId: integration.unique_key,
             functionUuid: functionFixture.uuid,
             input: { id: '1' },
             request: { method: 'POST', path: '/mcp', headers: {}, query: {} },

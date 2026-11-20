@@ -80,6 +80,7 @@ export const callToolsTool: ManagementMcpTool<CallToolOutput> = defineManagement
                 account,
                 environment,
                 connectionId: args.connection_id,
+                integrationId: integration.unique_key,
                 functionUuid: tool.uuid,
                 input: args.input,
                 request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
