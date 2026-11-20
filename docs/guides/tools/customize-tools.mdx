@@ -41,8 +41,7 @@ export default createTool({
     output: z.object({ id: z.number(), url: z.string().url() }),
     meta: {
         instructions: 'Use when the user asks to create an issue. Confirm the repository and title first.',
-        requiredScopes: scopes.any('repo', 'public_repo'),
-        tags: { category: 'issue-tracking', operation: 'write' }
+        requiredScopes: scopes.any('repo', 'public_repo')
     },
     exec: async (nango, { input }) => {
         const { owner, repo, title, body } = input;
@@ -65,6 +64,14 @@ import './github/tools/create-issue';
 - Read the tool's arguments from `input`. Nango validates them against your input schema before running the tool.
 - Use `meta.requiredScopes` to describe the provider permissions the tool needs. Use `scopes.all(...)`, `scopes.any(...)`, or `scopes.none()`. The field is informational and not enforced by Nango.
 - Use `meta.tags` to annotate the tool with labels such as its category or operation type (read, write, potentially destructive, etc.).
+
+For a read-only tool that can be called repeatedly without side effects, use these hints in `meta`.
+
+```typescript
+const meta = {
+    tags: { read_only_hint: 'true', destructive_hint: 'false', idempotent_hint: 'true' }
+};
+```
 
 See the [`createTool` SDK reference](/reference/functions/functions-sdk#createtool) for all options.
 
