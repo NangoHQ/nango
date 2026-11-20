@@ -1,0 +1,77 @@
+---
+title: 'Fleetio'
+sidebarTitle: 'Fleetio'
+description: 'Integrate your application with the Fleetio API'
+---
+
+## 🚀 Quickstart
+
+Connect to Fleetio with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Fleetio_.
+    </Step>
+    <Step id="authorize-fleetio" title="Authorize Fleetio">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Fleetio API Key and Account Token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-fleetio-api" title="Call the Fleetio API">
+    Let's make your first request to the Fleetio API to list the accounts your API key can access. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/accounts" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/accounts',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Fleetio integration guides
+
+- [How do I link my account?](/api-integrations/fleetio/connect)  
+Create a Fleetio API key, copy your Account Token, and connect them in the Connect UI.
+
+Official docs: [Fleetio API documentation](https://developer.fleetio.com/docs/category/api)
+
+## 🧩 Pre-built syncs & tools for Fleetio
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/fleetio/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
