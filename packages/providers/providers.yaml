@@ -9986,8 +9986,9 @@ conta-azul:
         - accounting
         - erp
     auth_mode: OAUTH2
-    authorization_url: https://auth.contaazul.com/login
-    token_url: https://auth.contaazul.com/oauth2/token
+    authorization_url: https://login.contaazul.com
+    authorization_url_fragment: /oauth/authorize
+    token_url: https://api-v2.contaazul.com/oauth/token
     token_request_auth_method: basic
     authorization_params:
         response_type: code
@@ -29723,7 +29724,7 @@ redo:
             title: API Secret
             description: Your Redo API secret.
             example: redo_sk_****************************************************************
-            pattern: '^redo_sk_[a-f0-9]{64}$'
+            pattern: '^redo_sk_[A-Za-z0-9]+$'
             doc_section: '#step-1-create-an-api-token'
 
 redtail-crm-sandbox:

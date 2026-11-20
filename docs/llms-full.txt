@@ -6842,7 +6842,9 @@ Security researchers can submit findings by following our [security policy](http
 Source: https://nango.dev/docs/guides/platform/audit-trail.md
 Description: Review who changed what in your Nango account.
 
-The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: connection changes, integration settings, teammate roles, sign-ins.
+The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: connection changes, integration settings, teammate roles, sign-ins. From the **data plane**, it records credential reads, such as fetching a connection's credentials through the API.
+
+*Data-plane credential reads are recorded on Nango Cloud; self-hosted deployments do not record them yet.*
 
 Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review.
 
@@ -6908,7 +6910,11 @@ Secrets, such as API keys and passwords, are stripped from audit log entries.
 
 Two kinds of reads are recorded: queries to the audit trail itself, and reads that return credentials. A credentials read is recorded as `credentials_read`, so you can see who accessed a secret.
 
-Only control plane credential reads are recorded: those made from the dashboard or through the API endpoints that manage integrations, API keys, and environments. Data plane reads, such as fetching a connection's credentials with `GET /connections/{connectionId}`, are not. Control plane credential reads cover:
+Credential reads are recorded from the dashboard and through the API endpoints that manage integrations, API keys, and environments. Requests rejected for lack of permission are recorded too, with the `denied` outcome.
+
+On the data plane, fetching a connection's credentials with `GET /connections/{connectionId}` is recorded as `connection.credentials_read`.
+
+Credential reads cover:
 
 | Resource | Credentials |
 |----------|-------------|
@@ -6918,7 +6924,7 @@ Only control plane credential reads are recorded: those made from the dashboard 
 | `environment` | Environment secrets, such as the webhook signing key |
 
 <Note>
-The audit trail currently does not cover data plane operations, such as reading connection credentials or fetching sync records. See [Limitations](#limitations) for details.
+Apart from credential reads, the audit trail does not cover data plane operations, such as fetching sync records or proxy requests. See [Limitations](#limitations) for details.
 </Note>
 
 ## Actors
@@ -6944,13 +6950,12 @@ Nango staff may access your account to investigate a support request. Actions ta
 We can expand audit trail coverage on request. If you need items logged that aren't covered today, please [reach out](https://nango.dev/demo)!
 </Note>
 
-The audit trail currently covers the control plane, but not the **data plane**: API requests used to work with integrations and exchange data with external APIs.
+The audit trail covers the control plane and credential reads, but not the rest of the **data plane**: API requests used to work with integrations and exchange data with external APIs.
 
 For example, the following activities are not covered:
 
 | Not recorded | Example |
 |--------------|----------|
-| Reading connection credentials via the API | `GET /connections/{connectionId}` |
 | Reading records from Nango | `GET /records` |
 | Deleting/pruning records in Nango | `PATCH /records` pruning |
 | Setting or updating connection metadata via the API | `POST` / `PATCH /connection/metadata` |
@@ -7554,7 +7559,7 @@ You pull and apply updates yourself. Notifications about new releases are availa
 - **GitHub:** watch the repository, select **Custom**, and enable **Releases**.
 - **RSS/Atom:** subscribe to `https://github.com/NangoHQ/managed-image-releases/releases.atom`, which can be wired into Slack, Microsoft Teams, RSS readers, or internal automation.
 
-Each release includes the managed image tag, application version, source commit hash, release date, Docker pull reference, a GitHub compare link to the previous managed release, and a generated changelog of changes since the previous managed release.
+Each release includes the managed image tag and digest, application version, source commit hash, release date, Docker pull reference, a command to [verify the image signature](#verify-image-signatures), a GitHub compare link to the previous managed release, and a generated changelog of changes since the previous managed release.
 
 ### Image tags
 
@@ -7575,6 +7580,22 @@ docker pull nangohq/nango:managed-1.5.4-0.70.4-0fe07a6d83aea0becc4cea382c5cead2f
 ```
 
 Pin your CLI version to the `application-version` specified in the tag for compatibility.
+
+### Verify image signatures
+
+Managed images are signed with [cosign](https://docs.sigstore.dev/cosign/) by Nango's release workflow on GitHub Actions, using keyless signing. There's no public key to download or rotate: the signature is tied to the workflow that built the image and recorded in Sigstore's public transparency log.
+
+Verifying is optional, and pulling an image works the same whether or not you verify it. To check that an image was built and published by Nango and hasn't been changed since, run this with the image digest from the release notes:
+
+```bash
+cosign verify nangohq/nango@<image-digest> \
+  --certificate-identity https://github.com/NangoHQ/nango/.github/workflows/managed-release.yaml@refs/heads/master \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+The command fails if the image has no valid signature from Nango's release workflow, which only publishes releases from `master`. Each release's notes include this command with the release's own digest. To deploy exactly the image you verified, pull it by the same digest: `nangohq/nango@<image-digest>`.
+
+Managed releases after [1.7.2](https://github.com/NangoHQ/managed-image-releases/releases/tag/managed-1.7.2-0.72.4-b6a9ee10e6aaa81f42506436f9d2287ead8f7561) are signed. Earlier releases aren't.
 
 ### Versions and policy
 

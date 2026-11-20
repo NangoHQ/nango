@@ -7,7 +7,7 @@ import { envs } from '../../env.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager from '../../utils/error.manager.js';
 import localFileService from './local.service.js';
-import { createObjectStore, resolveObjectStoreConfig } from './storage/index.js';
+import { copyObject, createObjectStore, resolveObjectStoreConfig, resolveTemplatesObjectStoreConfig } from './storage/index.js';
 
 import type { ServiceResponse } from '../../models/Generic.js';
 import type { ObjectStore } from './storage/index.js';
@@ -17,6 +17,7 @@ import type { Readable } from 'node:stream';
 
 class RemoteFileService {
     private store: ObjectStore | undefined;
+    private templatesStore: ObjectStore | undefined;
     private useRemote: boolean;
 
     publicRoute = 'integration-templates';
@@ -38,6 +39,27 @@ class RemoteFileService {
         return this.store;
     }
 
+    /**
+     * Integration templates (`templates-zero/`) come from their own bucket when AWS_TEMPLATES_BUCKET_NAME is set,
+     * otherwise from the integrations bucket, as before.
+     */
+    private getTemplatesStore(): ObjectStore {
+        if (!this.templatesStore) {
+            const config = resolveTemplatesObjectStoreConfig(envs);
+            this.templatesStore = config ? createObjectStore(config) : this.getStore();
+        }
+        return this.templatesStore;
+    }
+
+    private isTemplatesKey(key: string): boolean {
+        return key.startsWith(`${this.publicZeroYamlRoute}/`);
+    }
+
+    /** Every `templates-zero/` key goes to the templates store, every other key to the integrations store. */
+    private getStoreFor(key: string): ObjectStore {
+        return this.isTemplatesKey(key) ? this.getTemplatesStore() : this.getStore();
+    }
+
     async upload({
         content,
         destinationPath,
@@ -54,7 +76,7 @@ class RemoteFileService {
         }
 
         try {
-            await this.getStore().put(destinationPath, content);
+            await this.getStoreFor(destinationPath).put(destinationPath, content);
 
             return destinationPath;
         } catch (err) {
@@ -69,7 +91,7 @@ class RemoteFileService {
             return true;
         }
 
-        return !(await this.getStore().hasSameContent(objectKey, content));
+        return !(await this.getStoreFor(objectKey).hasSameContent(objectKey, content));
     }
 
     /**
@@ -95,7 +117,7 @@ class RemoteFileService {
         const sourceKey = `${this.publicZeroYamlRoute}/${sourcePath}`;
         try {
             if (this.useRemote) {
-                await this.getStore().copy(sourceKey, destinationPath);
+                await copyObject({ from: this.getTemplatesStore(), to: this.getStore(), sourceKey, destinationKey: destinationPath });
 
                 return destinationPath;
             } else {
@@ -113,12 +135,12 @@ class RemoteFileService {
     }
 
     getFile(fileName: string): Promise<string> {
-        return this.getStore().get(fileName);
+        return this.getStoreFor(fileName).get(fileName);
     }
 
     async getStream(fileName: string): Promise<ServiceResponse<Readable | null>> {
         try {
-            const body = await this.getStore().getStream(fileName);
+            const body = await this.getStoreFor(fileName).getStream(fileName);
 
             if (body) {
                 return { success: true, error: null, response: body };
@@ -135,7 +157,18 @@ class RemoteFileService {
             return;
         }
 
-        await this.getStore().delete(fileNames);
+        // One delete per store; when templates share the integrations bucket, that's still a single call.
+        const keysByStore = new Map<ObjectStore, string[]>();
+        for (const key of fileNames) {
+            const store = this.getStoreFor(key);
+            const keys = keysByStore.get(store);
+            if (keys) {
+                keys.push(key);
+            } else {
+                keysByStore.set(store, [key]);
+            }
+        }
+        await Promise.all([...keysByStore].map(([store, keys]) => store.delete(keys)));
     }
 
     async zipAndSendPublicFiles({
