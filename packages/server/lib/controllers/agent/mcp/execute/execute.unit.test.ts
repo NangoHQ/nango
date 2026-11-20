@@ -431,6 +431,7 @@ describe('executeSessionTool', () => {
         expect(invokeFunction).toHaveBeenCalledWith(
             expect.objectContaining({
                 connectionId: 'notion-acme',
+                integrationId: 'notion',
                 functionUuid: TOOL.uuid,
                 operation: { type: 'tool', action: 'call' },
                 input: { id: '1' },

@@ -186,6 +186,7 @@ export async function executeSessionTool({
                 account,
                 environment,
                 connectionId: connection.connectionId,
+                integrationId,
                 functionUuid: tool.uuid,
                 input: tool.inputSchemaRef || !isEmptyObject(input) ? input : undefined,
                 request: { method: 'POST', path: '/mcp', headers: {}, query: {} },

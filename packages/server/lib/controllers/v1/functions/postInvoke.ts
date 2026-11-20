@@ -71,6 +71,7 @@ export const postInvokeFunction = asyncWrapperWithEnvironment<PostInternalInvoke
             account,
             environment,
             connectionId: connection_id,
+            integrationId: provider_config_key,
             functionUuid: fn.uuid,
             input: valBody.data.input,
             request: { method: 'POST', path: req.path, headers: redactHeaders({ headers: getHeaders(req.headers) }), query: {} },
