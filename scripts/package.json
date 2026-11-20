@@ -17,7 +17,7 @@
         "google-auth-library": "10.5.0",
         "js-yaml": "4.3.2",
         "semver": "7.7.2",
-        "vitest": "4.1.11",
+        "vitest": "4.1.12",
         "zx": "8.8.5"
     }
 }
