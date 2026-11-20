@@ -20434,25 +20434,6 @@ holded-v2:
             pattern: '^pat_[a-f0-9]{24}_[a-f0-9]{64}$'
             example: pat_************************_************************************************************24d4
 
-homeworks:
-    display_name: Homeworks
-    categories:
-        - crm
-    auth_mode: OAUTH2
-    authorization_url: https://api.home.works/oauth/authorize
-    token_url: https://api.home.works/oauth/token
-    token_request_auth_method: none
-    scope_separator: ' '
-    default_scopes:
-        - openid
-        - company
-    authorization_params:
-        response_type: code
-    proxy:
-        base_url: https://api.home.works
-    docs: https://nango.dev/docs/api-integrations/homeworks
-    setup_guide_url: https://nango.dev/docs/api-integrations/homeworks/how-to-register-your-own-homeworks-oauth-app
-
 honeybadger:
     display_name: Honeybadger
     categories:

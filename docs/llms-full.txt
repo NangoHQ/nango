@@ -15867,7 +15867,6 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `hive` | Hive | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hive.md) |  | [setup](https://nango.dev/docs/api-integrations/hive/how-to-register-your-own-hive-api-oauth-app.md) | marketing, crm |
 | `holded` | Holded | API_KEY | [docs](https://nango.dev/docs/integrations/all/holded.md) |  |  | accounting, crm, invoicing |
 | `holded-v2` | Holded (v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/holded-v2.md) | [connect](https://nango.dev/docs/api-integrations/holded-v2/connect.md) |  | accounting, crm, invoicing |
-| `homeworks` | Homeworks | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/homeworks.md) |  | [setup](https://nango.dev/docs/api-integrations/homeworks/how-to-register-your-own-homeworks-oauth-app.md) | crm |
 | `honeybadger` | Honeybadger | BASIC | [docs](https://nango.dev/docs/api-integrations/honeybadger.md) | [connect](https://nango.dev/docs/api-integrations/honeybadger/connect.md) |  | dev-tools |
 | `hover` | Hover | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/hover.md) |  |  | productivity |
 | `hubspot` | HubSpot | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hubspot.md) |  | [setup](https://nango.dev/docs/api-integrations/hubspot/how-to-register-your-own-hubspot-api-oauth-app.md) | marketing, support, crm, popular |
