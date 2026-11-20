@@ -395,6 +395,28 @@ export interface FathomWebhookResponse {
     crm_matches?: CRMMatches;
 }
 
+/** https://learn.microsoft.com/en-us/graph/api/resources/changenotification */
+export interface MicrosoftEntraIdNotification {
+    id?: string;
+    subscriptionId?: string;
+    subscriptionExpirationDateTime?: string;
+    clientState?: string | null;
+    changeType?: 'created' | 'updated' | 'deleted' | (string & {});
+    lifecycleEvent?: 'reauthorizationRequired' | 'subscriptionRemoved' | 'missed' | (string & {});
+    resource?: string;
+    tenantId?: string;
+    resourceData?: {
+        id?: string;
+        '@odata.type'?: string;
+        '@odata.id'?: string;
+        organizationId?: string;
+    };
+}
+
+export interface MicrosoftEntraIdNotificationPayload {
+    value?: MicrosoftEntraIdNotification[];
+}
+
 export interface LayloWebhookPayload {
     type: 'rsvp' | 'opt_out' | (string & {});
     email?: string;

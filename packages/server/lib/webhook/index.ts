@@ -47,4 +47,5 @@ export { default as woocommerceWebhookRouting } from './woocommerce-webhook-rout
 export { default as commandAlkonWebhookRouting } from './command-alkon-webhook-routing.js';
 export { default as docusignWebhookRouting } from './docusign-webhook-routing.js';
 export { default as layloWebhookRouting } from './laylo-webhook-routing.js';
+export { default as microsoftEntraIdWebhookRouting } from './microsoft-entra-id-webhook-routing.js';
 export type * from './types.js';

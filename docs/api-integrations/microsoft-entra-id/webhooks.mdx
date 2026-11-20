@@ -1,0 +1,298 @@
+---
+title: 'How to set up webhooks with Microsoft Entra ID on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive Microsoft Entra ID user and group changes in your app using Nango webhooks'
+---
+
+Microsoft Entra ID webhooks are delivered through [Microsoft Graph change notifications](https://learn.microsoft.com/en-us/graph/change-notifications-overview). You create a subscription on a directory resource, such as `users` or `groups`, with your Nango webhook URL as the `notificationUrl`. Microsoft Graph then posts a notification there whenever that resource changes.
+
+## How it works
+
+1. You create a Microsoft Graph subscription for the resource you want to watch, passing your Nango webhook URL as `notificationUrl` and a `clientState` secret.
+2. Microsoft Graph validates the URL by sending it a `validationToken`. Nango answers it for you.
+3. When the resource changes, Microsoft Graph sends a POST with one or more notifications. Each carries the `clientState`, the `subscriptionId`, and a `resource` path identifying what changed.
+4. Nango checks `clientState` against your integration's **Webhook secret**, matches the notification to a connection by its `subscriptionId`, and forwards it to your app.
+
+<Note>
+Connection routing relies on the subscription's `id` being recorded in **`metadata.subscriptionIds`** on the connection. The function in [step 3](#3-create-a-subscription) does this for you. See [Connection matching](#connection-matching).
+</Note>
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Microsoft Entra ID integration and copy the **Webhook URL**.
+
+### 2. Set a webhook secret in Nango
+
+1. In the Nango dashboard, open your Microsoft Entra ID integration and go to the **Settings** tab.
+2. Enter a secret string in the **Webhook Secret** field. You'll pass this same value as `clientState` when creating subscriptions.
+
+<Warning>
+Nango rejects any notification whose `clientState` does not match the integration **Webhook Secret**.
+</Warning>
+
+### 3. Create a subscription
+
+Subscribing needs the same permission as reading the resource: `User.Read.All` for `users`, `Group.Read.All` for `groups`, or `Directory.Read.All` for both. Add the scope to your integration's **Scopes** field and re-authorize connections created before it was added.
+
+Users and groups support two change types. `updated` fires when a user or group is created, updated or soft-deleted. `deleted` fires when it's permanently deleted.
+
+You can automate creating the subscription for new connections with a [post-connection-creation function](/guides/functions/event-functions):
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+import z from 'zod';
+
+export default createOnEvent({
+    event: 'post-connection-creation',
+    description: 'Subscribe to Microsoft Entra ID user changes',
+    metadata: z.object({
+        subscriptionIds: z.array(z.string()).optional(),
+        subscriptionExpirations: z.record(z.string(), z.string()).optional()
+    }),
+    exec: async (nango) => {
+        const webhookUrl = await nango.getWebhookURL();
+        const integration = await nango.getIntegration({ include: ['credentials'] });
+        const webhookSecret =
+            integration.credentials && 'webhook_secret' in integration.credentials ? integration.credentials.webhook_secret : undefined;
+
+        if (!webhookUrl || !webhookSecret) {
+            await nango.log('Skipping subscription: webhook URL or webhook secret is not configured', { level: 'error' });
+            return;
+        }
+
+        const expirationDateTime = new Date(Date.now() + 40_000 * 60 * 1000).toISOString(); // 41,760 minute max
+
+        const config: ProxyConfiguration = {
+            endpoint: '/v1.0/subscriptions',
+            data: {
+                changeType: 'updated,deleted',
+                notificationUrl: webhookUrl,
+                lifecycleNotificationUrl: webhookUrl,
+                resource: 'users',
+                expirationDateTime,
+                clientState: webhookSecret
+            }
+        };
+
+        const response = await nango.post(config);
+
+        // Store subscriptionId for routing received webhooks to this connection
+        const metadata = await nango.getMetadata();
+        const subscriptionIds = new Set(metadata.subscriptionIds ?? []);
+        subscriptionIds.add(response.data.id);
+
+        await nango.updateMetadata({
+            subscriptionIds: [...subscriptionIds],
+            subscriptionExpirations: {
+                ...metadata.subscriptionExpirations,
+                [response.data.id]: response.data.expirationDateTime
+            }
+        });
+    }
+});
+```
+
+Or create it manually through the Nango proxy:
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/v1.0/subscriptions" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "changeType": "updated,deleted",
+    "notificationUrl": "<NANGO-WEBHOOK-URL>",
+    "lifecycleNotificationUrl": "<NANGO-WEBHOOK-URL>",
+    "resource": "users",
+    "expirationDateTime": "2026-12-10T00:00:00.0000000Z",
+    "clientState": "<YOUR-WEBHOOK-SECRET>"
+  }'
+```
+
+Replace:
+
+- **resource**: the directory resource to watch, e.g. `users`, `users/{id}`, `groups`, `groups/{id}` or `groups/{id}/members`.
+- **clientState**: the webhook secret from [step 2](#2-set-a-webhook-secret-in-nango).
+- **expirationDateTime**: an ISO 8601 timestamp, at most **41,760 minutes** (just under 29 days) from now.
+- **lifecycleNotificationUrl**: optional. Set it to your Nango webhook URL to receive `reauthorizationRequired` notifications. You can only set it when creating the subscription.
+
+Then add the subscription's `id` to the connection's `metadata.subscriptionIds`, as described in [Connection matching](#connection-matching).
+
+See [Create subscription](https://learn.microsoft.com/en-us/graph/api/subscription-post-subscriptions) for the full request shape.
+
+### 4. Renew the subscription
+
+Microsoft Graph doesn't renew subscriptions. Before one expires, send a `PATCH` with a new `expirationDateTime`. The subscription `id` and `clientState` stay the same. See [Update subscription](https://learn.microsoft.com/en-us/graph/api/subscription-update).
+
+Run a daily sync to renew subscriptions before they expire:
+
+```typescript
+import { createSync, ProxyConfiguration } from 'nango';
+import z from 'zod';
+
+// This sync runs daily, so a 2-day lookahead is enough to always renew in time.
+const RENEWAL_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
+
+export default createSync({
+    description: 'Renew Microsoft Entra ID subscriptions that are expiring',
+    models: {},
+    metadata: z.object({
+        subscriptionIds: z.array(z.string()).optional(),
+        subscriptionExpirations: z.record(z.string(), z.string()).optional()
+    }),
+    frequency: 'every day',
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const subscriptionIds = metadata.subscriptionIds ?? [];
+        if (subscriptionIds.length === 0) {
+            return;
+        }
+
+        const expirations = { ...metadata.subscriptionExpirations };
+        const renewBefore = Date.now() + RENEWAL_WINDOW_MS;
+
+        const dueForRenewal = subscriptionIds.filter((subscriptionId) => {
+            const expiresAt = expirations[subscriptionId];
+            // Treat a missing or unparsable expiration as due for renewal rather than skipping it.
+            const expiresAtMs = expiresAt ? new Date(expiresAt).getTime() : 0;
+            return !Number.isFinite(expiresAtMs) || expiresAtMs <= renewBefore;
+        });
+
+        for (const subscriptionId of dueForRenewal) {
+            const expirationDateTime = new Date(Date.now() + 40_000 * 60 * 1000).toISOString();
+
+            const config: ProxyConfiguration = {
+                endpoint: `/v1.0/subscriptions/${subscriptionId}`,
+                data: { expirationDateTime }
+            };
+
+            try {
+                const response = await nango.patch(config);
+                expirations[response.data.id] = response.data.expirationDateTime;
+            } catch (err) {
+                // Don't let one failed renewal (e.g. a subscription deleted upstream) block the rest.
+                await nango.log(`Failed to renew Microsoft Entra ID subscription ${subscriptionId}: ${String(err)}`, { level: 'error' });
+            }
+        }
+
+        await nango.updateMetadata({ subscriptionExpirations: expirations });
+    }
+});
+```
+
+If you set `lifecycleNotificationUrl`, also handle the `reauthorizationRequired` webhook (see [Supported events](#supported-events)) by calling `POST /v1.0/subscriptions/{id}/reauthorize`, or by renewing the subscription as above.
+
+### 5. Delete the subscription on connection deletion
+
+If a connection is deleted in Nango but its subscription is still active, Microsoft Graph keeps sending notifications until it expires. Delete it first with a `pre-connection-deletion` event function:
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+import z from 'zod';
+
+export default createOnEvent({
+    event: 'pre-connection-deletion',
+    description: "Delete the connection's Microsoft Entra ID subscriptions before connection deletion",
+    metadata: z.object({
+        subscriptionIds: z.array(z.string()).optional()
+    }),
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const subscriptionIds = metadata.subscriptionIds ?? [];
+
+        for (const subscriptionId of subscriptionIds) {
+            const config: ProxyConfiguration = {
+                endpoint: `/v1.0/subscriptions/${subscriptionId}`
+            };
+
+            try {
+                await nango.delete(config);
+            } catch (err) {
+                // Don't block connection deletion, or the other deletions, if one call fails.
+                await nango.log(`Failed to delete Microsoft Entra ID subscription ${subscriptionId}: ${String(err)}`, { level: 'error' });
+            }
+        }
+    }
+});
+```
+
+## Handle the webhook
+
+- **Forward it to your app:** Nango forwards the notifications to your webhook URL with connection attribution. See [Webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a function:** see [Webhook functions](/guides/functions/webhook-functions). Each notification runs on its own, and Nango matches subscriptions against its `changeType`, or its `lifecycleEvent` for lifecycle notifications.
+
+A delivery's body is an array of notifications under `value`, since Microsoft Graph batches them. Nango removes `clientState` before forwarding.
+
+```json
+{
+  "value": [
+    {
+      "subscriptionId": "50a3ecb6-cb96-49c0-b120-bb35758c3d5e",
+      "changeType": "updated",
+      "resource": "Users/11112222-3333-4444-5555-666677778888",
+      "tenantId": "99998888-7777-6666-5555-444433332222",
+      "subscriptionExpirationDateTime": "2026-12-10T00:00:00.0000000Z",
+      "resourceData": {
+        "@odata.type": "#Microsoft.Graph.User",
+        "@odata.id": "Users/11112222-3333-4444-5555-666677778888",
+        "id": "11112222-3333-4444-5555-666677778888"
+      }
+    }
+  ]
+}
+```
+
+Notifications only carry the id of the changed object. Call the Graph API (e.g. `GET /v1.0/users/{id}`) to fetch what changed.
+
+## Supported events
+
+The webhook type for `webhookSubscriptions` and `onWebhook` is one of:
+
+| Type | Sent when |
+| --- | --- |
+| `updated` | A user or group was created, updated or soft-deleted |
+| `deleted` | A user or group was permanently deleted |
+| `reauthorizationRequired` | The subscription needs re-authorizing, e.g. it's about to expire or the token was revoked. Only sent if you set `lifecycleNotificationUrl`. |
+
+For other directory resources, see [Microsoft's list of supported resources](https://learn.microsoft.com/en-us/graph/api/resources/change-notifications-api-overview#supported-resources).
+
+## Connection matching
+
+Every notification carries the `subscriptionId` it came from. Nango matches it against **`metadata.subscriptionIds`** on the connection, an array since one connection can have several subscriptions, e.g. one for users and one for groups. The functions in [step 3](#3-create-a-subscription) and [step 4](#4-renew-the-subscription) keep it up to date.
+
+If you created subscriptions another way, add their ids to the connection's metadata yourself:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "subscriptionIds": ["<SUBSCRIPTION-ID>"] }
+  }'
+```
+
+<Warning>
+Setting `metadata.subscriptionIds` **replaces** the array. Include any ids already stored, or notifications for those subscriptions stop matching a connection.
+</Warning>
+
+<Warning>
+If no connection lists the notification's `subscriptionId`, Nango still forwards the webhook, without a `connectionId`. If several connections list it, it's forwarded once per connection.
+</Warning>
+
+## Rollback strategy
+
+To stop webhooks, delete the subscription:
+
+```bash
+curl -X DELETE "https://api.nango.dev/proxy/v1.0/subscriptions/<SUBSCRIPTION-ID>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>"
+```
+
+Or let it expire by not renewing it. Either way, remove its id from **`metadata.subscriptionIds`** and `metadata.subscriptionExpirations` so the renewal sync stops trying to renew it.
