@@ -5,6 +5,7 @@ import { getPersistAPIUrl } from '@nangohq/shared';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../logger.js';
+import { runnerBearer } from '../runner-bearer.js';
 import { httpFetch, httpStreamNDJson } from './http.js';
 
 import type {
@@ -19,6 +20,7 @@ import type {
     GetTaskAbortSuccess,
     HasLockSuccess,
     MergingStrategy,
+    NangoProps,
     PostRecordsSuccess,
     PutCheckpointSuccess,
     PutRecordsSuccess,
@@ -40,11 +42,11 @@ const deleteHardAllRecordsTerminalLineSchema = z.discriminatedUnion('status', [
 
 export class PersistClient {
     private baseUrl: string;
-    private secretKey: string;
+    private bearer: string;
     private userAgent: string;
 
-    constructor({ secretKey }: { secretKey: string }) {
-        this.secretKey = secretKey;
+    constructor(props: Pick<NangoProps, 'secretKey' | 'taskAuthToken'>) {
+        this.bearer = runnerBearer(props);
         this.baseUrl = getPersistAPIUrl();
         this.userAgent = getUserAgent('sdk');
     }
@@ -91,7 +93,7 @@ export class PersistClient {
         const response = await httpFetch(url, {
             method,
             headers: {
-                Authorization: `Bearer ${this.secretKey}`,
+                Authorization: `Bearer ${this.bearer}`,
                 'Content-Type': 'application/json'
             },
             body,
@@ -252,7 +254,7 @@ export class PersistClient {
         const response = await httpFetch(`${this.baseUrl}${path}`, {
             method: 'DELETE',
             headers: {
-                Authorization: `Bearer ${this.secretKey}`,
+                Authorization: `Bearer ${this.bearer}`,
                 'Content-Type': 'application/json',
                 // Tells persist it can stream an NDJSON response. Older runners/lambdas that
                 // don't send this get a single buffered JSON response instead. Remove this
@@ -321,7 +323,7 @@ export class PersistClient {
         const response = await httpFetch(`${this.baseUrl}${path}`, {
             method: 'DELETE',
             headers: {
-                Authorization: `Bearer ${this.secretKey}`,
+                Authorization: `Bearer ${this.bearer}`,
                 'Content-Type': 'application/json',
                 // Tells persist it can stream an NDJSON response. Older runners/lambdas that
                 // don't send this get a single buffered JSON response instead. Remove this
