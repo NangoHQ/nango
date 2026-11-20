@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { INLINE_FUNCTION_UUID } from '../constants.js';
+import { INLINE_FUNCTION_UUID, maxInlineSourceCodeLength } from '../constants.js';
 import { validateTask } from './validate.js';
 
 import type { Task } from '@nangohq/scheduler';
@@ -222,6 +222,10 @@ describe('validateTask', () => {
             ['the inline functionUuid without a source', { functionUuid: INLINE_FUNCTION_UUID }],
             ['no functionUuid', { source: { kind: 'inline', code: 'return 1;' } }],
             ['an empty source', { functionUuid: INLINE_FUNCTION_UUID, source: { kind: 'inline', code: '' } }],
+            [
+                'a source over the code limit',
+                { functionUuid: INLINE_FUNCTION_UUID, source: { kind: 'inline', code: ' '.repeat(maxInlineSourceCodeLength + 1) } }
+            ],
             ['an empty source description', { functionUuid: INLINE_FUNCTION_UUID, source: { kind: 'inline', code: 'return 1;', description: '' } }],
             ['an unknown source kind', { functionUuid: INLINE_FUNCTION_UUID, source: { kind: 'remote', code: 'return 1;' } }]
         ])('rejects a function task with %s', (_name, payload) => {

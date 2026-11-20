@@ -80,9 +80,31 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
                 throw built.error;
             }
             inlineCode = built.value;
+            tracer.scope().active()?.addTags({ 'function.name': functionName, 'function.uuid': task.functionUuid });
             syncConfig = toInlineConfig({ environmentId: task.connection.environment_id, configId: providerConfig.id });
         } else {
-            const fn = await resolveFunction(task, providerConfig);
+            const resolved = await tracer.trace('function.prepare.functionConfig', async () =>
+                functionLookupService.resolveFunctionByUuid({
+                    environmentId: task.connection.environment_id,
+                    functionUuid: task.functionUuid
+                })
+            );
+            if (resolved.isErr()) {
+                throw resolved.error;
+            }
+            const fn = resolved.value;
+            if (!fn) {
+                throw new Error(`Function not found: ${task.functionUuid}`);
+            }
+            if (!fn.enabled) {
+                throw new Error(`Function is disabled: ${fn.name}`);
+            }
+            if (
+                (fn.kind === 'deployed' && fn.integration.unique_key !== task.connection.provider_config_key) ||
+                (fn.kind === 'catalog' && fn.definition.provider !== providerConfig.provider)
+            ) {
+                throw new Error(`Function '${task.functionUuid}' does not belong to integration '${task.connection.provider_config_key}'`);
+            }
             functionName = fn.name;
             tracer
                 .scope()
@@ -568,30 +590,6 @@ function inlineLogFields(task: TaskFunction): Record<string, string> {
         return {};
     }
     return { source: task.source.kind, ...(task.source.description && { description: task.source.description }) };
-}
-
-async function resolveFunction(task: TaskFunction, providerConfig: Config): Promise<ResolvedFunction> {
-    const functionUuid = task.functionUuid;
-    const resolved = await tracer.trace('function.prepare.functionConfig', async () =>
-        functionLookupService.resolveFunctionByUuid({ environmentId: task.connection.environment_id, functionUuid })
-    );
-    if (resolved.isErr()) {
-        throw resolved.error;
-    }
-    const fn = resolved.value;
-    if (!fn) {
-        throw new Error(`Function not found: ${functionUuid}`);
-    }
-    if (!fn.enabled) {
-        throw new Error(`Function is disabled: ${fn.name}`);
-    }
-    if (
-        (fn.kind === 'deployed' && fn.integration.unique_key !== task.connection.provider_config_key) ||
-        (fn.kind === 'catalog' && fn.definition.provider !== providerConfig.provider)
-    ) {
-        throw new Error(`Function '${functionUuid}' does not belong to integration '${task.connection.provider_config_key}'`);
-    }
-    return fn;
 }
 
 // TODO: refactor NangoProps to support native function config
