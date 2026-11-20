@@ -18,6 +18,7 @@ import { logger } from './logger.js';
 import { MapLocks } from './sdk/locks.js';
 import { createFunctionFacade, instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
 import { createTelemetryRecorder } from './telemetry.js';
+import { compileTransform } from './transform.js';
 
 import type { Locks } from './sdk/locks.js';
 import type { CreateAnyResponse } from '@nangohq/runner-sdk';
@@ -103,9 +104,9 @@ export async function exec({
             .setTag('syncId', nangoProps.syncId);
 
         try {
-            const script = new vm.Script(wrappedCode, {
-                filename
-            });
+            if (nangoProps.execMode === 'transform' && nangoProps.scriptType !== 'function') {
+                throw new Error('Only a function can run in transform mode');
+            }
             const sandbox: vm.Context = {
                 // disable console in the sandboxed code
                 constructor: undefined,
@@ -149,7 +150,10 @@ export async function exec({
                     wasm: false
                 }
             });
-            const scriptExports = script.runInContext(context) as ScriptExports;
+            const scriptExports =
+                nangoProps.execMode === 'transform'
+                    ? ({ default: compileTransform({ code, filename }) } as unknown as ScriptExports)
+                    : (new vm.Script(wrappedCode, { filename }).runInContext(context) as ScriptExports);
 
             const def = scriptExports.default;
             const isZeroYaml = typeof def === 'object';
