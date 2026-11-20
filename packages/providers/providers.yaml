@@ -4896,6 +4896,7 @@ axiscare:
             title: Site Number
             description: Your AxisCare site number, the first part of your AxisCare URL.
             example: '123456'
+            pattern: '^[A-Za-z0-9-]+$'
             prefix: https://
             suffix: .axiscare.com
             order: 1
