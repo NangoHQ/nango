@@ -195,6 +195,9 @@ export enum Types {
     AUDIT_CONSUMER_REJECTED = 'nango.audit.consumer.rejected',
 
     SELF_HOSTING_CLICKHOUSE_INSERT_ROWS = 'nango.self_hosting.clickhouse.insert.rows',
+    SELF_HOSTING_INSTALLATIONS = 'nango.self_hosting.installations',
+    SELF_HOSTING_INSTALLATION_LAST_SEEN_HOURS = 'nango.self_hosting.installation.last_seen_hours',
+    SELF_HOSTING_LICENSE_EXPIRES_IN_DAYS = 'nango.self_hosting.license.expires_in_days',
 
     FEATURE_FLAGS_CLIENT_UNAVAILABLE = 'nango.feature_flags.client.unavailable',
     FEATURE_FLAGS_CLIENT_RECONNECTED = 'nango.feature_flags.client.reconnected',

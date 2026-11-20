@@ -1,6 +1,6 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import { INSTALLATION_KEYS_TABLE, INSTALLATION_LICENSES_TABLE, INSTALLATIONS_TABLE } from '../db/schema.js';
+import { CUSTOMERS_TABLE, INSTALLATION_KEYS_TABLE, INSTALLATION_LICENSES_TABLE, INSTALLATIONS_TABLE } from '../db/schema.js';
 import { inserted, isUniqueViolation, table } from './db.js';
 import { listInstallationKeys } from './installation-key.service.js';
 import { getActiveLicense } from './installation-license.service.js';
@@ -88,6 +88,38 @@ export async function requireInstallation(
     }
     const [installation] = found.value;
     return installation ? Ok(installation) : Err(new Error(`no ${includeDeleted ? '' : 'live '}installation ${uuid}`));
+}
+
+export interface InstallationStatus extends Pick<DBSelfHostingInstallation, 'name' | 'mode' | 'stage' | 'telemetry' | 'last_seen_at'> {
+    customer: string;
+    license_expires_at: Date | null;
+}
+
+export async function listInstallationStatuses(db: RegistryDb): Promise<Result<InstallationStatus[]>> {
+    try {
+        return Ok(
+            await installations(db)
+                .join(CUSTOMERS_TABLE, `${CUSTOMERS_TABLE}.id`, `${INSTALLATIONS_TABLE}.customer_id`)
+                .leftJoin(INSTALLATION_LICENSES_TABLE, (join) =>
+                    join
+                        .on(`${INSTALLATION_LICENSES_TABLE}.installation_id`, `${INSTALLATIONS_TABLE}.id`)
+                        .andOnVal(`${INSTALLATION_LICENSES_TABLE}.active`, true)
+                )
+                .whereNull(`${INSTALLATIONS_TABLE}.deleted_at`)
+                .orderBy(`${INSTALLATIONS_TABLE}.id`)
+                .select<InstallationStatus[]>(
+                    `${INSTALLATIONS_TABLE}.name`,
+                    `${CUSTOMERS_TABLE}.name as customer`,
+                    `${INSTALLATIONS_TABLE}.mode`,
+                    `${INSTALLATIONS_TABLE}.stage`,
+                    `${INSTALLATIONS_TABLE}.telemetry`,
+                    `${INSTALLATIONS_TABLE}.last_seen_at`,
+                    `${INSTALLATION_LICENSES_TABLE}.expires_at as license_expires_at`
+                )
+        );
+    } catch (err) {
+        return Err(err);
+    }
 }
 
 export async function markInstallationSeen(db: RegistryDb, { id, at }: { id: number; at: Date }): Promise<Result<void>> {
