@@ -42,7 +42,7 @@ export default createTool({
     meta: {
         instructions: 'Use when the user asks to create an issue. Confirm the repository and title first.',
         requiredScopes: scopes.any('repo', 'public_repo'),
-        tags: { read_only_hint: 'true', destructive_hint: 'false', idempotent_hint: 'true' }
+        tags: { read_only_hint: 'true', destructive_hint: 'false', idempotent_hint: 'false' }
     },
     exec: async (nango, { input }) => {
         const { owner, repo, title, body } = input;
@@ -65,6 +65,7 @@ import './github/tools/create-issue';
 - Read the tool's arguments from `input`. Nango validates them against your input schema before running the tool.
 - Use `meta.requiredScopes` to describe the provider permissions the tool needs. Use `scopes.all(...)`, `scopes.any(...)`, or `scopes.none()`. The field is informational and not enforced by Nango.
 - Use `meta.tags` to annotate the tool with labels such as its category or operation type (read, write, potentially destructive, etc.).
+  - Nango catalog tools use `read_only_hint`, `destructive_hint`, and `idempotent_hint` to indicate whether a tool is read-only, can make destructive changes, or can be repeated with the same effect.
 
 See the [`createTool` SDK reference](/reference/functions/functions-sdk#createtool) for all options.
 
