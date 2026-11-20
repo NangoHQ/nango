@@ -44,6 +44,9 @@ import type {
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
+// Inline code travels with the task, so its config is the only one without a file.
+const INLINE_FILE_LOCATION = '';
+
 export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let logCtx: LogContext | undefined;
     let account: DBTeam | undefined;
@@ -250,7 +253,8 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             syncConfig,
             team: account,
             environment: environment,
-            endUser
+            endUser,
+            inline: task.source !== undefined
         });
         return Err(error);
     }
@@ -297,7 +301,8 @@ export async function handleFunctionSuccess({
             syncConfig: nangoProps.syncConfig,
             endUser: nangoProps.endUser,
             telemetryBag,
-            functionRuntime
+            functionRuntime,
+            inline: isInlineConfig(nangoProps.syncConfig)
         });
         return;
     }
@@ -317,13 +322,15 @@ export async function handleFunctionSuccess({
         environment_id: nangoProps.environmentId,
         provider_config_key: nangoProps.providerConfigKey
     };
-    void slackService.removeFailingConnection({
-        connection,
-        name: nangoProps.syncConfig.sync_name,
-        type: 'function',
-        originalActivityLogId: nangoProps.activityLogId,
-        provider: nangoProps.provider
-    });
+    if (!isInlineConfig(nangoProps.syncConfig)) {
+        void slackService.removeFailingConnection({
+            connection,
+            name: nangoProps.syncConfig.sync_name,
+            type: 'function',
+            originalActivityLogId: nangoProps.activityLogId,
+            provider: nangoProps.provider
+        });
+    }
 
     void bigQueryClient.insert({
         executionType: 'function',
@@ -411,7 +418,8 @@ export async function handleFunctionError({
             syncConfig: nangoProps.syncConfig,
             endUser: nangoProps.endUser,
             telemetryBag,
-            functionRuntime
+            functionRuntime,
+            inline: isInlineConfig(nangoProps.syncConfig)
         });
         return;
     }
@@ -446,7 +454,8 @@ export async function handleFunctionError({
         syncConfig: nangoProps.syncConfig,
         endUser: nangoProps.endUser,
         telemetryBag,
-        functionRuntime
+        functionRuntime,
+        inline: isInlineConfig(nangoProps.syncConfig)
     });
 }
 
@@ -463,7 +472,8 @@ function onFailure({
     error,
     endUser,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    inline
 }: {
     team?: DBTeam | undefined;
     environment?: DBEnvironment | undefined;
@@ -478,9 +488,11 @@ function onFailure({
     endUser: NangoProps['endUser'];
     telemetryBag?: TelemetryBag | undefined;
     functionRuntime?: FunctionRuntime | undefined;
+    inline: boolean;
 }): void {
     if (team && environment) {
-        if (activityLogId) {
+        // An inline run fails on code the customer did not write and cannot fix, so it never raises their Slack alert.
+        if (activityLogId && !inline) {
             try {
                 void slackService.reportFailure({
                     account: team,
@@ -628,13 +640,17 @@ function toLegacyConfig(fn: ResolvedFunction, { environmentId, configId }: { env
     };
 }
 
+function isInlineConfig(syncConfig: DBSyncConfig): boolean {
+    return syncConfig.file_location === INLINE_FILE_LOCATION;
+}
+
 function toInlineConfig({ environmentId, configId }: { environmentId: number; configId: number }): DBSyncConfig {
     const now = new Date();
     return {
         id: 0,
         sync_name: INLINE_FUNCTION_NAME,
         nango_config_id: configId,
-        file_location: '',
+        file_location: INLINE_FILE_LOCATION,
         version: '0.0.0',
         models: [],
         active: true,
