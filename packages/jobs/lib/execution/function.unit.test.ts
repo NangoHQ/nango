@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { INLINE_FUNCTION_UUID, TaskFunction } from '@nangohq/nango-orchestrator';
+import { generateInlineFunctionUuid, TaskFunction } from '@nangohq/nango-orchestrator';
 import * as shared from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
@@ -12,6 +12,8 @@ import type { setTaskSuccess as setTaskSuccessFn } from './operations/state.js';
 import type * as logs from '@nangohq/logs';
 import type { Config, ResolvedFunction } from '@nangohq/shared';
 import type { DBAPISecret, NangoProps, TelemetryBag } from '@nangohq/types';
+
+const INLINE_FUNCTION_UUID = generateInlineFunctionUuid();
 
 const { startScript, setTaskSuccess, publish, logCtx } = vi.hoisted(() => ({
     startScript: vi.fn<typeof startScriptFn>(),
