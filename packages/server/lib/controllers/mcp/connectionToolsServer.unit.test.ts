@@ -15,8 +15,8 @@ const mocks = vi.hoisted(() => ({
     executeAction: vi.fn()
 }));
 
-vi.mock('../../services/action.service.js', () => ({
-    executeAction: mocks.executeAction
+vi.mock('./actions/execute.js', () => ({
+    executeMcpAction: mocks.executeAction
 }));
 
 describe('createConnectionToolsMcpServer', () => {
@@ -62,6 +62,24 @@ describe('createConnectionToolsMcpServer', () => {
                 mcp_type: 'legacy_connection_tools',
                 outcome: 'error'
             });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns invalid action input as a correctable tool error', async () => {
+        vi.spyOn(shared.functionLookupService, 'listActions').mockResolvedValue(Ok({ actions: [actionFixture({ enabled: true })], provider: 'github' }));
+        mocks.executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(Object.assign(new Error('Invalid input: input must be object'), { code: 'invalid_input' }))
+        });
+        const { client, server } = await createTestClient();
+        try {
+            const result = await client.callTool({ name: 'delete-repository', arguments: {} });
+            expect(result.isError).toBe(true);
+            expect(result.content).toEqual([{ type: 'text', text: 'Invalid input: input must be object' }]);
+            expect(result._meta).toEqual({ 'nango/error_code': 'invalid_input', 'nango/integration_id': 'github' });
         } finally {
             await client.close();
             await server.close();

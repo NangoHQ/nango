@@ -191,7 +191,7 @@
     },
     {
       "source": "/guides/auth/share-connect-link",
-      "destination": "/guides/auth/setup#share-a-connect-link"
+      "destination": "/guides/auth/setup#auth-from-a-link-you-share"
     },
     {
       "source": "/guides/platform/proxy-requests",
@@ -586,7 +586,7 @@
             ]
           },
           {
-            "group": "1,300+ APIs & Integrations",
+            "group": "1,400+ APIs & Integrations",
             "pages": [
               "api-integrations/0codekit",
               "api-integrations/1password-events",
@@ -769,6 +769,7 @@
               "api-integrations/better-proposals",
               "api-integrations/better-stack",
               "api-integrations/bettercontact",
+              "api-integrations/beyondtrust-pra",
               "api-integrations/bidsketch",
               "api-integrations/bigchange",
               "api-integrations/bigcommerce",
@@ -1006,6 +1007,7 @@
               "api-integrations/demio",
               "api-integrations/demodesk",
               "api-integrations/dentally",
+              "api-integrations/deputy",
               "api-integrations/desktime",
               "api-integrations/detrack",
               "integrations/all/devin",
@@ -1173,6 +1175,7 @@
               "api-integrations/fivetran",
               "api-integrations/flatfile",
               "api-integrations/fleetbase",
+              "api-integrations/fleetio",
               "api-integrations/flexisign",
               "api-integrations/flippingbook",
               "integrations/all/float",
@@ -1315,6 +1318,7 @@
               "api-integrations/huntress",
               "api-integrations/hydradb",
               "api-integrations/hyperline",
+              "api-integrations/hyperspell-mcp",
               "integrations/all/icypeas",
               "api-integrations/ids-fulfillment",
               "api-integrations/immybot",
@@ -1459,6 +1463,7 @@
               "integrations/all/microsoft-entra-id",
               "integrations/all/microsoft-excel",
               "api-integrations/microsoft-excel-oauth2-cc",
+              "api-integrations/microsoft-exchange-online-cc",
               "api-integrations/microsoft-intune",
               "api-integrations/microsoft-oauth2-cc",
               "api-integrations/microsoft-oauth2-cc-cert",
@@ -1716,6 +1721,7 @@
               "integrations/all/sage-intacct-oauth",
               "api-integrations/sage-member",
               "integrations/all/sage-people",
+              "api-integrations/samsara",
               "api-integrations/sap-ariba",
               "api-integrations/salescaptain",
               "api-integrations/salesforce",
@@ -1804,6 +1810,7 @@
               "integrations/all/snipe-it",
               "api-integrations/snowflake",
               "integrations/all/snowflake-jwt",
+              "api-integrations/sociality-mcp",
               "api-integrations/sophos-central",
               "api-integrations/spendesk",
               "integrations/all/splitwise",

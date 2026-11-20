@@ -1,10 +1,20 @@
 ---
-title: 'Set Nango Auth up in your app'
+title: 'Set up Nango Auth'
 sidebarTitle: 'Setup guide'
-description: 'Let users connect external accounts from your app or with a link'
+description: 'Let users connect external accounts from your AI agent, your app, or a link you share'
 ---
 
-## Add Auth to your app
+## Auth from your AI agent
+
+[Agent sessions](/guides/agent-sessions) give your agent one interface to access 10,000+ tools across all of Nango's APIs.
+
+Follow the [Quickstart](/getting-started/quickstart) to add Agent Sessions to your agent. When your backend creates a session, enable the [`nango_create_connection` meta tool](/guides/agent-sessions/meta-tools#nango_create_connection). If a task needs an account that isn’t connected, the agent calls the tool and shares the Connect link Nango returns. The user opens the link to authorize access, and the agent can then use that integration’s tools in the same session.
+
+<a id="add-auth-to-your-app"></a>
+
+## Auth from your app
+
+Let users authorize an external account from a page in your web app, then associate the resulting connection with any record in your app, such as a user, organization, or workspace.
 
 The end-to-end flow has four steps:
 
@@ -69,7 +79,7 @@ The end-to-end flow has four steps:
     In the **Connections** tab, click **Add Test Connection**, pick your integration, and authorize using a test account. The new connection's credentials appear in its *Authorization* tab — securely stored and automatically refreshed.
 
     <Accordion title="For agents">
-      Create a Connect session with a fresh test user ID in `tags.end_user_id` and the integration ID in `allowed_integrations`. With Management MCP, call `connect_session_create` and pass the target `environment`. With an Environment API key, use the [cURL example below](#share-a-connect-link).
+      Create a Connect session with a fresh test user ID in `tags.end_user_id` and the integration ID in `allowed_integrations`. With Management MCP, call `connect_session_create` and pass the target `environment`. With an Environment API key, use the [cURL example below](#auth-from-a-link-you-share).
 
       Send the returned `connect_link` to the user and ask them to authorize with a test account. Once they finish, look up the connection using the same integration ID and tag.
 
@@ -358,7 +368,9 @@ The end-to-end flow has four steps:
   </Step>
 </Steps>
 
-## Share a connect link
+<a id="share-a-connect-link"></a>
+
+## Auth from a link you share
 
 Create a Connect session from your backend and share the returned `data.connect_link` with the user. Use an Environment API key with `environment:connect_sessions:write`.
 

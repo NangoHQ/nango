@@ -3,8 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configService, NangoError, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import * as actionService from '../../../services/action.service.js';
 import { ActionExecutionError } from '../../../services/action.service.js';
+import * as actionService from '../actions/execute.js';
+import { McpActionInputError } from '../actions/execute.js';
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 import { callToolsTool } from './call.js';
 
@@ -34,7 +35,7 @@ describe('callToolsTool', () => {
     it('invokes a tool function and returns its result', async () => {
         vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(functionFixture));
         mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Ok({ data: { title: 'MCP support' } }) });
-        const executeSpy = vi.spyOn(actionService, 'executeAction');
+        const executeSpy = vi.spyOn(actionService, 'executeMcpAction');
 
         const result = await callToolsTool.handler(validArguments, context);
 
@@ -107,9 +108,39 @@ describe('callToolsTool', () => {
         }
     });
 
+    it.each([
+        { payload: { error: { message: 'Missing timeMin parameter.' } }, detail: ': Missing timeMin parameter.' },
+        { payload: { error: { message: 'x'.repeat(600) } }, detail: `: ${'x'.repeat(500)}` },
+        { payload: { request: { authorization: 'secret' } }, detail: '' }
+    ])('includes bounded function failure details: $detail', async ({ payload, detail }) => {
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(functionFixture));
+        const cause = new NangoError('script_http_error', payload);
+        mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Err(functionInvokeError('function_failed', cause)) });
+
+        const result = await callToolsTool.handler(validArguments, context);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toBe(`${cause.message}${detail}`);
+        }
+    });
+
+    it('keeps the function failure message when its cause is not a NangoError', async () => {
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(functionFixture));
+        mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Err(functionInvokeError('function_failed', new Error('private details'))) });
+
+        const result = await callToolsTool.handler(validArguments, context);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toBe('function_failed');
+        }
+    });
+
     it('falls back to executing the action', async () => {
         vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'deployed', config: actionFixture }));
-        const executeSpy = vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: 'created' }) });
+        const executeSpy = vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: 'created' }) });
 
         const result = await callToolsTool.handler(validArguments, context);
 
@@ -132,7 +163,7 @@ describe('callToolsTool', () => {
 
     it('returns action execution errors', async () => {
         vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'deployed', config: actionFixture }));
-        vi.spyOn(actionService, 'executeAction').mockResolvedValue({
+        vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({
             logCtx: undefined,
             result: Err(new ActionExecutionError({ code: 'action_failed', message: 'Action failed' }))
         });
@@ -146,9 +177,24 @@ describe('callToolsTool', () => {
         }
     });
 
+    it('returns a schema validation error that the agent can correct', async () => {
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'deployed', config: actionFixture }));
+        vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({
+            logCtx: undefined,
+            result: Err(new McpActionInputError('Invalid input: input must be object'))
+        });
+        const result = await callToolsTool.handler(validArguments, context);
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toContain('input must be object');
+            expect((result.error as PublicMcpError).code).toBe('invalid_input');
+        }
+    });
+
     it('returns an internal error when the action response is not a JSON value', async () => {
         vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'deployed', config: actionFixture }));
-        vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: undefined }) });
+        vi.spyOn(actionService, 'executeMcpAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: undefined }) });
 
         const result = await callToolsTool.handler(validArguments, context);
 
