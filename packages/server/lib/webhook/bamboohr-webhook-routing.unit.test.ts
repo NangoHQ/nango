@@ -159,7 +159,7 @@ describe('BambooHR webhook routing', () => {
 
         const result = await BambooHrWebhookRouting.default(nango, getSignedHeaders(rawBody, 'wrong-secret'), body, rawBody, QUERY);
 
-        expect(result.isErr()).toBe(true);
+        expect(result.isErr() && result.error).toMatchObject({ type: 'webhook_invalid_signature' });
         expect(execute).not.toHaveBeenCalled();
     });
 
@@ -172,7 +172,7 @@ describe('BambooHR webhook routing', () => {
 
         const result = await BambooHrWebhookRouting.default(nango, getSignedHeaders(rawBody), tamperedBody, tampered, QUERY);
 
-        expect(result.isErr()).toBe(true);
+        expect(result.isErr() && result.error).toMatchObject({ type: 'webhook_invalid_signature' });
         expect(execute).not.toHaveBeenCalled();
     });
 
@@ -184,7 +184,7 @@ describe('BambooHR webhook routing', () => {
 
         const result = await BambooHrWebhookRouting.default(nango, headers, body, rawBody, QUERY);
 
-        expect(result.isErr()).toBe(true);
+        expect(result.isErr() && result.error).toMatchObject({ type: 'webhook_invalid_signature' });
         expect(execute).not.toHaveBeenCalled();
     });
 
@@ -196,7 +196,7 @@ describe('BambooHR webhook routing', () => {
 
         const result = await BambooHrWebhookRouting.default(nango, getSignedHeaders(rawBody, CONNECTION_SECRET, stale), body, rawBody, QUERY);
 
-        expect(result.isErr()).toBe(true);
+        expect(result.isErr() && result.error).toMatchObject({ type: 'webhook_invalid_signature' });
         expect(execute).not.toHaveBeenCalled();
     });
 });
