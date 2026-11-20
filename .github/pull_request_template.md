@@ -4,7 +4,9 @@
 <!-- Issue ticket number and link (if applicable) -->
 
 <!-- self-managed-impact:start -->
-## Self-managed impact (self-hosted & BYOC)
+<details>
+<summary>Self-managed impact (self-hosted &amp; BYOC)</summary>
+
 <!-- Think from the point of view of an admin upgrading from several versions back, in one step, on a large database.
      Tick "None", or every option that applies. -->
 
@@ -23,4 +25,5 @@
      - Upgrade path: which version must be installed first?
      - Infra: which components? -->
 
+</details>
 <!-- self-managed-impact:end -->

@@ -36,14 +36,14 @@ On the same **Configuration** page, compare the **Microsoft App ID** with the cl
 
 ### 4. Send a test message
 
-Message the bot in Teams, then open the [Logs](https://app.nango.dev/dev/logs) tab in Nango. The activity shows up there once something consumes it, either [webhook forwarding](/guides/platform/webhook-forwarding) or a sync subscribed to its type (see [Handle the webhook](#handle-the-webhook)). Nango rejects an activity that fails verification with a `401`, so it never reaches your app or Logs. If activities don't show up, check the client ID first ([step 3](#3-check-the-client-id)).
+Message the bot in Teams, then open the [Logs](https://app.nango.dev/dev/logs) tab in Nango. The activity shows up there once something consumes it, either [webhook forwarding](/guides/triggers/webhook-forwarding) or a sync subscribed to its type (see [Handle the webhook](#handle-the-webhook)). Nango rejects an activity that fails verification with a `401`, so it never reaches your app or Logs. If activities don't show up, check the client ID first ([step 3](#3-check-the-client-id)).
 
 ## Handle the webhook
 
 Once routed, you have two options:
 
-- **Forward it to your app**: Nango forwards the activity to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
-- **Process it in a sync**: run a sync when the activity arrives using `webhookSubscriptions` and `onWebhook`. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+- **Forward it to your app**: Nango forwards the activity to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync**: run a sync when the activity arrives using `webhookSubscriptions` and `onWebhook`. See [Real-time syncs](/guides/syncs/realtime-syncs).
 
 Subscriptions match the activity's `type`, for example `message`, `conversationUpdate`, `messageReaction` or `invoke`. Use `['*']` to receive every type.
 

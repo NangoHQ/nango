@@ -222,8 +222,9 @@ describe('createConnectionTool', () => {
         const result = await callCreateConnection({ integration: 'slack' });
 
         expect(codeOf(result)).toBe('resource_capped');
-        expect(errorOf(result).message).toContain('Reached maximum number of allowed connections.');
-        expect(errorOf(result).message).toContain('Trying again will not help');
+        expect(errorOf(result).message).toBe(
+            "Integration 'slack' cannot be connected because the account has reached the connection limit of its plan. Trying again will not help, so tell the user."
+        );
     });
 
     it('rejects a missing integration argument, and tracks it as the reason', async () => {

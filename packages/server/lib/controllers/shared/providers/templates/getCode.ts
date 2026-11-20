@@ -2,7 +2,7 @@ import { findCatalogFunctions, remoteFileService } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import type { RequestLocals } from '../../../../utils/express.js';
-import type { GetPublicProviderTemplateCode, ScriptTypeLiteral } from '@nangohq/types';
+import type { FunctionListType, GetPublicProviderTemplateCode } from '@nangohq/types';
 import type { Response } from 'express';
 
 export async function handleGetProviderTemplateCode({
@@ -14,7 +14,7 @@ export async function handleGetProviderTemplateCode({
     res: Response<GetPublicProviderTemplateCode['Reply'], RequestLocals>;
     provider: string;
     name: string;
-    type: ScriptTypeLiteral | undefined;
+    type: FunctionListType | undefined;
 }): Promise<void> {
     const matches = findCatalogFunctions({ provider, name, type });
 

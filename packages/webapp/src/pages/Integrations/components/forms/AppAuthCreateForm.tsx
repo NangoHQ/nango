@@ -100,7 +100,7 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
                     <Alert variant="info">
                         <AlertDescription>Pre-approved apps that work in production. Review the trade-offs before you go live.</AlertDescription>
                         <AlertActions>
-                            <AlertButtonLink to="https://nango.dev/docs/guides/auth/auth-guide#nango-managed-oauth-apps" target="_blank">
+                            <AlertButtonLink to="https://nango.dev/docs/guides/auth/overview#nango-managed-oauth-apps" target="_blank">
                                 Read the trade-offs <ExternalLinkIcon />
                             </AlertButtonLink>
                         </AlertActions>
@@ -125,7 +125,7 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
 
                     <div>
                         <Button loading={loading} onClick={onCreatePreProvisioned}>
-                            Create
+                            Add integration
                         </Button>
                     </div>
                 </div>
@@ -208,7 +208,7 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
 
                             <div>
                                 <Button type="submit" loading={loading}>
-                                    Create
+                                    Add integration
                                 </Button>
                             </div>
                         </form>

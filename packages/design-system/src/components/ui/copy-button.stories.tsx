@@ -17,7 +17,6 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const SIZE_SPEC: Record<(typeof COPY_BUTTON_SIZES)[number], string> = {
-    '2xs': '20 · icon 14',
     xs: '24 · icon 12',
     sm: '28 · icon 14'
 };

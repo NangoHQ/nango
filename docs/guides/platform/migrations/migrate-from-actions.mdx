@@ -4,7 +4,7 @@ sidebarTitle: 'Actions to tools'
 description: 'Move on-demand integrations to tools while preserving existing action callers.'
 ---
 
-Actions are deprecated. Use [Tools](/guides/functions/tools) for new on-demand functions. The existing [action APIs](/guides/functions/action-functions) will continue to work but will eventually be deprecated.
+Actions are deprecated. Use [Tools](/guides/tools/customize-tools) for new on-demand functions. The existing [action APIs](/guides/platform/functions/action-functions) will continue to work but will eventually be deprecated.
 
 ## Who is impacted
 
@@ -48,7 +48,7 @@ Use a Nango Environment API key from **Environment Settings > API Keys** as `Aut
 3. Change `exec: async (nango, input)` to `exec: async (nango, trigger)` and read the input from `trigger.input`.
 4. Remove action-only configuration such as `version` and `endpoint`. Move a `metadata` schema to `data.metadata`. Move descriptive provider scopes from `scopes` to `meta.requiredScopes`, for example `scopes.all('repo')`; they remain indicative, not enforced. Use `meta.instructions` for agent guidance.
 5. Replace `nango.ActionError` with `nango.Error`. The payload is returned as `error.payload` with the `function_runtime_error` code.
-6. Import the tool from `index.ts`, dry run it with realistic input and `--validate`, then deploy. See [Tools](/guides/functions/tools#create-a-tool) for a complete example.
+6. Import the tool from `index.ts`, dry run it with realistic input and `--validate`, then deploy. See [Tools](/guides/tools/customize-tools#create-a-tool) for a complete example.
 
 ### Example: Create a GitHub issue
 

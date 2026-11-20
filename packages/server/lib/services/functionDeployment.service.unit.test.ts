@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getFlags } from '@nangohq/feature-flags';
 import * as sandbox from '@nangohq/sandbox';
 import * as shared from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import flowService from './flow.service.js';
 import { deployFunction, deployTemplate, getDeploymentStatus } from './functionDeployment.service.js';
 import * as integrationTemplateService from './integrationTemplate.service.js';
 
@@ -431,6 +433,42 @@ describe('functionDeploymentService', () => {
                 message: "'settings' exists as both a sync and an action; specify 'function_type' to disambiguate"
             });
         }
+    });
+
+    it.skip.each([
+        { enabled: true, function_type: undefined },
+        { enabled: false, function_type: undefined },
+        { enabled: true, function_type: 'action' },
+        { enabled: false, function_type: 'action' }
+    ] as const)('rejects catalog tool templates ($enabled, $function_type)', async ({ enabled, function_type }) => {
+        vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(enabled);
+        const definition = shared
+            .listCatalogEntries('replicate')
+            .find(
+                (entry) => entry.type === 'tool' && !flowService.getFlowByIntegrationAndName({ provider: entry.provider, type: 'sync', scriptName: entry.name })
+            );
+        if (definition?.type !== 'tool') {
+            throw new Error('Expected a catalog tool without a legacy template');
+        }
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue({
+            id: 12,
+            unique_key: 'custom-replicate',
+            provider: definition.provider
+        } as Config);
+
+        const result = await deployTemplate({
+            account,
+            environment,
+            plan: null,
+            body: {
+                type: 'template',
+                integration_id: 'custom-replicate',
+                template: definition.name,
+                ...(function_type ? { function_type } : {})
+            }
+        });
+
+        expect(result.isErr() && result.error).toMatchObject({ code: 'template_not_found' });
     });
 
     it.each(['tool', 'function'] as const)('rejects a %s template before deploying', async (function_type) => {

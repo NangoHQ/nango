@@ -20,7 +20,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
-const SIZES = ['2xs', 'xs', 'sm', 'md', 'lg'] as const;
+const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
 
 export const AllVariants: Story = {
     name: 'All variants',

@@ -14,9 +14,7 @@ import type { ApiError, ApiIntegration, ListedNangoActionFunction, ListedNangoSy
 export const FunctionSwitch: React.FC<{
     flow: ListedNangoSyncFunction | ListedNangoActionFunction;
     integration: ApiIntegration;
-    /** Checked track. Sync rows use success (green); the default track is the brand color. */
-    variant?: 'default' | 'success';
-}> = ({ flow, integration, variant = 'default' }) => {
+}> = ({ flow, integration }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
 
@@ -133,9 +131,7 @@ export const FunctionSwitch: React.FC<{
                 {(allowed) => (
                     <Switch
                         name="script"
-                        variant={variant}
                         checked={flow.enabled}
-                        className="cursor-pointer"
                         disabled={loading || !allowed || flow.source === 'tools-catalog'}
                         onClick={(e) => {
                             e.preventDefault();

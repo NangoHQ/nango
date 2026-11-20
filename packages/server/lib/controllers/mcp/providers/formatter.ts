@@ -1,15 +1,12 @@
 import { basePublicUrl } from '@nangohq/utils';
 
-import { toNangoFunction } from '../../../formatters/function.js';
+import { providerTemplatesToApi } from '../../../formatters/provider.js';
 
 import type { RetrievedProvider } from '../../../services/provider.service.js';
 import type { GetProviderOutput } from './schema.js';
 
 export function providerToMcp({ name, provider, templates }: RetrievedProvider): GetProviderOutput {
-    const formattedTemplates = templates?.flatMap((template) => {
-        const fn = toNangoFunction(template);
-        return fn ? [fn] : [];
-    });
+    const formattedTemplates = templates === undefined ? undefined : providerTemplatesToApi(templates);
 
     return {
         ...provider,

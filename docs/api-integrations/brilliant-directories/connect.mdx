@@ -1,0 +1,52 @@
+---
+title: 'Brilliant Directories - How do I link my account?'
+sidebarTitle: 'Brilliant Directories'
+---
+
+## Overview
+
+To authenticate with Brilliant Directories, you need:
+
+1. **Website Domain** — the domain of your Brilliant Directories website.
+2. **API Key** — a key generated in your website's Admin Panel.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- Access to your Brilliant Directories website's Admin Panel.
+
+### Step 1: Find your website domain
+
+Your website domain is the address of your Brilliant Directories website, for example `www.yourdomain.com`. Include `www.` if your site uses it, and leave out `https://` and any trailing slash.
+
+If you have not connected your own domain yet, use the address shown on your website's card on the Admin Panel **Dashboard** (for example `launch12345.directoryup.com`).
+
+### Step 2: Generate an API key
+
+1. Log in to your website's Admin Panel and click **Developer Hub** in the left menu.
+
+<img src="/api-integrations/brilliant-directories/open_developer_hub.png" alt="Brilliant Directories Admin Panel with Developer Hub in the left menu"/>
+
+2. On the **Manage API Keys** card, click **Manage API Keys**.
+
+<img src="/api-integrations/brilliant-directories/manage_api_keys_card.png" alt="Brilliant Directories Developer Hub page with the Manage API Keys button"/>
+
+3. Click **Generate API Key**, enter an **API Key nickname** that says what the key is for, then click **Generate API Key**.
+
+<img src="/api-integrations/brilliant-directories/generate_api_key_dialog.png" alt="Brilliant Directories Generate API Key dialog with the API Key nickname field"/>
+
+4. In the **Save API Key – Only Shown Once** window, click the copy button and store the key somewhere safe. It is shown only once: if you lose it, generate a new one.
+
+<img src="/api-integrations/brilliant-directories/copy_api_key.png" alt="Brilliant Directories Save API Key window with the copy button"/>
+
+5. Optionally, click **Configure Permissions** to choose the endpoints the key can access. A new key starts with all Standard Endpoints enabled and all Advanced Endpoints disabled.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Brilliant Directories.
+2. Enter your website domain from Step 1 in the **Website Domain** field.
+3. Paste the API key you copied in Step 2 into the **API Key** field.
+4. Submit the form.
+
+<img src="/api-integrations/brilliant-directories/form.png" alt="Brilliant Directories Connect UI form with the Website Domain and API Key fields" style={{maxWidth: "450px" }}/>

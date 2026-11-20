@@ -1,0 +1,82 @@
+---
+title: 'ZeroBounce'
+sidebarTitle: 'ZeroBounce'
+description: 'Integrate your application with the ZeroBounce API'
+---
+
+## 🚀 Quickstart
+
+Connect to ZeroBounce with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _ZeroBounce_.
+    </Step>
+    <Step id="authorize-zerobounce" title="Authorize ZeroBounce">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then choose your region and enter your ZeroBounce API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-zerobounce-api" title="Call the ZeroBounce API">
+    Let's make your first request to the ZeroBounce API to get your credit balance. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/getcredits" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/getcredits',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 ZeroBounce integration guides
+
+- [How do I link my account?](/api-integrations/zerobounce/connect)  
+Choose your region and create a ZeroBounce API key to connect in the Connect UI.
+
+Official docs: [ZeroBounce API](https://www.zerobounce.net/docs/email-validation-api-quickstart)
+
+## 🧩 Pre-built syncs & tools for ZeroBounce
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/zerobounce/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- The bulk file endpoints, such as `/v2/sendfile`, are on `https://bulkapi.zerobounce.net`, not the region host. Set `baseUrlOverride` to `https://bulkapi.zerobounce.net` for these calls; Nango keeps the connection's credentials. See [Send File (v2)](https://www.zerobounce.net/docs/email-validation-api-quickstart/v2-send-file).
+- Nango sends the key as the `api_key` query parameter on every call. Calls that need it in the request body (an `application/x-www-form-urlencoded` POST) can read it from the connection's credentials (`credentials.apiKey`) and pass it as the ZeroBounce docs show.
+
+---

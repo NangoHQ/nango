@@ -177,7 +177,7 @@ export const ImpersonateForm: React.FC = () => {
                     {needsEnrollment && (
                         <div className="mt-1 mx-4">
                             <LinkButton asChild size="lg">
-                                <Link to="/user-settings/enable-2fa">Enroll 2FA</Link>
+                                <Link to="/profile/enable-2fa">Enroll 2FA</Link>
                             </LinkButton>
                         </div>
                     )}

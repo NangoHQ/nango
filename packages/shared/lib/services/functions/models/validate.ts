@@ -3,6 +3,7 @@ import addFormats from 'ajv-formats';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import type { CatalogFunctionDefinition } from '../../catalog/reader.js';
 import type { DBFunctionConfigVersion, ValidationError } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AnySchema, ErrorObject, ValidateFunction } from 'ajv';
@@ -25,7 +26,10 @@ addFormats(ajv);
 // ajv owns the schema cache,
 // but we maintain a LRU cache of version id to validator status
 // to avoid re-compiling schemas unnecessarily and evict the oldest entries.
-const validatorCache = new Map<number, 'valid' | 'invalid'>();
+const validatorCache = new Map<number | string, 'valid' | 'invalid'>();
+
+type FunctionInputDefinition = Pick<DBFunctionConfigVersion, 'input_schema_ref' | 'json_schema'> &
+    ({ id: number } | Pick<CatalogFunctionDefinition, 'uuid' | 'version'>);
 
 export function clearFunctionInputValidatorCache(): void {
     for (const [versionId, status] of validatorCache) {
@@ -46,7 +50,7 @@ export class FunctionInputValidationError extends Error {
     }
 }
 
-export function validateFunctionInput(version: DBFunctionConfigVersion, input: unknown): Result<JsonValue, FunctionInputValidationError> {
+export function validateFunctionInput(version: FunctionInputDefinition, input: unknown): Result<JsonValue, FunctionInputValidationError> {
     if (!version.input_schema_ref) {
         return input === undefined ? Ok(null) : Err(new FunctionInputValidationError('unexpected_function_input'));
     }
@@ -68,12 +72,13 @@ export function validateFunctionInput(version: DBFunctionConfigVersion, input: u
     }
 }
 
-function getValidator(version: DBFunctionConfigVersion): ValidateFunction<JsonValue> | null {
-    const cached = validatorCache.get(version.id);
+function getValidator(version: FunctionInputDefinition): ValidateFunction<JsonValue> | null {
+    const versionId = 'id' in version ? version.id : `catalog:${version.uuid.toLowerCase()}:${version.version}`;
+    const cached = validatorCache.get(versionId);
     if (cached) {
         // Re-insert the cached validator to mark it as recently used
-        validatorCache.delete(version.id);
-        validatorCache.set(version.id, cached);
+        validatorCache.delete(versionId);
+        validatorCache.set(versionId, cached);
 
         // If the cached validator is marked as invalid,
         // return null to indicate that validation cannot proceed
@@ -83,17 +88,17 @@ function getValidator(version: DBFunctionConfigVersion): ValidateFunction<JsonVa
 
         // If the cached validator is marked as valid,
         // retrieve it from Ajv and return it
-        const validate = ajv.getSchema<JsonValue>(validatorSchemaId(version.id));
+        const validate = ajv.getSchema<JsonValue>(validatorSchemaId(versionId));
         if (validate) {
             return validate;
         }
 
         // If the cached validator is marked as valid but not found in Ajv,
         // remove it from the cache and proceed to recompile it
-        validatorCache.delete(version.id);
+        validatorCache.delete(versionId);
     }
 
-    const schemaId = validatorSchemaId(version.id);
+    const schemaId = validatorSchemaId(versionId);
     try {
         ajv.addSchema({ ...version.json_schema, $id: schemaId, $ref: version.input_schema_ref } as AnySchema);
         const validate = ajv.getSchema<JsonValue>(schemaId);
@@ -101,18 +106,18 @@ function getValidator(version: DBFunctionConfigVersion): ValidateFunction<JsonVa
             throw new Error('failed_to_compile_function_input_schema');
         }
 
-        validatorCache.set(version.id, 'valid');
+        validatorCache.set(versionId, 'valid');
         return validate;
     } catch {
         ajv.removeSchema(schemaId);
-        validatorCache.set(version.id, 'invalid');
+        validatorCache.set(versionId, 'invalid');
         return null;
     } finally {
         tryEvictValidator();
     }
 }
 
-function validatorSchemaId(versionId: number): string {
+function validatorSchemaId(versionId: number | string): string {
     return `nango:function:input:${versionId}`;
 }
 

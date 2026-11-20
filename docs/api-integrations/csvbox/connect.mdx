@@ -1,0 +1,47 @@
+---
+title: CSVbox - How do I link my account?
+sidebarTitle: CSVbox
+---
+
+## Overview
+
+To authenticate with CSVbox, you need:
+1. **API Key** - The API key of your CSVbox account.
+2. **Secret API Key** - The API secret key issued alongside it.
+
+This guide will walk you through generating both keys in your CSVbox dashboard.
+
+### Prerequisites
+
+- A [CSVbox](https://app.csvbox.io/register) account. The free Sandbox plan works.
+
+### Instructions
+
+#### Step 1: Generate your API keys
+
+1. Log in to the [CSVbox dashboard](https://app.csvbox.io/).
+2. Click your profile name in the top-right corner, then choose **API Keys**.
+
+<img src="/api-integrations/csvbox/profile_menu_api_keys.png" alt="CSVbox profile menu with the API Keys option" />
+
+3. On the **API & Encryption Keys** page, in the **API Keys** section, click **Generate Key** to create your **API Key**. If a key already exists, the button reads **Regenerate Key**: skip this step and copy the existing key.
+
+<img src="/api-integrations/csvbox/generate_api_key.png" alt="CSVbox API & Encryption Keys page with the Generate Key button" />
+
+4. If the **API Secret Key** field is empty, click **Generate API Secret Key**.
+5. Use the **Copy** buttons to copy the **API Key** and the **API Secret Key**.
+
+<img src="/api-integrations/csvbox/api_keys_generated.png" alt="CSVbox API Keys section with the API Key and API Secret Key fields and their Copy buttons" />
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have both keys:
+
+1. Open the form where you need to authenticate with CSVbox.
+2. Enter the **API Key** in the **API Key** field.
+3. Enter the **API Secret Key** in the **Secret API Key** field.
+4. Submit the form. Nango checks the keys with CSVbox, and you are connected once they are accepted.
+
+<img src="/api-integrations/csvbox/form.png" alt="CSVbox connection form in Nango Connect UI with the API Key and Secret API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to CSVbox.
