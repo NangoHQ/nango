@@ -190,6 +190,10 @@
       "destination": "/guides/auth/overview"
     },
     {
+      "source": "/guides/auth/share-connect-link",
+      "destination": "/guides/auth/setup#share-a-connect-link"
+    },
+    {
       "source": "/guides/platform/proxy-requests",
       "destination": "/guides/auth/proxy-requests"
     },
@@ -322,12 +326,11 @@
                 "expanded": false,
                 "pages": [
                   "guides/auth/overview",
+                  "guides/auth/setup",
                   "guides/auth/customize-connect-ui",
-                  "guides/auth/share-connect-link",
                   "guides/auth/connection-tags-configuration-metadata",
-                  "guides/auth/proxy-requests",
                   "guides/auth/token-refreshing",
-                  "guides/auth/mcp-auth"
+                  "guides/auth/proxy-requests"
                 ]
               },
               {
@@ -392,7 +395,6 @@
                   "guides/platform/security",
                   "guides/platform/audit-trail",
                   "guides/platform/limits",
-                  "guides/platform/common-issues",
                   {
                     "group": "Self-Hosting",
                     "pages": [
