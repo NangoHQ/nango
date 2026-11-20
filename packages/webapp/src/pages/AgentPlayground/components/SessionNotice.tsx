@@ -8,17 +8,10 @@ import { StatusIcon } from './ToolCallCard';
 
 import type { AgentPlaygroundSessionCreated } from '@nangohq/types';
 
-function integrationList(names: string[]): string {
-    if (names.length === 0) {
-        return 'your current integrations';
-    }
-    return `the ${names.join(' and ')} ${names.length === 1 ? 'integration' : 'integrations'}`;
-}
-
-function sessionExplanation(reason: AgentPlaygroundSessionCreated['reason'], newIntegrations: string[]): string {
+function sessionExplanation(reason: AgentPlaygroundSessionCreated['reason']): string {
     switch (reason) {
         case 'integrations_changed':
-            return `A session's integrations are set when it starts, so the playground started a new session that includes ${integrationList(newIntegrations)}.`;
+            return "A session's integrations are set when it starts, so the playground started a new session that includes your new integrations.";
         case 'connections_changed':
             return 'Your connections changed since the last session started, so the playground started a new session that uses your current connections.';
         case 'expired':
@@ -28,11 +21,7 @@ function sessionExplanation(reason: AgentPlaygroundSessionCreated['reason'], new
     }
 }
 
-export const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced: boolean; newIntegrations: string[] }> = ({
-    created,
-    replaced,
-    newIntegrations
-}) => {
+export const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced: boolean }> = ({ created, replaced }) => {
     return (
         <Collapsible className="group/session flex flex-col gap-3">
             <CollapsibleTrigger className="mr-[17px] flex min-h-7 items-center gap-2 rounded-ds-xs text-left focus-visible:outline-offset-4 text-body-medium-regular text-text-secondary hover:text-text-default">
@@ -46,7 +35,7 @@ export const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; r
                 </span>
             </CollapsibleTrigger>
             <CollapsibleContent className="flex flex-col gap-3">
-                <PlaygroundEventExplanation>{sessionExplanation(created.reason, newIntegrations)}</PlaygroundEventExplanation>
+                <PlaygroundEventExplanation>{sessionExplanation(created.reason)}</PlaygroundEventExplanation>
                 <CodeBlock
                     title="POST /sessions"
                     language="json"

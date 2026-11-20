@@ -126,11 +126,9 @@ const GROUP_ENTRIES: ReplyEntry[] = [
     { kind: 'tool', key: LIST_ISSUES.toolCallId, part: LIST_ISSUES }
 ];
 
-const Session: React.FC<{ reason?: AgentPlaygroundSessionCreated['reason']; replaced?: boolean; newIntegrations?: string[] }> = ({
-    reason,
-    replaced = false,
-    newIntegrations = []
-}) => <SessionNotice created={{ request: SESSION_REQUEST, ...(reason ? { reason } : {}) }} replaced={replaced} newIntegrations={newIntegrations} />;
+const Session: React.FC<{ reason?: AgentPlaygroundSessionCreated['reason']; replaced?: boolean }> = ({ reason, replaced = false }) => (
+    <SessionNotice created={{ request: SESSION_REQUEST, ...(reason ? { reason } : {}) }} replaced={replaced} />
+);
 
 const Setup: React.FC<{ value: AgentPlaygroundIntegrationSetup; added?: ReadonlyMap<string, string> }> = ({ value, added = NO_INTEGRATIONS }) => (
     <IntegrationSetupNotice env={ENV} setup={value} labels={LABELS} addedIntegrations={added} onTryAgain={noop} />
@@ -164,7 +162,7 @@ export const AllStates: Story = {
             <Label>first session</Label>
             <Session />
             <Label>integrations_changed</Label>
-            <Session reason="integrations_changed" replaced newIntegrations={['SendGrid']} />
+            <Session reason="integrations_changed" replaced />
             <Label>connections_changed</Label>
             <Session reason="connections_changed" replaced />
             <Label>expired</Label>
@@ -197,7 +195,7 @@ export const MidChatSetUp: Story = {
         <>
             <Setup value={setup('sendgrid', 'created', { integrationId: 'sendgrid', displayName: 'SendGrid' })} />
             <Markdown>SendGrid is available now; I&apos;ll look for its email-sending action.</Markdown>
-            <Session reason="integrations_changed" replaced newIntegrations={['SendGrid']} />
+            <Session reason="integrations_changed" replaced />
             <Card part={SEARCH} />
             <Card part={CONNECT} />
             <Markdown>Please connect HubSpot using the Connect button, and I&apos;ll carry on once it&apos;s connected.</Markdown>
@@ -211,7 +209,7 @@ export const PlaygroundActions: Story = {
         <>
             <Heading>Adds an integration mid-chat</Heading>
             <Setup value={setup('sendgrid', 'created', { integrationId: 'sendgrid', displayName: 'SendGrid' })} />
-            <Session reason="integrations_changed" replaced newIntegrations={['SendGrid']} />
+            <Session reason="integrations_changed" replaced />
             <Card part={SEARCH} />
 
             <Heading>Uses an existing integration</Heading>
@@ -230,7 +228,7 @@ export const PlaygroundActions: Story = {
             <Heading>Production, after the one-click add</Heading>
             <Session />
             <Setup value={setup('sendgrid', 'needs_confirmation', { displayName: 'SendGrid' })} added={new Map([['sendgrid', 'sendgrid']])} />
-            <Session reason="integrations_changed" replaced newIntegrations={['SendGrid']} />
+            <Session reason="integrations_changed" replaced />
             <Card part={SEARCH} />
             <Card part={CONNECT} />
         </>

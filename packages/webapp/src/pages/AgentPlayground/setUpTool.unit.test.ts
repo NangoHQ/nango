@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { continueOncePerSetUp, createdIntegrationIds, providersToAdd, setupsSinceLastSession } from './setUpTool';
+import { continueOncePerSetUp, createdIntegrationIds, providersToAdd } from './setUpTool';
 
 import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
-import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundSessionCreated } from '@nangohq/types';
+import type { AgentPlaygroundIntegrationSetup } from '@nangohq/types';
 
 const setUpPart = (setups: AgentPlaygroundIntegrationSetup[]): PlaygroundMessage['parts'][number] => ({
     type: 'dynamic-tool',
@@ -146,43 +146,5 @@ describe('createdIntegrationIds', () => {
         ]);
 
         expect(createdIntegrationIds(messages)).toEqual(['pg-google-mail']);
-    });
-});
-
-const SESSION_CREATED = { request: { toolset: '*' } } as unknown as AgentPlaygroundSessionCreated;
-
-describe('setupsSinceLastSession', () => {
-    it('collects setups from the starter prompt and earlier replies until the previous session', () => {
-        const messages: PlaygroundMessage[] = [
-            {
-                id: 'first',
-                role: 'assistant',
-                parts: [],
-                metadata: { sessionCreated: SESSION_CREATED, integrationSetup: { provider: 'github', outcome: 'created' } }
-            },
-            { id: 'second', role: 'assistant', parts: [setUpPart([{ provider: 'slack', outcome: 'needs_developer_app' }])] },
-            { id: 'user', role: 'user', parts: [{ type: 'text', text: 'Now use SendGrid' }] },
-            {
-                id: 'third',
-                role: 'assistant',
-                parts: [setUpPart([{ provider: 'sendgrid', integrationId: 'sendgrid', outcome: 'created' }])],
-                metadata: { sessionCreated: { ...SESSION_CREATED, reason: 'integrations_changed' } }
-            }
-        ];
-
-        expect(setupsSinceLastSession(messages, 3).map((setup) => setup.provider)).toEqual(['slack', 'sendgrid']);
-    });
-
-    it('includes the setups of the message that started the first session', () => {
-        const messages: PlaygroundMessage[] = [
-            {
-                id: 'first',
-                role: 'assistant',
-                parts: [],
-                metadata: { sessionCreated: SESSION_CREATED, integrationSetup: { provider: 'github', outcome: 'created' } }
-            }
-        ];
-
-        expect(setupsSinceLastSession(messages, 0).map((setup) => setup.provider)).toEqual(['github']);
     });
 });

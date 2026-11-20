@@ -37,18 +37,6 @@ function messageSetups(message: PlaygroundMessage): AgentPlaygroundIntegrationSe
     return [...(starter ? [starter] : []), ...message.parts.flatMap((part) => (part.type === 'dynamic-tool' && isSetUpPart(part) ? setUpResults(part) : []))];
 }
 
-export function setupsSinceLastSession(messages: PlaygroundMessage[], index: number): AgentPlaygroundIntegrationSetup[] {
-    const setups: AgentPlaygroundIntegrationSetup[] = [];
-    for (let i = index; i >= 0; i--) {
-        const message = messages[i];
-        if (!message || (i < index && message.metadata?.sessionCreated)) {
-            break;
-        }
-        setups.unshift(...messageSetups(message));
-    }
-    return setups;
-}
-
 export function providersToAdd(message: PlaygroundMessage | undefined): string[] {
     if (message?.role !== 'assistant') {
         return [];

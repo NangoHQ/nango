@@ -41,7 +41,7 @@ import { ToolCallCard } from './components/ToolCallCard';
 import { ToolCallGroup } from './components/ToolCallGroup';
 import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
-import { continueOncePerSetUp, createdIntegrationIds, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults, setupsSinceLastSession } from './setUpTool';
+import { continueOncePerSetUp, createdIntegrationIds, isSetUpPart, providersToAdd, setUpApps, setUpResults } from './setUpTool';
 import { providerName, STARTER_PROMPTS } from './starterPrompts';
 import { hideTrailingLink } from './streamingMarkdown';
 import { integrationLabels, labelFor } from './toolDisplay';
@@ -329,12 +329,6 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
     }, [messages]);
 
     const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
-    const newIntegrationNames = (index: number): string[] => {
-        const setups = setupsSinceLastSession(messages, index).filter(
-            (setup) => setup.outcome === 'created' || (!isAdded(setup) && addedIntegrations.has(setup.provider))
-        );
-        return [...new Set(setups.map((setup) => setup.displayName || providerName(setup.provider)))];
-    };
 
     const sendFromComposer = (text: string): boolean => {
         // An edited draft may ask about another app. Only an unedited one sets up its starter's integration.
@@ -395,9 +389,7 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                         return null;
                     }
                     const sessionCreated = message.metadata?.sessionCreated;
-                    const sessionNotice = sessionCreated && (
-                        <SessionNotice created={sessionCreated} replaced={message.id !== firstSessionMessageId} newIntegrations={newIntegrationNames(index)} />
-                    );
+                    const sessionNotice = sessionCreated && <SessionNotice created={sessionCreated} replaced={message.id !== firstSessionMessageId} />;
                     const chatActive = message === lastMessage && busy;
                     const renderEntry = (entry: ReplyEntry) => {
                         if (entry.kind === 'text') {
