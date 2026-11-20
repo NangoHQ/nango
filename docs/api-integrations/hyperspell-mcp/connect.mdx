@@ -1,0 +1,55 @@
+---
+title: 'Hyperspell (MCP) - How do I link my account?'
+sidebarTitle: 'Hyperspell (MCP)'
+---
+
+## Overview
+
+To authenticate with Hyperspell (MCP), you need:
+
+1. **Region** — the Hyperspell region your account was created in.
+2. **API Key** — a Hyperspell API key from that region.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Hyperspell account. Creating an organization API key requires an admin.
+
+### Step 1: Find your region
+
+You choose a region when you create your Hyperspell account. The dashboard you sign in to tells you which one it is:
+
+| Region | Dashboard | Value to select |
+|--------|-----------|-----------------|
+| United States (default) | `app.hyperspell.com` | `api.hyperspell.com` |
+| European Union | `app.eu.hyperspell.com` | `api.eu.hyperspell.com` |
+
+An API key only works in the region it was created in. See [Data residency](https://docs.hyperspell.com/resources/data-residency).
+
+### Step 2: Get your API key
+
+Use a personal key to connect as yourself, or an organization key for a team-wide agent.
+
+**Personal key**
+
+1. Sign in to the Hyperspell dashboard for your region.
+2. Go to **Settings** → **Connect Agents** and choose **MCP clients**.
+3. Copy the API key pre-filled in the dialog. This key acts as you, so treat it like a password.
+
+**Organization key** (admins only)
+
+1. Go to **Settings** → **API Keys** and create a key.
+2. Copy the key. It is shown only once, at creation.
+
+Hyperspell API keys start with `hs2-`. See [Connect via MCP](https://docs.hyperspell.com/agents/mcp) for details.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Hyperspell (MCP).
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/hyperspell-mcp/form.png" alt="Hyperspell (MCP) connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Hyperspell (MCP).
