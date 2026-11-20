@@ -1,37 +1,29 @@
 ---
-title: "Connection tags, configuration, and metadata"
-sidebarTitle: "Tags, configuration & metadata"
-description: "Use tags, connection configuration, and metadata for the right connection-level data."
+title: "Connection tags, config, and metadata"
+sidebarTitle: "Tags & configuration"
+description: "Find the right connection and store the settings your app and integrations need"
 ---
-
-<Info>
-  Pre-requisite: complete the [Set up an integration](/guides/auth/overview#guide) section of the Auth guide.
-</Info>
 
 A Nango connection can store several kinds of information besides credentials. Use the right field depending on what the data does.
 
 | Field | Use it for | Example |
 | --- | --- | --- |
-| `tags` | Attribution, filtering, routing, and webhook reconciliation. | `end_user_id`, `organization_id`, `workspace_id` |
-| `connection_config` | Provider-specific information required for the connection to be valid or usable. | `subdomain`, `tenantId`, `region`, API base URL |
-| `metadata` | Your own application or function configuration stored on the connection. | field mappings, selected folder IDs, feature flags |
+| `tags` | Link connections to your app's records, find them later, and scope access | `end_user_id`, `organization_id`, `workspace_id` |
+| `connection_config` | Provider-specific information required for the connection to be valid or usable | `subdomain`, `tenantId`, `region`, API base URL |
+| `metadata` | Your own application or function configuration stored on the connection | field mappings, selected folder IDs, feature flags |
 
 ## Connection tags
 
-Tags are small key/value strings you attach to a Connect session. Nango copies them to the resulting connection and includes them in auth webhooks.
+Connection tags are key-value labels that link a Nango connection to the user, organization, project, workspace, or other entity it belongs to in your app.
 
-Their primary purpose is **attribution**. Nango uses random UUIDs as connection IDs, so tags are the bridge between a Nango connection and the user, organization, workspace, or other entity in your system.
+Example tags include `end_user_id: user_123`, `organization_id: org_456`, `workspace_id: ws_789`, and `department: finance`.
 
-Most apps start with these tags:
+Choose tags based on how your app needs to [find connections](#filter-connections-by-tags) and control access. For an internal integration, you can tag Finance's shared connections with `department: finance` and [scope an agent session](/guides/agent-sessions/tenant#select-connections-by-tags-recommended) to that department.
 
-- `end_user_id`
-- `end_user_email`
-- `organization_id`
-
-Then add whatever additional routing identifiers you need, such as `workspace_id`, `project_id`, or `plan`.
+Set tags when you create a Connect session. Nango tags the resulting connection and includes those tags in auth webhooks. Save the connection ID in your app if you need to reference a specific connection directly.
 
 <Tip>
-  To make connections easier to identify in the Nango dashboard, set `end_user_display_name` and `end_user_email`. Nango uses these reserved UI tag keys to populate the connections list and connection detail page.
+  To make connections easier to identify in the Nango dashboard, set `end_user_display_name` and `end_user_email`. Nango uses these reserved UI tags to populate the connections list and connection detail page.
 </Tip>
 
 <Note>
@@ -83,42 +75,14 @@ When requesting a new Connect session token from Nango, pass a `tags` object:
   </Tab>
 </Tabs>
 
-### Read tags from the auth webhook
+<a id="read-and-filter-connections-by-tags"></a>
 
-These tags appear in successful auth webhooks sent by Nango:
+### Filter connections by tags
 
-```json
-{
-    "type": "auth",
-    "operation": "creation",
-    "success": true,
-    "connectionId": "<CONNECTION-ID>",
-    "tags": {
-      "end_user_id": "<END-USER-ID>",
-      "end_user_email": "<END-USER-EMAIL>",
-      "organization_id": "<ORGANIZATION-ID>"
-    }
-}
-```
-
-Use these values to reconcile the generated `connectionId` with the user, organization, or workspace that initiated the flow in your application.
-
-### Read and filter connections by tags
-
-Nango stores tags on the connection itself.
+Filter by tags to find the connections for a user, organization, or workspace in your app. A connection must match all the tag keys and values you pass (AND).
 
 <Tabs>
-  <Tab title="Read with Node">
-    ```ts
-    import { Nango } from '@nangohq/node';
-
-    const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
-    const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
-
-    console.log(connection.tags);
-    ```
-  </Tab>
-  <Tab title="Filter with Node">
+  <Tab title="Node">
     ```ts
     import { Nango } from '@nangohq/node';
 
@@ -135,21 +99,24 @@ Nango stores tags on the connection itself.
     console.log(connections);
     ```
   </Tab>
-  <Tab title="Filter with cURL">
+  <Tab title="cURL">
     ```bash
-    curl --request GET \
-      --url 'https://api.nango.dev/connections?tags[end_user_id]=<END-USER-ID>&tags[organization_id]=<ORGANIZATION-ID>' \
+    curl --get \
+      --url https://api.nango.dev/connections \
       --header 'Authorization: Bearer <NANGO-API-KEY>' \
-      --header 'Content-Type: application/json'
+      --data-urlencode 'tags%5Bend_user_id%5D=<END-USER-ID>' \
+      --data-urlencode 'tags%5Borganization_id%5D=<ORGANIZATION-ID>'
     ```
   </Tab>
 </Tabs>
 
-Filtering uses an AND match: a connection must contain all provided tag keys and values.
-
 ### Update tags on an existing connection
 
 If you need to update tags after a connection is created, patch the connection:
+
+<Note>
+  Updating tags replaces the whole tag object. If you want to add or remove a single tag, fetch the current connection first, merge locally, then patch.
+</Note>
 
 <Tabs>
   <Tab title="Node">
@@ -192,34 +159,21 @@ If you need to update tags after a connection is created, patch the connection:
   </Tab>
 </Tabs>
 
-<Note>
-  Updating tags replaces the whole tag object. If you want to add or remove a single tag, fetch the current connection first, merge locally, then patch.
-</Note>
+<a id="reserved-ui-tag-keys"></a>
 
-### Reserved UI tag keys
+### Reserved UI tags
 
-Two tag keys are reserved for improving the Nango dashboard UI:
+Two tags help you identify connections in the Nango dashboard.
 
-- `end_user_display_name` - shown instead of the connection ID in the connections list, making it easier to identify who a connection belongs to.
-- `end_user_email` - shown alongside `end_user_display_name` in the connections list. The domain from the email address is also used to display the end user's company logo on the connection detail page.
-
-<Frame caption="end_user_display_name and end_user_email shown in the connections list">
-  ![](/images/screenshots/connection-tags-1.png)
-</Frame>
-
-<Frame caption="Company logo derived from the end_user_email domain on the connection detail page">
-  ![](/images/screenshots/connection-tags-2.png)
-</Frame>
+- `end_user_display_name` - shown instead of the connection ID in the connections list, making it easier to identify who a connection belongs to
+- `end_user_email` - Nango shows it alongside `end_user_display_name` in the connections list. The domain from the email address is also used to display the end user's company logo on the connection detail page.
 
 ### Tag rules
 
-- `end_user_email` must be a valid email address, for example `user@example.com`.
-- Tag keys are lowercased, so `End_User_Email` and `end_user_email` are treated as the same key.
-- Keys are case-insensitive, and duplicate keys after normalization are rejected.
-- Keys must start with a letter and contain only alphanumerics, underscores, hyphens, periods, or slashes.
-- Keys can be up to 64 characters long.
-- A connection can have up to 10 tag keys.
-- Values must be non-empty strings up to 255 characters long.
+- A connection can have up to 10 tags.
+- Keys have up to 64 characters. Start with a letter and use only letters, numbers, underscores, hyphens, periods, or slashes.
+- Keys are case-insensitive. Nango lowercases them and rejects duplicates after lowercasing.
+- Values are case-sensitive strings of 1–255 characters. `end_user_email` must be a valid email address.
 
 ## Connection configuration
 
@@ -293,50 +247,38 @@ For the REST API response shape, see [Get a connection](/reference/backend/http-
 
 ## Connection metadata
 
-Metadata is arbitrary JSON storage on the connection. Use it for information your app or Nango functions need, but that is not a condition for the connection itself to exist.
+Connection metadata stores settings for your app and Nango functions as a JSON object on each connection.
 
 Good metadata examples:
 
 - field mappings chosen by a customer
 - folder, project, board, or object IDs selected during onboarding
-- filters and feature flags used by sync functions
+- filters and feature flags used by Nango functions and tools
 - tenant-specific identifiers discovered by your setup flow
 - provider webhook subscription IDs used by webhook functions
 
-Do not use metadata for credentials or values required to make the provider connection valid. Use connection configuration for that. Do not use metadata for synced datasets or large lists of records; use the [records cache](/guides/syncs/records-cache) for sync output.
+Keep metadata small and use it for settings like these. Keep credentials out of metadata and use [connection configuration](#connection-configuration) for values the provider requires.
 
-Set metadata after a connection is created:
+After creating the connection, use `updateMetadata` or [`PATCH /connections/metadata`](/reference/backend/http-api/connections/update-metadata) to change only the top-level fields you send. Each supplied field replaces its previous value, including when that value is an object. To replace the entire metadata object, use `setMetadata` or [`POST /connections/metadata`](/reference/backend/http-api/connections/set-metadata).
 
 <Tabs>
   <Tab title="Node">
     ```ts
-    await nango.setMetadata(
-        '<INTEGRATION-ID>',
-        '<CONNECTION-ID>',
-        {
-            syncArchived: false,
-            fieldMapping: {
-                companyName: 'Account_Name__c'
-            }
-        }
-    );
+    await nango.updateMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+      syncArchived: false
+    });
     ```
   </Tab>
   <Tab title="cURL">
     ```bash
-    curl --request POST \
+    curl --request PATCH \
       --url https://api.nango.dev/connections/metadata \
       --header 'Authorization: Bearer <NANGO-API-KEY>' \
       --header 'Content-Type: application/json' \
       --data '{
         "connection_id": "<CONNECTION-ID>",
         "provider_config_key": "<INTEGRATION-ID>",
-        "metadata": {
-          "syncArchived": false,
-          "fieldMapping": {
-            "companyName": "Account_Name__c"
-          }
-        }
+        "metadata": { "syncArchived": false }
       }'
     ```
   </Tab>
@@ -352,8 +294,7 @@ For deeper function patterns, see [Storage](/guides/platform/functions/storage).
 
 **Related guides**
 
-- [Auth guide](/guides/auth/overview) - create connections with Connect UI.
-- [Customize Connect UI](/guides/auth/customize-connect-ui) - customize branding or pass connection configuration without Connect UI.
-- [Share a connect link](/guides/auth/share-connect-link) - include tags in link-based flows.
-- [Storage](/guides/platform/functions/storage) - use metadata inside functions.
-- [List connections API](/reference/backend/http-api/connections/list) - filter connections by tags.
+- [Setup guide](/guides/auth/setup) - add authorization to your app
+- [Customize Connect UI](/guides/auth/customize-connect-ui) - change branding or build your own with headless auth
+- [Storage](/guides/platform/functions/storage) - read and update connection metadata from Nango functions
+- [List connections API](/reference/backend/http-api/connections/list) - filter connections by tags

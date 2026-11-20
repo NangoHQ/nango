@@ -1,0 +1,55 @@
+---
+title: 'OpenWeather API - How do I link my account?'
+sidebarTitle: 'OpenWeather API'
+---
+
+## Overview
+
+To authenticate with OpenWeather API, you need:
+
+1. **API Key** — the API key (APPID) from your OpenWeather account.
+2. **API Host** — the OpenWeather host for your plan and region.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An OpenWeather account. If you don't have one, [sign up](https://home.openweathermap.org/users/sign_up) and confirm your email address. The Free plan includes an API key.
+
+### Step 1: Copy your API key
+
+1. [Sign in](https://home.openweathermap.org/users/sign_in) to OpenWeather and click the **API keys** tab in your personal account.
+
+<img src="/api-integrations/openweather-api/account_api_keys_tab.png" alt="OpenWeather personal account with the API keys tab highlighted"/>
+
+2. Copy the **Default** key, or enter a name under **Create key** and click **Generate**.
+
+<img src="/api-integrations/openweather-api/create_api_key.png" alt="OpenWeather API keys page with the Create key form and Generate button"/>
+
+3. Copy the key from the **Key** column.
+
+<img src="/api-integrations/openweather-api/copy_api_key.png" alt="OpenWeather API keys table with the new key in the Key column"/>
+
+A new key is activated automatically up to 2 hours after you create it. Until then, OpenWeather rejects it.
+
+### Step 2: Choose your API host
+
+Pick the host that matches your OpenWeather plan:
+
+| Plan | Global | Recommended in China |
+| --- | --- | --- |
+| Free and Startup | `api.openweathermap.org` | `cn-api.openweathermap.org` |
+| Developer and above | `pro.openweathermap.org` | `cn-pro.openweathermap.org` |
+
+Free API calls only work on `api.openweathermap.org`. For a paid plan, use the host given in the confirmation email OpenWeather sends when your subscription is activated. See [How to start to work with OpenWeather API](https://openweathermap.org/appid).
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with OpenWeather API.
+2. Select your host in the **API Host** field.
+3. Enter your API key in the **API Key** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/openweather-api/form.png" alt="OpenWeather API Connect UI form with the API Host and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to OpenWeather API.

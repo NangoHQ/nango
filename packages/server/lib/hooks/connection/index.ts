@@ -68,3 +68,5 @@ export { default as ascoraCredentialsVerification } from './providers/ascora/cre
 export { default as asticaAiCredentialsVerification } from './providers/astica-ai/credentials-verification.js';
 export { default as boltIotCredentialsVerification } from './providers/bolt-iot/credentials-verification.js';
 export { default as censusBureauCredentialsVerification } from './providers/census-bureau/credentials-verification.js';
+export { default as apiSportsCredentialsVerification } from './providers/api-sports/credentials-verification.js';
+export { default as benzingaCredentialsVerification } from './providers/benzinga/credentials-verification.js';

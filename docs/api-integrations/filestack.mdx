@@ -1,0 +1,82 @@
+---
+title: 'Filestack'
+sidebarTitle: 'Filestack'
+description: 'Integrate your application with the Filestack API'
+---
+
+## 🚀 Quickstart
+
+Connect to Filestack with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Filestack_.
+    </Step>
+    <Step id="authorize-filestack" title="Authorize Filestack">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Filestack API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-filestack-api" title="Call the Filestack API">
+    Let's make your first request to the Filestack File API to get a file's metadata. Replace `<FILE-HANDLE>` with the handle of a file in your Filestack application, and the other placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/file/<FILE-HANDLE>/metadata" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/file/<FILE-HANDLE>/metadata',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Filestack integration guides
+
+- [How do I link my account?](/api-integrations/filestack/connect)  
+Copy your Filestack API key to connect your account.
+
+Official docs: [Filestack File API](https://www.filestack.com/docs/api/file/)
+
+## 🧩 Pre-built syncs & tools for Filestack
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/filestack/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Transformations and file delivery use the fixed host `https://cdn.filestackcontent.com`, which takes the API key in the URL path (`/<API-KEY>/resize=height:200/<HANDLE>`). Set `baseUrlOverride` to that host and read the key from the connection's credentials. See [Comprehensive Guide to Processing API](https://www.filestack.com/docs/api/processing/).
+- Nango does not check the key when a connection is created, so a wrong or revoked key still connects and fails on its first call.
+
+---

@@ -23,14 +23,13 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Agent sessions: Agent sessions](https://nango.dev/docs/guides/agent-sessions.md): Connect your AI agent to 1,300+ APIs.
 - [Agent sessions: Tenant](https://nango.dev/docs/guides/agent-sessions/tenant.md): Choose on whose behalf an agent session acts
 - [Agent sessions: Toolsets & tools](https://nango.dev/docs/guides/agent-sessions/toolsets.md): Configure tools for an agent session.
-- [Agent sessions: Meta tools](https://nango.dev/docs/guides/agent-sessions/meta-tools.md): Built-in tools for agent sessions.
-- [Auth: Auth guide](https://nango.dev/docs/guides/auth/overview.md): Let your users connect external APIs to your agents & apps.
-- [Auth: Customize Connect UI](https://nango.dev/docs/guides/auth/customize-connect-ui.md): Guide to branding Nango Connect UI, overriding setup links, or building a headless auth flow with your own UI.
-- [Auth: Share a connect link](https://nango.dev/docs/guides/auth/share-connect-link.md): Generate a short-lived connect link and share it with your end user.
-- [Auth: Connection tags, configuration, and metadata](https://nango.dev/docs/guides/auth/connection-tags-configuration-metadata.md): Use tags, connection configuration, and metadata for the right connection-level data.
+- [Agent sessions: Meta tools](https://nango.dev/docs/guides/agent-sessions/meta-tools.md): Built-in tools for agent sessions
+- [Auth: Auth](https://nango.dev/docs/guides/auth/overview.md): Let users connect their external accounts to your app or agent
+- [Auth: Set Nango Auth up in your app](https://nango.dev/docs/guides/auth/setup.md): Let users connect external accounts from your app or with a link
+- [Auth: Customize Connect UI](https://nango.dev/docs/guides/auth/customize-connect-ui.md): Brand Connect UI or build your own auth UI
+- [Auth: Connection tags, config, and metadata](https://nango.dev/docs/guides/auth/connection-tags-configuration-metadata.md): Find the right connection and store the settings your app and integrations need
+- [Auth: Token refreshing & validity](https://nango.dev/docs/guides/auth/token-refreshing.md): How Nango handles OAuth token refresh and what to do when tokens are revoked
 - [Auth: Proxy requests](https://nango.dev/docs/guides/auth/proxy-requests.md): How to use the requests proxy from Nango
-- [Auth: Token refreshing & validity](https://nango.dev/docs/guides/auth/token-refreshing.md): How Nango handles OAuth token refresh and what to do when tokens are revoked.
-- [Auth: MCP Auth](https://nango.dev/docs/guides/auth/mcp-auth.md): Let your users connect to MCP servers through Nango
 - [Tools: Tool calling for AI agents](https://nango.dev/docs/guides/tools/overview.md): Give agents scoped, observable access to external APIs through Nango tools.
 - [Tools: Tools](https://nango.dev/docs/guides/tools/customize-tools.md): Build, test, deploy, and call tools from your backend or AI agent.
 - [Triggers: Process external webhooks](https://nango.dev/docs/guides/triggers/overview.md): Receive provider webhooks through Nango, then forward or process them with functions.
@@ -59,13 +58,12 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Platform: Security](https://nango.dev/docs/guides/platform/security.md): How Nango secures your API credentials and customer data.
 - [Platform: Audit trail](https://nango.dev/docs/guides/platform/audit-trail.md): Review who changed what in your Nango account.
 - [Platform: Limits](https://nango.dev/docs/guides/platform/limits.md): Overview of resource limits on Nango Cloud.
-- [Platform: Common issues](https://nango.dev/docs/guides/platform/common-issues.md): Troubleshooting guide for frequent errors and how to fix them.
 - [Platform: Self-Hosting: Self-host Nango](https://nango.dev/docs/guides/platform/self-hosting/self-hosting.md): Run Nango outside our cloud: BYOC or Self-Managed.
 - [Platform: Self-Hosting: BYOC](https://nango.dev/docs/guides/platform/self-hosting/byoc.md): Nango-managed, in your cloud.
 - [Platform: Self-Hosting: Self-Managed](https://nango.dev/docs/guides/platform/self-hosting/self-managed.md): You deploy, you operate.
 - [Platform: Migrations: Migrate to checkpoints](https://nango.dev/docs/guides/platform/migrations/migrate-to-checkpoints.md): Guide to migrate your sync functions from nango.lastSyncDate to the new checkpointing system.
 - [Platform: Migrations: Migrate from end user](https://nango.dev/docs/guides/platform/migrations/migrate-from-end-user.md): Guide to migrate away from using end users in connections and connect sessions
-- [Platform: Migrations: Migrate from public key](https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key.md): Guide to migrate from using the public key (and HMAC) to a Connect session.
+- [Platform: Migrations: Migrate from public key](https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key.md): Guide to migrate from using the public key (and HMAC) to a Connect session
 - [Platform: Migrations: Migrate from Connection MCP to agent sessions](https://nango.dev/docs/guides/platform/migrations/migrate-from-connection-mcp.md): Replace the Connection MCP with a scoped agent session
 - [Platform: Migrations: Migrate from actions to tools](https://nango.dev/docs/guides/platform/migrations/migrate-from-actions.md): Move on-demand integrations to tools while preserving existing action callers.
 - [Platform: Contributing to Nango](https://nango.dev/docs/contributing.md): Learn which external contributions Nango reviews
@@ -152,7 +150,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 1374 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 1399 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
 
 ## Resources
