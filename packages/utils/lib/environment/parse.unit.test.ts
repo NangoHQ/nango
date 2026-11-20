@@ -60,6 +60,16 @@ describe('parse', () => {
         ).toBe(10000);
     });
 
+    it('parses the audit trail data-plane scopes', () => {
+        expect(parseEnvs(ENVS, {}).FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES).toEqual(['read_credentials']);
+        expect(parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: '' }).FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES).toEqual(['read_credentials']);
+        expect(parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: 'all' }).FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES).toEqual(['read_credentials']);
+        expect(parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: 'none' }).FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES).toEqual([]);
+        expect(parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: ' read_credentials ' }).FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES).toEqual(['read_credentials']);
+        expect(() => parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: 'read_records' })).toThrowError(/FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES/);
+        expect(() => parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: 'none,read_credentials' })).toThrowError(/FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES/);
+    });
+
     it('should parse the throttled immediate limit', () => {
         expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '123' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(123);
         // 0 disables throttling

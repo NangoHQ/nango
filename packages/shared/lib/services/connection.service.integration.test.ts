@@ -19,6 +19,24 @@ describe('Connection service integration tests', () => {
         await multipleMigrations();
     });
 
+    describe('search', () => {
+        it('filters by provider', async () => {
+            const env = await createEnvironmentSeed();
+            await createConfigSeed(env, 'custom-github', 'github');
+            await createConfigSeed(env, 'custom-slack', 'slack');
+            const github = await createConnectionSeed({ env, provider: 'custom-github', connectionId: 'shared-connection' });
+            const slack = await createConnectionSeed({ env, provider: 'custom-slack', connectionId: 'shared-connection' });
+
+            const search = async (provider?: string) =>
+                (await connectionService.search(db.knex, { environmentId: env.id, filter: { connectionId: 'shared-connection', provider } })).unwrap();
+
+            expect((await search('github')).map((connection) => connection.id)).toEqual([github.id]);
+            expect((await search('slack')).map((connection) => connection.id)).toEqual([slack.id]);
+            expect(await search('unknown')).toEqual([]);
+            expect((await search()).map((connection) => connection.id)).toEqual([github.id, slack.id]);
+        });
+    });
+
     describe('connection cap', () => {
         it('rejects inserting a new connection at the cap', async () => {
             const { env } = await seedAccountEnvAndUser({ plan: { connections_max: 0 } });

@@ -1,0 +1,59 @@
+---
+title: 'Cloudflare Browser Rendering - How do I link my account?'
+sidebarTitle: 'Cloudflare Browser Rendering'
+---
+
+## Overview
+
+To authenticate with Cloudflare Browser Rendering, you need:
+
+1. **API Token** — a Cloudflare user API token or account API token with the **Browser Run** Edit permission.
+2. **Account ID** — the ID of the Cloudflare account the token works on.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Cloudflare account. You can sign up at [dash.cloudflare.com](https://dash.cloudflare.com/sign-up/workers-and-pages). Browser Run is available on the Workers Free and Paid plans.
+
+### Step 1: Create an API token
+
+Both user API tokens and account API tokens work. Create one of them.
+
+**User API token**
+
+1. Sign in to the [Cloudflare dashboard](https://dash.cloudflare.com/login) and open **My Profile** > [API Tokens](https://dash.cloudflare.com/profile/api-tokens). Click **Create Token**.
+
+<img src="/api-integrations/cloudflare-browser-rendering/user_api_tokens_page.png" alt="Cloudflare My Profile API Tokens page with the Create Token button"/>
+
+2. Enter a token name. Under **Policies**, click **Start from scratch** and choose an Account policy (keep all accounts or pick yours).
+3. Type `Browser` in the permission search box, then tick **Edit** on the **Browser Run** row.
+
+<img src="/api-integrations/cloudflare-browser-rendering/browser_run_edit_policy.png" alt="Cloudflare Create Token form with an Account policy and the Browser Run Edit permission ticked"/>
+
+4. Optionally set **Token expiration** and **Client IP address filtering**, then click **Continue to summary**. Check that the summary shows **Browser Run: Edit** and click **Create Token**.
+5. Copy the token. It is shown only once.
+
+<img src="/api-integrations/cloudflare-browser-rendering/api_token_created.png" alt="Cloudflare page showing the newly created API token with a copy button"/>
+
+**Account API token**
+
+1. In the Cloudflare dashboard, go to **Manage account** > **Account API tokens** and click **Create Token**.
+2. Enter a name, click **Start from scratch**, search `Browser` and tick **Browser Run** > **Edit**. Click **Review token**, then **Create token**.
+3. Copy the token from the success dialog. It is shown only once. The dialog also shows your account ID.
+
+<img src="/api-integrations/cloudflare-browser-rendering/account_api_token_created.png" alt="Cloudflare account API token created dialog with the token and the account ID"/>
+
+### Step 2: Find your account ID
+
+Your account ID is the 32-character value in the dashboard URL after you sign in: `dash.cloudflare.com/<account_id>/...`. It is also shown in the success dialog when you create an account API token.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Cloudflare Browser Rendering.
+2. Enter your **API Token** and **Account ID** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/cloudflare-browser-rendering/form.png" alt="Cloudflare Browser Rendering connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Cloudflare Browser Rendering.

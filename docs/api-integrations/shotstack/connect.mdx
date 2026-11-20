@@ -1,0 +1,36 @@
+---
+title: 'Shotstack - How do I link my account?'
+sidebarTitle: 'Shotstack'
+---
+
+## Overview
+
+To authenticate with Shotstack, you need:
+
+1. **API Key** — the Production API key from your Shotstack account.
+
+This guide will show you how to find it.
+
+### Prerequisites
+
+- A Shotstack account. If you don't have one, [sign up](https://app.shotstack.io/register). New accounts get 10 free credits, and no credit card is needed.
+
+### Step 1: Copy your API key
+
+1. Sign in to the [Shotstack dashboard](https://app.shotstack.io) and click **API Keys** in the left sidebar.
+
+<img src="/api-integrations/shotstack/api_keys_menu.png" alt="Shotstack dashboard with API Keys highlighted in the left sidebar"/>
+
+2. Shotstack creates your keys for you, one per environment. Click the key in the **Production** row to copy it. Do not use the key in the **Sandbox** row: it only works with the sandbox (stage) endpoints.
+
+<img src="/api-integrations/shotstack/copy_production_key.png" alt="Shotstack API Keys page with the Production key highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Shotstack.
+2. Enter your Production key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/shotstack/form.png" alt="Shotstack Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Shotstack.

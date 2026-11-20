@@ -421,6 +421,34 @@ export interface OktaLogEvent {
     [key: string]: unknown;
 }
 
+/**
+ * Event-based webhooks carry `type` and `data`. Field-based (global) webhooks carry `employees` instead.
+ * https://documentation.bamboohr.com/docs/event-based-webhooks
+ */
+export interface BambooHrWebhookPayload {
+    type?:
+        | 'employee.created'
+        | 'employee.updated'
+        | 'employee.deleted'
+        | 'company.updated'
+        | 'company.deleted'
+        | 'company-integrations.updated'
+        | (string & {});
+    timestamp?: string;
+    data?: {
+        companyId?: string;
+        employeeId?: string;
+        changedFields?: string[];
+    };
+    employees?: {
+        id: string;
+        action: 'Created' | 'Updated' | 'Deleted' | (string & {});
+        timestamp?: string;
+        changedFields?: string[];
+        fields?: Record<string, unknown>;
+    }[];
+}
+
 export interface LayloWebhookPayload {
     type: 'rsvp' | 'opt_out' | (string & {});
     email?: string;

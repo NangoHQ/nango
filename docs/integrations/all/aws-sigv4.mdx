@@ -5,7 +5,7 @@ sidebarTitle: AWS SigV4 Proxy
 
 import Overview from "/snippets/overview.mdx"
 
-<Overview />
+<Overview hiddenSections={["pre-built-tooling", "api-gotchas"]} />
 
 ## Why use the AWS SigV4 integration?
 
@@ -69,7 +69,7 @@ You host your own STS-style service that exchanges credentials on behalf of cust
 
 <Steps>
   <Step title="Host or configure your STS endpoint">
-    Deploy the SigV4 STS helper service (Docker or any HTTPS service) in your infrastructure. It must accept a JSON payload that includes `role_arn`, `external_id`, `region`, and `service`, assume the requested role, and return temporary AWS credentials (see <a href="#sts-endpoint-contract">STS endpoint contract</a>). Secure the endpoint using either an API key header or HTTP basic auth so Nango can authenticate the call.
+    Deploy the SigV4 STS helper service (Docker or any HTTPS service) in your infrastructure. It must accept a JSON payload that includes `role_arn`, `external_id`, `region`, and `service`, assume the requested role, and return temporary AWS credentials (see <a href="#sts-endpoint-contract-custom-mode-only">STS endpoint contract</a>). Secure the endpoint using either an API key header or HTTP basic auth so Nango can authenticate the call.
   </Step>
   <Step title="Create an AWS SigV4 integration in Nango">
     1. From the Integrations page, add the **AWS SigV4 Proxy** template.

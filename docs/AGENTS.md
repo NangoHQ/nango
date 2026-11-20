@@ -47,6 +47,12 @@ Docs pull requests should be ready for review by default. Only open a draft PR w
 
 Use sentence case for page titles, sidebar titles, card titles, and headings. Keep proper nouns and initialisms in their standard casing, such as Nango, MCP, API, OAuth, CI/CD, and GDPR.
 
+## Use periods only for full sentences
+
+End complete prose sentences with a period. Omit periods after headings, labels, and fragments, including short table entries and list items. Write short frontmatter descriptions as standalone phrases without a final period, even when they start with a verb.
+
+Keep punctuation consistent within each list. Use periods when every item is a complete sentence and omit them when the items are short phrases or labels. If a list mixes sentences and fragments and the wording needs to stay as written, omit the trailing periods throughout.
+
 ## Use HTTP APIs in agent instructions
 
 In "For agents" accordions and other coding-agent-specific instructions, prefer Nango's HTTP APIs over backend SDK snippets. Coding agents can translate HTTP examples into the user's stack, and API examples avoid assuming a specific language or package.

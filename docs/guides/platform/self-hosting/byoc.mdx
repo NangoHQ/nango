@@ -90,6 +90,8 @@ Nango does not keep a separate copy of any of this anywhere. See [Encryption & c
 
 In short: with BYOC, your team's ongoing workload is reviewing what Nango proposes and owning the cloud account it runs in — not running the platform day to day.
 
+<a id="encryption-credentials"></a>
+
 ## Encryption & credentials
 
 Nango provisions a customer-managed encryption key in your account — KMS on AWS, Cloud KMS on GCP, Key Vault on Azure. The deployment identity Nango uses only has **encrypt** permissions on that key — it cannot decrypt anything with it. That key wraps the data-encryption key (DEK) that actually encrypts your credentials and synced records; only the running application's workload identity inside your cluster can unwrap it.

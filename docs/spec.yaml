@@ -2930,12 +2930,12 @@ paths:
                                 hmac_key:
                                     type: string
                                     deprecated: true
-                                    description: Legacy public-key authorization HMAC key. Use [Connect sessions](/guides/auth/overview#guide) instead.
+                                    description: Legacy public-key authorization HMAC key. Use [Connect sessions](/guides/auth/setup#generate-session-token) instead.
                                     maxLength: 1000
                                 hmac_enabled:
                                     type: boolean
                                     deprecated: true
-                                    description: Whether legacy public-key authorization HMAC verification is enabled. Use [Connect sessions](/guides/auth/overview#guide) instead.
+                                    description: Whether legacy public-key authorization HMAC verification is enabled. Use [Connect sessions](/guides/auth/setup#generate-session-token) instead.
                                 slack_notifications:
                                     type: boolean
                                     description: Whether Slack notifications are enabled for this environment.
@@ -4462,11 +4462,40 @@ components:
                                       items:
                                           type: string
 
+        ProviderTemplateToolFunction:
+            type: object
+            description: A catalog tool definition.
+            required:
+                - name
+                - type
+                - description
+                - input_json_schema
+                - output_json_schema
+            properties:
+                name:
+                    type: string
+                type:
+                    type: string
+                    enum: [tool]
+                description:
+                    type: string
+                scopes:
+                    type: array
+                    items:
+                        type: string
+                input_json_schema:
+                    type: [object, 'null']
+                    description: Input JSON Schema with its referenced definitions, or null when absent or unresolved.
+                output_json_schema:
+                    type: [object, 'null']
+                    description: Output JSON Schema with its referenced definitions, or null when absent or unresolved.
+
         ProviderTemplateFunction:
-            description: A sync template or catalog tool definition (no deployment metadata). Catalog tool templates currently use deprecated action definitions.
+            description: A sync template or catalog tool definition (no deployment metadata).
             oneOf:
                 - $ref: '#/components/schemas/NangoSyncFunction'
                 - $ref: '#/components/schemas/NangoActionFunction'
+                - $ref: '#/components/schemas/ProviderTemplateToolFunction'
 
         ListedNangoFunction:
             description: A listed function (sync, deprecated action, on-event, or tool) merged with its availability metadata.

@@ -1,0 +1,44 @@
+---
+title: 'BotPenguin - How do I link my account?'
+sidebarTitle: 'BotPenguin'
+---
+
+## Overview
+
+To authenticate with BotPenguin, you need:
+
+1. **Platform Access Token** — a BotPenguin API token.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A BotPenguin account. You can sign up at [botpenguin.com](https://app.botpenguin.com/authentication?signup=1&u=).
+
+### Step 1: Generate a platform access token
+
+1. Sign in to the [BotPenguin panel](https://app.botpenguin.com/).
+2. In the left navigation, click **More**, then under **Developers** click **API Tokens**.
+
+<img src="/api-integrations/botpenguin/more_menu_api_tokens.png" alt="BotPenguin More menu with API Tokens under Developers"/>
+
+3. On the **Platform access token** tab, click **Generate new token**.
+
+<img src="/api-integrations/botpenguin/generate_platform_access_token.png" alt="BotPenguin Platform access token tab with the Generate new token button"/>
+
+4. BotPenguin emails a 6-digit code to your account email. Enter it and click **Verify and generate**.
+5. In the **Your new token** dialog, click the copy button, then click **Done**. The full token is shown only once, so store it right away.
+
+<img src="/api-integrations/botpenguin/copy_platform_access_token.png" alt="BotPenguin Your new token dialog with the button to copy the token"/>
+
+BotPenguin keeps only one active token per account. Regenerating or revoking it invalidates the token you connected with.
+
+### Step 2: Enter your platform access token in the Connect UI
+
+1. Open the form where you need to authenticate with BotPenguin.
+2. Enter your **Platform Access Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/botpenguin/form.png" alt="BotPenguin connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to BotPenguin.
