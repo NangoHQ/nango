@@ -1007,6 +1007,7 @@
               "api-integrations/demio",
               "api-integrations/demodesk",
               "api-integrations/dentally",
+              "api-integrations/deputy",
               "api-integrations/desktime",
               "api-integrations/detrack",
               "integrations/all/devin",
