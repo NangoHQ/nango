@@ -16660,6 +16660,50 @@ fleetbase:
             example: flb_live_Kp7d************************w3Zq
             doc_section: '#step-1-create-an-api-key'
 
+fleetio:
+    display_name: Fleetio
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://secure.fleetio.com/api
+        headers:
+            authorization: 'Token ${credentials.username}'
+            account-token: ${credentials.password}
+            x-api-version: ${connectionConfig.version} || 2025-05-05
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
+    docs: https://nango.dev/docs/api-integrations/fleetio
+    docs_connect: https://nango.dev/docs/api-integrations/fleetio/connect
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Fleetio API key.
+            secret: true
+            example: k2ay********************************zb2b
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-create-an-api-key'
+        password:
+            type: string
+            title: Account Token
+            description: Your Fleetio account token.
+            secret: true
+            example: vjca**ssxc
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-2-copy-your-account-token'
+
 flexisign:
     display_name: FlexiSign
     categories:
@@ -20806,6 +20850,42 @@ hyperline:
             example: prod_7fe2****************80f9
             pattern: '^(prod|test)_.+$'
             doc_section: '#step-2-create-an-api-key'
+
+hyperspell-mcp:
+    display_name: Hyperspell (MCP)
+    categories:
+        - mcp
+    auth_mode: API_KEY
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://${connectionConfig.region}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /auth/me
+    docs: https://nango.dev/docs/api-integrations/hyperspell-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/hyperspell-mcp/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The Hyperspell region your account was created in.
+            format: hostname
+            enum:
+                - api.hyperspell.com
+                - api.eu.hyperspell.com
+            order: 1
+            doc_section: '#step-1-find-your-region'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Hyperspell API key.
+            example: hs2-m4Tq************************8vZc
+            pattern: '^hs2-.+$'
+            doc_section: '#step-2-get-your-api-key'
 
 imanage:
     display_name: iManage Work
@@ -31883,6 +31963,38 @@ rydoo:
             description: Your Rydoo Client Secret.
             secret: true
 
+samsara:
+    display_name: Samsara
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.region}/oauth2/authorize
+    token_url: https://${connectionConfig.region}/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.region}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/samsara
+    setup_guide_url: https://nango.dev/docs/api-integrations/samsara/how-to-register-your-own-samsara-oauth-app
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The cloud region of your Samsara dashboard (US, EU or Canada).
+            enum:
+                - api.samsara.com
+                - api.eu.samsara.com
+                - api.ca.samsara.com
+            default_value: api.samsara.com
+
 segment:
     display_name: Segment
     categories:
@@ -34899,6 +35011,38 @@ smartlead-ai:
             pattern: '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}_[a-zA-Z0-9]+$'
             example: 12345678-1234-1234-1234-123456789012_abcdefg
             doc_section: '#step-1-generating-your-api-key'
+
+sociality-mcp:
+    display_name: Sociality (MCP)
+    categories:
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://api.sociality.io/oauth/authorize
+    token_url: https://api.sociality.io/oauth/token
+    registration_url: https://api.sociality.io/oauth/register
+    default_scopes:
+        - mcp:use
+    authorization_params:
+        response_type: code
+        resource: https://api.sociality.io/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://api.sociality.io
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/sociality-mcp
 
 sophos-central:
     display_name: Sophos Central
