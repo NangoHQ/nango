@@ -340,8 +340,8 @@ The Agent Playground lets you try an AI agent on your integrations from the dash
 To turn it on, set these on the server service:
 
 ```bash
-NANGO_FLAG_PROVIDER=env
 NANGO_FEATURE_FLAG_AGENT_PLAYGROUND=true
+NANGO_FLAG_PROVIDER=env
 NANGO_FEATURE_FLAG_TOOLS_CATALOG=true
 OPENAI_API_KEY=<your-openai-api-key>
 # Optional, defaults to gpt-6-luna
@@ -350,7 +350,7 @@ NANGO_AGENT_PLAYGROUND_MODEL=<openai-model-id>
 
 Set `NANGO_FLAG_PROVIDER=env` and `NANGO_FEATURE_FLAG_TOOLS_CATALOG=true` on the jobs service as well, because jobs runs the catalog tools the agent calls.
 
-The `tools-catalog` flag lets the agent run Nango's pre-built tools without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
+`NANGO_FEATURE_FLAG_AGENT_PLAYGROUND` is a plain environment variable, so it works without `NANGO_FLAG_PROVIDER=env`. The `tools-catalog` flag lets the agent run Nango's pre-built tools without deploying them first. The agent runs on OpenAI, so `OPENAI_API_KEY` is required, and messages from the chat are sent to OpenAI with that key. Without the key, the dashboard shows the playground as unavailable.
 
 ### Connect UI
 

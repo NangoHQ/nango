@@ -3,6 +3,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { accountGroupProperties, environmentService } from '@nangohq/shared';
 import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../../env.js';
 import * as agentGettingStartedService from '../../../services/agentGettingStarted.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { canViewAuditTrail } from '../../../utils/auditTrail.js';
@@ -36,7 +37,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             auditTrail: await canViewAuditTrail(req, plan),
             toolsCatalog: await getFlags().hasCatalogTools(account.uuid),
             accountGroup: accountGroupProperties(account, plan),
-            agentPlayground: await getFlags().isAgentPlaygroundEnabled(account.uuid),
+            agentPlayground: envs.NANGO_FEATURE_FLAG_AGENT_PLAYGROUND,
             hasBaa: account.has_baa
         }
     });

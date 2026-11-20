@@ -89,7 +89,7 @@ export const AgentPlayground: React.FC = () => {
     if (!meta.data.agentPlayground) {
         return (
             <DashboardLayout>
-                <p className="text-text-secondary">The Agent Playground is not enabled for this account.</p>
+                <p className="text-text-secondary">The Agent Playground is not enabled on this Nango instance.</p>
             </DashboardLayout>
         );
     }
