@@ -7,6 +7,7 @@ import { accountService, configService, getPlan, getProvider } from '@nangohq/sh
 import { flagHasPlan, getHeaders, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
+import { knownIngressTargets } from '../../../middleware/webhook-ingress-ratelimit.middleware.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { NANGO_WEBHOOK_SECRET_HEADER } from '../../../webhook/nango-webhook-secret.js';
 import { routeWebhook } from '../../../webhook/webhook.manager.js';
@@ -37,6 +38,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 res.status(404).send({ error: { code: 'unknown_environment' } });
                 return;
             }
+            knownIngressTargets.confirmEnvironment(environmentUuid);
 
             const { environment, account } = resEnv;
             span.setTag('nango.accountUUID', account.uuid);
@@ -65,6 +67,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 res.status(404).send({ error: { code: 'unknown_provider_config' } });
                 return;
             }
+            knownIngressTargets.confirmIntegration(environmentUuid, providerConfigKey);
 
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED, 1, {
                 accountId: account.id,

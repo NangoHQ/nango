@@ -1098,7 +1098,9 @@ const ENVS_SHAPE = z.object({
     // WEBHOOK INGRESS
     WEBHOOK_INGRESS_USE_DISPATCH_QUEUE: z.stringbool().optional().default(false),
     NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN: z.coerce.number().min(0).optional().default(4000),
-    NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE: z.stringbool().optional().default(false),
+    NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE: z.stringbool().optional().default(true),
+    // Shared by every environment id this process has not confirmed exists, so it bounds account lookups for random ids
+    NANGO_WEBHOOK_INGRESS_UNKNOWN_ENVIRONMENT_RATE_LIMIT_PER_MIN: z.coerce.number().int().min(1).optional().default(20),
 
     // TASK DISPATCH QUEUE
     NANGO_TASK_DISPATCH_QUEUE_URL: z.url().optional(),
