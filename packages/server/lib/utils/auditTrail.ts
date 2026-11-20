@@ -33,7 +33,7 @@ export async function canRecordAuditTrail(
     if (!dataPlane) {
         return true;
     }
-    // Self-hosted Enterprise: no plans, so the deployment picks its scopes.
+    // No plans layer (self-hosted, local dev): the deployment picks its scopes.
     if (!flagHasPlan) {
         return envs.FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES.includes(dataPlane.scope);
     }
