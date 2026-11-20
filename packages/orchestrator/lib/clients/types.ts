@@ -51,8 +51,15 @@ interface OnEventArgs {
     sdkVersion: string | null;
 }
 
+export type FunctionInlineSource = {
+    kind: 'inline';
+    code: string;
+    description?: string;
+};
+
 interface FunctionArgs {
     functionUuid: string;
+    source?: FunctionInlineSource;
     connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     activityLogId?: string;
     variant?: string;
@@ -285,6 +292,7 @@ export function TaskFunction(props: TaskCommonFields & FunctionArgs): TaskFuncti
         retryKey: props.retryKey,
         attemptMax: props.attemptMax,
         functionUuid: props.functionUuid,
+        ...(props.source !== undefined && { source: props.source }),
         ...(props.variant !== undefined && { variant: props.variant }),
         connection: props.connection,
         ...(props.activityLogId !== undefined && { activityLogId: props.activityLogId }),

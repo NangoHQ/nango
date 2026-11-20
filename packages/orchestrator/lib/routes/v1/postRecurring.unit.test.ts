@@ -6,10 +6,13 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
 import { Err, Ok } from '@nangohq/utils';
 
+import { generateInlineFunctionUuid } from '../../clients/inlineFunctionUuid.js';
 import { getServer } from '../../server.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
 import type { Server } from 'node:http';
+
+const INLINE_FUNCTION_UUID = generateInlineFunctionUuid();
 
 const scheduleId = '01994dc2-b6a7-7e46-964d-5f520e57a082';
 const recurring = vi.fn(() => Promise.resolve(Ok([{ id: scheduleId }])));
@@ -194,6 +197,24 @@ describe('POST /v1/recurring', () => {
             retry: { max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 86_400, startedToCompleted: 900, heartbeat: 120 },
             args: { ...functionArgs, unexpectedId: 123 }
+        };
+
+        const response = await post(body);
+
+        expect(response.status).toBe(400);
+        expect(recurring).not.toHaveBeenCalled();
+    });
+
+    it('rejects a recurring function that carries its source', async () => {
+        const body = {
+            name: 'environment:789:functioninstance:123',
+            state: 'STARTED' as const,
+            startsAt: new Date().toISOString(),
+            frequencyMs: 300_000,
+            group: { key: 'function:environment:789', maxConcurrency: 0 },
+            retry: { max: 0 },
+            timeoutSettingsInSecs: { createdToStarted: 86_400, startedToCompleted: 900, heartbeat: 120 },
+            args: { ...functionArgs, functionUuid: INLINE_FUNCTION_UUID, source: { kind: 'inline', code: 'return 1;' } }
         };
 
         const response = await post(body);
