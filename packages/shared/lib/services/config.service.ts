@@ -367,8 +367,8 @@ class ConfigService {
         if (providerConfig.shared_credentials_id) {
             return [];
         }
-        // Public OAuth clients (token_request_auth_method: none) authenticate with the client ID alone.
-        const publicClient = provider && 'token_request_auth_method' in provider && provider.token_request_auth_method === 'none';
+        // public OAuth 2.0 clients need no client secret.
+        const publicClient = provider?.auth_mode === 'OAUTH2' && provider.token_request_auth_method === 'none';
         return this.VALIDATION_RULES.flatMap((rule) =>
             rule.modes.includes(authMode) && !(publicClient && rule.field === 'oauth_client_secret') && !rule.isValid(providerConfig) ? [rule.field] : []
         );
