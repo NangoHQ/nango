@@ -1,0 +1,29 @@
+---
+title: 'How to register your own Money Forward OAuth app'
+sidebarTitle: 'Money Forward Cloud Invoice Setup'
+description: 'Register a Money Forward App Portal app and connect its credentials to Nango'
+---
+
+This guide shows you how to register an app in the Money Forward App Portal to get OAuth credentials (client ID & secret).
+
+<Steps>
+  <Step title="Start using the App Portal">
+    Money Forward Cloud APIs are only available through the [App Portal](https://developers.biz.moneyforward.com/docs/common/oauth/app-portal-overview/), which is free. A user with full administrator rights in Money Forward Cloud starts using it, then invites the developer who registers the app.
+  </Step>
+  <Step title="Register an app">
+    1. In the App Portal, register a new app.
+    2. Set the redirect URI to `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)).
+    3. Choose `CLIENT_SECRET_BASIC` as the client authentication method.
+    4. Copy the client ID and client secret.
+  </Step>
+  <Step title="Add the credentials in Nango">
+    Paste the client ID and secret into your Money Forward Cloud Invoice integration in Nango. Nango requests the `mfc/invoice/data.read` scope by default; add the scopes your app needs from the Cloud Invoice API documentation.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+Access tokens expire after one hour. Each refresh returns a new access token and refresh token and invalidates the previous ones; Nango stores the new pair on every refresh. For more details, see [Money Forward Cloud OAuth 2.0](https://developers.biz.moneyforward.com/docs/common/oauth/overview/).
+
+---
