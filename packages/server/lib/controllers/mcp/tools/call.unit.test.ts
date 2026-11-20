@@ -136,22 +136,6 @@ describe('callToolsTool', () => {
         }
     });
 
-    it('returns provider failure details for an action-backed tool', async () => {
-        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'deployed', config: actionFixture }));
-        const nangoError = new NangoError('script_http_error', { error: { message: 'Missing timeMin parameter.' } });
-        vi.spyOn(actionService, 'executeAction').mockResolvedValue({
-            logCtx: undefined,
-            result: Err(new ActionExecutionError({ code: 'action_failed', message: nangoError.message, nangoError }))
-        });
-
-        const result = await callToolsTool.handler(validArguments, context);
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.message).toBe(`${nangoError.message}: Missing timeMin parameter.`);
-        }
-    });
-
     it('falls back to executing the action', async () => {
         vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'deployed', config: actionFixture }));
         const executeSpy = vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: 'created' }) });

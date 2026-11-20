@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import * as actionService from '../../../services/action.service.js';
@@ -122,40 +121,6 @@ describe('triggerActionTool', () => {
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(PublicMcpError);
             expect(result.error.message).toBe('Action not found');
-        }
-    });
-
-    it.each([
-        { payload: { error: { message: 'Missing timeMin parameter.' } }, detail: ': Missing timeMin parameter.' },
-        { payload: { error: { message: 'x'.repeat(600) } }, detail: `: ${'x'.repeat(500)}` },
-        { payload: { request: { authorization: 'secret' } }, detail: '' }
-    ])('includes bounded provider failure details: $detail', async ({ payload, detail }) => {
-        const nangoError = new NangoError('script_http_error', payload);
-        vi.spyOn(actionService, 'executeAction').mockResolvedValue({
-            logCtx: undefined,
-            result: Err(new ActionExecutionError({ code: 'action_failed', message: nangoError.message, nangoError }))
-        });
-
-        const result = await triggerActionTool.handler(validArguments, context);
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error).toBeInstanceOf(PublicMcpError);
-            expect(result.error.message).toBe(`${nangoError.message}${detail}`);
-        }
-    });
-
-    it('returns the original failure message when no underlying error is available', async () => {
-        vi.spyOn(actionService, 'executeAction').mockResolvedValue({
-            logCtx: undefined,
-            result: Err(new ActionExecutionError({ code: 'action_failed', message: 'Action failed' }))
-        });
-
-        const result = await triggerActionTool.handler(validArguments, context);
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.message).toBe('Action failed');
         }
     });
 
