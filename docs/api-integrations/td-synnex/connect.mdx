@@ -1,0 +1,49 @@
+---
+title: 'TD SYNNEX - How do I link my account?'
+sidebarTitle: 'TD SYNNEX'
+---
+
+## Overview
+
+To authenticate with TD SYNNEX, you need:
+
+1. **Client ID** and **Client Secret** — client credentials from the TD SYNNEX Developer Portal.
+2. **Region** — the TD SYNNEX API server for your region and environment.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- You must be a TD SYNNEX customer with a PartnerFirst account to access the Developer Portal.
+
+### Step 1: Create client credentials
+
+1. Log in to PartnerFirst and go to **Integrate** → **Developer Portal**.
+2. In the [Developer Portal](https://developer.tdsynnex.com/api-center/reseller/home?resource=%2F), select **Client Credentials** from the left-hand menu.
+3. Press the **+** sign under **PROD** to show the Client Secret.
+4. Copy the **Client ID** and **Client Secret** and store them somewhere secure.
+
+<Note>
+The Client Secret is only visible immediately after creation. Save it before leaving the page.
+</Note>
+
+### Step 2: Select your region
+
+Select the API server for your TD SYNNEX region. Use a production server with production credentials, and a sandbox server (its host contains `-uat`) with sandbox credentials.
+
+| Region | Production | Sandbox |
+| - | - | - |
+| United States | `api.us.tdsynnex.com` | `api-uat.us.tdsynnex.com` |
+| Canada | `api.ca.tdsynnex.com` | `api-uat.ca.tdsynnex.com` |
+| Brazil | `api-br.lac.tdsynnex.com` | `api-br-uat.lac.tdsynnex.com` |
+| Mexico | `api-mx.lac.tdsynnex.com` | `api-mx-uat.lac.tdsynnex.com` |
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with TD SYNNEX.
+2. Select your **Region**, then enter your **Client ID** and **Client Secret**.
+3. Submit the form. Nango requests an access token with your credentials and rejects the connection if they are wrong.
+
+<img src="/api-integrations/td-synnex/form.png" alt="Nango Connect UI form with Region, Client ID, and Client Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to TD SYNNEX.

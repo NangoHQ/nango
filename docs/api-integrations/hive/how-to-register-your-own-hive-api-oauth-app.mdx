@@ -14,7 +14,7 @@ This guide shows you how to get the OAuth credentials (client ID & secret) for y
     In the Partner Portal, copy your **Client ID** under **API Credentials**, then click **Generate new secret** and copy the **Client Secret**.
   </Step>
   <Step title="Add Nango's redirect URI">
-    Under **Redirect URIs**, add `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)). Hive only accepts registered callback URLs.
+    Under **Redirect URIs**, add `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/setup#custom-oauth-callback-url-optional)). Hive only accepts registered callback URLs.
   </Step>
   <Step title="Add the credentials in Nango">
     In your Hive integration in Nango, paste the client ID and secret, then add the scopes you need (for example `contacts:read contacts:write segments:read segments:write`). Hive issues tokens with no API access when no scopes are requested, and recommends requesting all of them: `events:read`, `events:write`, `orders:read`, `orders:write`, `contacts:read`, `contacts:write`, `segments:read`, `segments:write` and `campaigns:read`. Nango sends your client ID in the `X-Partner-Id` header that every Hive API request needs.

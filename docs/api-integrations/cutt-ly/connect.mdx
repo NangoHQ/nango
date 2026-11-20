@@ -1,0 +1,50 @@
+---
+title: 'Cutt.ly - How do I link my account?'
+sidebarTitle: 'Cutt.ly'
+---
+
+## Overview
+
+To authenticate with Cutt.ly, you need:
+
+1. **API Key** — the API key of your Cuttly account, or the Team API key of a Cuttly team.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Cuttly account. If you don't have one, [sign up](https://cutt.ly/register) for free; the Regular API is available on all plans, including Free.
+
+### Step 1: Copy your API key
+
+1. [Log in](https://cutt.ly/login) to your Cuttly account.
+2. Open your account menu and choose **Edit account**.
+3. Next to **API key**, click **Manage API**.
+
+<img src="/api-integrations/cutt-ly/edit_account_manage_api.png" alt="Cuttly Edit account page with the Manage API link next to API key"/>
+
+4. If no key is shown yet, click **Generate / change the API key** and confirm the prompt.
+
+<img src="/api-integrations/cutt-ly/generate_api_key.png" alt="Cuttly API panel with the Generate / change the API key button"/>
+
+5. Reopen **Manage API** and copy the key shown after **API key:**.
+
+<img src="/api-integrations/cutt-ly/api_key_created.png" alt="Cuttly API panel showing the API key"/>
+
+<Note>
+Generating a new key invalidates the previous key immediately, so any app still using it stops working.
+</Note>
+
+<Tip>
+To connect a team instead, use its Team API key (Team plan or higher; only Team Owners and Admins can generate it). Open the team in the Cuttly dashboard, go to its settings, open the API section, click **Generate/change API key**, and copy the key.
+</Tip>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Cutt.ly.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/cutt-ly/form.png" alt="Cutt.ly Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Cutt.ly.

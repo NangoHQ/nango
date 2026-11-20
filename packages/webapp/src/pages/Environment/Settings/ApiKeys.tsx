@@ -399,7 +399,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                     <div className="relative">
                         <Input value={apiKey.uuid} disabled className="font-mono bg-surface-canvas text-text-muted pr-10" />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                            <CopyButton size="2xs" value={apiKey.uuid} />
+                            <CopyButton size="sm" value={apiKey.uuid} />
                         </div>
                     </div>
 
@@ -412,16 +412,10 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                         />
                         {canReadSecret && (
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                <IconButton
-                                    label="Toggle visibility"
-                                    variant="ghost"
-                                    size="2xs"
-                                    onClick={() => setSecretRevealed((r) => !r)}
-                                    className="text-text-muted hover:text-text-strong h-7 w-7"
-                                >
-                                    {secretRevealed ? <EyeOff strokeWidth={1} size={16} /> : <Eye strokeWidth={1} size={16} />}
+                                <IconButton label="Toggle visibility" variant="ghost" size="sm" onClick={() => setSecretRevealed((r) => !r)}>
+                                    {secretRevealed ? <EyeOff /> : <Eye />}
                                 </IconButton>
-                                <CopyButton size="2xs" value={apiKey.secret} />
+                                <CopyButton size="sm" value={apiKey.secret} />
                             </div>
                         )}
                     </div>
@@ -462,8 +456,8 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
             confirmationKeyword={displayName}
             confirmButtonText="Delete API Key"
             trigger={
-                <IconButton label="Delete API key" variant="danger-ghost" size="2xs">
-                    <Trash2 className="size-3.5" />
+                <IconButton label="Delete API key" variant="danger-ghost" size="sm">
+                    <Trash2 />
                 </IconButton>
             }
             onConfirm={onDelete}
@@ -490,16 +484,10 @@ const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ se
                     <div className="relative">
                         <Input value={revealed ? secretKey : masked} disabled className="font-mono bg-surface-canvas text-text-muted pr-20" />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                            <IconButton
-                                label="Toggle visibility"
-                                variant="ghost"
-                                size="2xs"
-                                onClick={() => setRevealed((r) => !r)}
-                                className="text-text-muted hover:text-text-strong h-7 w-7"
-                            >
-                                {revealed ? <EyeOff strokeWidth={1} size={16} /> : <Eye strokeWidth={1} size={16} />}
+                            <IconButton label="Toggle visibility" variant="ghost" size="sm" onClick={() => setRevealed((r) => !r)}>
+                                {revealed ? <EyeOff /> : <Eye />}
                             </IconButton>
-                            <CopyButton size="2xs" value={secretKey} />
+                            <CopyButton size="sm" value={secretKey} />
                         </div>
                     </div>
                 </div>
@@ -595,16 +583,16 @@ export const ApiKeys: React.FC = () => {
                                 {canMakeActions && (
                                     <TableCell>
                                         <div className="flex items-center gap-1">
-                                            {canReadSecret && <CopyButton size="2xs" value={key.secret} />}
+                                            {canReadSecret && <CopyButton size="sm" value={key.secret} />}
                                             {canManageKeys && (
                                                 <IconButton
                                                     label="Edit"
                                                     variant="ghost"
-                                                    size="2xs"
+                                                    size="sm"
                                                     onClick={() => setSelectedKeyId(key.id)}
                                                     className="text-text-muted hover:text-text-strong"
                                                 >
-                                                    <Pencil className="size-3.5" />
+                                                    <Pencil />
                                                 </IconButton>
                                             )}
                                             {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />}

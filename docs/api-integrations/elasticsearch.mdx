@@ -1,0 +1,77 @@
+---
+title: 'Elasticsearch'
+sidebarTitle: 'Elasticsearch'
+description: 'Integrate your application with the Elasticsearch API'
+---
+
+## 🚀 Quickstart
+
+Connect to Elasticsearch with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Elasticsearch_.
+    </Step>
+    <Step id="authorize-elasticsearch" title="Authorize Elasticsearch">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Elasticsearch endpoint and API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-elasticsearch-api" title="Call the Elasticsearch API">
+    Let's make your first request to the Elasticsearch API to get the identity behind your API key. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/_security/_authenticate" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/_security/_authenticate',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Elasticsearch integration guides
+
+- [How do I link my account?](/api-integrations/elasticsearch/connect)  
+Find your Elasticsearch endpoint and create an API key to connect your cluster.
+
+Official docs: [Elasticsearch API](https://www.elastic.co/docs/api/doc/elasticsearch/)
+
+## 🧩 Pre-built syncs & tools for Elasticsearch
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/elasticsearch/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

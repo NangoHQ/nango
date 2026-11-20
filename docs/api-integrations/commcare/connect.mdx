@@ -1,0 +1,57 @@
+---
+title: 'CommCare - How do I link my account?'
+sidebarTitle: 'CommCare'
+---
+
+## Overview
+
+To authenticate with CommCare, you need:
+
+1. **Region** — the CommCare cloud where your account lives.
+2. **Project Space** — the name of your CommCare project space.
+3. **Username** — your CommCare HQ username.
+4. **API Key** — an API key generated in CommCare HQ.
+
+This guide will show you how to find each of them.
+
+### Prerequisites
+
+- A CommCare HQ account that belongs to a project space whose plan includes API access. See [CommCare pricing](https://commcare.dimagi.com/pricing/).
+
+### Step 1: Find your region and project space
+
+CommCare runs separate clouds: the United States at `www.commcarehq.org`, the European Union at `eu.commcarehq.org` and India at `india.commcarehq.org`. Your credentials only work on the cloud where you created your account, so your **Region** is the address you sign in at.
+
+Your **Project Space** is the name that appears after `/a/` in your project's CommCare HQ URLs, for example `my-project` in `https://www.commcarehq.org/a/my-project/`. It can differ from the project's display name. The **Domain** dropdown on the API Keys page (Step 3) also lists it.
+
+### Step 2: Find your username
+
+1. Sign in to CommCare HQ on your cloud.
+2. Go to **My Account** > **My Information**.
+3. Copy the value under **Username**. It is the email address you sign in with.
+
+### Step 3: Generate an API key
+
+1. Go to **My Account** > **API Keys** (for the US cloud, [https://www.commcarehq.org/account/api_keys/](https://www.commcarehq.org/account/api_keys/)).
+2. Under **Add New API Key**, enter a **Name**, for example `nango`.
+3. In **Domain**, pick the project space from Step 1. You can also set **Allowed IP Addresses** and an **Expiration date**.
+4. Click **Generate New API Key**.
+
+<img src="/api-integrations/commcare/generate_api_key.png" alt="CommCare HQ API Keys page with a name and project space entered and the Generate New API Key button highlighted"/>
+
+5. Copy the new key from the **API Key** column under **New Items**.
+
+<img src="/api-integrations/commcare/api_key_created.png" alt="CommCare HQ API Keys page with the new API key highlighted under New Items"/>
+
+<Tip>CommCare shows the API key only once. Copy it right away and store it securely.</Tip>
+
+### Step 4: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with CommCare.
+2. Select your **Region** and enter your **Project Space** from Step 1.
+3. Enter your **Username** from Step 2 and your **API Key** from Step 3.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/commcare/form.png" alt="Nango Connect UI form for CommCare with the Region, Project Space, Username and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to CommCare.

@@ -158,7 +158,7 @@ function callToolRequestHandler(
                 content: [
                     {
                         type: 'text',
-                        text: JSON.stringify(actionResponse.value.data, null, 2)
+                        text: JSON.stringify(actionResponse.value.data)
                     }
                 ]
             };

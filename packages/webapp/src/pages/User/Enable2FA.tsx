@@ -41,7 +41,7 @@ export const Enable2FA: React.FC = () => {
 
     const enrollmentStarted = useRef(false);
 
-    const goToSettings = () => navigate('/user-settings');
+    const goToSettings = () => navigate('/profile');
 
     const cancel = (fromStep: 'scan' | 'save') => {
         track('auth:two_factor_cancel', { step: fromStep });
@@ -115,7 +115,7 @@ export const Enable2FA: React.FC = () => {
                                                     data-ph-mask
                                                 >
                                                     <span>{secret}</span>
-                                                    <CopyButton value={secret.replace(/\s/g, '')} size="2xs" />
+                                                    <CopyButton value={secret.replace(/\s/g, '')} size="sm" inline />
                                                 </div>
                                             )}
                                         </div>

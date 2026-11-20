@@ -1,0 +1,51 @@
+---
+title: 'Bubble - How do I link my account?'
+sidebarTitle: 'Bubble'
+---
+
+## Overview
+
+To authenticate with Bubble, you need:
+
+1. **App hostname** — the domain your Bubble app runs on.
+2. **API token** — an admin API token for your app, or a user token.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Bubble app you can edit in the Bubble editor.
+
+### Step 1: Find your app hostname
+
+Your app hostname is the domain of your Bubble app, without `https://`:
+
+- `<your-app>.bubbleapps.io`, where `<your-app>` is your app's name, for example `myapp.bubbleapps.io`.
+- Your custom domain, for example `app.yourdomain.com`, if you connected one to the app.
+
+### Step 2: Generate an API token
+
+1. Open your app in the Bubble editor and go to **Settings** > **API**.
+2. Tick **Enable Data API** and choose which data types to expose. Tick **Enable Workflow API and backend workflows** too if you call API workflows.
+3. Scroll to **Admin API Tokens** and click **Generate a new API token**.
+
+<img src="/api-integrations/bubble/settings_api_tab.png" alt="Bubble editor Settings API tab with the Admin API Tokens section and the Generate a new API token button"/>
+
+4. Give the token a label, then copy the **Private key**. This is your API token.
+
+<img src="/api-integrations/bubble/api_token_created.png" alt="Bubble Admin API Tokens section with the token label and the Private key field"/>
+
+The token gives full access to your app's database and works in every version of the app. Creating or deleting a token only reaches your Live version after you deploy the app to Live.
+
+To act as one of your app's users instead, use a user token: call an API workflow that runs the **Log the user in** action, and Bubble returns a token for that user.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Bubble.
+2. Enter your **App hostname** from Step 1.
+3. Paste the token you copied in Step 2 into the **API token** field.
+4. Submit the form.
+
+<img src="/api-integrations/bubble/form.png" alt="Bubble Connect UI form with the App hostname and API token fields" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the token. If the token is wrong, the first API request returns an authentication error.

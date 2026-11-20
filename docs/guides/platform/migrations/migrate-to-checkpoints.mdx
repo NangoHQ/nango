@@ -51,7 +51,7 @@ Checkpoints also replace the `syncType: 'incremental'` field in your sync declar
 
 2. **Rigid type.** The value was always a timestamp managed by Nango. Some APIs use cursors, page tokens, or composite markers to track progress — `lastSyncDate` couldn't accommodate these.
 
-Checkpoints solve both problems. For a full overview, see the [checkpoints guide](/guides/functions/syncs/checkpoints).
+Checkpoints solve both problems. For a full overview, see the [checkpoints guide](/guides/syncs/checkpoints).
 
 ## Migration steps
 
@@ -194,7 +194,7 @@ Use the CLI `dryrun` command with the `--checkpoint` flag to simulate resuming f
 nango dryrun my-sync '<CONNECTION-ID>' --checkpoint '{"lastModifiedISO": "2024-06-01T00:00:00Z"}'
 ```
 
-Verify that your sync correctly filters data based on the checkpoint value. See the [testing guide](/guides/functions/testing) for how to write unit tests for checkpoint logic.
+Verify that your sync correctly filters data based on the checkpoint value. See the [testing guide](/guides/platform/functions/testing) for how to write unit tests for checkpoint logic.
 
 ### Step 5: Deploy
 
@@ -214,6 +214,6 @@ Because the first post-migration run starts fresh, it may take longer than usual
 
 ## Related guides
 
-- [Checkpoints](/guides/functions/syncs/checkpoints) - understand the new checkpoint model.
-- [Sync functions](/guides/functions/syncs/sync-functions) - update sync implementations.
-- [Testing](/guides/functions/testing) - test checkpoint filtering.
+- [Checkpoints](/guides/syncs/checkpoints) - understand the new checkpoint model.
+- [Sync functions](/guides/syncs/sync-functions) - update sync implementations.
+- [Testing](/guides/platform/functions/testing) - test checkpoint filtering.

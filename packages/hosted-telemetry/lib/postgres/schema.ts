@@ -1,5 +1,6 @@
 export const HOSTED_TELEMETRY_SCHEMA = 'hosted_telemetry';
 export const HOSTED_TELEMETRY_TABLE = 'metrics';
+export const HOSTED_TELEMETRY_UPLOADS_TABLE = 'uploads';
 
 // Attributes sit in the primary key, and a btree entry cannot exceed ~2.7 KB.
 export const HOSTED_TELEMETRY_ATTRIBUTES_MAX_BYTES = 1024;

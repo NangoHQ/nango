@@ -15,7 +15,7 @@ Connect to Moneybird with Nango and see data flow in 2 minutes.
     If you do not specify scopes, Moneybird grants `sales_invoices` by default.
 
     <Note>
-      Nango has a [Nango-managed OAuth app](/guides/auth/auth-guide#nango-managed-oauth-apps) you can use in development and production. Select it when you create the integration.
+      Nango has a [Nango-managed OAuth app](/guides/auth/overview#nango-managed-oauth-apps) you can use in development and production. Select it when you create the integration.
     </Note>
     </Step>
     <Step id="authorize-moneybird" title="Authorize Moneybird">
@@ -58,7 +58,7 @@ Connect to Moneybird with Nango and see data flow in 2 minutes.
     Nango adds the Moneybird Bearer token to the upstream request, so your application does not need to handle the Moneybird access token. Check the **Logs** tab in Nango to inspect the request.
     </Step>
     <Step id="implement-nango" title="Implement Nango in your app">
-    Follow the [Auth implementation guide](/guides/auth/auth-guide) to add the authorization flow to your application.
+    Follow the [Auth implementation guide](/guides/auth/overview) to add the authorization flow to your application.
 
     To use your own OAuth app instead of the Nango-managed one, follow the setup guide linked below.
     </Step>

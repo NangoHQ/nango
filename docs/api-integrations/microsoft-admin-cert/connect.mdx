@@ -1,0 +1,33 @@
+---
+title: 'Microsoft (Admin - Certificate) - How do I link my account?'
+sidebarTitle: 'Microsoft (Admin - Certificate)'
+---
+
+## Overview
+
+To authenticate with Microsoft (Admin - Certificate), you need:
+
+1. **Tenant ID** - The unique identifier for your organization that uses Microsoft services.
+
+You also need to sign in as an administrator of that tenant to grant the app's permissions for your organization.
+
+### Prerequisites
+
+- A Microsoft Entra ID (Azure AD) tenant, and an account that can grant Microsoft Graph application permissions in it (a Global Administrator or Privileged Role Administrator).
+
+### Step 1: Finding your Tenant ID
+
+1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com).
+2. Open **Identity** > **Overview**. Your **Tenant ID** is shown on the **Overview** tab.
+
+<img src="/integrations/all/microsoft-business-central/tenant_id.png" />
+
+### Step 2: Enter your Tenant ID in the Connect UI
+
+1. Open the form where you need to authenticate with Microsoft (Admin - Certificate).
+2. Enter your **Tenant ID**.
+3. Submit the form. Microsoft opens a sign-in page: sign in as an administrator and click **Accept** to grant the permissions for your organization.
+
+<img src="/api-integrations/microsoft-admin-cert/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Microsoft (Admin - Certificate).

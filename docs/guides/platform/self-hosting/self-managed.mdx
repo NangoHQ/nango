@@ -74,7 +74,7 @@ You pull and apply updates yourself. Notifications about new releases are availa
 - **GitHub:** watch the repository, select **Custom**, and enable **Releases**.
 - **RSS/Atom:** subscribe to `https://github.com/NangoHQ/managed-image-releases/releases.atom`, which can be wired into Slack, Microsoft Teams, RSS readers, or internal automation.
 
-Each release includes the managed image tag, application version, source commit hash, release date, Docker pull reference, a GitHub compare link to the previous managed release, and a generated changelog of changes since the previous managed release.
+Each release includes the managed image tag and digest, application version, source commit hash, release date, Docker pull reference, a command to [verify the image signature](#verify-image-signatures), a GitHub compare link to the previous managed release, and a generated changelog of changes since the previous managed release.
 
 ### Image tags
 
@@ -95,6 +95,22 @@ docker pull nangohq/nango:managed-1.5.4-0.70.4-0fe07a6d83aea0becc4cea382c5cead2f
 ```
 
 Pin your CLI version to the `application-version` specified in the tag for compatibility.
+
+### Verify image signatures
+
+Managed images are signed with [cosign](https://docs.sigstore.dev/cosign/) by Nango's release workflow on GitHub Actions, using keyless signing. There's no public key to download or rotate: the signature is tied to the workflow that built the image and recorded in Sigstore's public transparency log.
+
+Verifying is optional, and pulling an image works the same whether or not you verify it. To check that an image was built and published by Nango and hasn't been changed since, run this with the image digest from the release notes:
+
+```bash
+cosign verify nangohq/nango@<image-digest> \
+  --certificate-identity https://github.com/NangoHQ/nango/.github/workflows/managed-release.yaml@refs/heads/master \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+The command fails if the image has no valid signature from Nango's release workflow, which only publishes releases from `master`. Each release's notes include this command with the release's own digest. To deploy exactly the image you verified, pull it by the same digest: `nangohq/nango@<image-digest>`.
+
+Managed releases after [1.7.2](https://github.com/NangoHQ/managed-image-releases/releases/tag/managed-1.7.2-0.72.4-b6a9ee10e6aaa81f42506436f9d2287ead8f7561) are signed. Earlier releases aren't.
 
 ### Versions and policy
 
@@ -246,6 +262,14 @@ Entries are kept for a year by default, and the server removes expired ones for 
 NANGO_AUDIT_POSTGRES_RETENTION_DAYS=365
 ```
 
+Connection credentials read through the API, such as with `GET /connections/{connectionId}`, are recorded too. These are data-plane reads, so their volume follows your API traffic and can be much larger than the rest of the trail. To stop recording them, set:
+
+```sh
+FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES=none
+```
+
+If you want to keep recording them but move their database load elsewhere, point `NANGO_AUDIT_POSTGRES_DATABASE_URL` at a dedicated database, as described above.
+
 ### Feature flags
 
 Nango gates some behavior behind feature flags. Flags are served by the provider set in `NANGO_FLAG_PROVIDER`, which defaults to `noop`, so every flag uses its built-in default.
@@ -358,7 +382,7 @@ Your reverse proxy must strip the base path prefix before forwarding to Connect 
 
 Connect UI is a single-page app: the server must respond with `index.html` for any path that isn't a built asset, including the base path without a trailing slash. Nango's static file server handles this out of the box; if you serve the built `dist` from your own static host, enable its SPA fallback.
 
-See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
+See [Auth](/guides/auth/overview) for the end-user connection flow.
 
 ### Hosted telemetry
 
@@ -447,7 +471,7 @@ The runner boundary has the same set of variables prefixed with `NANGO_CUSTOMER_
 
 #### Proxy base URL override hardening
 
-The [proxy](/guides/platform/proxy-requests) can send authenticated requests to external APIs. Some proxy calls accept a **base URL override** (HTTP header `Base-Url-Override`, SDK `baseUrlOverride`, or an integration `custom.baseUrl`) to target a host that differs from the provider's default API base URL.
+The [proxy](/guides/auth/proxy-requests) can send authenticated requests to external APIs. Some proxy calls accept a **base URL override** (HTTP header `Base-Url-Override`, SDK `baseUrlOverride`, or an integration `custom.baseUrl`) to target a host that differs from the provider's default API base URL.
 
 Because the proxy makes outbound HTTP requests from your Nango server (and from the runner for sync functions and tools), a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed—such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
 
