@@ -62,6 +62,33 @@ It connects with OAuth and follows your Nango user permissions across the enviro
 
     Select **Start** above the server configuration. VS Code opens the Nango authorization page in your browser. Complete the authorization, then check that the server is running.
   </Tab>
+
+  <Tab title="OpenCode">
+    In [OpenCode v2](https://opencode.ai/docs/mcp-servers/), run these commands to add the server for all projects and start OAuth. Omit `--global` to add it only to the current project.
+
+    ```bash
+    opencode mcp add nango-management --global --url https://mcp.nango.dev/mcp
+    opencode mcp auth nango-management
+    ```
+
+    Complete the Nango authorization in the browser, then run `opencode mcp list` to verify that `nango-management` is connected.
+  </Tab>
+
+  <Tab title="Antigravity">
+    In the [Antigravity app](https://antigravity.google/docs/mcp), go to **Customizations** > **Installed** > **MCP Servers** and click **Copy Config File Path**. Open that `mcp_config.json` file and add `nango-management` to its `mcpServers` object, keeping any existing entries.
+
+    ```json
+    {
+      "mcpServers": {
+        "nango-management": {
+          "serverUrl": "https://mcp.nango.dev/mcp"
+        }
+      }
+    }
+    ```
+
+    Back in **MCP Servers**, click **Authenticate** next to `nango-management`. Sign in to Nango and approve access in the browser, then copy the authorization code into Antigravity and click **Submit**. Confirm that the server shows a green status indicator.
+  </Tab>
 </Tabs>
 
 <Note>
