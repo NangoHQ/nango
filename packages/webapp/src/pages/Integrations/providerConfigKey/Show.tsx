@@ -20,7 +20,6 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { PageHeader } from '@/layout/PageHeader';
 import { useStore } from '@/store';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
-import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
 
@@ -105,8 +104,6 @@ export const ShowIntegration: React.FC = () => {
             <Helmet>
                 <title>Integration - Nango</title>
             </Helmet>
-
-            <AutoIdlingBanner />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
                 <div className="flex items-center justify-between gap-4">
