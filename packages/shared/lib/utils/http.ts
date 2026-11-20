@@ -20,6 +20,40 @@ export interface LoggedFetchRedirectPolicy {
     validate: (target: URL) => Promise<void> | void;
 }
 
+const DEFAULT_MAX_RESPONSE_BYTES = 256 * 1024;
+
+class ResponseTooLargeError extends Error {
+    constructor(maxBytes: number) {
+        super(`Response body exceeds the maximum allowed size of ${maxBytes} bytes`);
+    }
+}
+
+/**
+ * Read the (already decompressed) body chunk by chunk and stop as soon as it exceeds `maxBytes`,
+ * so neither a huge payload nor a small compressed one that expands is ever fully buffered.
+ */
+async function readBodyWithinLimit(res: Response, maxBytes: number): Promise<string> {
+    if (!res.body) {
+        return '';
+    }
+    const reader = res.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let received = 0;
+    for (;;) {
+        const { done, value } = await reader.read();
+        if (done) {
+            break;
+        }
+        received += value.byteLength;
+        if (received > maxBytes) {
+            await reader.cancel().catch(() => undefined);
+            throw new ResponseTooLargeError(maxBytes);
+        }
+        chunks.push(value);
+    }
+    return new TextDecoder().decode(Buffer.concat(chunks));
+}
+
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 // Credential material is never forwarded across a redirect hop (same-origin included). Forwarding is
 // not opt-in anywhere on this path, so we drop these on every hop rather than relying on cross-origin
@@ -101,7 +135,8 @@ export async function loggedFetch<TBody>(
         headers,
         body,
         agent,
-        redirect
+        redirect,
+        maxResponseBytes = DEFAULT_MAX_RESPONSE_BYTES
     }: {
         url: URL;
         method?: HTTP_METHOD;
@@ -109,6 +144,8 @@ export async function loggedFetch<TBody>(
         body?: string | null;
         agent?: Agent | undefined;
         redirect?: LoggedFetchRedirectPolicy | undefined;
+        /** Maximum decompressed response body size; reading stops and the call fails once it is exceeded. */
+        maxResponseBytes?: number | undefined;
     },
     options: {
         // TODO: maybe put that in logCtx
@@ -140,12 +177,13 @@ export async function loggedFetch<TBody>(
     };
     try {
         const res = redirect ? await fetchFollowingPolicyRedirects(url, props, redirect) : await fetch(url, props);
+        const text = await readBodyWithinLimit(res, maxResponseBytes);
         let body: TBody;
         const contentType = res.headers.get('content-type');
         if (contentType?.includes('application/json')) {
-            body = (await res.json()) as TBody;
+            body = JSON.parse(text) as TBody;
         } else {
-            body = (await res.text()) as TBody;
+            body = text as TBody;
         }
 
         if (res.status >= 300) {
@@ -182,6 +220,6 @@ export async function loggedFetch<TBody>(
             error: error
         });
 
-        return Err(new NangoInternalError('fetch_unknown_error', { cause: err }));
+        return Err(new NangoInternalError(err instanceof ResponseTooLargeError ? 'fetch_response_too_large' : 'fetch_unknown_error', { cause: err }));
     }
 }

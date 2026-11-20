@@ -128,6 +128,13 @@ export function buildUnverifiedHttpsAgent({
     return agent;
 }
 
+/**
+ * Upper bound on a decompressed OAuth token-endpoint response. Token URLs can be built from
+ * user-supplied connection config, so the host may be attacker-controlled; credential payloads
+ * never need more than this.
+ */
+export const OAUTH_TOKEN_RESPONSE_MAX_BYTES = 256 * 1024;
+
 /** Headers that may be retained on OAuth token redirects; everything else is treated as credential material. */
 const SAFE_OAUTH_REDIRECT_HEADERS = new Set(['accept', 'accept-encoding', 'content-type', 'user-agent']);
 
@@ -150,8 +157,10 @@ function stripUnsafeOAuthRedirectHeaders(headers: Record<string, unknown> | unde
  * Credential headers are stripped on every redirect hop (not just cross-origin ones): forwarding
  * them is not opt-in anywhere in the OAuth path, so Authorization and caller-defined API-key headers
  * are dropped whenever a redirect is followed. follow-redirects itself only strips Authorization/Cookie.
+ *
+ * `maxContentLength` is enforced by axios on the decompressed stream, so it also bounds compressed bodies.
  */
-export function getOAuthAxiosRequestConfig(): Pick<AxiosRequestConfig, 'httpAgent' | 'httpsAgent' | 'maxRedirects' | 'beforeRedirect'> {
+export function getOAuthAxiosRequestConfig(): Pick<AxiosRequestConfig, 'httpAgent' | 'httpsAgent' | 'maxRedirects' | 'beforeRedirect' | 'maxContentLength'> {
     const policy = getOAuthOutboundUrlPolicy();
     const agents = getSafeHttpAgents(policy);
     const redirectValidator = createRedirectValidator(policy);
@@ -160,6 +169,7 @@ export function getOAuthAxiosRequestConfig(): Pick<AxiosRequestConfig, 'httpAgen
         httpAgent: agents.httpAgent,
         httpsAgent: agents.httpsAgent,
         maxRedirects: policy.maxRedirects,
+        maxContentLength: OAUTH_TOKEN_RESPONSE_MAX_BYTES,
         beforeRedirect: (options) => {
             const absolute = absoluteUrlFromRedirectRequestOptions(options);
             // Block redirect hops to blocked IP literals / denied hosts; hostname rebinding is caught by the safe agent.
