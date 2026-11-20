@@ -51,7 +51,6 @@ interface OnEventArgs {
     sdkVersion: string | null;
 }
 
-// A type and not an interface, which is not assignable to the task's JSON payload.
 export type FunctionInlineSource = {
     kind: 'inline';
     code: string;
@@ -59,7 +58,6 @@ export type FunctionInlineSource = {
 };
 
 interface FunctionArgs {
-    // INLINE_FUNCTION_UUID when the task carries its code in source.
     functionUuid: string;
     source?: FunctionInlineSource;
     connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
