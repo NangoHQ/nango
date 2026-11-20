@@ -5,7 +5,7 @@
 - [OpenAPI spec](https://nango.dev/docs/spec.yaml): Exact HTTP API schemas for code generation or typed clients.
 - [Docs MCP server](https://nango.dev/docs/mcp): Live docs context without authentication. The Management MCP server includes the same docs tools.
 
-Provider count: 1441
+Provider count: 1442
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -629,6 +629,7 @@ URL patterns:
 | `front` | Front | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/front.md) |  |  | support, ticketing |
 | `front-api-key` | Front (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/front-api-key.md) | [connect](https://nango.dev/docs/api-integrations/front-api-key/connect.md) |  | support, ticketing |
 | `fuentio` | Fuentio | API_KEY | [docs](https://nango.dev/docs/api-integrations/fuentio.md) | [connect](https://nango.dev/docs/api-integrations/fuentio/connect.md) |  | other |
+| `fuentio-mcp` | Fuentio (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/fuentio-mcp.md) | [connect](https://nango.dev/docs/api-integrations/fuentio-mcp/connect.md) |  | mcp, other |
 | `fullenrich` | FullEnrich | API_KEY | [docs](https://nango.dev/docs/api-integrations/fullenrich.md) | [connect](https://nango.dev/docs/api-integrations/fullenrich/connect.md) |  | crm |
 | `gainsight-cc` | Gainsight CC | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/gainsight-cc.md) | [connect](https://nango.dev/docs/integrations/all/gainsight-cc/connect.md) |  | support, crm |
 | `gamma` | Gamma | API_KEY | [docs](https://nango.dev/docs/api-integrations/gamma.md) | [connect](https://nango.dev/docs/api-integrations/gamma/connect.md) |  | productivity |

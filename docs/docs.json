@@ -1203,6 +1203,7 @@
               "integrations/all/front",
               "api-integrations/front-api-key",
               "api-integrations/fuentio",
+              "api-integrations/fuentio-mcp",
               "api-integrations/fullenrich",
               "integrations/all/gainsight-cc",
               "api-integrations/gamma",
