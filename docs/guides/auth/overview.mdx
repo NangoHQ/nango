@@ -8,22 +8,30 @@ description: 'Let users connect their external accounts to your app or agent'
 
 Nango gives you one interface for API authorization and handles each provider's quirks.
 
-- **1,300+ APIs** — From OAuth 2.0 and API keys to custom auth
+- **1,400+ APIs** — From OAuth 2.0 and API keys to custom auth
 - **Add APIs on demand** — Ask Nango to add any API in &lt;48h, or [contribute it yourself](/integrations/contribute-or-request-api)
 - **Nango-managed OAuth apps** — Use our pre-approved OAuth apps, or bring your own
 - **Pre-built UI with your branding** — Provider-specific forms, end-user guides to find API keys, and built-in validation
 - **Secure credential management** — Encrypted at rest and in transit, refreshes OAuth tokens automatically, and is SOC 2 Type II certified
 - **Broken credentials detection** — Get notified by Nango and easily let users reconnect
 
-## Add to your app or agent
+<a id="add-to-your-app-or-agent"></a>
 
-Every connection can be used with all Nango features, regardless of where it was created.
+## Add auth to your app or agent
 
 | Where | How it works | Setup instructions |
 | --- | --- | --- |
-| **In your app** | A connect button opens Nango's pre-built Connect UI. | [Follow the setup guide](/guides/auth/setup). To create your own UI, see [headless auth](/guides/auth/customize-connect-ui#build-your-own-auth-ui). |
-| **From your AI agent** | The agent asks the user to authorize an integration when it needs access. | [Enable the create connection tool](/guides/agent-sessions/meta-tools#nango_create_connection) |
-| **From a link you share** | Send a link by email or chat. The user opens Nango's hosted Connect UI to authorize. | [Generate and share a connect link](/guides/auth/setup#share-a-connect-link) |
+| **From your AI agent** | The agent asks the user to authorize an integration when it needs access. | [Set up auth from your AI agent](/guides/auth/setup#auth-from-your-ai-agent) |
+| **From your app** | A connect button opens Nango's pre-built Connect UI. | [Follow the setup guide](/guides/auth/setup#auth-from-your-app). To create your own UI, see [headless auth](/guides/auth/customize-connect-ui#build-your-own-auth-ui). |
+| **From a link you share** | Send a link by email or chat. The user opens Nango's hosted Connect UI to authorize. | [Generate and share a connect link](/guides/auth/setup#auth-from-a-link-you-share) |
+
+## Connections
+
+When a user authorizes an external account, such as their Gmail account, Nango creates a connection for it. Nango securely stores the credentials and automatically refreshes them as needed.
+
+Agent sessions, tools, and syncs use the connection to call the API, and triggers use it to identify which account an event belongs to. If your backend needs to call the API itself, it can [fetch the credentials from Nango](/reference/backend/http-api/connections/get).
+
+Use [connection tags](/guides/auth/connection-tags-configuration-metadata#connection-tags) to associate a connection with a user, organization, team, or department in your app. For shared connections, tag them with the group’s ID and use that tag to scope access.
 
 ## Nango-managed OAuth apps
 

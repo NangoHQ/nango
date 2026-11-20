@@ -1,10 +1,10 @@
 ## Overview
 
 <CardGroup cols={3}>
-<Card title="Pre-built tooling" icon="screwdriver-wrench" href="#pre-built-tooling"/>
-<Card title="Pre-built integrations" icon="square-check" href="#pre-built-integrations"/>
-<Card title="Access requirements" icon="triangle-exclamation" href="#access-requirements"/>
-<Card title="Setup guide" icon="rocket" href="#setup-guide"/>
+{!props.hiddenSections?.includes("pre-built-tooling") && <Card title="Pre-built tooling" icon="screwdriver-wrench" href="#pre-built-tooling"/>}
+{props.preBuiltIntegrations && <Card title="Pre-built integrations" icon="square-check" href="#pre-built-integrations"/>}
+{!props.hiddenSections?.includes("access-requirements") && <Card title="Access requirements" icon="triangle-exclamation" href="#access-requirements"/>}
+{!props.hiddenSections?.includes("setup-guide") && <Card title="Setup guide" icon="rocket" href="#setup-guide"/>}
 <Card title="Useful links" icon="circle-info" href="#useful-links"/>
-<Card title="API gotchas" icon="biohazard" href="#api-gotchas"/>
+{!props.hiddenSections?.includes("api-gotchas") && <Card title="API gotchas" icon="biohazard" href="#api-gotchas"/>}
 </CardGroup>
