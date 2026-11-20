@@ -27,9 +27,23 @@ export default async function execute(nango: Nango) {
         throw err;
     }
 
-    if (isKeyErrorPage(response)) {
+    // Fail closed: only the documented JSON array of rows means the key was accepted
+    if (isKeyErrorPage(response) || !isRowsResponse(response)) {
         throw new Error('Invalid credentials');
     }
+}
+
+function isRowsResponse(response: unknown): boolean {
+    let data = field(response, 'data');
+    // the body may arrive as text if it was not parsed
+    if (typeof data === 'string') {
+        try {
+            data = JSON.parse(data);
+        } catch {
+            return false;
+        }
+    }
+    return Array.isArray(data);
 }
 
 function field(value: unknown, key: string): unknown {
