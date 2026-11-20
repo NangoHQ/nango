@@ -141,7 +141,7 @@ const functionArgsObjectSchema = z
 export const functionArgsSchema = functionArgsObjectSchema
     .refine(
         (args) => (args.source !== undefined) === (args.functionUuid === INLINE_FUNCTION_UUID),
-        'Only a function with a source uses the inline function uuid'
+        'A source and the inline function uuid must be used together'
     )
     .transform(({ source, activityLogId, variant, ...args }) => ({
         ...args,
