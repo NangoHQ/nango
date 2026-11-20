@@ -1,8 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
+import { listCatalogEntries } from './actions.js';
 import { findCatalogFunctions } from './functions.js';
 
 describe('findCatalogFunctions', () => {
+    it.skip('finds a tool at its published location', () => {
+        const definition = listCatalogEntries('replicate').find((entry) => entry.type === 'tool');
+        if (definition?.type !== 'tool') {
+            throw new Error('Expected a catalog tool fixture');
+        }
+        const expected = { type: 'tool', name: definition.name, sourceLocation: definition.location.ts };
+
+        expect(findCatalogFunctions({ provider: definition.provider, name: definition.name })).toContainEqual(expected);
+        expect(findCatalogFunctions({ provider: definition.provider, name: definition.name, type: 'tool' })).toStrictEqual([expected]);
+        expect(findCatalogFunctions({ provider: definition.provider, name: definition.name, type: 'action' })).toStrictEqual([]);
+    });
+
     it('finds a sync', () => {
         expect(findCatalogFunctions({ provider: 'github', name: 'issues' })).toStrictEqual([
             { type: 'sync', name: 'issues', sourceLocation: 'templates-zero/github/syncs/issues.ts' }

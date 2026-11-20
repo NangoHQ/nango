@@ -1,0 +1,32 @@
+---
+title: 'CrowTerminal - How do I link my account?'
+sidebarTitle: 'CrowTerminal'
+---
+
+## Overview
+
+To authenticate with CrowTerminal, you need:
+
+1. **API Key** — a CrowTerminal agent API key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A CrowTerminal account. The agent API is free during beta.
+
+### Step 1: Create an agent API key
+
+1. Sign in to CrowTerminal and open the [agent keys page](https://app.crowterminal.com/agent-keys).
+2. Create a new agent key.
+3. Copy the key.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with CrowTerminal.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form.
+
+<img src="/api-integrations/crowterminal/form.png" alt="CrowTerminal Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the key. If the key is wrong, the first API request returns an authentication error.

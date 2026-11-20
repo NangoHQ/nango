@@ -1,0 +1,45 @@
+---
+title: 'Emailable - How do I link my account?'
+sidebarTitle: 'Emailable'
+---
+
+## Overview
+
+To authenticate with Emailable, you need:
+
+1. **API Key** - an Emailable Secret (private) API key, live or test. Public keys are rejected.
+
+This guide shows you how to create one.
+
+### Prerequisites
+
+- An Emailable account. A free account can create API keys; [sign up here](https://app.emailable.com/signup).
+
+### Step 1: Create a Secret API key
+
+1. Sign in to [Emailable](https://app.emailable.com/signin) and click **API** in the top navigation.
+
+<img src="/api-integrations/emailable/dashboard_api_nav.png" alt="Emailable dashboard with the API item in the top navigation"/>
+
+2. Click **Get Started**, or **New Key** if you already have keys.
+3. Enter a **Name** for the key.
+4. Under **Security**, choose **Secret**. **Public** keys are for browser use and only work with the verify endpoint, so they cannot connect.
+5. Under **Key Type**, choose **Live Key** for real verifications that use credits, or **Test Key** for simulated responses that use no credits.
+6. Optionally add **Trusted IP Addresses**.
+7. Click **Save**.
+
+<img src="/api-integrations/emailable/new_api_key_form.png" alt="Emailable New API Key form with Secret security, Live Key type and the Save button"/>
+
+8. Copy the new key from the **Key** column of the **API Keys** table. Live keys start with `live_` and test keys with `test_`.
+
+<img src="/api-integrations/emailable/api_key_created.png" alt="Emailable API Keys table with the new key in the Key column"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Emailable.
+2. Enter your **API Key** in the designated field.
+3. Click **Connect**. Nango checks the key with Emailable and rejects it if it is wrong.
+
+<img src="/api-integrations/emailable/form.png" alt="Nango Connect UI form for entering the Emailable API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to Emailable.

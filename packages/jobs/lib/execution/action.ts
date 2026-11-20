@@ -15,7 +15,7 @@ import {
     getEndUserByConnectionId,
     LogActionEnum,
     NangoError,
-    resolveRunnableTool,
+    resolveLegacyAction,
     secretService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
@@ -76,7 +76,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
 
         const integration = providerConfig;
         const resolved = await tracer.trace('action.prepare.syncConfig', async () =>
-            resolveRunnableTool({
+            resolveLegacyAction({
                 accountUuid: accountContext.account.uuid,
                 environmentId: integration.environment_id,
                 integration: integration,

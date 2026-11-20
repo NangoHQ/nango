@@ -9,7 +9,7 @@ import { SlidingPanelLayout } from '../../Integrations/providerConfigKey/Functio
 import { CatalogFunctionPanel } from './CatalogFunctionPanel';
 import { SearchField } from './SearchField';
 
-import type { NangoFunctionTemplate } from '@nangohq/types';
+import type { ProviderTemplatesSuccess } from '@nangohq/types';
 
 const FUNCTIONS_GUIDE_URL = 'https://nango.dev/docs/guides/platform/functions/functions-guide';
 const PROXY_GUIDE_URL = 'https://nango.dev/docs/guides/auth/proxy-requests';
@@ -23,7 +23,7 @@ const TAB_LABELS: Record<FunctionTypeTab, { singular: string; plural: string }> 
 };
 
 interface CatalogFunctionsProps {
-    templates: NangoFunctionTemplate[];
+    templates: ProviderTemplatesSuccess['data'];
     displayName: string;
     isMcp: boolean;
     renderSetupButton: () => React.ReactNode;
@@ -34,7 +34,10 @@ export const CatalogFunctions: React.FC<CatalogFunctionsProps> = ({ templates, d
     const [selectedName, setSelectedName] = useQueryState('function', parseAsString);
     const [search, setSearch] = useState('');
 
-    const tabs = FUNCTION_TYPES.map((type) => ({ type, items: templates.filter((fn) => fn.type === type) })).filter((tab) => tab.items.length > 0);
+    const tabs = FUNCTION_TYPES.map((type) => ({
+        type,
+        items: templates.filter((fn) => (type === 'action' ? fn.type === 'action' || fn.type === 'tool' : fn.type === type))
+    })).filter((tab) => tab.items.length > 0);
     const activeTab = tabs.find((tab) => tab.type === rawType) ?? tabs[0];
 
     if (!activeTab) {
