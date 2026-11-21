@@ -33,7 +33,6 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
 import { useToast } from '@/hooks/useToast';
 import { useConnectionContext } from '@/pages/Connection/Show';
-import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { useStore } from '@/store';
 import { UserFacingSyncCommand } from '@/types';
 import { getLogsUrl } from '@/utils/logs';
@@ -41,6 +40,7 @@ import { findScrollParent } from '@/utils/scroll';
 import { cn, formatDateToUSFormat, formatFrequency, formatQuantity, getRunTime, interpretNextRun, truncateMiddle } from '@/utils/utils';
 
 import type { RunSyncCommand } from '@/types';
+import type { BadgeProps } from '@nangohq/design-system';
 import type { ApiConnectionSync } from '@nangohq/types';
 
 const ROW_HEIGHT_PX = 44;
@@ -335,7 +335,7 @@ const SyncRow = memo(function SyncRow({
             <TableCell className={cn(cellLayout, col.nextStart)}>
                 {sync.schedule_status === 'STARTED' && <span>{nextRunLabel}</span>}
 
-                {sync.schedule_status === 'PAUSED' && <CatalogBadge variant="warning">Schedule Paused</CatalogBadge>}
+                {sync.schedule_status === 'PAUSED' && <Badge variant="warning">Schedule Paused</Badge>}
             </TableCell>
 
             <TableCell className={cn(cellLayout, col.actions)}>
@@ -466,7 +466,7 @@ const StatusBadge = ({ sync }: { sync: ApiConnectionSync }) => {
     const status = sync.latest_sync?.status;
 
     let text = 'Never run';
-    let variant: 'success' | 'info' | 'warning' | 'error' | 'light' = 'light';
+    let variant: BadgeProps['variant'] = 'default';
 
     switch (status) {
         case 'SUCCESS':
@@ -475,11 +475,11 @@ const StatusBadge = ({ sync }: { sync: ApiConnectionSync }) => {
             break;
         case 'STOPPED':
             text = 'Failed';
-            variant = 'error';
+            variant = 'danger';
             break;
         case 'RUNNING':
             text = 'Running';
-            variant = 'info';
+            variant = 'brand';
             break;
         case 'PAUSED':
             text = 'Paused';
@@ -487,11 +487,7 @@ const StatusBadge = ({ sync }: { sync: ApiConnectionSync }) => {
             break;
     }
 
-    return (
-        <CatalogBadge variant={variant} className="-uppercase">
-            {text}
-        </CatalogBadge>
-    );
+    return <Badge variant={variant}>{text}</Badge>;
 };
 
 /**
