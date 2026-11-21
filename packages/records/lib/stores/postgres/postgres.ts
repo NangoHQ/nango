@@ -323,15 +323,28 @@ export class PostgresStore implements RecordsStore {
             const budgetBytes = envs.RECORDS_MAX_RESPONSE_SIZE_BYTES;
             const budgetEnabled = budgetBytes > 0;
 
-            const recordsMetadata: (FormattedRecordWithMetadata & { size: number })[] = await query.select(
+            // The page query never selects the documents, only their stored size, so the page can be trimmed
+            // to the byte budget before any document is loaded. Legacy rows keep their document in records.json
+            // and rows written before size_bytes existed have no cached size: pg_column_size reads the stored
+            // (possibly toasted) size without detoasting the value.
+            const sizeColumns = metadataOnly
+                ? 'COALESCE(size_bytes, 0) as size'
+                : `pg_column_size(json) as legacy_size_bytes,
+                    COALESCE(
+                        size_bytes,
+                        pg_column_size(json),
+                        (SELECT pg_column_size(d.data) FROM "${RECORDS_DATA_TABLE}" d WHERE d.connection_id = ? AND d.model = ? AND d.id = "${RECORDS_TABLE}".id),
+                        0
+                    ) as size`;
+            const pageQuery = query.select(
                 // PostgreSQL stores timestamp with microseconds precision
                 // however, javascript date only supports milliseconds precision
                 // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
-                this.dbRead.raw(`
+                this.dbRead.raw(
+                    `
                     tableoid::regclass as partition,
                     id,
                     external_id,
-                    ${metadataOnly ? '' : 'json,'}
                     to_json(created_at) as first_seen_at,
                     to_json(updated_at) as last_modified_at,
                     to_json(deleted_at) as deleted_at,
@@ -341,48 +354,94 @@ export class PostgresStore implements RecordsStore {
                         WHEN created_at = updated_at THEN 'ADDED'
                         ELSE 'UPDATED'
                     END as last_action,
-                    COALESCE(size_bytes, 0) as size
-                `)
+                    ${sizeColumns}
+                `,
+                    metadataOnly ? [] : [connectionId, model]
+                )
             );
+
+            const limitPlus1 = (limit ? Number(limit) : DEFAULT_RECORDS_LIMIT) + 1;
+            const readPage = async (trx?: Knex.Transaction) => {
+                const recordsMetadata: (Omit<FormattedRecordWithMetadata, 'json'> & { size: number; legacy_size_bytes?: number | null })[] = await (trx
+                    ? pageQuery.transacting(trx)
+                    : pageQuery);
+                const dataById = new Map<string, FormattedRecord['json']>();
+                let hasMore = recordsMetadata.length >= limitPlus1;
+                let budgetTruncated = false;
+                if (hasMore) {
+                    recordsMetadata.pop();
+                }
+                let budgetTotalBytes = 0;
+                if (budgetEnabled && !metadataOnly) {
+                    let acc = 0;
+                    let truncateAt: number | null = null;
+                    for (let i = 0; i < recordsMetadata.length; i++) {
+                        const sz = Number(recordsMetadata[i]!.size);
+                        budgetTotalBytes += sz;
+                        if (truncateAt !== null) continue;
+                        // i > 0: always keep at least one record so pagination can progress past oversized rows.
+                        if (i > 0 && acc + sz > budgetBytes) {
+                            truncateAt = i;
+                            continue;
+                        }
+                        acc += sz;
+                    }
+                    if (truncateAt !== null) {
+                        budgetTruncated = true;
+                        if (!envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN) {
+                            recordsMetadata.splice(truncateAt);
+                            hasMore = true;
+                        }
+                        span.addTags({
+                            'nango.records.budgetTruncated': true,
+                            'nango.records.budgetKeptBytes': acc,
+                            'nango.records.budgetTotalBytes': budgetTotalBytes,
+                            'nango.records.budgetDryRun': envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN
+                        });
+                    }
+                }
+
+                if (trx && recordsMetadata.length > 0) {
+                    // Legacy rows keep their document in records.json, the others in records_data.
+                    const legacyIds: string[] = [];
+                    const dataIds: string[] = [];
+                    for (const r of recordsMetadata) {
+                        (typeof r.legacy_size_bytes === 'number' ? legacyIds : dataIds).push(r.id);
+                    }
+                    const documentQueries = [
+                        { table: RECORDS_DATA_TABLE, column: 'data', ids: dataIds },
+                        { table: RECORDS_TABLE, column: 'json', ids: legacyIds }
+                    ];
+                    for (const { table, column, ids } of documentQueries) {
+                        if (ids.length === 0) continue;
+                        // Drain the result rows into the Map and let the array go out of scope.
+                        // Keeping both the array and the Map doubles the reference count on each
+                        // encrypted blob, which prevents `dataById.delete()` below from making
+                        // them eligible for GC during the loop.
+                        const rows = await trx
+                            .from(table)
+                            .where({ connection_id: connectionId, model })
+                            .whereIn('id', ids)
+                            .select<{ id: string; data: FormattedRecord['json'] | null }[]>('id', `${column} as data`);
+                        while (rows.length > 0) {
+                            const r = rows.pop()!;
+                            if (r.data) {
+                                dataById.set(r.id, r.data);
+                            }
+                        }
+                    }
+                }
+                return { recordsMetadata, dataById, hasMore, budgetTruncated };
+            };
+
+            // Documents are read in the same snapshot as their sizes, so a concurrent write
+            // cannot grow the kept rows past the budget between the two queries.
+            const { recordsMetadata, dataById, hasMore, budgetTruncated } = metadataOnly
+                ? await readPage()
+                : await this.dbRead.transaction((trx) => readPage(trx), { isolationLevel: 'repeatable read', readOnly: true });
 
             if (recordsMetadata.length === 0) {
                 return Ok({ records: [], next_cursor: null });
-            }
-
-            const limitPlus1 = (limit ? Number(limit) : DEFAULT_RECORDS_LIMIT) + 1;
-            let hasMore = recordsMetadata.length >= limitPlus1;
-            let budgetTruncated = false;
-            if (hasMore) {
-                recordsMetadata.pop();
-            }
-            let budgetTotalBytes = 0;
-            if (budgetEnabled && !metadataOnly) {
-                let acc = 0;
-                let truncateAt: number | null = null;
-                for (let i = 0; i < recordsMetadata.length; i++) {
-                    const sz = recordsMetadata[i]!.size;
-                    budgetTotalBytes += sz;
-                    if (truncateAt !== null) continue;
-                    // i > 0: always keep at least one record so pagination can progress past oversized rows.
-                    if (i > 0 && acc + sz > budgetBytes) {
-                        truncateAt = i;
-                        continue;
-                    }
-                    acc += sz;
-                }
-                if (truncateAt !== null) {
-                    budgetTruncated = true;
-                    if (!envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN) {
-                        recordsMetadata.splice(truncateAt);
-                        hasMore = true;
-                    }
-                    span.addTags({
-                        'nango.records.budgetTruncated': true,
-                        'nango.records.budgetKeptBytes': acc,
-                        'nango.records.budgetTotalBytes': budgetTotalBytes,
-                        'nango.records.budgetDryRun': envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN
-                    });
-                }
             }
 
             if (metadataOnly) {
@@ -400,24 +459,6 @@ export class PostgresStore implements RecordsStore {
                     });
                 }
             } else {
-                const recordIds = recordsMetadata.map((r) => r.id);
-                const dataById = new Map<string, FormattedRecord['json']>();
-                {
-                    // Drain the result rows into the Map and let the array go out of scope.
-                    // Keeping both the array and the Map doubles the reference count on each
-                    // encrypted blob, which prevents `dataById.delete()` below from making
-                    // them eligible for GC during the loop.
-                    const rows = await this.dbRead
-                        .from(RECORDS_DATA_TABLE)
-                        .where({ connection_id: connectionId, model })
-                        .whereIn('id', recordIds)
-                        .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
-                    while (rows.length > 0) {
-                        const r = rows.pop()!;
-                        dataById.set(r.id, r.data);
-                    }
-                }
-
                 const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
                 try {
                     // decryptRecordData offloads to the libuv threadpool, so awaiting one record at a
@@ -431,7 +472,8 @@ export class PostgresStore implements RecordsStore {
                         const chunk = recordsMetadata.slice(start, start + concurrency);
                         const decryptedChunk = await Promise.all(
                             chunk.map(async (item) => {
-                                const data = dataById.get(item.id) ?? item.json ?? {};
+                                // pruned records have no document
+                                const data = dataById.get(item.id) ?? ({} as FormattedRecord['json']);
                                 // Drop the only remaining reference to the encrypted blob so V8 can
                                 // reclaim it when GC fires under heap pressure.
                                 dataById.delete(item.id);

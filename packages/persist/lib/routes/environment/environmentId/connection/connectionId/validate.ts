@@ -25,7 +25,7 @@ const getRecordsQuerySchema = z
     .object({
         model: z.string(),
         cursor: z.string().optional(),
-        limit: z.coerce.number().int().positive().default(100),
+        limit: z.coerce.number().int().positive().max(100).default(100),
         activityLogId: operationIdRegex.optional(),
         externalIds: z
             .union([
