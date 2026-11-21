@@ -1,0 +1,33 @@
+---
+title: 'APIKO'
+sidebarTitle: 'APIKO'
+description: 'Connect an APIKO account and list available models through Nango'
+---
+
+[APIKO](https://apiko.app/docs/introduction) provides a unified API for text, image, and video models. Nango stores each user's APIKO API key and forwards requests to APIKO with that key.
+
+## Quickstart
+
+<Steps>
+  <Step title="Create the integration">
+    In the Nango dashboard, go to **Integrations**, select **Configure New Integration**, and choose **APIKO**.
+  </Step>
+  <Step title="Connect an APIKO account">
+    Go to **Connections**, select **Add Test Connection**, and choose **Authorize**. Enter an APIKO API key in the Connect UI. The connection check lists models available to the key.
+  </Step>
+  <Step title="List available models">
+    From your backend, call the Nango proxy with an Environment API key, the integration ID, and the connection ID.
+
+    ```bash
+    curl "https://api.nango.dev/proxy/v1/models" \
+      -H "Authorization: Bearer $NANGO_ENVIRONMENT_API_KEY" \
+      -H "Provider-Config-Key: $NANGO_INTEGRATION_ID" \
+      -H "Connection-Id: $NANGO_CONNECTION_ID"
+    ```
+
+    Use an ID from `data` to choose a model for subsequent requests. See the [APIKO quickstart](https://apiko.app/docs/quickstart) for supported endpoint examples.
+  </Step>
+  <Step title="Connect users from your app">
+    Follow the [Nango quickstart](/getting-started/quickstart) to create a Connect session for each user. Use that user's connection ID for requests from your backend.
+  </Step>
+</Steps>
