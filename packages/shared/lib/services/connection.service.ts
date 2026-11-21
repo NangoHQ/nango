@@ -52,7 +52,8 @@ import {
     getOAuthAxiosRequestConfig,
     getOAuthOutboundUrlPolicy,
     getOAuthRedirectPolicy,
-    getOAuthSafeUndiciDispatcher
+    getOAuthSafeUndiciDispatcher,
+    OAUTH_TOKEN_RESPONSE_MAX_BYTES
 } from './proxy/outbound-policy.js';
 import syncManager from './sync/manager.service.js';
 
@@ -2079,7 +2080,8 @@ export class ConnectionService {
                 headers,
                 body: bodyFormat === 'query' ? null : bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
                 agent,
-                redirect: getOAuthRedirectPolicy()
+                redirect: getOAuthRedirectPolicy(),
+                maxResponseBytes: OAUTH_TOKEN_RESPONSE_MAX_BYTES
             },
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
         );
