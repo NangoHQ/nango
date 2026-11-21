@@ -45,6 +45,12 @@ const MEMOIZED_CONNECTION_TTL = 60_000;
 const defaultLogger = getLogger('Server.ProxyService');
 const baseUrlOverrideDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST);
 
+/**
+ * Most retries a caller of the API can ask for. Each retry can wait up to NANGO_PROXY_MAX_RETRY_WAIT_MS,
+ * so an unbounded count lets one request hold the server for as long as the caller wants.
+ */
+export const MAX_PROXY_RETRIES = 5;
+
 export interface ProxyServiceRequest {
     account: DBTeam;
     environment: DBEnvironment;
