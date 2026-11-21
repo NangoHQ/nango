@@ -20503,7 +20503,6 @@ hitpay:
             enum:
                 - hit-pay.com
                 - sandbox.hit-pay.com
-                - staging.hit-pay.com
 
 hive:
     display_name: Hive
