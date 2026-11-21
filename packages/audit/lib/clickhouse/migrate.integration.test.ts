@@ -70,7 +70,8 @@ describe('audit migrate', () => {
 
     it('rejects an accountId that is missing, malformed or negative, and accepts account 0', async () => {
         const insert = async (id: string, accountId?: unknown): Promise<'accepted' | 'rejected'> => {
-            const event = { id, occurredAt: '2026-07-29T10:00:00.000Z', ...(accountId === undefined ? {} : { accountId }) };
+            // Must stay recent. The TTL drops a row older than retention_days on insert.
+            const event = { id, occurredAt: new Date().toISOString(), ...(accountId === undefined ? {} : { accountId }) };
             try {
                 await admin.insert({
                     table: `${database}.audit_trail_events`,

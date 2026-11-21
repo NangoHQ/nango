@@ -1,7 +1,8 @@
-import { configService, getProvider, productTracking, sharedCredentialsService } from '@nangohq/shared';
+import { configService, getProvider, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToApi } from '../../../formatters/integration.js';
+import { trackIntegrationCreate } from '../../../services/integration.service.js';
 import { resolveIntegrationConfig } from '../../../services/integrationConfig.js';
 import { cleanupMcpClientRegistration, mcpRegistrationCustomFields, registerMcpOAuth2Client } from '../../../services/mcpClientRegistration.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
@@ -138,7 +139,7 @@ export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(asyn
         integration = createdIntegration;
     }
 
-    productTracking.track({ name: 'integrations:integration_create', eventProperties: { provider: integration.provider, is_playground: false } });
+    trackIntegrationCreate(integration, 'dashboard');
     res.status(200).send({
         data: integrationToApi(integration)
     });

@@ -54,6 +54,16 @@ describe(`GET ${route}`, () => {
         expect(res.json.data.hasBaa).toBe(hasBaa);
     });
 
+    it('returns gettingStartedDismissed false until the account dismisses it', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        // @ts-expect-error type declares `env` but the controller rejects any query param
+        const res = await api.fetch(route, { method: 'GET', session });
+
+        isSuccess(res.json);
+        expect(res.json.data.gettingStartedDismissed).toBe(false);
+    });
+
     it('returns the tools-catalog flag for the account', async () => {
         const spy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
         const { account, user } = await seeders.seedAccountEnvAndUser();

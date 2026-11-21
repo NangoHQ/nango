@@ -1,0 +1,86 @@
+---
+title: 'Zscaler (OneAPI)'
+sidebarTitle: 'Zscaler (OneAPI)'
+description: 'Integrate your application with the Zscaler OneAPI for ZIA and ZPA'
+---
+
+## 🚀 Quickstart
+
+Connect to Zscaler OneAPI with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Zscaler (OneAPI)_.
+    </Step>
+    <Step id="authorize-zscaler" title="Authorize Zscaler">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your vanity domain, Zscaler cloud, ZPA customer ID, and the client ID and client secret of a ZIdentity API client. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-zscaler-api" title="Call the Zscaler API">
+    Let's make your first request to the Zscaler Internet Access (ZIA) API to get the configuration activation status. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/zia/api/v1/status" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/zia/api/v1/status',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Paths are relative to your API host, such as `https://api.zsapi.net` on the production cloud. ZIA paths start with `/zia/api/v1`, and Zscaler Private Access (ZPA) paths start with `/zpa/mgmtconfig/v1/admin/customers/<CUSTOMER-ID>`. Nango gets an access token with your client credentials and renews it before it expires.
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Zscaler (OneAPI) integration guides
+
+- [How do I link my account?](/api-integrations/zscaler/connect)  
+Create a ZIdentity API client and find your vanity domain, Zscaler cloud, and ZPA customer ID.
+
+Official docs: [Zscaler OneAPI](https://help.zscaler.com/oneapi)
+
+## API gotchas
+
+- Your Zscaler tenant must be on ZIdentity to use OneAPI. Tenants that still use the legacy per-product APIs aren't supported.
+- This integration supports the production, beta, and government (FedRAMP) clouds. Each cloud has its own authentication domain and API host, which users pick when they connect. Zscaler doesn't offer a self-hosted OneAPI.
+- ZPA paths include your ZPA customer ID, which is saved in the connection config as `customerId`.
+- An API client only gets the scopes you assign on its **Resources** tab in ZIdentity. A `401` or `403` usually means a scope is missing.
+
+## 🧩 Pre-built syncs & actions for Zscaler (OneAPI)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/zscaler/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

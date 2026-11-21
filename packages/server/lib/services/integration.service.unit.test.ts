@@ -1596,6 +1596,7 @@ function sharedCredentialsFixture(credentialOverrides?: { app_link?: string }): 
             oauth_client_secret_tag: 'tag',
             ...credentialOverrides
         },
+        enabled: true,
         created_at: createdAt,
         updated_at: updatedAt
     };

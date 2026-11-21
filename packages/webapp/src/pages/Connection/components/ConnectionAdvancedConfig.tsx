@@ -2,12 +2,22 @@ import { ChevronRight, ExternalLink } from 'lucide-react';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { Button, Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@nangohq/design-system';
+import {
+    Card,
+    CardAction,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+    Input,
+    LinkButton,
+    SegmentedControl,
+    SegmentedControlItem
+} from '@nangohq/design-system';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { KeyValueInput } from '../../../components/patterns/KeyValueInput';
 import { ScopesInput } from '../../../components/patterns/ScopesInput';
-import { BinaryToggle } from '../../../components/ui/BinaryToggle';
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../../../components/ui/Form';
 import { Separator } from '../../../components/ui/Separator';
 
@@ -55,12 +65,12 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                             <div className="flex flex-col gap-5">
                                 <div className="flex items-center justify-between gap-2">
                                     <h3 className="text-body-small-medium uppercase text-text-secondary">End User</h3>
-                                    <Button asChild variant="link-accent" size="xs">
+                                    <LinkButton asChild size="sm">
                                         <a href={CONNECT_SESSION_DOCS_URL} target="_blank" rel="noopener noreferrer">
                                             API reference
                                             <ExternalLink />
                                         </a>
-                                    </Button>
+                                    </LinkButton>
                                 </div>
                                 <FormField
                                     control={control}
@@ -150,12 +160,14 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Override developer app credentials</FormLabel>
-                                                        <BinaryToggle
-                                                            value={field.value}
-                                                            onChange={field.onChange}
-                                                            offLabel="No override"
-                                                            onLabel="End-user provided"
-                                                        />
+                                                        <SegmentedControl
+                                                            aria-label="Override developer app credentials"
+                                                            value={field.value ? 'end-user' : 'none'}
+                                                            onValueChange={(next) => field.onChange(next === 'end-user')}
+                                                        >
+                                                            <SegmentedControlItem value="none">No override</SegmentedControlItem>
+                                                            <SegmentedControlItem value="end-user">End-user provided</SegmentedControlItem>
+                                                        </SegmentedControl>
                                                         <FormDescription>
                                                             Keep the OAuth credentials from the integration settings, or have each end user provide their own
                                                             client ID and secret.

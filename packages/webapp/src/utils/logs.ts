@@ -1,7 +1,11 @@
 import { addMilliseconds, startOfDay, subDays, subHours, subMinutes } from 'date-fns';
 
 import type { Period, PeriodPreset } from './dates';
-import type { SearchOperations, SearchPeriod } from '@nangohq/types';
+import type { SearchOperations, SearchOperationsType, SearchPeriod } from '@nangohq/types';
+
+export function expandLogsTypes(types: SearchOperationsType[]): SearchOperationsType[] {
+    return [...new Set(types.flatMap((type) => (type === 'tool' || type === 'tool:call' ? [type, 'action:run' as const] : [type])))];
+}
 
 type LogsUrlOptions = Omit<
     Partial<{

@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
@@ -38,7 +38,8 @@ export function useConnectionRecords(queries: GetConnectionRecords['Querystring'
             queries.model,
             queries.variant,
             queries.limit,
-            queries.metadata_only
+            queries.metadata_only,
+            queries.record_id
         ],
         queryFn: async ({ pageParam }) => {
             const searchParams = new URLSearchParams({
@@ -55,6 +56,9 @@ export function useConnectionRecords(queries: GetConnectionRecords['Querystring'
             }
             if (queries.metadata_only) {
                 searchParams.set('metadata_only', 'true');
+            }
+            if (queries.record_id) {
+                searchParams.set('record_id', queries.record_id);
             }
             if (typeof pageParam === 'string') {
                 searchParams.set('cursor', pageParam);
@@ -73,6 +77,7 @@ export function useConnectionRecords(queries: GetConnectionRecords['Querystring'
         },
         getNextPageParam: (lastPage) => lastPage.next_cursor || undefined,
         initialPageParam: undefined as string | undefined,
+        placeholderData: keepPreviousData,
         enabled: Boolean(queries.env && queries.provider_config_key && queries.model && params.connectionId)
     });
 }

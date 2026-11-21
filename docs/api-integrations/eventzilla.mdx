@@ -1,0 +1,77 @@
+---
+title: 'Eventzilla'
+sidebarTitle: 'Eventzilla'
+description: 'Integrate your application with the Eventzilla API'
+---
+
+## 🚀 Quickstart
+
+Connect to Eventzilla with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Eventzilla_.
+    </Step>
+    <Step id="authorize-eventzilla" title="Authorize Eventzilla">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Eventzilla API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-eventzilla-api" title="Call the Eventzilla API">
+    Let's make your first request to the Eventzilla API to list your event categories. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/categories" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/categories',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Eventzilla integration guides
+
+- [How do I link my account?](/api-integrations/eventzilla/connect)  
+Generate an Eventzilla API key and connect your account.
+
+Official docs: [Eventzilla API documentation](https://developer.eventzilla.net/)
+
+## 🧩 Pre-built syncs & tools for Eventzilla
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/eventzilla/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -23,7 +23,7 @@ describe('createConnectionToolsMcpServer', () => {
     beforeEach(() => {
         vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(providerConfig);
         vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
-        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok({ actions: [], provider: 'github' }));
+        vi.spyOn(shared.functionLookupService, 'listActions').mockResolvedValue(Ok({ actions: [], provider: 'github' }));
         mocks.executeAction.mockReset();
     });
 
@@ -32,7 +32,7 @@ describe('createConnectionToolsMcpServer', () => {
     });
 
     it('does not advertise a disabled action and reports direct calls as unavailable', async () => {
-        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok({ actions: [actionFixture({ enabled: false })], provider: 'github' }));
+        vi.spyOn(shared.functionLookupService, 'listActions').mockResolvedValue(Ok({ actions: [actionFixture({ enabled: false })], provider: 'github' }));
         const disabledActionError = Object.assign(new Error('The action is disabled'), {
             code: 'disabled_action',
             nangoError: undefined
@@ -70,7 +70,7 @@ describe('createConnectionToolsMcpServer', () => {
 
     it('continues to advertise and execute an enabled action', async () => {
         const action = actionFixture({ enabled: true });
-        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok({ actions: [action], provider: 'github' }));
+        vi.spyOn(shared.functionLookupService, 'listActions').mockResolvedValue(Ok({ actions: [action], provider: 'github' }));
         mocks.executeAction.mockResolvedValue({ logCtx: undefined, result: Ok({ data: { deleted: true } }) });
         const { client, server } = await createTestClient();
 
@@ -81,7 +81,7 @@ describe('createConnectionToolsMcpServer', () => {
             const result = await client.callTool({ name: 'delete-repository', arguments: { id: 'repo-1' } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify({ deleted: true }, null, 2) }]
+                content: [{ type: 'text', text: JSON.stringify({ deleted: true }) }]
             });
             expect(mocks.executeAction).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -102,7 +102,7 @@ describe('createConnectionToolsMcpServer', () => {
     });
 
     it('advertises and executes a catalog action', async () => {
-        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(
+        vi.spyOn(shared.functionLookupService, 'listActions').mockResolvedValue(
             Ok({ actions: [actionFixture({ enabled: true, name: 'delete-file', source: 'tools-catalog' })], provider: 'github' })
         );
         mocks.executeAction.mockResolvedValue({ logCtx: undefined, result: Ok({ data: { deleted: true } }) });
@@ -115,7 +115,7 @@ describe('createConnectionToolsMcpServer', () => {
             const result = await client.callTool({ name: 'delete-file', arguments: { id: 'repo-1' } });
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify({ deleted: true }, null, 2) }]
+                content: [{ type: 'text', text: JSON.stringify({ deleted: true }) }]
             });
             expect(mocks.executeAction).toHaveBeenCalledWith(
                 expect.objectContaining({

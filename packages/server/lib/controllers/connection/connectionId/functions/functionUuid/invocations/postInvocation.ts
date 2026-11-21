@@ -40,7 +40,7 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
         return;
     }
 
-    const invoke = await invokeFunction({
+    const { result } = await invokeFunction({
         account: res.locals.account,
         environment: res.locals.environment,
         connectionId: params.data.connectionId,
@@ -57,5 +57,5 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
         orchestrator: getOrchestrator()
     });
 
-    sendFunctionInvocationResult({ res, result: invoke });
+    sendFunctionInvocationResult({ res, result });
 });

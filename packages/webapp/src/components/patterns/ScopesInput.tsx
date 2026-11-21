@@ -1,7 +1,7 @@
 import { CornerDownLeft, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { Badge, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { Badge, CopyButton, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { cn } from '@/utils/utils';
 import {
@@ -15,7 +15,6 @@ import {
     ComboboxList,
     ComboboxValue
 } from '../ui/Combobox.js';
-import { CopyButton } from '../ui/CopyButton.js';
 
 interface ScopesInputProps {
     scopesString?: string | undefined;
@@ -127,17 +126,8 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     </span>
                 ))}
                 <div className="ml-auto flex items-center gap-1 shrink-0">
-                    {scopes.length > 0 && (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span>
-                                    <CopyButton text={scopes.join(',')} />
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">Copy all</TooltipContent>
-                        </Tooltip>
-                    )}
-                    {isSharedCredentials ? <Badge>Nango provided</Badge> : null}
+                    {scopes.length > 0 && <CopyButton value={scopes.join(',')} label="Copy all" size="sm" />}
+                    {isSharedCredentials ? <Badge>Nango-managed</Badge> : null}
                 </div>
             </div>
         );
@@ -174,19 +164,12 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     <div className="ml-auto flex items-center gap-1 shrink-0 pl-1">
                         {scopes.length > 0 && !loading && (
                             <>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span>
-                                            <CopyButton text={scopes.join(',')} />
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top">Copy all</TooltipContent>
-                                </Tooltip>
+                                <CopyButton value={scopes.join(',')} label="Copy all" size="sm" />
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <IconButton
                                             type="button"
-                                            size="2xs"
+                                            size="sm"
                                             variant="ghost"
                                             label="Delete all scopes"
                                             onMouseDown={(event) => {
@@ -210,7 +193,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                             <TooltipTrigger asChild>
                                 <IconButton
                                     type="button"
-                                    size="2xs"
+                                    size="sm"
                                     variant="ghost"
                                     label="Add scope"
                                     loading={loading}

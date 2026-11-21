@@ -1,0 +1,29 @@
+---
+title: 'How to register your own Deputy OAuth app'
+sidebarTitle: 'Deputy Setup'
+description: 'Create a Deputy OAuth app and connect its credentials to Nango'
+---
+
+This guide shows you how to create an OAuth client in Deputy to get OAuth credentials (client ID & secret).
+
+<Steps>
+  <Step title="Sign up for a Deputy trial">
+    Create a [Deputy trial](https://www.deputy.com/) account and finish its setup. The trial lasts seven days; contact Deputy API support to extend it.
+  </Step>
+  <Step title="Create an OAuth client">
+    1. Log in to [once.deputy.com/my/oauth_clients](https://once.deputy.com/my/oauth_clients) and click **New OAuth Client**.
+    2. Enter your app name and a description. Users see the description when they authorize your app.
+    3. Set the redirect URL to `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)).
+    4. Click **Save this OAuth client** and copy the client ID and secret from the summary.
+  </Step>
+  <Step title="Add the credentials in Nango">
+    Paste the client ID and secret into your Deputy integration in Nango. Nango requests the `longlife_refresh_token` scope Deputy requires.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+A Deputy token works with one install only. Nango stores the install the user picked as the `endpoint` connection config field, calls the API on that install and refreshes tokens there. For more details, see [Deputy OAuth 2.0](https://developer.deputy.com/docs/using-oauth-20).
+
+---

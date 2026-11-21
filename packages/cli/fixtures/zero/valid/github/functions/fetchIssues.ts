@@ -10,6 +10,6 @@ export default createFunction({
         const issue = await nango.get<{ id: number; title: string; state: string }>({
             endpoint: `/repos/NangoHQ/nango/issues/${trigger.input.issueNumber}`
         });
-        return { id: String(issue.id), title: issue.title, state: issue.state };
+        return { id: String(issue.data.id), title: issue.data.title, state: issue.data.state };
     }
 });

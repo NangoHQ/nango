@@ -1,24 +1,25 @@
 import db from '@nangohq/database';
 import { Err, Ok } from '@nangohq/utils';
 
-import { resolveRunnableTool } from '../catalog/resolveTool.js';
-import { listActions, ListFunctionsError } from './legacy/service.js';
-import { search } from './models/functions.js';
+import { getCatalogEntry } from '../catalog/actions.js';
+import { resolveLegacyAction } from '../catalog/resolveLegacyAction.js';
+import { isTool, search } from './models/functions.js';
 
-import type { ResolveRunnableToolResult } from '../catalog/resolveTool.js';
-import type { CurrentFunctionConfig } from './models/functions.js';
-import type { IntegrationConfig, ListedNangoActionFunction } from '@nangohq/types';
+import type { ResolvedLegacyAction } from '../catalog/resolveLegacyAction.js';
+import type { FunctionSource, IntegrationConfig } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-export type ResolvedTool = { kind: 'function'; fn: CurrentFunctionConfig } | ResolveRunnableToolResult;
-
-export type ListedTool = { kind: 'function'; fn: CurrentFunctionConfig } | { kind: 'action'; action: ListedNangoActionFunction };
+export type ResolvedTool =
+    | { kind: 'function'; uuid: string; source: FunctionSource; inputSchemaRef: string | null }
+    | { kind: 'missing'; source?: FunctionSource }
+    | Exclude<ResolvedLegacyAction, { kind: 'missing' }>;
 
 /**
- * Resolves a tool by name, by order of priority:
- * 1. tool functions, including disabled ones so they shadow same-named actions
- * 2. deployed actions
- * 3. catalog tools
+ * Resolves an enabled tool by name, by order of priority:
+ * 1. deployed tool functions
+ * 2. deployed legacy actions
+ * 3. legacy catalog actions (tools-catalog on)
+ * 4. catalog tool functions
  */
 export async function resolveTool({
     accountUuid,
@@ -33,7 +34,7 @@ export async function resolveTool({
 }): Promise<Result<ResolvedTool>> {
     const functions = await search(db.knex, {
         environmentId,
-        filter: { integrationKey: integration.unique_key, name, trigger: { kind: 'http' } }
+        filter: { integrationKey: integration.unique_key, name, trigger: { kind: 'http', subscriptions: 'none' } }
     });
     if (functions.isErr()) {
         return Err(functions.error);
@@ -41,46 +42,29 @@ export async function resolveTool({
 
     const fn = functions.value[0];
     if (fn) {
-        return Ok({ kind: 'function', fn });
+        const { config, currentVersion } = fn;
+        return Ok(
+            config.enabled
+                ? { kind: 'function', uuid: config.uuid, source: currentVersion.source, inputSchemaRef: currentVersion.input_schema_ref }
+                : { kind: 'missing', source: currentVersion.source }
+        );
     }
 
     try {
-        return Ok(await resolveRunnableTool({ accountUuid, environmentId, integration, name }));
+        const tool = await resolveLegacyAction({ accountUuid, environmentId, integration, name });
+        if (tool.kind === 'deployed' && !tool.config.enabled) {
+            return Ok({ kind: 'missing', source: tool.config.source });
+        }
+        if (tool.kind !== 'missing') {
+            return Ok(tool);
+        }
+
+        const definition = getCatalogEntry(integration.provider, name);
+        if (!definition || !('trigger' in definition) || !isTool(definition)) {
+            return Ok({ kind: 'missing' });
+        }
+        return Ok({ kind: 'function', uuid: definition.uuid, source: definition.source, inputSchemaRef: definition.input_schema_ref });
     } catch (err) {
         return Err(new Error('failed_to_resolve_tool', { cause: err }));
     }
-}
-
-/**
- * Lists enabled tools, by order of priority (a name is only listed once):
- * 1. tool functions, disabled ones hiding same-named actions
- * 2. deployed actions and catalog tools
- */
-export async function listTools({
-    environmentId,
-    integrationKey
-}: {
-    environmentId: number;
-    integrationKey: string;
-}): Promise<Result<{ tools: ListedTool[]; provider: string }, ListFunctionsError>> {
-    const [functions, actions] = await Promise.all([
-        search(db.knex, { environmentId, filter: { integrationKey, trigger: { kind: 'http' } } }),
-        listActions({ environmentId, providerConfigKey: integrationKey })
-    ]);
-    if (actions.isErr()) {
-        return Err(actions.error);
-    }
-    if (functions.isErr()) {
-        return Err(new ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions', cause: functions.error }));
-    }
-
-    const tools = new Map<string, ListedTool>(functions.value.map((fn) => [fn.config.name, { kind: 'function', fn }]));
-    for (const action of actions.value.actions) {
-        if (action.enabled && !tools.has(action.name)) {
-            tools.set(action.name, { kind: 'action', action });
-        }
-    }
-
-    const enabled = [...tools.values()].filter((tool) => tool.kind === 'action' || tool.fn.config.enabled);
-    return Ok({ tools: enabled, provider: actions.value.provider });
 }

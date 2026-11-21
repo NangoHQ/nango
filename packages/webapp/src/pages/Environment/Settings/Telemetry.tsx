@@ -121,12 +121,14 @@ export const Telemetry: React.FC = () => {
                                     isSecret={true}
                                 />
                                 {errors.length > 0 && (
-                                    <FieldError className="flex flex-col gap-1">
-                                        {errors.map((err, i) => (
-                                            <span key={i}>
-                                                Row {err.index + 1}, {err.key}: {err.error}
-                                            </span>
-                                        ))}
+                                    <FieldError>
+                                        <div className="flex flex-col gap-1">
+                                            {errors.map((err, i) => (
+                                                <span key={i}>
+                                                    Row {err.index + 1}, {err.key}: {err.error}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </FieldError>
                                 )}
                             </div>

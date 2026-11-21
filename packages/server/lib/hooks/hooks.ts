@@ -20,6 +20,7 @@ import { Err, isHosted, Ok, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { envs } from '../env.js';
+import * as agentGettingStartedService from '../services/agentGettingStarted.service.js';
 import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
@@ -37,6 +38,7 @@ import type {
     DBConnectionDecrypted,
     DBEnvironment,
     DBTeam,
+    EnvironmentWithoutSecrets,
     InstallPluginCredentials,
     IntegrationConfig,
     InternalProxyConfiguration,
@@ -101,6 +103,8 @@ export const connectionCreated = async (
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
 ): Promise<void> => {
     const { connection, environment, auth_mode, endUser, operation } = createdConnectionPayload;
+
+    void agentGettingStartedService.recordConnectionCreated({ accountId: account.id, tags: connection.tags });
 
     try {
         await errorNotificationService.auth.clear({ connection_id: connection.id });
@@ -275,7 +279,7 @@ export const connectionRefreshSuccess = async ({
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     config: IntegrationConfig;
     account?: DBTeam;
-    environment?: DBEnvironment;
+    environment?: EnvironmentWithoutSecrets;
     provider?: Provider;
 }): Promise<void> => {
     let clearedActiveAuthError = false;
@@ -340,7 +344,7 @@ export const connectionRefreshFailed = async ({
 }: {
     account: DBTeam;
     connection: DBConnection | DBConnectionDecrypted;
-    environment: DBEnvironment;
+    environment: EnvironmentWithoutSecrets;
     provider: Provider;
     config: IntegrationConfig;
     authError: { type: string; description: string };

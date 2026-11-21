@@ -1,3 +1,8 @@
+/*!
+ * @license Elastic-2.0
+ * Copyright (c) Nango Inc. All rights reserved.
+ * See https://github.com/NangoHQ/nango/blob/master/LICENSE
+ */
 import crypto from 'node:crypto';
 import https from 'node:https';
 import util from 'node:util';
@@ -34,8 +39,6 @@ import type {
     GetPublicProvider,
     GetPublicProviders,
     GetPublicProviderTemplates,
-    GetTool,
-    GetTools,
     NangoRecord,
     OAuth1Token,
     OpenAIFunction,
@@ -44,7 +47,6 @@ import type {
     PostConnectSessions,
     PostPublicConnectSessionsReconnect,
     PostPublicIntegration,
-    PostPublicQuickstartIntegration,
     PostPublicTrigger,
     PostSyncVariant,
     PostToolCall
@@ -227,12 +229,6 @@ export class Nango {
         return response.data;
     }
 
-    public async createQuickstartIntegration(body: PostPublicQuickstartIntegration['Body']): Promise<PostPublicQuickstartIntegration['Success']> {
-        const url = `${this.serverUrl}/integrations/quickstart`;
-        const response = await this.http.post(url, body, { headers: this.enrichHeaders({}) });
-        return response.data;
-    }
-
     public async updateIntegration(params: PatchPublicIntegration['Params'], body: PatchPublicIntegration['Body']): Promise<PatchPublicIntegration['Success']> {
         const url = `${this.serverUrl}/integrations/${params.uniqueKey}`;
         const response = await this.http.patch(url, body, { headers: this.enrichHeaders({}) });
@@ -290,7 +286,7 @@ export class Nango {
     /**
      * Retrieves the source code of a deployed function
      * @param params - Identifies the function (`uniqueKey`, `name`)
-     * @param queries - Optional `type` to disambiguate when functions share a name
+     * @param queries - Optional `type` to select a function when several share a name
      * @returns A promise that resolves with the function type and code
      */
     public async getFunctionCode(
@@ -322,36 +318,6 @@ export class Nango {
         addQueryParams(url, queries as DeletePublicIntegrationFunction['Querystring']);
 
         const response = await this.http.delete(url.href, { headers: this.enrichHeaders(headers) });
-        return response.data;
-    }
-
-    /**
-     * Retrieves a tool of an integration
-     * @param uniqueKey - The unique key of the integration
-     * @param name - The name of the tool
-     * @returns A promise that resolves with the tool
-     */
-    public async getTool({ uniqueKey, name }: GetTool['Params']): Promise<GetTool['Success']> {
-        const headers = { 'Content-Type': 'application/json' };
-
-        const url = new URL(`${this.serverUrl}/integrations/${uniqueKey}/tools/${name}`);
-
-        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
-        return response.data;
-    }
-
-    /**
-     * Lists a page of available tools of an integration.
-     * @param uniqueKey - The unique key of the integration
-     * @param queries - Optional pagination parameters: `cursor`, `limit` (defaults to 250, maximum 250)
-     * @returns A promise that resolves with the tools and next cursor
-     */
-    public async listTools({ uniqueKey }: GetTools['Params'], queries?: GetTools['Querystring']): Promise<GetTools['Success']> {
-        const headers = { 'Content-Type': 'application/json' };
-        const url = new URL(`${this.serverUrl}/integrations/${uniqueKey}/tools`);
-        addQueryParams(url, queries);
-
-        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
         return response.data;
     }
 

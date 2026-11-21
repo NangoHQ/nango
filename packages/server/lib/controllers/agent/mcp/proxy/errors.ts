@@ -3,6 +3,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { ProxyResponseFormatError } from '../../../../services/mcpProxyResponse.js';
 import { InternalMcpError, PublicMcpError } from '../../../mcp/utils.js';
+import { connectionDeletedError } from '../sessionConnection.js';
 
 import type { McpProxyError } from '../../../../services/mcpProxy.service.js';
 import type { ProxyServiceError } from '../../../../services/proxy.service.js';
@@ -38,10 +39,7 @@ export function proxyErrorToMcp({ error, integrationId }: { error: McpProxyError
                 integrationId
             });
         case 'connection_not_found':
-            return new PublicMcpError(
-                `${detail} No request to '${integrationId}' can be authenticated until then, so tell the user they need to reconnect it.`,
-                { code: 'integration_not_connected', integrationId }
-            );
+            return connectionDeletedError(integrationId);
         case 'credentials_refresh_failed':
             return isTransientRefreshFailure(error)
                 ? new PublicMcpError(`${detail} Try the call again in a moment, and tell the user only if it keeps failing.`, {

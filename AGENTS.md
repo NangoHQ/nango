@@ -1,5 +1,9 @@
 Use `npm` as the project package manager.
-After running the initial `npm install` or `npm ci`, run `npm run prepare` to install Husky git hooks.
+Install a fresh clone or worktree with `npm ci`, not `npm install`: `npm install` into an empty `node_modules` rewrites `package-lock.json`. After that, run `npm run prepare` to install Husky git hooks.
+
+## Agent instruction files
+
+Every `AGENTS.md` needs a `CLAUDE.md` beside it, because Claude Code loads a folder's `CLAUDE.md` but not its `AGENTS.md`. Make it a symlink: `ln -s AGENTS.md CLAUDE.md`. Use a real `CLAUDE.md` that imports `@AGENTS.md`, as `docs/` does, only when Claude needs instructions other agents shouldn't get.
 
 ## Linting & formatting
 

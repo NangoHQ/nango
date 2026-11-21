@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import yaml from 'js-yaml';
 
-import type { Provider } from '@nangohq/types';
+import type { FlowsZeroJson, Provider } from '@nangohq/types';
 
 const prettyAuthModes: Record<string, string> = {
     OAUTH1: 'OAuth',
@@ -30,7 +30,7 @@ const snippetsPath = 'docs/snippets/generated';
 const snippetSkipList = new Set(['confluence']);
 
 const flowsString = await fs.readFile(flowsPath, 'utf-8');
-const flows = JSON.parse(flowsString);
+const flows = JSON.parse(flowsString) as FlowsZeroJson;
 const providers = yaml.load(await fs.readFile(providersPath, 'utf-8')) as Record<string, Provider>;
 
 const useCases: Record<string, any> = {};
@@ -38,10 +38,8 @@ for (const flow of flows) {
     const integration = flow.providerConfigKey;
     const actions = flow.actions;
     const syncs = flow.syncs;
-    const symLinkTargetName = flow.symLinkTargetName;
-    useCases[integration] = buildEndpoints('action', actions, integration, symLinkTargetName).concat(
-        buildEndpoints('sync', syncs, integration, symLinkTargetName)
-    );
+    const tools = flow.functions?.filter((fn) => fn.type === 'tool');
+    useCases[integration] = buildEndpoints('action', actions).concat(buildEndpoints('sync', syncs), buildEndpoints('tool', tools));
 }
 
 const providersHandled: string[] = [];
@@ -199,12 +197,12 @@ function useCasesSnippet(useCases: any) {
             return `
 ### ${groupName}
 
-| Function name | Description | Type | Source code |
-| - | - | - | - |
+| Function name | Description | Type |
+| - | - | - |
 ${endpoints
     .map(
         (endpoint) =>
-            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Action'}](${endpoint.type === 'sync' ? '/guides/functions/syncs/sync-functions' : '/guides/functions/action-functions'}) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`
+            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Tool'}](${endpoint.type === 'sync' ? '/guides/syncs/sync-functions' : '/guides/tools/customize-tools'}) |`
     )
     .join('\n')}
             `.trim();
@@ -215,9 +213,9 @@ ${endpoints
 }
 
 function emptyUseCases() {
-    return `_No pre-built syncs or actions available yet._
+    return `_No pre-built syncs or tools available yet._
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>`;
+<Tip>Not seeing the integration you need? [Build your own](/guides/platform/functions/functions-guide) independently.</Tip>`;
 }
 
 interface Endpoint {
@@ -226,11 +224,10 @@ interface Endpoint {
     path: string;
     description: string;
     group: string;
-    script: string;
     type: string;
 }
 
-function buildEndpoints(type: string, syncOrAction: any, integration: string, symLinkTargetName: string | null) {
+function buildEndpoints(type: string, syncOrAction: any) {
     const endpoints: Endpoint[] = [];
     if (syncOrAction) {
         for (const item of syncOrAction) {
@@ -244,7 +241,6 @@ function buildEndpoints(type: string, syncOrAction: any, integration: string, sy
                     path: endpoint?.path,
                     description: item?.description?.trim(),
                     group: endpoint?.group,
-                    script: `${symLinkTargetName || integration}/${type}s/${item.name}`,
                     type: type
                 });
             }

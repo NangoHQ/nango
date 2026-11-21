@@ -7,7 +7,7 @@ Clone the repository and install dependencies:
 ```sh
 git clone https://github.com/NangoHQ/nango.git
 cd nango
-npm install
+npm ci
 npm run prepare
 ```
 
@@ -37,7 +37,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Run integrations
 
-Create a directory for your integrations and install the CLI:
+Create a directory for your integrations and install the CLI: 
 
 ```sh
 mkdir nango-integrations

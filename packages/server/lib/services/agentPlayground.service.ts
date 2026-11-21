@@ -13,12 +13,14 @@ import { getOrchestrator } from '../utils/utils.js';
 import { buildInstructions } from './agentPlayground.instructions.js';
 import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
 import { modelErrorCategory, modelUnavailableError } from './agentPlaygroundModelError.js';
+import { labelFirstMessage } from './agentPlaygroundRequest.js';
 import { PLAYGROUND_USER_TAG_KEY, sessionOwner } from './agentPlaygroundTags.js';
 import { isUsableOutcome, trackPlaygroundTurn, trackStarterIntegrationSetup } from './agentPlaygroundUsage.service.js';
 import * as agentSessionService from './agentSession.service.js';
 import { trackAgentSessionCreated } from './agentSessionAnalytics.service.js';
 
 import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
+import type { PlaygroundRequest } from './agentPlaygroundRequest.js';
 import type { PlaygroundStep, PlaygroundTurn, PlaygroundTurnOutcome } from './agentPlaygroundUsage.service.js';
 import type {
     AgentPlaygroundIntegrationSetup,
@@ -252,7 +254,7 @@ async function getOrCreateSession(
     if (!parsed.success) {
         return Err(new AgentPlaygroundError('session_creation_failed', parsed.error.message, { cause: parsed.error }));
     }
-    const created = await agentSessionService.createAgentSession({
+    const params = {
         account: ctx.account,
         environment: ctx.environment,
         plan: ctx.plan,
@@ -261,12 +263,13 @@ async function getOrCreateSession(
         pinnedTools: parsed.data.pinned_tools,
         metaTools: parsed.data.meta_tools?.metaTools,
         expiresInMs: parsed.data.expires_in
-    });
+    };
+    const created = await agentSessionService.createAgentSession(params);
 
     if (created.isErr()) {
         return Err(new AgentPlaygroundError('session_creation_failed', created.error.message, { cause: created.error }));
     }
-    trackAgentSessionCreated(created.value.session);
+    trackAgentSessionCreated(created.value.session, params, request);
     return Ok({ session: created.value.session, created: { request, ...(reason ? { reason } : {}) } });
 }
 
@@ -342,6 +345,16 @@ function parseTextContent(content: { type: string; text?: string }[]): unknown {
     } catch {
         return text;
     }
+}
+
+function textOf(message: PlaygroundUIMessage | undefined): string {
+    if (message?.role !== 'user') {
+        return '';
+    }
+    return message.parts
+        .map((part) => (part.type === 'text' ? part.text : ''))
+        .join(' ')
+        .trim();
 }
 
 export function describeTurn(messages: PlaygroundUIMessage[], starterProvider: string | undefined): PlaygroundTurn {
@@ -441,9 +454,14 @@ export async function startTurn({
     const steps: PlaygroundStep[] = [];
     let failed = false;
     let failedCategory: ModelErrorCategory | null = null;
+    const turn = describeTurn(messages, starterProvider);
+    const model = createPlaygroundModel();
+    const typedText = turn.isFirstTurn && !turn.starterProvider ? textOf(lastMessage) : '';
+    // Not given abortSignal, so a turn the user stops still gets labelled.
+    const labelRequest: Promise<PlaygroundRequest | undefined> = typedText ? labelFirstMessage(model, typedText) : Promise.resolve(undefined);
 
     const result = streamText({
-        model: createPlaygroundModel(),
+        model,
         instructions: buildInstructions({
             timeZone,
             now: new Date(),
@@ -502,14 +520,16 @@ export async function startTurn({
                 } else if (failed || outcome.status === 'failed') {
                     turnOutcome = 'error';
                 }
-                trackPlaygroundTurn({
-                    ctx,
-                    sessionId: session.id,
-                    chatId,
-                    turn: describeTurn(messages, starterProvider),
-                    outcome: turnOutcome,
-                    steps,
-                    errorCategory: failedCategory
+                void labelRequest.then((labelled) => {
+                    trackPlaygroundTurn({
+                        ctx,
+                        sessionId: session.id,
+                        chatId,
+                        turn: labelled ? { ...turn, request: labelled } : turn,
+                        outcome: turnOutcome,
+                        steps,
+                        errorCategory: failedCategory
+                    });
                 });
             }
         })

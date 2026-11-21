@@ -1,0 +1,81 @@
+---
+title: 'Polygon'
+sidebarTitle: 'Polygon'
+description: 'Integrate your application with the Polygon (Massive) API'
+---
+
+## 🚀 Quickstart
+
+Connect to Polygon with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Polygon_.
+    </Step>
+    <Step id="authorize-polygon" title="Authorize Polygon">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Massive API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-polygon-api" title="Call the Polygon API">
+    Let's make your first request to the Massive API to get the current market status. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/marketstatus/now" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/marketstatus/now',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Polygon integration guides
+
+- [How do I link my account?](/api-integrations/polygon/connect)  
+Create an API key in the Massive dashboard to connect your account.
+
+Official docs: [Massive REST API quickstart](https://massive.com/docs/rest/quickstart)
+
+## 🧩 Pre-built syncs & tools for Polygon
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/polygon/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango sends the key in the `Authorization: Bearer` header on every call. Calls that need it another way, such as the `apiKey` query parameter, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+
+---

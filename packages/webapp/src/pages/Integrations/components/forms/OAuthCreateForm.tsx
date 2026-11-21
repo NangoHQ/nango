@@ -13,13 +13,13 @@ import {
     FieldLabel,
     InputGroup,
     InputGroupInput,
+    SecretInput,
     Tooltip,
     TooltipContent,
     TooltipTrigger
 } from '@nangohq/design-system';
 
 import { ScopesInput } from '@/components/patterns/ScopesInput';
-import { SecretInput } from '@/components/patterns/SecretInput';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/Form';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
@@ -108,27 +108,32 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
         <Navigation defaultValue={canUseSharedCredentials ? 'template' : 'custom'} orientation="horizontal">
             <NavigationList>
                 {canUseSharedCredentials ? (
-                    <NavigationTrigger value="template">Nango developer app</NavigationTrigger>
+                    <NavigationTrigger value="template">Nango-managed OAuth app</NavigationTrigger>
                 ) : (
                     <Tooltip>
                         <TooltipTrigger>
                             <NavigationTrigger value="template" disabled>
-                                Nango developer app
+                                Nango-managed OAuth app
                             </NavigationTrigger>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
                             {hasIntegrationConfig
-                                ? 'This integration requires configuration only available with your own developer app'
-                                : "Nango doesn't provide test credentials for this API yet"}
+                                ? 'This integration requires configuration only available with your own OAuth app'
+                                : "Nango doesn't have a managed app for this API yet"}
                         </TooltipContent>
                     </Tooltip>
                 )}
-                <NavigationTrigger value="custom">Custom developer app</NavigationTrigger>
+                <NavigationTrigger value="custom">Custom OAuth app</NavigationTrigger>
             </NavigationList>
             <NavigationContent value="template">
                 <div className="flex flex-col gap-8">
                     <Alert variant="info">
-                        <AlertDescription>Nango provides developer apps for testing. Use your own developer app for production.</AlertDescription>
+                        <AlertDescription>Pre-approved apps that work in production. Review the trade-offs before you go live.</AlertDescription>
+                        <AlertActions>
+                            <AlertButtonLink to="https://nango.dev/docs/guides/auth/overview#nango-managed-oauth-apps" target="_blank">
+                                Read the trade-offs <ExternalLinkIcon />
+                            </AlertButtonLink>
+                        </AlertActions>
                     </Alert>
 
                     <div className="flex flex-col gap-5">
@@ -150,7 +155,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
 
                     <div>
                         <Button loading={loading} onClick={onCreatePreProvisioned}>
-                            Create
+                            Add integration
                         </Button>
                     </div>
                 </div>
@@ -158,7 +163,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
             <NavigationContent value="custom">
                 <div className="flex flex-col gap-8">
                     <Alert variant="info">
-                        <AlertTitle>Developer app setup guide</AlertTitle>
+                        <AlertTitle>OAuth app setup guide</AlertTitle>
                         <AlertDescription>Follow our step by step guide to use your own OAuth app.</AlertDescription>
                         <AlertActions>
                             <AlertButtonLink to={provider.docs} target="_blank">
@@ -192,7 +197,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                                         <FormItem>
                                             <FormLabel>Client secret</FormLabel>
                                             <FormControl>
-                                                <SecretInput {...field} />
+                                                <SecretInput editable {...field} value={field.value ?? ''} />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -230,7 +235,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
 
                             <div>
                                 <Button type="submit" loading={loading}>
-                                    Create
+                                    Add integration
                                 </Button>
                             </div>
                         </form>

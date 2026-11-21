@@ -82,24 +82,37 @@ not json
 
     describe('parseDeploySuccessOutput', () => {
         it('parses deploy success details and removes build output from successful responses', () => {
-            const output = parseDeploySuccessOutput(`✓ Typechecking
-✓ Compiled
-✓ Packaging
-✓ Acquiring remote state (https://api-staging.nango.dev)
-✓ Deployed
-Successfully deployed the functions:
-- listRepos@v2.0.0
-`);
+            const deployment = [
+                '✓ Packaging',
+                '✓ Acquiring remote state (https://api-staging.nango.dev)',
+                '✓ Deployed',
+                'Successfully deployed: ',
+                '- github → listRepos@v2.0.0'
+            ];
+            const output = parseDeploySuccessOutput(['✓ Typechecking', '✓ Compiled', ...deployment, ''].join('\r\n'));
 
             expect(output).toStrictEqual({
-                output: `✓ Packaging
-✓ Acquiring remote state (https://api-staging.nango.dev)
-✓ Deployed
-Successfully deployed the functions:
-- listRepos@v2.0.0`,
+                output: deployment.join('\n'),
                 deployed: true,
-                deployedFunctions: [{ name: 'listRepos', version: 'v2.0.0' }]
+                deployedFunctions: [{ name: 'listRepos', version: '2.0.0' }]
             });
+        });
+
+        it('parses native functions without a version and ignores removed functions', () => {
+            const output = parseDeploySuccessOutput(
+                ['✓ Packaging', '✓ Deployed', 'Successfully deployed: ', '- github → fetchIssues', 'Successfully removed: ', '- github → oldFunction'].join(
+                    '\r\n'
+                )
+            );
+
+            expect(output.deployed).toBe(true);
+            expect(output.deployedFunctions).toStrictEqual([{ name: 'fetchIssues' }]);
+        });
+
+        it('returns no functions when nothing was deployed', () => {
+            expect(parseDeploySuccessOutput('✓ Packaging\n✓ Acquiring remote state (https://api.nango.dev)\n\n  No changes').deployedFunctions).toStrictEqual(
+                []
+            );
         });
     });
 });

@@ -1,9 +1,10 @@
-import { basePublicUrl } from '@nangohq/utils';
+import { basePublicUrl, resolveSchemaRef } from '@nangohq/utils';
 
+import { isCatalogToolTemplate } from '../services/provider.service.js';
 import { toNangoFunction } from './function.js';
 
-import type { RetrievedProvider } from '../services/provider.service.js';
-import type { ApiProvider, ApiProviderListItem, NangoSyncConfig, Provider, ProviderMcpOAUTH2, ProviderTemplatesSuccess } from '@nangohq/types';
+import type { ProviderTemplateConfig, RetrievedProvider } from '../services/provider.service.js';
+import type { ApiProvider, ApiProviderFunctionCounts, ApiProviderListItem, Provider, ProviderMcpOAUTH2, ProviderTemplatesSuccess } from '@nangohq/types';
 
 export function providerToApi({ name, provider }: RetrievedProvider): ApiProvider {
     return {
@@ -13,11 +14,23 @@ export function providerToApi({ name, provider }: RetrievedProvider): ApiProvide
     };
 }
 
-export function providerTemplatesToApi(templates: NangoSyncConfig[]): ProviderTemplatesSuccess['data'] {
-    return templates.flatMap((template) => {
-        const fn = toNangoFunction(template);
-        return fn ? [fn] : [];
-    });
+export function providerTemplatesToApi(templates: ProviderTemplateConfig[]): ProviderTemplatesSuccess['data'] {
+    const functions: ProviderTemplatesSuccess['data'] = [];
+    for (const template of templates) {
+        if (isCatalogToolTemplate(template)) {
+            functions.push({
+                type: 'tool',
+                name: template.name,
+                description: template.description,
+                input_json_schema: resolveSchemaRef(template.json_schema, template.input_schema_ref),
+                output_json_schema: resolveSchemaRef(template.json_schema, template.output_schema_ref)
+            });
+        } else {
+            const fn = toNangoFunction(template);
+            if (fn) functions.push(fn);
+        }
+    }
+    return functions;
 }
 
 export function providerListItemToAPI(
@@ -25,7 +38,8 @@ export function providerListItemToAPI(
     properties: Provider,
     preConfigured: boolean,
     preConfiguredScopes: string[],
-    availableScopes?: string[]
+    availableScopes: string[] | undefined,
+    functionCounts: ApiProviderFunctionCounts | undefined
 ): ApiProviderListItem {
     const item: ApiProviderListItem = {
         name: providerName,
@@ -38,6 +52,7 @@ export function providerListItemToAPI(
         docs_connect: properties.docs_connect,
         preConfigured,
         preConfiguredScopes,
+        functionCounts: functionCounts ?? { tools: 0, syncs: 0 },
         ...(properties.integration_config && { integration_config: properties.integration_config }),
         ...(properties.auth_mode === 'MCP_OAUTH2' && {
             clientRegistration: (properties as ProviderMcpOAUTH2).client_registration

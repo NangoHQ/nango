@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 
 import { createClient } from '@sanity/client';
 
-import type { FlowsZeroJson, ScriptTypeLiteral } from '@nangohq/types';
+import type { FlowsZeroJson, RunnableFunctionType } from '@nangohq/types';
 
 const apiVersion = '2025-02-06';
 
@@ -12,7 +12,7 @@ interface SanityTemplateDoc {
     api: { _type: 'reference'; _ref: string };
     name: string;
     description: string | undefined;
-    type: ScriptTypeLiteral;
+    type: RunnableFunctionType;
     documentationLink: string | undefined;
 }
 
@@ -50,7 +50,7 @@ console.log(`Found ${apiIdBySlug.size} existing Sanity api docs`);
 
 interface TemplateEntry {
     providerConfigKey: string;
-    type: ScriptTypeLiteral;
+    type: RunnableFunctionType;
     name: string;
     description: string | undefined;
     sourceFolder: string;
@@ -85,7 +85,7 @@ for (const [providerConfigKey, blocks] of entriesByProvider) {
     const seen = new Map<string, TemplateEntry>();
     for (const block of sorted) {
         const sourceFolder = block.symLinkTargetName || providerConfigKey;
-        for (const item of [...block.syncs, ...block.actions]) {
+        for (const item of [...block.syncs, ...block.actions, ...(block.functions ?? [])]) {
             const key = `${item.type}:${item.name}`;
             if (seen.has(key)) {
                 console.warn(`  duplicate ${item.type} "${item.name}" — keeping the one from the non-symlinked entry`);
@@ -100,7 +100,7 @@ for (const [providerConfigKey, blocks] of entriesByProvider) {
 
 console.log(`Found ${templates.length} templates across ${entriesByProvider.size} providers`);
 
-function buildDocsUrl(sourceFolder: string, type: ScriptTypeLiteral, name: string): string {
+function buildDocsUrl(sourceFolder: string, type: RunnableFunctionType, name: string): string {
     return `https://github.com/NangoHQ/integration-templates/blob/main/integrations/${sourceFolder}/${type}s/${name}.ts`;
 }
 
@@ -157,7 +157,7 @@ const toUpsert = documents.filter((doc) => {
     return true;
 });
 
-const templateTypes: ScriptTypeLiteral[] = ['action', 'sync'];
+const templateTypes: RunnableFunctionType[] = ['action', 'sync', 'tool', 'function'];
 const belongsToSkippedProvider = (id: string): boolean =>
     [...skippedProviderKeys].some((key) => templateTypes.some((type) => id.startsWith(`template-${key}-${type}-`)));
 

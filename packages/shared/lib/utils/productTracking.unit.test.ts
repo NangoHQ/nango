@@ -219,6 +219,34 @@ describe('withProductTrackingContext', () => {
         expect(lastCapture().properties['is_production']).toBe(false);
     });
 
+    it("links the event to the request's session replay", () => {
+        withProductTrackingContext(
+            () => ({ team, analyticsSessionId: 'replay-1' }),
+            () => {
+                productTracking.track({ ...planSubmit });
+            }
+        );
+
+        expect(lastCapture().properties['$session_id']).toBe('replay-1');
+    });
+
+    it('links an event to the session replay it names itself', () => {
+        productTracking.track({ ...planSubmit, team, analyticsSessionId: 'replay-2' });
+
+        expect(lastCapture().properties['$session_id']).toBe('replay-2');
+    });
+
+    it('leaves $session_id off when the request has no session replay', () => {
+        withProductTrackingContext(
+            () => ({ team }),
+            () => {
+                productTracking.track({ ...planSubmit });
+            }
+        );
+
+        expect(lastCapture().properties).not.toHaveProperty('$session_id');
+    });
+
     it('sends nothing while a Nango admin is impersonating the account, even for an event that names it', () => {
         withProductTrackingContext(
             () => ({ team, environment, impersonated: true }),

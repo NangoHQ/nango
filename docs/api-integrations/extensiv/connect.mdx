@@ -1,0 +1,85 @@
+---
+title: 'Extensiv - How do I link my account?'
+sidebarTitle: 'Extensiv'
+---
+
+## Overview
+
+To authenticate with Extensiv, you need an API key pair from Extensiv Integration Manager (formerly CartRover):
+
+1. **API User** - The user half of your API key pair.
+2. **API Key** - The secret half of your API key pair.
+
+Extensiv Integration Manager has three types of API keys. Each type gives access to a different set of [API endpoints](https://developers.cartrover.com/):
+
+- **Cart API keys** - for a single sales channel, such as submitting orders from your own cart.
+- **Merchant API keys** - for a merchant's orders, carts, and inventory.
+- **Warehouse API keys** - for a warehouse or OMS managing many merchants.
+
+This guide shows you how to create each type. Create the one that matches the endpoints your integration calls.
+
+### Prerequisites
+
+- An Extensiv Integration Manager account.
+
+### Step 1: Create your API keys
+
+Log in to Extensiv Integration Manager, then follow the steps for the key type you need.
+
+**Cart API keys**
+
+1. Go to the **Carts** tab and click **New Setup**.
+2. Select **API Access** from the list.
+
+<img
+    src="/api-integrations/extensiv/new_cart_setup.png"
+    alt="Extensiv Integration Manager Carts New Setup page listing cart types, including API Access"
+/>
+
+3. Copy the **API User** and **API Key**.
+
+**Merchant API keys**
+
+1. Go to the **Merchants** tab. Warehouse users should then click the merchant they want.
+2. Click **API Keys**.
+
+<img
+    src="/api-integrations/extensiv/merchant_api_keys.png"
+    alt="Extensiv Integration Manager merchant page with the API Keys button"
+/>
+
+3. Click **New Setup**.
+
+<img
+    src="/api-integrations/extensiv/api_keys_list.png"
+    alt="Extensiv Integration Manager System API Access page listing API keys, with the New Setup button"
+/>
+
+4. Enter a **Name** so you can identify the keys later. The **API User** and **API Key** are generated for you.
+5. Copy the **API User** and **API Key**, then click **OK** to save them.
+
+<img
+    src="/api-integrations/extensiv/new_api_setup.png"
+    alt="Extensiv Integration Manager New API Setup form with Name, API User, and API Key fields"
+/>
+
+**Warehouse API keys**
+
+1. Go to the **Merchants** tab.
+2. Click **Global API Keys**, then click **New Setup**.
+3. Name the keys so you can identify them later.
+4. Copy the **API User** and **API Key**.
+
+<Note>
+Cycling your API keys in Extensiv Integration Manager immediately invalidates the previous keys, which breaks the connection until you reconnect with the new ones.
+</Note>
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Extensiv.
+2. Enter your **API User** and **API Key**.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/extensiv/form.png" alt="Nango Connect UI form for entering the Extensiv API User and API Key" style={{maxWidth: "450px" }}/>
+
+You are now connected to Extensiv.

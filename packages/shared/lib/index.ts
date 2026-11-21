@@ -35,8 +35,10 @@ export * from './services/sync/job.service.js';
 export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
+export * from './services/sync/config/deployScope.js';
 export * from './services/endUser.service.js';
-export type { CreateEnvironmentError } from './services/environment.service.js';
+export { CreateEnvironmentError, UpdateEnvironmentError } from './services/environment.service.js';
+export type { CreateEnvironmentSettings, UpdateEnvironmentSettings } from './services/environment.service.js';
 export type { RunSyncCommandErrorCode, RunSyncCommandResult } from './services/sync/manager.service.js';
 export * from './services/tags.service.js';
 export * from './services/tags/schema.js';
@@ -58,6 +60,7 @@ export * from './services/providers.js';
 export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
 export * from './services/proxy/outbound-policy.js';
+export { proxyTrackingLogger } from './services/proxy/telemetry.js';
 export { type MeteredBytes, createMeteringTransport } from './services/proxy/byte-metering-transport.js';
 export { isBillableDataTransfer, makeDataTransferEvent } from './services/proxy/data-transfer-event.js';
 export * from './services/plans/plans.js';
@@ -67,10 +70,20 @@ export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
-export { listCatalogTools, getCatalogTool, isTemplatesZeroPath } from './services/catalog/actions.js';
-export type { CatalogTool } from './services/catalog/actions.js';
-export { resolveRunnableTool } from './services/catalog/resolveTool.js';
-export type { ResolveRunnableToolResult } from './services/catalog/resolveTool.js';
+export {
+    listCatalogEntries,
+    getCatalogEntry,
+    getCatalogFunctionByUuid,
+    listCatalogTools,
+    getCatalogTool,
+    isTemplatesZeroPath
+} from './services/catalog/actions.js';
+export { generateCatalogFunctionUuid, isCatalogFunctionUuid } from './services/catalog/uuid.js';
+export type { CatalogEntry, CatalogFunctionDefinition, CatalogTool } from './services/catalog/actions.js';
+export { findCatalogFunctions } from './services/catalog/functions.js';
+export type { CatalogFunction } from './services/catalog/functions.js';
+export { resolveLegacyAction } from './services/catalog/resolveLegacyAction.js';
+export type { ResolvedLegacyAction } from './services/catalog/resolveLegacyAction.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 export * as mcpClient from './clients/mcp.client.js';

@@ -9,7 +9,7 @@ RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build
 # ------------------
 # New tmp image
 # ------------------
-FROM node:22.23.3-bookworm-slim AS build
+FROM node:22.23.4-bookworm-slim AS build
 
 
 # Setup the app WORKDIR
@@ -51,6 +51,8 @@ COPY packages/feature-flags/package.json ./packages/feature-flags/package.json
 COPY packages/metering/package.json ./packages/metering/package.json
 COPY packages/audit/package.json ./packages/audit/package.json
 COPY packages/hosted-telemetry/package.json ./packages/hosted-telemetry/package.json
+COPY packages/license/package.json ./packages/license/package.json
+COPY packages/self-hosting/package.json ./packages/self-hosting/package.json
 COPY packages/migrations/package.json ./packages/migrations/package.json
 COPY package*.json  ./
 
@@ -87,7 +89,7 @@ RUN true \
 
 # ---- Web ----
 # Resulting new, minimal image
-FROM node:22.23.3-bookworm-slim AS web
+FROM node:22.23.4-bookworm-slim AS web
 
 # - Bash is just to be able to log inside the image and have a decent shell
 # - apt upgrade pulls Debian security updates (libgnutls30 / DSA-6281)

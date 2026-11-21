@@ -34,7 +34,7 @@ curl -X POST "https://api.nango.dev/proxy/v0/bases/<BASE-ID>/webhooks" \
 
 Airtable returns the webhook `id` and a `macSecretBase64`. The secret is only returned once, so store it in the connection's metadata right away as `webhooks.<WEBHOOK-ID>`, with the `macSecretBase64` string as the value.
 
-The [`create-webhook` action template](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/create-webhook.ts) does both steps and keeps the webhooks already stored on the connection. Use it, or copy its approach in your own function.
+The `create-webhook` action template does both steps and keeps the webhooks already stored on the connection. Use it, or copy its approach in your own function.
 
 If you store the secret through the API instead, send the full `webhooks` object:
 
@@ -66,7 +66,7 @@ Airtable webhooks expire after 7 days unless refreshed with the [refresh webhook
 
 Once routed, you have two options:
 
-- **Forward it to your app**: Nango forwards the notification to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
-- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+- **Forward it to your app**: Nango forwards the notification to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/syncs/realtime-syncs).
 
 <Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

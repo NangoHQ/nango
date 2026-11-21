@@ -8,6 +8,7 @@ import {
     getSafeHttpAgents,
     getSafeLookup,
     getSafeUndiciDispatcher,
+    resolvePolicyForMcp,
     resolvePolicyForOAuth,
     resolvePolicyForServer
 } from '@nangohq/egress';
@@ -66,10 +67,34 @@ export function getOAuthOutboundUrlPolicy(): OutboundUrlPolicy {
 
 export function resetOAuthOutboundUrlPolicyForTests(): void {
     memoizedOAuthPolicy = null;
+    memoizedMcpOAuthPolicy = null;
 }
 
 export async function assertSafeOAuthUrl(url: string, ctx?: ValidateOutboundUrlContext): Promise<URL> {
     return assertSafeOutboundUrl(url, getOAuthOutboundUrlPolicy(), { context: 'oauth', ...ctx });
+}
+
+let memoizedMcpOAuthPolicy: OutboundUrlPolicy | null = null;
+
+export function getMcpOAuthOutboundUrlPolicy(): OutboundUrlPolicy {
+    if (memoizedMcpOAuthPolicy) {
+        return memoizedMcpOAuthPolicy;
+    }
+    memoizedMcpOAuthPolicy = resolvePolicyForMcp({
+        proxyBaseUrlOverrideDenylist: envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
+        outboundUrlPolicy: envs.NANGO_OUTBOUND_URL_POLICY,
+        outboundUrlPolicyOAuth: envs.NANGO_OUTBOUND_URL_POLICY_OAUTH,
+        outboundUrlPolicyMcp: envs.NANGO_OUTBOUND_URL_POLICY_MCP
+    });
+    return memoizedMcpOAuthPolicy;
+}
+
+export async function assertSafeMcpOAuthUrl(url: string, ctx?: ValidateOutboundUrlContext): Promise<URL> {
+    return assertSafeOutboundUrl(url, getMcpOAuthOutboundUrlPolicy(), { context: 'oauth', ...ctx });
+}
+
+export function getMcpOAuthSafeUndiciDispatcher(): UndiciAgent {
+    return getSafeUndiciDispatcher(getMcpOAuthOutboundUrlPolicy());
 }
 
 export function getOAuthSafeHttpAgents(): { httpAgent: http.Agent; httpsAgent: https.Agent } {

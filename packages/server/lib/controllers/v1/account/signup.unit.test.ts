@@ -15,6 +15,7 @@ const {
     mockGetInvitation,
     mockGetPlan,
     mockGetAccountById,
+    mockCreateAccount,
     mockGetUserByEmail,
     mockPbkdf2,
     mockCreateUser,
@@ -26,6 +27,7 @@ const {
         mockGetInvitation: vi.fn(),
         mockGetPlan: vi.fn(),
         mockGetAccountById: vi.fn(),
+        mockCreateAccount: vi.fn(),
         mockGetUserByEmail: vi.fn(),
         mockPbkdf2: vi.fn(),
         mockCreateUser: vi.fn(),
@@ -41,7 +43,8 @@ vi.mock('@nangohq/database', () => ({
 vi.mock('@nangohq/shared', () => ({
     acceptInvitation: mockAcceptInvitation,
     accountService: {
-        getAccountById: mockGetAccountById
+        getAccountById: mockGetAccountById,
+        createAccount: mockCreateAccount
     },
     getInvitation: mockGetInvitation,
     getPlan: mockGetPlan,
@@ -208,6 +211,51 @@ describe('signup', () => {
         await signup(req, res, vi.fn());
 
         expect(mockCreateUser).toHaveBeenCalledWith(expect.objectContaining({ email, account_id: 0, email_verified: true, role: 'administrator' }));
+        expect(status).toHaveBeenCalledWith(200);
+    });
+
+    it('rejects a new account with a disposable email', async () => {
+        const req = {
+            body: { email: 'someone@1secmail.net', name: 'Someone', password: 'Password123!' },
+            query: {},
+            route: { path: '/api/v1/account/signup' },
+            originalUrl: '/api/v1/account/signup',
+            header: vi.fn()
+        } as unknown as Request;
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+
+        await signup(req, res, vi.fn());
+
+        expect(status).toHaveBeenCalledWith(400);
+        const payload = send.mock.calls[0]?.[0] as { error: { code: string } } | undefined;
+        expect(payload?.error.code).toBe('disposable_email');
+        expect(mockGetUserByEmail).not.toHaveBeenCalled();
+        expect(mockCreateAccount).not.toHaveBeenCalled();
+        expect(mockCreateUser).not.toHaveBeenCalled();
+    });
+
+    it('allows an invited user with a disposable email', async () => {
+        const invitationToken = crypto.randomUUID();
+        const email = 'invitee@1secmail.net';
+
+        mockGetInvitation.mockResolvedValue({ token: invitationToken, email, account_id: 7, role: nonDefaultRole });
+        const req = {
+            body: { email, name: 'Invited User', password: 'Password123!', token: invitationToken },
+            query: {},
+            route: { path: '/api/v1/account/signup' },
+            originalUrl: '/api/v1/account/signup',
+            header: vi.fn(),
+            login: vi.fn((_user: unknown, callback: (err?: Error) => void) => callback())
+        } as unknown as Request;
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+
+        await signup(req, res, vi.fn());
+
+        expect(mockCreateUser).toHaveBeenCalledWith(expect.objectContaining({ email, account_id: 7 }));
         expect(status).toHaveBeenCalledWith(200);
     });
 });

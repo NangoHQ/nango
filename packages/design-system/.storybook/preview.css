@@ -9,6 +9,35 @@
     --font-mono: var(--ds-typography-font-family-mono);
 }
 
+/* Storybook-only: data-story-state="hover|active|focus-visible" applies that variant's real classes, so a story
+ * can freeze a state. Apps keep Tailwind's built-in variants. */
+@custom-variant hover {
+    @media (hover: hover) {
+        &:hover {
+            @slot;
+        }
+    }
+    &[data-story-state='hover'] {
+        @slot;
+    }
+}
+@custom-variant active {
+    &:active {
+        @slot;
+    }
+    &[data-story-state='active'] {
+        @slot;
+    }
+}
+@custom-variant focus-visible {
+    &:focus-visible {
+        @slot;
+    }
+    &[data-story-state='focus-visible'] {
+        @slot;
+    }
+}
+
 *,
 *::before,
 *::after {

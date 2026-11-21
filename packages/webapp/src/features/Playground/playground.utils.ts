@@ -1,6 +1,6 @@
 import { APIError, apiFetch } from '@/utils/api';
 
-import type { InputField } from './types';
+import type { InputField, PlaygroundInput } from './types';
 import type { GetOperation, SearchOperations } from '@nangohq/types';
 
 // --- Input validation ---
@@ -38,9 +38,20 @@ function validateConstraints(field: InputField, value: unknown): string | null {
     return null;
 }
 
-export type ParseResult = { ok: true; parsed: Record<string, unknown> } | { ok: false; errors: Record<string, string> };
+export type ParseResult<T = Record<string, unknown>> = { ok: true; parsed: T } | { ok: false; errors: Record<string, string> };
 
-export function validateAndParseInputs(inputFields: InputField[], inputValues: Record<string, string>): ParseResult {
+export function parsePlaygroundInput(input: PlaygroundInput, inputValues: Record<string, string>): ParseResult<unknown> {
+    if (input.kind === 'none') return { ok: true, parsed: undefined };
+    if (input.kind === 'object') return validateAndParseInputs(input.fields, inputValues);
+    const result = validateAndParseInputs([input.field], inputValues, { allowEmptyStrings: true });
+    return result.ok ? { ok: true, parsed: result.parsed[input.field.name] } : result;
+}
+
+export function validateAndParseInputs(
+    inputFields: InputField[],
+    inputValues: Record<string, string>,
+    { allowEmptyStrings = false }: { allowEmptyStrings?: boolean } = {}
+): ParseResult {
     const parsedInput: Record<string, unknown> = {};
     const errors: Record<string, string> = {};
 
@@ -48,7 +59,7 @@ export function validateAndParseInputs(inputFields: InputField[], inputValues: R
         const raw = inputValues[field.name] ?? '';
         const trimmed = raw.trim();
 
-        if (!trimmed) {
+        if (!trimmed && !(allowEmptyStrings && (field.type === 'string' || field.variants))) {
             if (field.required) {
                 errors[field.name] = 'Required';
             }
@@ -56,44 +67,68 @@ export function validateAndParseInputs(inputFields: InputField[], inputValues: R
         }
 
         let parsed: unknown;
-        try {
-            switch (field.type) {
-                case 'number': {
-                    const n = Number(trimmed);
-                    if (!Number.isFinite(n)) throw new Error('Expected a number');
-                    parsed = n;
+        if (field.variants) {
+            const orderedVariants = [...field.variants].sort((a, b) => Number(a.type === 'string') - Number(b.type === 'string'));
+            let matched = false;
+            let variantError: string | undefined;
+            for (const variant of orderedVariants) {
+                const result = validateAndParseInputs([variant], { [field.name]: raw }, { allowEmptyStrings });
+                if (result.ok) {
+                    parsed = result.parsed[field.name];
+                    matched = true;
                     break;
                 }
-                case 'integer': {
-                    const n = Number(trimmed);
-                    if (!Number.isFinite(n) || !Number.isInteger(n)) throw new Error('Expected an integer');
-                    parsed = n;
-                    break;
-                }
-                case 'boolean': {
-                    const v = trimmed.toLowerCase();
-                    if (v !== 'true' && v !== 'false') throw new Error('Expected true or false');
-                    parsed = v === 'true';
-                    break;
-                }
-                case 'object': {
-                    const p = JSON.parse(trimmed);
-                    if (!p || typeof p !== 'object' || Array.isArray(p)) throw new Error('Expected a JSON object');
-                    parsed = p;
-                    break;
-                }
-                case 'array': {
-                    const p = JSON.parse(trimmed);
-                    if (!Array.isArray(p)) throw new Error('Expected a JSON array');
-                    parsed = p;
-                    break;
-                }
-                default:
-                    parsed = raw;
+                if (variant.type !== 'null') variantError = result.errors[field.name];
             }
-        } catch (err) {
-            errors[field.name] = err instanceof Error ? err.message : 'Invalid value';
-            continue;
+            if (!matched) {
+                const nonNullCount = field.variants.filter((variant) => variant.type !== 'null').length;
+                errors[field.name] = (nonNullCount === 1 && variantError) || `Expected ${field.type}`;
+                continue;
+            }
+        } else {
+            try {
+                switch (field.type) {
+                    case 'null':
+                        if (trimmed !== 'null') throw new Error('Expected null');
+                        parsed = null;
+                        break;
+                    case 'number': {
+                        const n = Number(trimmed);
+                        if (!Number.isFinite(n)) throw new Error('Expected a number');
+                        parsed = n;
+                        break;
+                    }
+                    case 'integer': {
+                        const n = Number(trimmed);
+                        if (!Number.isFinite(n) || !Number.isInteger(n)) throw new Error('Expected an integer');
+                        parsed = n;
+                        break;
+                    }
+                    case 'boolean': {
+                        const v = trimmed.toLowerCase();
+                        if (v !== 'true' && v !== 'false') throw new Error('Expected true or false');
+                        parsed = v === 'true';
+                        break;
+                    }
+                    case 'object': {
+                        const p = JSON.parse(trimmed);
+                        if (!p || typeof p !== 'object' || Array.isArray(p)) throw new Error('Expected a JSON object');
+                        parsed = p;
+                        break;
+                    }
+                    case 'array': {
+                        const p = JSON.parse(trimmed);
+                        if (!Array.isArray(p)) throw new Error('Expected a JSON array');
+                        parsed = p;
+                        break;
+                    }
+                    default:
+                        parsed = raw;
+                }
+            } catch (err) {
+                errors[field.name] = err instanceof Error ? err.message : 'Invalid value';
+                continue;
+            }
         }
 
         const constraintError = validateConstraints(field, parsed);

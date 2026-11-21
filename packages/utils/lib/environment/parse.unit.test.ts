@@ -21,6 +21,28 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007, ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: 0 });
     });
 
+    it.each([undefined, '', '   '])('allows an unset or blank signup ad cookie name while disabled (%j)', (name) => {
+        const res = parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: name });
+        expect(res.SIGNUP_AD_CONTEXT_ENABLED).toBe(false);
+        expect(res.SIGNUP_AD_CONTEXT_COOKIE_NAME).toBeUndefined();
+    });
+
+    it.each([undefined, '', '   '])('requires a cookie name when signup ad context is enabled (%j)', (name) => {
+        expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_ENABLED: 'true', SIGNUP_AD_CONTEXT_COOKIE_NAME: name })).toThrowError(
+            /SIGNUP_AD_CONTEXT_COOKIE_NAME is required/
+        );
+    });
+
+    it('accepts a custom signup ad cookie name when enabled', () => {
+        const res = parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_ENABLED: 'true', SIGNUP_AD_CONTEXT_COOKIE_NAME: 'nango_signup_ads_prod' });
+        expect(res.SIGNUP_AD_CONTEXT_ENABLED).toBe(true);
+        expect(res.SIGNUP_AD_CONTEXT_COOKIE_NAME).toBe('nango_signup_ads_prod');
+    });
+
+    it.each(['invalid;name', 'a'.repeat(65)])('rejects an invalid nonempty signup ad cookie name', (name) => {
+        expect(() => parseEnvs(ENVS, { SIGNUP_AD_CONTEXT_COOKIE_NAME: name })).toThrowError(/SIGNUP_AD_CONTEXT_COOKIE_NAME/);
+    });
+
     it('parses the local Nango user id as a non-negative integer', () => {
         expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '0' }).LOCAL_NANGO_USER_ID).toBe(0);
         expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '1e2' }).LOCAL_NANGO_USER_ID).toBe(100);
@@ -28,11 +50,43 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '-1' })).toThrowError(/LOCAL_NANGO_USER_ID/);
     });
 
+    it('rejects an audit batch window the visibility timeout cannot cover', () => {
+        // 30 s visibility leaves 10 s after the 20 s write, half of it for the delete: 5 s.
+        expect(parseEnvs(ENVS, {}).NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS).toBe(5000);
+        expect(() => parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS: '5001' })).toThrowError(/NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS/);
+        expect(
+            parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS: '10000', NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS: '60' })
+                .NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS
+        ).toBe(10000);
+    });
+
+    it('parses the audit trail data-plane scopes', () => {
+        expect(parseEnvs(ENVS, {}).FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES).toEqual(['read_credentials']);
+        expect(parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: '' }).FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES).toEqual(['read_credentials']);
+        expect(parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: 'all' }).FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES).toEqual(['read_credentials']);
+        expect(parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: 'none' }).FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES).toEqual([]);
+        expect(parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: ' read_credentials ' }).FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES).toEqual(['read_credentials']);
+        expect(() => parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: 'read_records' })).toThrowError(/FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES/);
+        expect(() => parseEnvs(ENVS, { FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: 'none,read_credentials' })).toThrowError(/FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES/);
+    });
+
     it('should parse the throttled immediate limit', () => {
         expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '123' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(123);
         // 0 disables throttling
         expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '0' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(0);
         expect(() => parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '-1' })).toThrowError();
+    });
+
+    it('accepts the templates bucket settings unset or non-empty, and rejects empty or blank strings', () => {
+        expect(parseEnvs(ENVS, {}).AWS_TEMPLATES_BUCKET_NAME).toBeUndefined();
+        expect(parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: 'templates', AWS_TEMPLATES_REGION: 'us-west-2' })).toMatchObject({
+            AWS_TEMPLATES_BUCKET_NAME: 'templates',
+            AWS_TEMPLATES_REGION: 'us-west-2'
+        });
+        expect(() => parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: '' })).toThrowError(/AWS_TEMPLATES_BUCKET_NAME/);
+        expect(() => parseEnvs(ENVS, { AWS_TEMPLATES_REGION: '' })).toThrowError(/AWS_TEMPLATES_REGION/);
+        expect(() => parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: '  ' })).toThrowError(/AWS_TEMPLATES_BUCKET_NAME/);
+        expect(parseEnvs(ENVS, { AWS_TEMPLATES_BUCKET_NAME: ' templates ' }).AWS_TEMPLATES_BUCKET_NAME).toBe('templates');
     });
 
     it('rejects NANGO_INTERNAL_AUTH_REQUIRED=1', () => {
@@ -365,6 +419,22 @@ describe('parse', () => {
         expect(() => {
             parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ mode: 'bogus' }) });
         }).toThrow();
+    });
+
+    it('should default NANGO_OUTBOUND_URL_POLICY_MCP to undefined when unset', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_OUTBOUND_URL_POLICY_MCP).toBeUndefined();
+    });
+
+    it('should parse a valid NANGO_OUTBOUND_URL_POLICY_MCP', () => {
+        const res = parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_MCP: JSON.stringify({ blockPrivateIps: true }) });
+        expect(res.NANGO_OUTBOUND_URL_POLICY_MCP).toEqual({ blockPrivateIps: true });
+    });
+
+    it('should throw on invalid JSON in NANGO_OUTBOUND_URL_POLICY_MCP', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_MCP: 'not-json' });
+        }).toThrow('Invalid JSON in NANGO_OUTBOUND_URL_POLICY_MCP');
     });
 
     it('should throw on unknown keys in NANGO_OUTBOUND_URL_POLICY_OAUTH (typos fail fast)', () => {

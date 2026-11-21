@@ -2,13 +2,14 @@ import { CodeXml, ExternalLink, LinkIcon, Loader, Server, Terminal } from 'lucid
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { Button, LinkButton, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { MultiLanguageCodeBlock } from '../../components/ui/MultiLanguageCodeBlock';
 import { useApiKeys } from '../../hooks/useApiKeys';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
+import { track } from '../../utils/analytics';
 import { publicApiFetch } from '../../utils/api';
 import { cn, truncateMiddle } from '../../utils/utils';
 
@@ -85,6 +86,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                 }
             );
 
+            track('onboarding:run_complete', { is_success: res.ok });
             if (!res.ok) {
                 toast({
                     title: 'Something went wrong while running the code',
@@ -98,6 +100,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                 variant: 'success'
             });
         } catch {
+            track('onboarding:run_complete', { is_success: false });
             toast({
                 title: 'Something went wrong while running the code',
                 variant: 'error'
@@ -124,12 +127,12 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                             A connection was created with the connection id:{' '}
                             <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
                                 <TooltipTrigger asChild>
-                                    <Button asChild variant="link-accent">
+                                    <LinkButton asChild size="lg">
                                         <Link to={`/${env}/connections/${providerConfigKey}/${connectionId}`}>
                                             {truncateMiddle(connectionId, 30)}
                                             <LinkIcon />
                                         </Link>
-                                    </Button>
+                                    </LinkButton>
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom">{connectionId}</TooltipContent>
                             </Tooltip>
@@ -177,18 +180,18 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                         </Button>
                         {completed && (
                             <>
-                                <Button asChild variant="link-accent">
+                                <LinkButton asChild size="lg">
                                     <Link to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
                                         Explore the logs from this demo
                                         <LinkIcon />
                                     </Link>
-                                </Button>
-                                <Button asChild variant="link-accent">
+                                </LinkButton>
+                                <LinkButton asChild size="lg">
                                     <a href="https://github.com/nangohq/nango" target="_blank" rel="noopener noreferrer">
                                         Open Nango&apos;s Github repository to see the star
                                         <ExternalLink />
                                     </a>
-                                </Button>
+                                </LinkButton>
                             </>
                         )}
                     </div>

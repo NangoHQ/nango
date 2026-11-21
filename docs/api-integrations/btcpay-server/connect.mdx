@@ -1,0 +1,51 @@
+---
+title: 'BTCPay Server - How do I link my account?'
+sidebarTitle: 'BTCPay Server'
+---
+
+## Overview
+
+To authenticate with BTCPay Server, you need:
+
+1. **BTCPay Server Host** — the host of the BTCPay Server instance you use.
+2. **API Key** — a Greenfield API key from your BTCPay Server account.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- An account on a BTCPay Server instance: your own self-hosted server, a third-party host, or the [BTCPay Server demo server](https://docs.btcpayserver.org/TryItOut/) for testing.
+
+### Step 1: Find your BTCPay Server host
+
+1. Open your BTCPay Server instance in your browser and sign in.
+2. Copy the host from the address bar: the part after `https://` and before the first `/`. For example, if you sign in at `https://btcpay.example.com/login`, your host is `btcpay.example.com`.
+
+### Step 2: Generate an API key
+
+1. Open the account menu in the top-right corner and click **API Keys**.
+
+<img src="/api-integrations/btcpay-server/account_menu_api_keys.png" alt="BTCPay Server account menu with API Keys highlighted"/>
+
+2. On the **API Keys** page, click **Generate Key**.
+
+<img src="/api-integrations/btcpay-server/api_keys_generate.png" alt="BTCPay Server API Keys page with the Generate Key button"/>
+
+3. Enter a label (for example, `nango`) and tick the permissions your integration needs, such as **View your profile**, **View your stores** and **View invoices**. Then click **Generate API Key**.
+
+<img src="/api-integrations/btcpay-server/generate_api_key_form.png" alt="BTCPay Server Generate API Key form with a label and permission checkboxes"/>
+
+4. Copy the API key from the confirmation banner. You can show it again later with **Reveal** in the keys table.
+
+<img src="/api-integrations/btcpay-server/api_key_created.png" alt="BTCPay Server confirmation banner showing the generated API key"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with BTCPay Server.
+2. In **BTCPay Server Host**, enter the host from Step 1 (for example, `btcpay.example.com`).
+3. In **API Key**, paste the API key from Step 2.
+4. Submit the form. Nango checks the API key with your BTCPay Server instance before saving the connection.
+
+<img src="/api-integrations/btcpay-server/form.png" alt="BTCPay Server Connect UI form with the BTCPay Server Host and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to BTCPay Server.

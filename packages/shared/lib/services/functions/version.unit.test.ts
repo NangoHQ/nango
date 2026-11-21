@@ -18,10 +18,15 @@ const artifact = {
     metadata_schema_ref: null,
     checkpoint_schema_ref: null,
     json_schema: { type: 'object', properties: { issue: { type: 'string', description: 'Issue' } } },
-    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' }
+    fileBody: { js: 'export default async function run() {}', ts: 'export default async function run(): Promise<void> {}' },
+    source: 'repo'
 } satisfies FunctionDeploymentArtifact;
 
 describe(functionVersionHash, () => {
+    it('matches the CLI hash', () => {
+        expect(functionVersionHash(artifact).unwrap()).toBe('41e0e2d3d7be65eb90b53b0f6eabbda23b88392c15552302f2df811b825215d6');
+    });
+
     it('treats omitted and empty tags as the same version', () => {
         expect(functionVersionHash({ ...artifact, tags: {} }).unwrap()).toBe(functionVersionHash(artifact).unwrap());
         expect(functionVersionHash({ ...artifact, tags: undefined }).unwrap()).toBe(functionVersionHash(artifact).unwrap());
@@ -62,6 +67,10 @@ describe(functionVersionHash, () => {
         expect(functionVersionHash({ ...artifact, fileBody: { ...artifact.fileBody, ts: `${artifact.fileBody.ts}\n// changed` } }).unwrap()).not.toBe(
             functionVersionHash(artifact).unwrap()
         );
+    });
+
+    it('changes when the source changes', () => {
+        expect(functionVersionHash({ ...artifact, source: 'standalone' }).unwrap()).not.toBe(functionVersionHash(artifact).unwrap());
     });
 
     it('changes when the trigger changes', () => {

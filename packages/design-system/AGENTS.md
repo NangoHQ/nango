@@ -6,9 +6,39 @@ This package contains the Nango design system: design tokens, React components, 
 
 Consuming apps can't restyle these components (a lint rule flags `className`/`style` on them), so when a screen needs a look no existing prop or variant covers, the fix lives **here** — add a new or extended variant. First validate with a designer that the variant is genuinely missing, then add the matching variant to the **Figma design system** so code and design stay in sync. See `stories/StylingAndCustomization.mdx` for the full guide.
 
+## Using the components
+
+### Button / IconButton width
+
+`Button` and `IconButton` have no `width` or `fullWidth` prop, and `className`/`style` are lint-flagged on them. Control width from the parent instead of proposing a width prop:
+
+- **Full width**: put the button in a `flex flex-col` parent. The default `align-items: stretch` makes it fill.
+- **Fit content inside a stretching parent**: wrap the button in a bare `<div>`.
+
+### Input `size` is a variant, not the HTML attribute
+
+`Input` and `InputGroupInput` have a cva `size` variant (`'md' | 'sm' | 'auto'`, plus the deprecated `'default'`) that replaces the native `<input size>` attribute. A wrapper around either must type its props on `InputProps`, not `React.ComponentProps<'input'>`, or `npm run ts-build` fails with `Type 'number' is not assignable to type …`. `InputGroup` has its own `size` variant, which adds `'composer'` for a chat-style textarea.
+
+### Forms: the Field family
+
+Form primitives are the Field family in `src/components/ui/field.tsx`: `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldGroup`, `FieldSet`, `FieldLegend`, `FieldSeparator`.
+
+- There is no standalone `Label`. `FieldLabel` is the only label export.
+- The package has no runtime dependency on react-hook-form. The webapp's `components/ui/Form.tsx` is a thin react-hook-form adapter over the Field family; elsewhere, wire react-hook-form with `Controller` at the call site.
+- `Field orientation="inline"` puts the label beside a small control, for a switch or checkbox row.
+- Field wires its label, description and error to its first control only. In a Field holding a list of inputs, set `aria-invalid` on each row that fails.
+
+### Label-left forms
+
+For a settings row with the label on the left, use `Field orientation="horizontal"`: a 220px label column beside the control, with the error under the control. Wrap the label and its description in `FieldContent`, because only the first child fills the label column. Older pages (`pages/User/Settings.tsx`, `pages/Team/components/TeamSettings.tsx`) still use a per-page grid.
+
+Put grid layout such as `col-span-2` on a wrapper `<div>`, never as `className` on a design-system component. For an inline-editable value, reuse the webapp's `components/patterns/EditableInput.tsx`.
+
 ## Adding a new component
 
 Components are added on-demand when first needed in a real screen — don't add components speculatively.
+
+Moving an existing component out of `packages/webapp/src/components/ui`? Use the `lifting-components-into-design-system` skill.
 
 ### Step 1: Generate the base with shadcn CLI
 
@@ -23,7 +53,7 @@ This writes the file to `src/components/ui/<component-name>.tsx`. The generated 
 
 ### Step 2: Replace shadcn CSS variables with design tokens
 
-shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in this package. Every colour, radius, spacing, and motion value must come from `tokens/tokens.generated.css` — via a token utility (preferred) or `var(--token-name)` when no utility exists.
+shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in this package. Every colour, radius, spacing, and motion value must come from the design tokens (`tokens/tokens.json`, built into `tokens/tokens.generated.css`) — via a token utility (preferred) or `var(--token-name)` when no utility exists.
 
 **Tailwind v4 syntax for token values:**
 
@@ -227,10 +257,14 @@ src/
   index.css                CSS entry (imports tokens.generated.css)
 stories/                   MDX guides, plus stories for the webapp's own components (not this package's)
 tokens/
-  tokens.generated.css     compiled CSS custom properties (source of truth for tokens)
-  tokens.json              Tokens Studio export
+  tokens.json              source of truth for tokens
+  tokens.generated.css     build output of tokens.json — never edit by hand
 components.json            shadcn CLI config
 ```
+
+## Changing a token
+
+The repo is the only place tokens change: edit `tokens/tokens.json`, never `tokens.generated.css`. Figma pulls from `master`, and nothing flows back from it. For the build and commit steps, see [Changing a token](README.md#changing-a-token) in the README.
 
 ## cn() helper
 
@@ -258,3 +292,7 @@ from a feature branch, as that overwrites `storybook.nango.dev` until the next m
 `build-storybook` transforms every story eagerly, unlike `storybook dev`, so it fails on broken imports
 that the dev server never loads. Run `npm run -w @nangohq/design-system build-storybook` locally before
 pushing if a story's imports changed.
+
+Storybook also builds the webapp's own stories in `stories/`, through an `@` alias to `packages/webapp/src`
+(`.storybook/main.ts`). Before deleting or moving a webapp component, grep `packages/design-system/stories`
+for it too, or the Storybook build breaks.

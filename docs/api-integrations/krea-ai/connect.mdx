@@ -1,0 +1,42 @@
+---
+title: 'Krea - How do I link my account?'
+sidebarTitle: 'Krea'
+---
+
+## Overview
+
+To authenticate with Krea, you need:
+
+1. **API Token** — a Krea personal or service API token, in the `id:secret` format. A legacy Krea API key also works.
+
+This guide will show you how to create a token.
+
+### Prerequisites
+
+- A Krea account in a workspace with API access enabled. If it isn't, contact [support@krea.ai](mailto:support@krea.ai).
+- API calls are paid from the workspace's prepaid API balance, which only workspace owners can add funds to.
+
+### Step 1: Create an API token
+
+1. Sign in to Krea and open the [API Tokens page](https://www.krea.ai/app/api/tokens), then click **Create Token**.
+
+<img src="/api-integrations/krea-ai/api_tokens_page.png" alt="Krea API Tokens page with the Create Token button"/>
+
+2. Choose **Personal token** to act as yourself, or **Service token** to act as a separate workspace user. Only workspace owners and admins can create service tokens.
+3. Enter a descriptive name and click **Create key**.
+
+<img src="/api-integrations/krea-ai/create_personal_token.png" alt="New Personal Token dialog with a name entered and the Create key button"/>
+
+4. Copy the token from the **Key Created Successfully** dialog. Krea shows it only once.
+
+<img src="/api-integrations/krea-ai/copy_api_token.png" alt="Key Created Successfully dialog with the copy button for the new API token"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Krea.
+2. Enter your **API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/krea-ai/form.png" alt="Krea API token form in Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Krea.

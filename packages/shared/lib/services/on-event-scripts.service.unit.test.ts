@@ -37,7 +37,7 @@ describe('onEventScriptService.update', () => {
         vi.spyOn(db.knex, 'transaction').mockImplementation(async (callback: any) => {
             const mockTrx = {
                 from: vi.fn().mockReturnValue({
-                    whereRaw: vi.fn().mockReturnValue({
+                    whereIn: vi.fn().mockReturnValue({
                         where: vi.fn().mockReturnValue({
                             update: vi.fn().mockReturnValue({
                                 returning: vi.fn().mockResolvedValue([previousScript])
@@ -51,7 +51,7 @@ describe('onEventScriptService.update', () => {
 
         const uploadSpy = vi.spyOn(remoteFileService, 'upload');
 
-        const update = onEventScriptService.update({
+        const update = onEventScriptService.update(db.knex, {
             environment,
             account,
             onEventScriptsByProvider: [
@@ -66,7 +66,8 @@ describe('onEventScriptService.update', () => {
                     ]
                 }
             ],
-            sdkVersion: '0.0.0'
+            sdkVersion: '0.0.0',
+            scope: { kind: 'environment' }
         });
 
         await expect(update).rejects.toMatchObject({

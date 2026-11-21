@@ -2,12 +2,11 @@ import { Prism } from '@mantine/prism';
 import { Check, Edit, Eye, EyeOff, Loader, Play, X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { Badge, Button, IconButton, Textarea } from '@nangohq/design-system';
+import { Badge, Button, CopyButton, IconButton, Textarea } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
-import { CopyButton } from './CopyButton.js';
 
 import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';
@@ -189,37 +188,37 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                         </Button>
                     )}
                     {!editing && secret && (
-                        <IconButton variant="ghost" size="2xs" label="Toggle visibility" onClick={toggleSecretVisibility}>
+                        <IconButton variant="ghost" size="sm" label="Toggle visibility" onClick={toggleSecretVisibility}>
                             {isSecretVisible ? <EyeOff /> : <Eye />}
                         </IconButton>
                     )}
                     {showEditControls && !editing && (
                         <PermissionGate asChild condition={canEdit} tooltipSide="bottom">
                             {(allowed) => (
-                                <IconButton variant="ghost" size="2xs" label="Edit" onClick={onEditClicked} disabled={!allowed}>
-                                    <Edit className="size-3.5" />
+                                <IconButton variant="ghost" size="sm" label="Edit" onClick={onEditClicked} disabled={!allowed}>
+                                    <Edit />
                                 </IconButton>
                             )}
                         </PermissionGate>
                     )}
                     {editing && (
                         <>
-                            <IconButton variant="ghost" size="2xs" label="Cancel" onClick={onCancelClicked} disabled={saving}>
-                                <X className="size-3.5" />
+                            <IconButton variant="ghost" size="sm" label="Cancel" onClick={onCancelClicked} disabled={saving}>
+                                <X />
                             </IconButton>
                             <IconButton
                                 variant="ghost"
-                                size="2xs"
+                                size="sm"
                                 label="Save"
                                 onClick={onSaveClicked}
                                 disabled={saving || !!error}
                                 loading={showLoadingOnSave && saving}
                             >
-                                <Check className="size-3.5" />
+                                <Check />
                             </IconButton>
                         </>
                     )}
-                    {!editing && copyable && <CopyButton text={copyText} />}
+                    {!editing && copyable && <CopyButton value={copyText} size="sm" />}
                 </div>
             </header>
             <div className={cn(constrainHeight && 'max-h-128 overflow-auto')}>

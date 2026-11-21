@@ -1,0 +1,1 @@
+{ 'apiVersion': 'v3', 'kind': 'service', 'metadata': { 'name': 'nango-runner' }, 'spec': { 'languages': ['javascript'], 'type': 'web' } }

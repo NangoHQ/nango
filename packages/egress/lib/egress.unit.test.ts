@@ -14,7 +14,7 @@ import {
 } from './denylist.js';
 import { findOutboundUrlError, OutboundUrlError } from './errors.js';
 import { classifyBlockedIp, ipv4ExceptCidrsForNetworkPolicy } from './ip.js';
-import { DEFAULT_OUTBOUND_URL_POLICY, resolvePolicyForOAuth, resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
+import { DEFAULT_OUTBOUND_URL_POLICY, resolvePolicyForMcp, resolvePolicyForOAuth, resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
 import { absoluteUrlFromRedirectRequestOptions, createRedirectValidator } from './redirect.js';
 import { isBaseUrlOverrideDeniedByPolicy, validateOutboundUrlAsync, validateOutboundUrlSync } from './validate.js';
 
@@ -243,6 +243,37 @@ describe('egress OAuth policy', () => {
         const policy = resolvePolicyForOAuth({ proxyBaseUrlOverrideDenylist: [] });
         expect(policy.denylist.has('169.254.169.254')).toBe(true);
         expect(policy.denylist.has('localhost')).toBe(true);
+    });
+});
+
+describe('egress MCP policy', () => {
+    it('only allows https and otherwise matches the OAuth policy', () => {
+        const policy = resolvePolicyForMcp({ proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST] });
+        expect([...policy.allowedSchemes]).toEqual(['https:']);
+        expect(policy.blockPrivateIps).toBe(false);
+        expect(validateOutboundUrlSync('https://10.0.0.5/token', policy).ok).toBe(true);
+        expect(validateOutboundUrlSync('http://mcp.example.com/mcp', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('https://127.0.0.1/token', policy).ok).toBe(false);
+    });
+
+    it('applies the MCP overlay on top of the OAuth overlay', () => {
+        const policy = resolvePolicyForMcp({
+            proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST],
+            outboundUrlPolicyOAuth: { maxRedirects: 2 },
+            outboundUrlPolicyMcp: { blockPrivateIps: true }
+        });
+        expect(policy.maxRedirects).toBe(2);
+        expect(policy.blockPrivateIps).toBe(true);
+        expect(validateOutboundUrlSync('https://10.0.0.5/token', policy).ok).toBe(false);
+    });
+
+    it('does not change the OAuth policy', () => {
+        const policy = resolvePolicyForOAuth({
+            proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST],
+            outboundUrlPolicyMcp: { blockPrivateIps: true }
+        } as never);
+        expect(policy.blockPrivateIps).toBe(false);
+        expect(policy.allowedSchemes.has('http:')).toBe(true);
     });
 });
 

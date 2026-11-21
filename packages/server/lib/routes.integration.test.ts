@@ -1,10 +1,12 @@
+import { request as httpRequest } from 'node:http';
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import { sandboxApiKeyService } from '@nangohq/sandbox';
 import { seeders } from '@nangohq/shared';
 
-import { isError, runServer } from './utils/tests.js';
+import { getConnectSessionToken, isError, runServer } from './utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 describe('route', () => {
@@ -114,6 +116,20 @@ describe('route', () => {
         });
     });
 
+    describe('Malformed URI', () => {
+        it('should return 400 for a path that cannot be percent-decoded', async () => {
+            const res = await fetch(`${api.url}/%%32%65env`);
+
+            expect(res.status).toBe(400);
+            expect(await res.json()).toStrictEqual({
+                error: {
+                    code: 'invalid_uri',
+                    message: "Failed to decode param '%%32%65env'"
+                }
+            });
+        });
+    });
+
     describe('POST /internal/shared-credentials', () => {
         it('should report a sub-mb limit in kb, not as a rounded-to-zero mb value', async () => {
             // The internal API's body limit (100kb) is below 1mb, so a naive bytes/1024/1024
@@ -196,4 +212,80 @@ describe('route', () => {
             expect(res.status).toBe(200);
         });
     });
+
+    describe('existing credentials still authenticate', () => {
+        it('accepts a customer secret key', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await fetch(`${api.url}/integrations`, {
+                headers: { Authorization: `Bearer ${apiKey.secret}` }
+            });
+
+            expect(res.status).toBe(200);
+        });
+
+        it('accepts a sandbox key', async () => {
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+            const sandboxToken = (
+                await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+                    parentApiKeyId: apiKey.id,
+                    environmentId: env.id,
+                    purpose: 'dryrun',
+                    dryrunId: '00000000-0000-4000-8000-000000000002',
+                    expiresAt: new Date(Date.now() + 60 * 1000)
+                })
+            ).unwrap();
+
+            const res = await fetch(`${api.url}/providers`, {
+                headers: { Authorization: `Bearer ${sandboxToken}` }
+            });
+
+            expect(res.status).toBe(200);
+        });
+
+        it('accepts a connect session token', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const token = await getConnectSessionToken(api, apiKey.secret);
+            const res = await fetch(`${api.url}/integrations`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            expect(res.status).toBe(200);
+        });
+
+        it('accepts a customer secret key on the management MCP host', async () => {
+            // The OAuth issuer is not configured in this process, so management MCP uses secret-key auth.
+            // Node fetch strips Host, which is how that router is selected. The integration env sets
+            // NANGO_MANAGEMENT_MCP_SERVER_URL to https://mcp-test.nango.dev.
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const metadata = await httpGet(`${api.url}/.well-known/oauth-protected-resource`, { Host: 'mcp-test.nango.dev' });
+            const res = await httpGet(`${api.url}/mcp`, {
+                Authorization: `Bearer ${apiKey.secret}`,
+                Host: 'mcp-test.nango.dev'
+            });
+
+            expect(metadata).toEqual({ status: 404, json: { error: { code: 'not_found', message: 'Not found' } } });
+            expect(res.status).toBe(405);
+            expect(res.json).toEqual({
+                jsonrpc: '2.0',
+                error: { code: -32000, message: 'Method not allowed.' },
+                id: null
+            });
+        });
+    });
 });
+
+function httpGet(url: string, headers: Record<string, string>): Promise<{ status: number; json: unknown }> {
+    const target = new URL(url);
+    return new Promise((resolve, reject) => {
+        const req = httpRequest({ hostname: target.hostname, port: target.port, path: `${target.pathname}${target.search}`, method: 'GET', headers }, (res) => {
+            const chunks: Buffer[] = [];
+            res.on('data', (chunk: Buffer) => chunks.push(chunk));
+            res.on('end', () => {
+                const body = Buffer.concat(chunks).toString();
+                resolve({ status: res.statusCode ?? 0, json: body ? (JSON.parse(body) as unknown) : null });
+            });
+        });
+        req.on('error', reject);
+        req.end();
+    });
+}

@@ -66,19 +66,4 @@ describe(`POST ${endpoint}`, () => {
             }
         });
     });
-
-    // Does not work because we only have env secret key for authentication but we actually want to create an env
-    // it('should create an environment', async () => {
-    //     const { account } = await seeders.seedAccountEnvAndUser();
-
-    //     const res = await api.fetch(endpoint, {
-    //         method: 'POST',
-    //         body: { name: 'test', accountId: account.id }
-    //     });
-
-    //     isSuccess(res.json);
-    //     expect(res.json).toStrictEqual<typeof res.json>({
-    //         data: { id: expect.any(Number), name: 'test' }
-    //     });
-    // });
 });

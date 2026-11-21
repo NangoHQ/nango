@@ -1,0 +1,81 @@
+---
+title: 'FacturaDirecta'
+sidebarTitle: 'FacturaDirecta'
+description: 'Integrate your application with the FacturaDirecta API'
+---
+
+## 🚀 Quickstart
+
+Connect to FacturaDirecta with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _FacturaDirecta_.
+    </Step>
+    <Step id="authorize-facturadirecta" title="Authorize FacturaDirecta">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your FacturaDirecta company ID and API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-facturadirecta-api" title="Call the FacturaDirecta API">
+    Let's make your first request to the FacturaDirecta API to get the permissions of your API key. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, and the company ID stored on the connection:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/<COMPANY-ID>/apiKeyInfo" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/<COMPANY-ID>/apiKeyInfo',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 FacturaDirecta integration guides
+
+- [How do I link my account?](/api-integrations/facturadirecta/connect)  
+Copy your company ID, create an API key in FacturaDirecta, and connect them in the Connect UI.
+
+Official docs: [FacturaDirecta API documentation](https://www.facturadirecta.com/desarrolladores/api/)
+
+## 🧩 Pre-built syncs & tools for FacturaDirecta
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/facturadirecta/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango sends `accept-version: 1.0.10` on every call. To use another API version, set the `version` connection config field; when it is unset, `1.0.10` applies.
+- Nango stores the company ID in the `companyId` connection config field but adds it to no request. Read it from the connection's `connection_config` and put it as the first path segment of every call, for example `/<COMPANY-ID>/invoices`.
+---

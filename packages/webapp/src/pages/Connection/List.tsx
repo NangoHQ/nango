@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
-import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Button, CopyButton, InputGroup, InputGroupAddon, InputGroupInput, LinkButton } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
@@ -14,13 +14,13 @@ import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Avatar } from '@/components/ui/Avatar';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ComboboxSelect } from '@/components/ui/Combobox';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConnections } from '@/hooks/useConnections';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useSearchQueryState } from '@/hooks/useSearchQueryState';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
@@ -28,7 +28,7 @@ import { formatDateToInternationalFormat } from '@/utils/utils';
 import { ConnectionCount } from './components/ConnectionCount';
 
 import type { ComboboxOption } from '@/components/ui/Combobox';
-import type { ApiConnectionSimple, ApiIntegrationList, GetConnections } from '@nangohq/types';
+import type { ApiConnectionSimple, ApiIntegrationList } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
 type ConnectionRow = ApiConnectionSimple & { integration?: ApiIntegrationList };
@@ -49,7 +49,6 @@ const statusOptions: ComboboxOption<StatusFilterValue>[] = [
     { label: 'Paused syncs', value: 'paused' }
 ];
 
-const parseSearch = parseAsString.withDefault('');
 const parseIntegrations = parseAsArrayOf(parseAsString, ',').withDefault([]);
 const parseStatusFilters = parseAsArrayOf(parseAsString, ',').withDefault([]);
 
@@ -100,7 +99,7 @@ const columns: ColumnDef<ConnectionRow>[] = [
             return (
                 <div className="flex gap-1.5 items-center min-w-0">
                     <span className="text-body-extra-small-medium text-text-secondary truncate flex-1 min-w-0">{connection_id}</span>
-                    <CopyButton text={connection_id} />
+                    <CopyButton value={connection_id} label="Copy connection ID" size="sm" inline />
                 </div>
             );
         }
@@ -170,7 +169,7 @@ export const ConnectionList = () => {
 
     const navigate = useNavigate();
 
-    const [search, setSearch] = useQueryState('search', parseSearch);
+    const [search, setSearch] = useSearchQueryState();
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [selectedIntegrations, setSelectedIntegrations] = useQueryState('integrations', parseIntegrations);
     const [rawStatusFilters, setSelectedStatusFilters] = useQueryState('status', parseStatusFilters);
@@ -272,12 +271,12 @@ export const ConnectionList = () => {
         }));
     }, [listIntegrationData?.data]);
 
-    if (connectionsError) {
-        return <ErrorPageComponent title="Connections" error={connectionsError.json as GetConnections['Errors']} />;
+    if (connectionsError && !connectionsData) {
+        return <ErrorPageComponent title="Connections" error={connectionsError} />;
     }
 
     return (
-        <DashboardLayout fullWidth title="Connections">
+        <DashboardLayout>
             <Helmet>
                 <title>Connections - Nango</title>
             </Helmet>
@@ -320,7 +319,7 @@ export const ConnectionList = () => {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => {
-                                                    navigate(`/${env}/integrations/create`);
+                                                    navigate(`/${env}/catalog`);
                                                 }}
                                             >
                                                 <Plus className="size-4" /> Add
@@ -431,12 +430,12 @@ export const ConnectionList = () => {
                             <h3 className="text-title-body text-text-strong">Connect to an external API</h3>
                             <p className="text-text-secondary text-body-medium-regular">
                                 Connections can be created by using{' '}
-                                <Button asChild variant="link-accent">
-                                    <a href="https://nango.dev/docs/guides/auth/auth-guide" target="_blank" rel="noopener noreferrer">
+                                <LinkButton asChild size="lg">
+                                    <a href="https://nango.dev/docs/guides/auth/setup#auth-from-your-app" target="_blank" rel="noopener noreferrer">
                                         Nango Connect
                                         <ExternalLink />
                                     </a>
-                                </Button>
+                                </LinkButton>
                                 , or manually here.
                             </p>
                             <ButtonLink to={`/${env}/connections/create`} size="lg">

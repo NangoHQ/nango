@@ -13,6 +13,6 @@
     ],
     "ext": "js,ts,json",
     "ignore": ["lib/**/*.spec.ts"],
-    "exec": "tsx -r dotenv/config lib/app.ts dotenv_config_path=./../../.env",
+    "exec": "node --import tsx -r dotenv/config lib/app.ts dotenv_config_path=./../../.env",
     "signal": "SIGTERM"
 }

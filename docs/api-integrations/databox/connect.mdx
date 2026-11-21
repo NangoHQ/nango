@@ -1,0 +1,39 @@
+---
+title: 'Databox - How do I link my account?'
+sidebarTitle: 'Databox'
+---
+
+## Overview
+
+To authenticate with Databox, you need:
+
+1. **API Key** — a Databox API key created on your Profile page.
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- A Databox account. Dataset creation and data ingestion through the API are available on the Analyst, Team and Agency plans, and you can start a 14-day free trial without payment details. If you don't have an account, [sign up](https://databox.com/signup).
+- An **Admin** user. Only Admin users can create API keys.
+
+### Step 1: Create an API key
+
+1. Sign in to [Databox](https://app.databox.com) and open your [Profile page](https://account.databox.com/profile) (**Account settings** > **Profile**).
+2. Scroll to the **Password & security** section and find the **API key** row, then click **Create**.
+
+<img src="/api-integrations/databox/profile_api_key_create.png" alt="Databox Profile page with the Create button next to API key in the Password & security section"/>
+
+3. The key appears right away. Click the copy icon to copy it.
+4. Optionally, click **Manage allowed IPs**, enter one or more IP addresses (press Enter after each) and click **Save**. Only requests from those IPs will be accepted.
+
+<img src="/api-integrations/databox/api_key_created.png" alt="Databox Profile page showing the new API key with its copy icon and the Manage allowed IPs link"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Databox.
+2. Enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/databox/form.png" alt="Databox Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Databox.

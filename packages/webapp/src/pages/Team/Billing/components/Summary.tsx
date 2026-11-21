@@ -11,6 +11,7 @@ import { isOnS26Pricing } from '@/utils/usage';
 import { hasMonthlySpend, showsSummaryStrip } from '../planVisibility';
 import { buildSummaryState } from '../summaryState';
 import { usePlanTransition } from '../usePlanTransition';
+import { InvoicesLink } from './InvoicesLink';
 import { PaymentMethodDialog } from './PaymentMethodDialog';
 import { SummaryStrip } from './SummaryStrip';
 
@@ -61,7 +62,10 @@ export const Summary: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-3">
-            <h3 className="text-text-strong text-body-medium-medium">Summary</h3>
+            <div className="flex items-center justify-between gap-4">
+                <h3 className="text-text-strong text-body-medium-medium">Summary</h3>
+                <InvoicesLink />
+            </div>
             <SummaryStrip
                 headline={state?.headline ?? null}
                 plan={state?.plan}
@@ -71,8 +75,8 @@ export const Summary: React.FC = () => {
                         card: state.payment.card,
                         action: (
                             <PaymentMethodDialog replace>
-                                <IconButton variant="ghost" size="2xs" label="Edit payment method">
-                                    <Pencil className="size-3" />
+                                <IconButton variant="ghost" size="sm" inline label="Edit payment method">
+                                    <Pencil />
                                 </IconButton>
                             </PaymentMethodDialog>
                         )

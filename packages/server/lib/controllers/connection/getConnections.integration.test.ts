@@ -273,7 +273,8 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json.connections).toHaveLength(1);
     });
 
-    it('should return 400 when searching by default (account not allowlisted)', async () => {
+    it('should return 400 when searching and the account is not allowlisted', async () => {
+        vi.spyOn(getFlags(), 'isConnectionsSearchParamEnabled').mockResolvedValue(false);
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const conn = await seeders.createConnectionSeed({ env, provider: 'github' });

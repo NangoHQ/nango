@@ -18,7 +18,7 @@ describe('account acquisition after commit', () => {
         const group = vi.spyOn(productTracking, 'identifyAccountGroup').mockImplementation(() => undefined);
         const acquisition = { acquisition_utm_source: 'facebook', acquisition_landing_path: '/' };
 
-        expect(await accountService.getOrCreateAccount('Test organization', acquisition)).toEqual(account);
+        expect(await accountService.getOrCreateAccount('Test organization', acquisition)).toEqual({ account, created: true });
 
         expect(track).toHaveBeenCalledExactlyOnceWith({ name: 'auth:account_create', team: account, eventProperties: acquisition });
         expect(group).toHaveBeenCalledExactlyOnceWith(42, acquisition);
@@ -33,7 +33,7 @@ describe('account acquisition after commit', () => {
         const track = vi.spyOn(productTracking, 'track');
         const group = vi.spyOn(productTracking, 'identifyAccountGroup');
 
-        expect(await accountService.getOrCreateAccount(account.name, { acquisition_utm_source: 'google' })).toEqual(account);
+        expect(await accountService.getOrCreateAccount(account.name, { acquisition_utm_source: 'google' })).toEqual({ account, created: false });
 
         expect(create).not.toHaveBeenCalled();
         expect(track).not.toHaveBeenCalled();
@@ -72,6 +72,22 @@ describe('account acquisition after commit', () => {
         await accountService.createAccount({ name: 'Test', isSignup: false, acquisition: { acquisition_utm_source: 'facebook' } });
 
         expect(track).not.toHaveBeenCalled();
+        expect(group).not.toHaveBeenCalled();
+    });
+    it('adds permitted ad context to the existing event without identifying it on the company', async () => {
+        const account = { id: 42, name: 'Test account' };
+        vi.spyOn(db.knex, 'transaction').mockResolvedValueOnce(account);
+        const track = vi.spyOn(productTracking, 'track').mockImplementation(() => undefined);
+        const group = vi.spyOn(productTracking, 'identifyAccountGroup').mockImplementation(() => undefined);
+        const advertising = {
+            is_advertising_allowed: true as const,
+            is_advertising_gpc: false as const,
+            advertising_consent_method: 'explicit' as const,
+            advertising_consent_timestamp: '2026-10-20T12:00:00Z',
+            advertising_fbc: 'fb.1.1792497600000.synthetic'
+        };
+        await accountService.createAccount({ name: 'Test', advertising });
+        expect(track).toHaveBeenCalledExactlyOnceWith({ name: 'auth:account_create', team: account, eventProperties: advertising });
         expect(group).not.toHaveBeenCalled();
     });
 });

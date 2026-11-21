@@ -3,9 +3,12 @@ import { acceptInvitation, accountService, expirePreviousInvitations, getInvitat
 import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
+import { parseAnalyticsSessionId } from '../../../../middleware/productTracking.middleware.js';
 import { identifyAccountMembership } from '../../../../services/accountAnalytics.service.js';
-import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
+import { linkNewTeamToBilling } from '../../../../utils/billing.js';
+import { isDisposableEmail } from '../../../../utils/disposableEmail.js';
 import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
+import { signupAdvertisingFromRequest } from '../../../../utils/signupAdvertising.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
 import { isOAuthConsentReturnTo, safeReturnTo } from '../returnTo.js';
 
@@ -42,6 +45,7 @@ export interface InviteAccountState {
     token?: string | undefined;
     returnTo?: string | undefined;
     acquisition?: SignupAcquisition | undefined;
+    analyticsSessionId?: string | undefined;
 }
 
 const MAX_MANAGED_AUTH_STATE_LENGTH = 16384;
@@ -56,6 +60,7 @@ export function encodeManagedAuthState(state: InviteAccountState): string {
     const continuation: InviteAccountState = {};
     if (state.token) continuation.token = state.token;
     else if (state.returnTo) continuation.returnTo = state.returnTo;
+    if (state.analyticsSessionId) continuation.analyticsSessionId = state.analyticsSessionId;
 
     if (state.acquisition) {
         const withAcquisition = encodeBoundedState({ ...continuation, acquisition: state.acquisition });
@@ -79,6 +84,8 @@ export function parseManagedAuthState(state: string): InviteAccountState | null 
         else if (typeof candidate['returnTo'] === 'string') result.returnTo = safeReturnTo(candidate['returnTo']);
         const acquisition = signupAcquisitionSchema.parse(candidate['acquisition']);
         if (acquisition) result.acquisition = acquisition;
+        const analyticsSessionId = parseAnalyticsSessionId(candidate['analyticsSessionId']);
+        if (analyticsSessionId) result.analyticsSessionId = analyticsSessionId;
         return Object.keys(result).length ? result : null;
     } catch {
         return null;
@@ -155,6 +162,9 @@ export async function finalizeManagedAuthentication({
     responseMode = 'redirect'
 }: FinalizeManagedAuthParams): Promise<void> {
     const state = parseManagedAuthState(encodedState || '');
+    if (state?.analyticsSessionId) {
+        res.locals['analyticsSessionId'] = state.analyticsSessionId;
+    }
     let invitation: DBInvitation | null = null;
     if (state?.token) {
         const validatedInvitation = validateInvitation(await getInvitation(state.token), authorizedUser.email);
@@ -199,13 +209,18 @@ export async function finalizeManagedAuthentication({
         } else if (organizationId) {
             const organization = await workos.organizations.getOrganization(organizationId);
 
-            const resAccount = await accountService.getOrCreateAccount(organization.name, state?.acquisition);
+            const resAccount = await accountService.getOrCreateAccount(
+                organization.name,
+                state?.acquisition,
+                signupAdvertisingFromRequest(req, authorizedUser.email)
+            );
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
             }
 
-            account = resAccount;
+            account = resAccount.account;
+            isNewTeam = resAccount.created;
             await expirePreviousInvitations({ accountId: account.id, email: authorizedUser.email, trx: db.knex });
         } else {
             if (!envs.AUTH_ALLOW_SIGNUP) {
@@ -213,7 +228,25 @@ export async function finalizeManagedAuthentication({
                 return;
             }
 
-            const resAccount = await accountService.createAccount({ name, email: authorizedUser.email, acquisition: state?.acquisition });
+            if (isDisposableEmail(authorizedUser.email)) {
+                clearManagedAuthEmailVerification(req);
+                req.audit = { ...req.audit, managedSignup: false };
+
+                const signinUrl = new URL('/signin', basePublicUrl);
+                signinUrl.searchParams.set('error', 'disposable_email');
+                if (state?.returnTo) {
+                    signinUrl.searchParams.set('next', state.returnTo);
+                }
+                respondWithSuccess(res, signinUrl.href, responseMode);
+                return;
+            }
+
+            const resAccount = await accountService.createAccount({
+                name,
+                email: authorizedUser.email,
+                acquisition: state?.acquisition,
+                advertising: signupAdvertisingFromRequest(req, authorizedUser.email)
+            });
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
@@ -239,15 +272,7 @@ export async function finalizeManagedAuthentication({
         void identifyAccountMembership(account.id);
 
         if (isNewTeam && flagHasUsage) {
-            const linkOrbCustomerRes = await linkBillingCustomer(account, user);
-            if (linkOrbCustomerRes.isErr()) {
-                report(linkOrbCustomerRes.error);
-            } else {
-                const linkOrbSubscriptionRes = await linkBillingFreeSubscription(account);
-                if (linkOrbSubscriptionRes.isErr()) {
-                    report(linkOrbSubscriptionRes.error);
-                }
-            }
+            await linkNewTeamToBilling(account, user);
         }
     }
 

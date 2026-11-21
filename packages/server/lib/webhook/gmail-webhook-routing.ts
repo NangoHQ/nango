@@ -77,7 +77,10 @@ export async function validate(
 
         if (payload.aud !== encodedWebhookUrl && payload.aud !== rawWebhookUrl) {
             const expected = encodedWebhookUrl === rawWebhookUrl ? encodedWebhookUrl : `${encodedWebhookUrl} or ${rawWebhookUrl}`;
-            logger.warning(`Invalid audience. Expected ${expected}, got ${payload.aud}`);
+            // The query is dropped: a push endpoint can carry the webhook secret as `nangoWebhookSecret`, and an
+            // audience left empty in Pub/Sub defaults to that full endpoint.
+            const received = typeof payload.aud === 'string' ? payload.aud.split('?')[0] : payload.aud;
+            logger.warning(`Invalid audience. Expected ${expected}, got ${received} (query omitted)`);
             return false;
         }
 

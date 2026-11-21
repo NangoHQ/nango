@@ -49,7 +49,7 @@ export const auditFunctionDeployedCli = auditable<PostDeploy>({
 export const auditFunctionDeploymentBundle = auditable<PostFunctionDeploymentBundle>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
     target: (req) => functionBundleTargets(req.body.functions),
-    metadata: () => ({ type: 'function' })
+    metadata: (req) => ({ type: 'function', source: functionSource(functionBundleSource(req.body.functions)) })
 });
 
 export const auditPreBuiltDeployed = auditable<PostPreBuiltDeploy>({
@@ -145,6 +145,11 @@ function functionBundleTargets(value: unknown): AuditTarget[] | undefined {
             return makeTarget('function', functionTargetId(integrationId, name));
         })
         .filter((target): target is AuditTarget => Boolean(target));
+}
+
+function functionBundleSource(value: unknown): unknown {
+    const first: unknown = Array.isArray(value) ? value[0] : undefined;
+    return typeof first === 'object' && first !== null && 'source' in first ? first.source : undefined;
 }
 
 // The contract promises one of the known sources, so an unrecognised value records as a repo deploy

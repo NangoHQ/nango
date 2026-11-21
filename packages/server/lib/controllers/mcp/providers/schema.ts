@@ -60,7 +60,18 @@ const providerActionTemplateSchema = z
     })
     .strict();
 
-export const providerTemplateSchema = z.discriminatedUnion('type', [providerSyncTemplateSchema, providerActionTemplateSchema]);
+const providerToolTemplateSchema = z
+    .object({
+        type: z.literal('tool'),
+        name: z.string(),
+        description: z.string(),
+        scopes: z.array(z.string()).optional(),
+        input_json_schema: jsonSchemaSchema.nullable(),
+        output_json_schema: jsonSchemaSchema.nullable()
+    })
+    .strict();
+
+export const providerTemplateSchema = z.discriminatedUnion('type', [providerSyncTemplateSchema, providerActionTemplateSchema, providerToolTemplateSchema]);
 
 // We're using looseObject here because providers can have additional fields that vary by auth mode.
 export const getProviderOutputSchema = z.looseObject({

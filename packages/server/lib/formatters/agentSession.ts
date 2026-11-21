@@ -39,7 +39,8 @@ export function toolsetSummary(
                 connected: Object.hasOwn(resolvedConnections, integrationId),
                 tools_pinned: integration.pinned.length,
                 tools_searchable: integration.searchable.length,
-                ...(integration.mcpServer ? { mcp_server: integration.mcpServer } : {})
+                // A pending server has not been listed yet, so there is no status to report.
+                ...(typeof integration.mcpServer === 'string' ? { mcp_server: integration.mcpServer } : {})
             }
         ])
     );

@@ -44,6 +44,7 @@ const managementToolNames = [
     'functions_list',
     'deploy_template',
     'get_deployment_status',
+    'tools_call',
     'logs_list_operations',
     'logs_get_operation'
 ];
@@ -152,7 +153,7 @@ describe('createManagementMcpServer with OAuth', () => {
             };
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(expected, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(expected) }],
                 structuredContent: expected
             });
             expect(getEnvironmentsSpy).toHaveBeenCalledOnce();
@@ -223,7 +224,7 @@ describe('createManagementMcpServer with OAuth', () => {
             const result = await client.callTool(request.params);
 
             expect(result).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(handlerSpy).toHaveBeenCalledOnce();
@@ -317,7 +318,7 @@ describe('createManagementMcpServer with OAuth', () => {
 
             expect(firstResult).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Internal error' }] });
             expect(secondResult).toStrictEqual({
-                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                content: [{ type: 'text', text: JSON.stringify(response) }],
                 structuredContent: response
             });
             expect(loadEnvironment).toHaveBeenCalledTimes(2);

@@ -1,6 +1,8 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import dns from 'node:dns/promises';
 
-import { chooseMcpClientIdMethod, refreshMcpGenericCredentials } from './mcpGeneric.client.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { chooseMcpClientIdMethod, discoverMcpMetadata, mcpOAuthFetch, refreshMcpGenericCredentials } from './mcpGeneric.client.js';
 
 import type { LogContextStateless } from '@nangohq/logs';
 import type { DBConnectionDecrypted, OAuth2Credentials } from '@nangohq/types';
@@ -19,6 +21,10 @@ const publicClientInfo = {
     client_id: 'public-client-id',
     token_endpoint_auth_method: 'none'
 };
+
+function resolveTo(address: string) {
+    vi.spyOn(dns, 'lookup').mockResolvedValue([{ address, family: 4 }] as never);
+}
 
 function mockLogCtx(): LogContextStateless {
     return { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() } as unknown as LogContextStateless;
@@ -102,8 +108,13 @@ describe('chooseMcpClientIdMethod', () => {
 });
 
 describe('refreshMcpGenericCredentials', () => {
+    beforeEach(() => {
+        resolveTo('93.184.216.34');
+    });
+
     afterEach(() => {
         vi.unstubAllGlobals();
+        vi.restoreAllMocks();
     });
 
     it('refreshes without sending client_secret for public clients', async () => {
@@ -189,6 +200,94 @@ describe('refreshMcpGenericCredentials', () => {
 
         expect(result.success).toBe(false);
         expect(result.error?.type).toBe('unhandled_invalid_oauth_metadata');
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+});
+
+describe('outbound URL policy', () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+        vi.restoreAllMocks();
+    });
+
+    it('refuses to discover metadata when the MCP server hostname resolves to loopback', async () => {
+        resolveTo('127.0.0.1');
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        const result = await discoverMcpMetadata('https://loopback.attacker.example/mcp', mockLogCtx() as never);
+
+        expect(result.success).toBe(false);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('refuses to refresh when the token endpoint hostname resolves to loopback', async () => {
+        resolveTo('127.0.0.1');
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        const result = await refreshMcpGenericCredentials({ connection: mcpGenericConnection(), logCtx: mockLogCtx() });
+
+        expect(result.success).toBe(false);
+        expect(result.error?.type).toBe('unhandled_invalid_token_endpoint');
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('refuses an MCP server URL that is not https', async () => {
+        resolveTo('93.184.216.34');
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        const result = await discoverMcpMetadata('http://mcp.example.com/mcp', mockLogCtx() as never);
+
+        expect(result.success).toBe(false);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('does not follow a discovery redirect to another origin', async () => {
+        resolveTo('93.184.216.34');
+        const fetchMock = vi
+            .fn()
+            .mockImplementation(() => Promise.resolve(new Response(null, { status: 302, headers: { location: 'http://10.0.0.5:8080/admin?action=x' } })));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await discoverMcpMetadata('https://mcp.example.com/mcp', mockLogCtx() as never);
+
+        expect(fetchMock).toHaveBeenCalled();
+        const hosts = fetchMock.mock.calls.map(([url]) => new URL(String(url)).host);
+        expect(hosts.every((host) => host === 'mcp.example.com')).toBe(true);
+    });
+
+    it('does not follow a token endpoint redirect to another origin', async () => {
+        resolveTo('93.184.216.34');
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 307, headers: { location: 'http://169.254.169.254/latest/meta-data' } }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        const result = await refreshMcpGenericCredentials({ connection: mcpGenericConnection(), logCtx: mockLogCtx() });
+
+        expect(result.success).toBe(false);
+        expect(result.error?.type).toBe('refresh_token_external_error');
+        expect(fetchMock).toHaveBeenCalledOnce();
+    });
+
+    it('sends requests through the policy dispatcher without automatic redirects', async () => {
+        resolveTo('93.184.216.34');
+        const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await mcpOAuthFetch('https://mcp.example.com/.well-known/oauth-protected-resource', { method: 'GET', redirect: 'follow' });
+
+        const [, init] = fetchMock.mock.calls[0]!;
+        expect(init?.dispatcher).toBeDefined();
+        expect(init?.redirect).toBe('manual');
+    });
+
+    it('checks every request against the policy before sending it', async () => {
+        resolveTo('127.0.0.1');
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(mcpOAuthFetch('https://loopback.attacker.example/token', { method: 'POST' })).rejects.toThrow();
         expect(fetchMock).not.toHaveBeenCalled();
     });
 });

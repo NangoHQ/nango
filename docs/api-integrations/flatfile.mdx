@@ -1,0 +1,77 @@
+---
+title: 'Flatfile'
+sidebarTitle: 'Flatfile'
+description: 'Integrate your application with the Flatfile API'
+---
+
+## 🚀 Quickstart
+
+Connect to Flatfile with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Flatfile_.
+    </Step>
+    <Step id="authorize-flatfile" title="Authorize Flatfile">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Flatfile secret key or personal access token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-flatfile-api" title="Call the Flatfile API">
+    Let's make your first request to the Flatfile API to get your account. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/accounts/current" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/accounts/current',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Flatfile integration guides
+
+- [How do I link my account?](/api-integrations/flatfile/connect)  
+Copy a Flatfile secret key or create a personal access token and connect it in the Connect UI.
+
+Official docs: [Flatfile API reference](https://reference.flatfile.com/)
+
+## 🧩 Pre-built syncs & tools for Flatfile
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/flatfile/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

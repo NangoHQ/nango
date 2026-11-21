@@ -46,6 +46,7 @@ export interface SharedCredentialsBodyInput {
     client_secret: string;
     scopes?: string | undefined;
     app_link?: string | undefined;
+    enabled?: boolean | undefined;
 }
 
 export interface SharedCredentialsOutput {
@@ -57,6 +58,7 @@ export interface SharedCredentialsOutput {
         scopes?: string | undefined;
         app_link?: string | undefined;
     };
+    enabled: boolean;
     created_at: string;
     updated_at: string;
 }

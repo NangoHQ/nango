@@ -1,0 +1,49 @@
+---
+title: 'Formbricks - How do I link my account?'
+sidebarTitle: 'Formbricks'
+---
+
+## Overview
+
+To authenticate with Formbricks, you need:
+
+1. **API Key** — an API key from your Formbricks organization.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Formbricks account. If you don't have one, [sign up](https://app.formbricks.com/auth/signup).
+
+### Step 1: Create an API key
+
+1. [Log in](https://app.formbricks.com) to Formbricks.
+2. Click your organization name in the breadcrumbs at the top left and open the settings, or go to **Settings** → **Organization**.
+3. In the sidebar, under **Organization**, click **API Keys**.
+
+<img src="/api-integrations/formbricks/organization_settings_api_keys.png" alt="Formbricks Organization Settings with API Keys in the sidebar"/>
+
+4. Click **Add API key**.
+5. Enter a label, for example the name of your app.
+6. Under **Workspace Access**, click **Add permission** for each workspace the key should reach and choose **Read**, **Write** or **Manage**.
+7. Leave **Organization Access** off unless you need organization endpoints, then click **Add API Key**.
+
+<img src="/api-integrations/formbricks/add_api_key_dialog.png" alt="Formbricks Add API Key dialog with a label, a workspace permission and the Add API Key button"/>
+
+8. Copy the new key (it starts with `fbk_`) with the copy icon in the **API Key** column.
+
+<img src="/api-integrations/formbricks/api_key_created.png" alt="Formbricks API Keys list with the new key and its copy icon"/>
+
+<Note>
+Formbricks shows the API key only once. Copy it now and store it somewhere safe.
+</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Formbricks.
+2. Enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/formbricks/form.png" alt="Formbricks Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Formbricks.

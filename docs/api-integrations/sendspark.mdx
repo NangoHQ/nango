@@ -1,0 +1,81 @@
+---
+title: 'Sendspark'
+sidebarTitle: 'Sendspark'
+description: 'Integrate your application with the Sendspark API'
+---
+
+## 🚀 Quickstart
+
+Connect to Sendspark with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Sendspark_.
+    </Step>
+    <Step id="authorize-sendspark" title="Authorize Sendspark">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your API Key and API Secret. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-sendspark-api" title="Call the Sendspark API">
+    Let's make your first request to the Sendspark API to get the ID of your workspace. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/workspaces/identifier" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/workspaces/identifier',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Sendspark integration guides
+
+- [How do I link my account?](/api-integrations/sendspark/connect)  
+Generate an API Key and API Secret to connect your Sendspark account.
+
+Official docs: [Sendspark API reference](https://help.sendspark.com/api-reference)
+
+## 🧩 Pre-built syncs & tools for Sendspark
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/sendspark/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango fills the `workspaceId` connection config field after the connection is created but adds it to no request: read it from the connection's `connection_config` and put it in the endpoint path where the Sendspark docs show the workspace ID.
+
+---

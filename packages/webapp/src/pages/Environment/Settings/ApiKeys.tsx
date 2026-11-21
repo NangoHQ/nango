@@ -1,11 +1,25 @@
-import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2 } from 'lucide-react';
+import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button, Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, IconButton, Input } from '@nangohq/design-system';
+import {
+    Alert,
+    AlertDescription,
+    Button,
+    CopyButton,
+    Dialog,
+    DialogBody,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    IconButton,
+    InlineCode,
+    Input
+} from '@nangohq/design-system';
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -19,6 +33,7 @@ import {
     allGroupScopes,
     groupWildcard,
     isScopeSelected,
+    renameLegacyScopes,
     SCOPE_GROUPS,
     toggleCredential as toggleCredentialFn,
     toggleGroup as toggleGroupFn,
@@ -92,6 +107,8 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
         const all = allGroupScopes(group);
         return isGroupWildcardSelected(group) || all.every((s) => selectedScopes.includes(s));
     };
+
+    const hasCredentialsScope = SCOPE_GROUPS.some((group) => group.items.some((item) => item.credentials && isScopeSelected(item.credentials, selectedScopes)));
 
     const hasAnyChildSelected = (group: ScopeGroup) => allGroupScopes(group).some((s) => selectedScopes.includes(s));
 
@@ -218,6 +235,17 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                     {selectedScopes.length === 0 && <p className="text-body-small-regular text-status-danger-text">Select at least one scope to continue</p>}
                 </div>
             )}
+            {permissionMode === 'custom' && hasCredentialsScope && (
+                <Alert variant="warning" size="compact">
+                    <TriangleAlert />
+                    <AlertDescription>
+                        <span>
+                            Scopes ending in <InlineCode>_credentials</InlineCode> let this key read raw OAuth tokens and API keys. Only grant them to backends
+                            that need them.
+                        </span>
+                    </AlertDescription>
+                </Alert>
+            )}
         </div>
     );
 };
@@ -319,13 +347,13 @@ interface KeyConfigProps {
 }
 
 const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecret, canManageKeys }) => {
-    const [editedScopes, setEditedScopes] = useState<string[]>(apiKey.scopes);
+    const [editedScopes, setEditedScopes] = useState<string[]>(() => renameLegacyScopes(apiKey.scopes));
     const [editedName, setEditedName] = useState<string>(apiKey.display_name);
     const [secretRevealed, setSecretRevealed] = useState(false);
     const { mutateAsync: updateApiKey, isPending } = useUpdateApiKey(env);
     const { toast } = useToast();
 
-    const scopesChanged = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(apiKey.scopes.slice().sort());
+    const scopesChanged = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(renameLegacyScopes(apiKey.scopes).sort());
     const nameChanged = editedName.trim() !== apiKey.display_name;
     const hasChanges = scopesChanged || nameChanged;
     const hasNoScopes = editedScopes.length === 0;
@@ -371,7 +399,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                     <div className="relative">
                         <Input value={apiKey.uuid} disabled className="font-mono bg-surface-canvas text-text-muted pr-10" />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                            <CopyButton text={apiKey.uuid} />
+                            <CopyButton size="sm" value={apiKey.uuid} />
                         </div>
                     </div>
 
@@ -384,16 +412,10 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                         />
                         {canReadSecret && (
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                <IconButton
-                                    label="Toggle visibility"
-                                    variant="ghost"
-                                    size="2xs"
-                                    onClick={() => setSecretRevealed((r) => !r)}
-                                    className="text-text-muted hover:text-text-strong h-7 w-7"
-                                >
-                                    {secretRevealed ? <EyeOff strokeWidth={1} size={16} /> : <Eye strokeWidth={1} size={16} />}
+                                <IconButton label="Toggle visibility" variant="ghost" size="sm" onClick={() => setSecretRevealed((r) => !r)}>
+                                    {secretRevealed ? <EyeOff /> : <Eye />}
                                 </IconButton>
-                                <CopyButton text={apiKey.secret} />
+                                <CopyButton size="sm" value={apiKey.secret} />
                             </div>
                         )}
                     </div>
@@ -434,8 +456,8 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
             confirmationKeyword={displayName}
             confirmButtonText="Delete API Key"
             trigger={
-                <IconButton label="Delete API key" variant="ghost" size="2xs" className="text-text-muted hover:text-status-danger-text">
-                    <Trash2 className="size-3.5" />
+                <IconButton label="Delete API key" variant="danger-ghost" size="sm">
+                    <Trash2 />
                 </IconButton>
             }
             onConfirm={onDelete}
@@ -455,23 +477,17 @@ const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ se
         <SettingsContent title="API Keys">
             <div className="flex flex-col gap-4 py-4">
                 <div className="text-body-small-regular text-text-secondary">
-                    This key is managed via the <code className="text-text-strong">NANGO_SECRET_KEY_{env.toUpperCase()}</code> environment variable.
+                    This key is managed via the <InlineCode>NANGO_SECRET_KEY_{env.toUpperCase()}</InlineCode> environment variable.
                 </div>
                 <div>
                     <label className="text-body-small-semi text-text-strong block mb-1.5">Secret Key</label>
                     <div className="relative">
                         <Input value={revealed ? secretKey : masked} disabled className="font-mono bg-surface-canvas text-text-muted pr-20" />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                            <IconButton
-                                label="Toggle visibility"
-                                variant="ghost"
-                                size="2xs"
-                                onClick={() => setRevealed((r) => !r)}
-                                className="text-text-muted hover:text-text-strong h-7 w-7"
-                            >
-                                {revealed ? <EyeOff strokeWidth={1} size={16} /> : <Eye strokeWidth={1} size={16} />}
+                            <IconButton label="Toggle visibility" variant="ghost" size="sm" onClick={() => setRevealed((r) => !r)}>
+                                {revealed ? <EyeOff /> : <Eye />}
                             </IconButton>
-                            <CopyButton text={secretKey} />
+                            <CopyButton size="sm" value={secretKey} />
                         </div>
                     </div>
                 </div>
@@ -552,7 +568,7 @@ export const ApiKeys: React.FC = () => {
                                     <span className="text-body-small-semi text-text-strong">{key.display_name}</span>
                                 </TableCell>
                                 <TableCell>
-                                    <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(key.scopes)}</span>
+                                    <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(renameLegacyScopes(key.scopes))}</span>
                                 </TableCell>
                                 <TableCell>
                                     <span className="text-text-secondary cursor-default" title={formatFullDate(key.created_at)}>
@@ -567,16 +583,16 @@ export const ApiKeys: React.FC = () => {
                                 {canMakeActions && (
                                     <TableCell>
                                         <div className="flex items-center gap-1">
-                                            {canReadSecret && <CopyButton text={key.secret} />}
+                                            {canReadSecret && <CopyButton size="sm" value={key.secret} />}
                                             {canManageKeys && (
                                                 <IconButton
                                                     label="Edit"
                                                     variant="ghost"
-                                                    size="2xs"
+                                                    size="sm"
                                                     onClick={() => setSelectedKeyId(key.id)}
                                                     className="text-text-muted hover:text-text-strong"
                                                 >
-                                                    <Pencil className="size-3.5" />
+                                                    <Pencil />
                                                 </IconButton>
                                             )}
                                             {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />}

@@ -3,7 +3,8 @@ import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalRespons
 import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import {
     Alert,
@@ -19,24 +20,28 @@ import {
 } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
-import { LogoWolf } from '@/assets/LogoWolf';
 import { OpenAIIcon } from '@/assets/OpenAIIcon';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { PromptCard } from '@/components/patterns/PromptCard';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { useListIntegrations } from '@/hooks/useIntegration';
+import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useUser } from '@/hooks/useUser';
-import { usePlaygroundToolbarSlot } from '@/pages/Playground/Show';
+import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { deleteAgentPlaygroundChat, openAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
-import { track } from '@/utils/analytics';
+import { analyticsSessionHeaders, track } from '@/utils/analytics';
 import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
 import { approvalProperties, pendingApprovals } from './approvalTracking';
 import { describeChatError } from './chatError';
+import { HeroIllustration } from './components/HeroIllustration';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
+import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize, integrationLabels, labelFor } from './toolDisplay';
@@ -50,7 +55,7 @@ const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
     { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
     { prompt: 'Summarize my 3 latest emails in Gmail', provider: 'google-mail', name: 'Gmail' },
     { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
-    { prompt: 'Send me a Slack message saying "Hello, world!"', provider: 'slack', name: 'Slack' },
+    { prompt: 'Send me "Hello, world!" on Slack', provider: 'slack', name: 'Slack' },
     { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
     { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot', name: 'HubSpot' }
 ];
@@ -61,31 +66,81 @@ function providerName(provider: string): string {
 
 export const AgentPlayground: React.FC = () => {
     const env = useStore((state) => state.env);
-    const toolbarSlot = usePlaygroundToolbarSlot();
+    const { data: meta } = useMeta();
+    const { can } = usePermissions();
+    const [toolbarSlot, setToolbarSlot] = useState<HTMLDivElement | null>(null);
     const [chatKey, setChatKey] = useState(0);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [draft, setDraft] = useState(() => readPlaygroundDraft(location.state));
+    if (draft && draft.env !== env) {
+        setDraft(undefined);
+    }
+    useEffect(() => {
+        if (readPlaygroundDraft(location.state) !== undefined) {
+            // Clears the draft, so a reload doesn't open another new chat with it.
+            void navigate(location.pathname + location.search, { replace: true, state: null });
+        }
+    }, [location, navigate]);
 
-    return <Chat key={`${env}-${chatKey}`} env={env} toolbarSlot={toolbarSlot} onNewChat={() => setChatKey((key) => key + 1)} />;
+    if (!meta) {
+        return null;
+    }
+    if (!meta.data.agentPlayground) {
+        return (
+            <DashboardLayout>
+                <p className="text-text-secondary">The Agent Playground is not enabled for this account.</p>
+            </DashboardLayout>
+        );
+    }
+    if (!can('environment:agent_sessions:write')) {
+        return (
+            <DashboardLayout>
+                <p className="text-text-secondary">{`Your role can't use the Agent Playground in this environment.`}</p>
+            </DashboardLayout>
+        );
+    }
+
+    return (
+        <DashboardLayout width="narrow" className="h-full" actions={<div ref={setToolbarSlot} />}>
+            <Helmet>
+                <title>Agent Playground - Nango</title>
+            </Helmet>
+            <Chat
+                key={`${env}-${chatKey}`}
+                env={env}
+                draft={chatKey === 0 && draft?.env === env ? draft.text : undefined}
+                toolbarSlot={toolbarSlot}
+                onNewChat={() => setChatKey((key) => key + 1)}
+            />
+        </DashboardLayout>
+    );
 };
 
-const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({ env, toolbarSlot, onNewChat }) => {
+const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({
+    env,
+    draft,
+    toolbarSlot,
+    onNewChat
+}) => {
     const { user } = useUser();
     const userId = user?.uuid;
     const [{ chatId, messages: storedMessages }] = useState(() =>
-        userId ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
+        userId && draft === undefined ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
     );
 
     const sessionId = useRef<string | undefined>(undefined);
-    const transport = useMemo(
-        () =>
-            new DefaultChatTransport<PlaygroundMessage>({
-                api: new URL(`/api/v1/agent-playground/chat?env=${env}`, globalEnv.dashboardApiUrl).toString(),
-                credentials: 'include',
-                prepareSendMessagesRequest: ({ messages }) => ({
-                    body: { messages, sessionId: sessionId.current, chatId, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }
-                })
-            }),
-        [env, chatId]
-    );
+    const transport = useMemo(() => {
+        const api = new URL(`/api/v1/agent-playground/chat?env=${env}`, globalEnv.dashboardApiUrl);
+        return new DefaultChatTransport<PlaygroundMessage>({
+            api: api.toString(),
+            credentials: 'include',
+            prepareSendMessagesRequest: ({ messages }) => ({
+                body: { messages, sessionId: sessionId.current, chatId, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+                headers: analyticsSessionHeaders(api)
+            })
+        });
+    }, [env, chatId]);
     const onReset = () => {
         deleteAgentPlaygroundChat(chatId);
         onNewChat();
@@ -255,25 +310,26 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
 
     const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
 
-    const composer = <Composer busy={busy} awaitingApproval={awaitingApproval} onSend={send} onStop={() => void stop()} />;
+    // The composer remounts when the first message appears, so passing the draft after that would refill it.
+    const composer = (
+        <Composer draft={messages.length === 0 ? draft : undefined} busy={busy} awaitingApproval={awaitingApproval} onSend={send} onStop={() => void stop()} />
+    );
 
     if (messages.length === 0) {
         return (
-            <div className="mx-auto flex h-full max-w-[800px] flex-col">
-                <EmptyState composer={composer} onPick={send} />
+            <div className="flex h-full flex-col">
+                <EmptyState composer={composer} suggested={draft !== undefined} onPick={send} />
             </div>
         );
     }
 
     return (
-        <div className="mx-auto flex h-full max-w-3xl flex-col">
+        <div className="flex h-full flex-col">
             {toolbarSlot &&
                 createPortal(
-                    <div className="ml-auto">
-                        <Button onClick={onReset}>
-                            <Plus /> New chat
-                        </Button>
-                    </div>,
+                    <Button onClick={onReset}>
+                        <Plus /> New chat
+                    </Button>,
                     toolbarSlot
                 )}
 
@@ -353,16 +409,40 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
     );
 };
 
+function prefersReducedMotion(): boolean {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 // Holds the draft itself, so typing doesn't re-render the message list.
-const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (text: string) => boolean; onStop: () => void }> = ({
+const Composer: React.FC<{ draft: string | undefined; busy: boolean; awaitingApproval: boolean; onSend: (text: string) => boolean; onStop: () => void }> = ({
+    draft,
     busy,
     awaitingApproval,
     onSend,
     onStop
 }) => {
-    const [input, setInput] = useState('');
+    const [input, setInput] = useState(() => (draft !== undefined && prefersReducedMotion() ? draft : ''));
+    const [typing, setTyping] = useState(() => draft !== undefined && !prefersReducedMotion());
+    const stopTyping = useRef<() => void>(() => {});
+    useEffect(() => {
+        if (draft === undefined || prefersReducedMotion()) {
+            return;
+        }
+        let typed = 0;
+        const step = Math.max(8, Math.min(20, 450 / draft.length));
+        const interval = window.setInterval(() => {
+            typed += 1;
+            setInput(draft.slice(0, typed));
+            if (typed >= draft.length) {
+                window.clearInterval(interval);
+                setTyping(false);
+            }
+        }, step);
+        stopTyping.current = () => window.clearInterval(interval);
+        return () => stopTyping.current();
+    }, [draft]);
     const submit = () => {
-        if (onSend(input)) {
+        if (!typing && onSend(input)) {
             setInput('');
         }
     };
@@ -378,9 +458,18 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
             <InputGroup size="composer">
                 <InputGroupTextarea
                     value={input}
+                    autoFocus={draft !== undefined}
+                    onFocus={(e) => {
+                        const end = e.currentTarget.value.length;
+                        e.currentTarget.setSelectionRange(end, end);
+                    }}
                     rows={1}
                     placeholder={awaitingApproval ? 'Approve or deny the change to continue…' : 'Ask the agent to do something…'}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => {
+                        stopTyping.current();
+                        setTyping(false);
+                        setInput(e.target.value);
+                    }}
                     onKeyDown={(e) => {
                         // Safari sends the key that ends an IME composition with isComposing false and keyCode 229.
                         const composing = e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229;
@@ -405,7 +494,14 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                             <Square className="size-3 fill-current" />
                         </InputGroupButton>
                     ) : (
-                        <InputGroupButton key="send" label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim() || awaitingApproval}>
+                        <InputGroupButton
+                            key="send"
+                            label="Send"
+                            type="submit"
+                            variant="primary"
+                            size="icon-sm"
+                            disabled={!input.trim() || awaitingApproval || typing}
+                        >
                             <ArrowUp />
                         </InputGroupButton>
                     )}
@@ -603,31 +699,23 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
     );
 };
 
-const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
+const EmptyState: React.FC<{ composer: React.ReactNode; suggested: boolean; onPick: (prompt: string, provider: string) => void }> = ({
+    composer,
+    suggested,
+    onPick
+}) => {
     return (
         <div className="flex flex-1 flex-col items-center text-center">
-            {/* basis-0 makes the 2:3 split ignore content height. */}
-            <div className="flex w-full flex-[2] basis-0 flex-col items-center justify-end pb-6">
-                <LogoWolf
-                    aria-hidden
-                    className="pointer-events-none -mb-28 h-auto w-[337px] text-text-strong opacity-[0.06] [mask-image:linear-gradient(to_bottom,black_45px,transparent_199px)]"
-                />
-                <h2 className="relative text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
+            <div className="flex w-full flex-[3] flex-col items-center justify-end gap-12 pb-6">
+                <HeroIllustration animated={!suggested} />
+                <h2 className="text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
             </div>
             {composer}
-            <div className="grid w-full flex-[3] basis-0 auto-rows-min grid-cols-2 gap-3 pt-6">
-                {STARTER_PROMPTS.map(({ prompt, provider }) => (
-                    <button
-                        key={prompt}
-                        type="button"
-                        onClick={() => onPick(prompt, provider)}
-                        className="group flex items-center gap-2.5 rounded-ds-xs border-ds-hairline border-border-muted bg-surface-panel px-3 py-3 text-left text-body-medium-regular text-text-default transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-container-panel"
-                    >
-                        <IntegrationLogo provider={provider} className="size-5 shrink-0 border-0 bg-transparent p-0" />
-                        <span className="flex-1">{prompt}</span>
-                        <ArrowUpRight className="size-4 shrink-0 text-text-muted opacity-0 transition-opacity group-hover:opacity-100" />
-                    </button>
-                ))}
+            <div className="grid w-full flex-[4] auto-rows-min grid-cols-2 gap-3 pt-6">
+                {!suggested &&
+                    STARTER_PROMPTS.map(({ prompt, provider, name }) => (
+                        <PromptCard key={prompt} prompt={prompt} provider={provider} name={name} action="send" onClick={() => onPick(prompt, provider)} />
+                    ))}
             </div>
         </div>
     );

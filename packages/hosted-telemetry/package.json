@@ -14,6 +14,7 @@
         "directory": "packages/hosted-telemetry"
     },
     "dependencies": {
+        "@nangohq/database": "file:../database",
         "@nangohq/migrations": "file:../migrations",
         "@nangohq/utils": "file:../utils",
         "@opentelemetry/api": "1.9.1",
@@ -21,7 +22,7 @@
         "@opentelemetry/resources": "2.10.0",
         "@opentelemetry/sdk-metrics": "2.10.0",
         "dayjs": "1.11.19",
-        "dd-trace": "5.117.0",
+        "dd-trace": "5.134.0",
         "knex": "3.1.0"
     },
     "devDependencies": {

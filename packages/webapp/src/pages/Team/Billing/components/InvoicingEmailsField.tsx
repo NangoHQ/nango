@@ -170,16 +170,7 @@ export const InvoicingEmailsField: React.FC = () => {
                     </FormLabel>
                     <FormControl>
                         <Combobox items={[]} multiple value={emails} inputValue={inputValue} onValueChange={commit} open={false}>
-                            {/* Overrides ComboboxChips' defaults to match Input's tokens (bg, border, radius, height, focus ring).
-                            Scoped to the input specifically (not focus-within) so a keyboard-focused chip shows only its own
-                            ring, not this one too. */}
-                            <ComboboxChips
-                                onKeyDown={handleUndoShortcut}
-                                onMouseDown={handleContainerMouseDown}
-                                className="min-h-8 rounded-ds-xs border-ds-hairline bg-surface-input border-border-interactive
-                                has-[input:focus]:border-[var(--focus-ring-default)]
-                                has-[input:focus]:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]"
-                            >
+                            <ComboboxChips onKeyDown={handleUndoShortcut} onMouseDown={handleContainerMouseDown} className="min-h-8 bg-surface-input">
                                 {emails.length > 0 && (
                                     <ComboboxValue>
                                         {emails.map((email) => (

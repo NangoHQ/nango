@@ -1,8 +1,8 @@
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import { PrivateRoute } from '@/components/patterns/PrivateRoute';
+import { RouteErrorPage } from '@/components/patterns/RouteErrorPage';
 import { SignedOutRoute } from '@/components/patterns/SignedOutRoute';
-import { FunctionPlayground } from '@/features/Playground';
 import { EmailVerified } from '@/pages/Account/EmailVerified';
 import ForgotPassword from '@/pages/Account/ForgotPassword';
 import { InviteSignup } from '@/pages/Account/InviteSignup';
@@ -16,6 +16,8 @@ import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredT
 import { AgentPlayground } from '@/pages/AgentPlayground/Show';
 import { AccountApiKeysShow } from '@/pages/ApiKeys/Show';
 import { AuditShow } from '@/pages/Audit/Show';
+import { CatalogProviderShow } from '@/pages/Catalog/ProviderShow';
+import { CatalogShow } from '@/pages/Catalog/Show';
 import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
 import { RecordsTab as ConnectionRecordsTab } from '@/pages/Connection/components/RecordsTab';
 import { SettingsTab as ConnectionSettingsTab } from '@/pages/Connection/components/SettingsTab';
@@ -26,11 +28,9 @@ import { ConnectionList } from '@/pages/Connection/List';
 import { ConnectionShow } from '@/pages/Connection/Show';
 import { ShowRecordModel as ConnectionShowRecordModel } from '@/pages/Connection/ShowRecordModel';
 import { EnvironmentSettings } from '@/pages/Environment/Settings/Show';
-import { ClassicGettingStarted } from '@/pages/GettingStarted/ClassicGettingStarted';
-import { GettingStarted } from '@/pages/GettingStarted/Show';
+import { AgentGettingStarted } from '@/pages/GettingStarted/AgentGettingStarted';
 import { Homepage } from '@/pages/Homepage/Show';
 import { CreateIntegration } from '@/pages/Integrations/Create';
-import { CreateIntegrationList } from '@/pages/Integrations/CreateList';
 import { ShowIntegration } from '@/pages/Integrations/providerConfigKey/Show';
 import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
@@ -38,7 +38,6 @@ import { NotFound } from '@/pages/NotFound';
 import { OAuthConsent } from '@/pages/OAuth/Consent';
 import { AccountDiscovery } from '@/pages/Onboarding/AccountDiscovery';
 import { HearAboutUs } from '@/pages/Onboarding/HearAboutUs';
-import { PlaygroundShow } from '@/pages/Playground/Show';
 import { Root } from '@/pages/Root';
 import { TeamBilling } from '@/pages/Team/Billing/Show';
 import { TeamSettingsPage } from '@/pages/Team/Settings';
@@ -58,7 +57,7 @@ const GettingStartedRoute = () => {
         return <Navigate to="/" replace />;
     }
 
-    return globalEnv.isCloud ? <GettingStarted /> : <ClassicGettingStarted />;
+    return <AgentGettingStarted />;
 };
 
 const RedirectPreservingLocation = ({ to }: { to: string }) => {
@@ -84,8 +83,6 @@ const legacyConnectionTabByHash = {
     '#settings': 'settings'
 } as const;
 
-const LEGACY_FUNCTION_TYPES = new Set(['sync', 'action', 'on-event']);
-
 const RedirectLegacyFunctionPage = () => {
     const { env, providerConfigKey, functionName } = useParams();
     const location = useLocation();
@@ -94,8 +91,9 @@ const RedirectLegacyFunctionPage = () => {
         next.set('function', functionName);
     }
     const type = new URLSearchParams(location.search).get('type');
-    if (type && LEGACY_FUNCTION_TYPES.has(type)) {
-        next.set('type', type);
+    const typeFilter = type === 'action' ? 'tool' : type === 'sync' || type === 'on-event' ? type : undefined;
+    if (typeFilter) {
+        next.set('type', typeFilter);
     }
 
     const search = next.toString();
@@ -171,7 +169,7 @@ const authRoutes = (() => {
     return [{ element: <SignedOutRoute />, children: signedOutOnlyRoutes }, ...alwaysOpenRoutes];
 })();
 
-export const router = sentryCreateBrowserRouter([
+const routes: RouteObject[] = [
     {
         path: '/oauth/consent/:uid/review',
         element: <OAuthConsent />
@@ -197,7 +195,7 @@ export const router = sentryCreateBrowserRouter([
                 element: <AccountDiscovery />
             },
             {
-                path: '/team-settings',
+                path: '/team',
                 element: <TeamSettingsPage />,
                 handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
             },
@@ -207,7 +205,7 @@ export const router = sentryCreateBrowserRouter([
                 handle: { breadcrumb: 'Account API keys' } as BreadcrumbHandle
             },
             {
-                path: '/user-settings',
+                path: '/profile',
                 handle: { breadcrumb: 'Profile settings' } as BreadcrumbHandle,
                 children: [
                     {
@@ -224,7 +222,7 @@ export const router = sentryCreateBrowserRouter([
             {
                 path: '/team/billing',
                 element: <TeamBilling />,
-                handle: { breadcrumb: 'Team billing' } as BreadcrumbHandle
+                handle: { breadcrumb: 'Billing & usage' } as BreadcrumbHandle
             },
             {
                 path: '/team/audit',
@@ -242,6 +240,21 @@ export const router = sentryCreateBrowserRouter([
                         }
                     },
                     {
+                        path: 'catalog',
+                        handle: { breadcrumb: 'Catalog' } as BreadcrumbHandle,
+                        children: [
+                            {
+                                index: true,
+                                element: <CatalogShow />
+                            },
+                            {
+                                path: ':provider',
+                                element: <CatalogProviderShow />,
+                                handle: { breadcrumb: (params) => params.provider || 'Provider' } as BreadcrumbHandle
+                            }
+                        ]
+                    },
+                    {
                         path: 'integrations',
                         handle: { breadcrumb: 'Integrations' } as BreadcrumbHandle,
                         children: [
@@ -251,11 +264,11 @@ export const router = sentryCreateBrowserRouter([
                             },
                             {
                                 path: 'create',
-                                handle: { breadcrumb: 'Create Integration' } as BreadcrumbHandle,
+                                handle: { breadcrumb: 'Add integration' } as BreadcrumbHandle,
                                 children: [
                                     {
                                         index: true,
-                                        element: <CreateIntegrationList />
+                                        element: <Navigate to="../../catalog" replace />
                                     },
                                     {
                                         path: ':providerConfigKey',
@@ -305,7 +318,7 @@ export const router = sentryCreateBrowserRouter([
                             {
                                 path: 'create',
                                 element: <ConnectionCreate />,
-                                handle: { breadcrumb: 'Create Connection' } as BreadcrumbHandle
+                                handle: { breadcrumb: 'Add test connection' } as BreadcrumbHandle
                             },
                             {
                                 path: 'create-legacy',
@@ -323,17 +336,16 @@ export const router = sentryCreateBrowserRouter([
                                     },
                                     {
                                         path: 'auth',
-                                        element: <ConnectionAuthTab />,
-                                        handle: { breadcrumb: 'Auth' } as BreadcrumbHandle
+                                        element: <ConnectionAuthTab />
                                     },
                                     {
                                         path: 'syncs',
-                                        element: <ConnectionSyncsTab />,
-                                        handle: { breadcrumb: 'Syncs' } as BreadcrumbHandle
+                                        element: <ConnectionSyncsTab />
                                     },
                                     {
                                         path: 'records',
-                                        handle: { breadcrumb: 'Records' } as BreadcrumbHandle,
+                                        // Only a crumb when a model is open, so it links back to the records list
+                                        handle: { breadcrumb: (params) => (params.model ? 'Records' : undefined) } as BreadcrumbHandle,
                                         children: [
                                             {
                                                 index: true,
@@ -356,8 +368,7 @@ export const router = sentryCreateBrowserRouter([
                                     },
                                     {
                                         path: 'settings',
-                                        element: <ConnectionSettingsTab />,
-                                        handle: { breadcrumb: 'Settings' } as BreadcrumbHandle
+                                        element: <ConnectionSettingsTab />
                                     }
                                 ]
                             }
@@ -374,17 +385,12 @@ export const router = sentryCreateBrowserRouter([
                     },
                     {
                         path: 'playground',
-                        element: <PlaygroundShow />,
-                        handle: { breadcrumb: 'Playground' } as BreadcrumbHandle,
                         children: [
-                            { index: true, element: null },
+                            { index: true, element: <Navigate to="agent" replace /> },
                             {
                                 path: 'agent',
-                                element: <AgentPlayground />
-                            },
-                            {
-                                path: 'functions',
-                                element: <FunctionPlayground />
+                                element: <AgentPlayground />,
+                                handle: { breadcrumb: 'Agent Playground' } as BreadcrumbHandle
                             }
                         ]
                     },
@@ -400,15 +406,15 @@ export const router = sentryCreateBrowserRouter([
                     // Backward compat redirects for old env-prefixed URLs
                     {
                         path: 'account-settings',
-                        element: <RedirectPreservingLocation to="/team-settings" />
+                        element: <RedirectPreservingLocation to="/team" />
                     },
                     {
                         path: 'team-settings',
-                        element: <RedirectPreservingLocation to="/team-settings" />
+                        element: <RedirectPreservingLocation to="/team" />
                     },
                     {
                         path: 'user-settings',
-                        element: <RedirectPreservingLocation to="/user-settings" />
+                        element: <RedirectPreservingLocation to="/profile" />
                     },
                     {
                         path: 'team/billing',
@@ -420,7 +426,27 @@ export const router = sentryCreateBrowserRouter([
     },
     {
         path: '/account-settings',
-        element: <RedirectPreservingLocation to="/team-settings" />
+        element: <RedirectPreservingLocation to="/team" />
+    },
+    {
+        path: '/account',
+        element: <RedirectPreservingLocation to="/team" />
+    },
+    {
+        path: '/team-settings',
+        element: <RedirectPreservingLocation to="/team" />
+    },
+    {
+        path: '/user-settings',
+        element: <RedirectPreservingLocation to="/profile" />
+    },
+    {
+        path: '/user-settings/enable-2fa',
+        element: <RedirectPreservingLocation to="/profile/enable-2fa" />
+    },
+    {
+        path: '/billing',
+        element: <RedirectPreservingLocation to="/team/billing" />
     },
     {
         path: '/hn-demo',
@@ -431,4 +457,6 @@ export const router = sentryCreateBrowserRouter([
         path: '*',
         element: <NotFound />
     }
-]);
+];
+
+export const router = sentryCreateBrowserRouter([{ errorElement: <RouteErrorPage />, children: routes }]);

@@ -29,7 +29,8 @@ describe(`ALL ${endpoint}`, () => {
         shouldBeProtected(res);
     });
 
-    it('returns 404 by default when the account is not allowlisted', async () => {
+    it('returns 404 when the account is not allowlisted', async () => {
+        vi.spyOn(getFlags(), 'isV1PassthroughEnabled').mockResolvedValue(false);
         const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {

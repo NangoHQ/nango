@@ -1,0 +1,78 @@
+---
+title: 'Currents API'
+sidebarTitle: 'Currents API'
+description: 'Integrate your application with the Currents API'
+---
+
+## 🚀 Quickstart
+
+Connect to Currents API with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Currents API_.
+    </Step>
+    <Step id="authorize-currents-api" title="Authorize Currents API">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Currents API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-currents-api" title="Call the Currents API">
+    Let's make your first request to the Currents API to get the latest English news. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/latest-news?language=en" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/latest-news',
+            params: { language: 'en' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Currents API integration guides
+
+- [How do I link my account?](/api-integrations/currents-api/connect)  
+Copy the API key from your Currents profile dashboard to connect your account.
+
+Official docs: [Currents API documentation](https://currentsapi.services/en/docs/)
+
+## 🧩 Pre-built syncs & tools for Currents API
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/currents-api/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

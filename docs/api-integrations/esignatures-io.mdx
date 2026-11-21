@@ -1,0 +1,77 @@
+---
+title: 'eSignatures.io'
+sidebarTitle: 'eSignatures.io'
+description: 'Integrate your application with the eSignatures.io API'
+---
+
+## 🚀 Quickstart
+
+Connect to eSignatures.io with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _eSignatures.io_.
+    </Step>
+    <Step id="authorize-esignatures-io" title="Authorize eSignatures.io">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your eSignatures.com Secret Token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-esignatures-io-api" title="Call the eSignatures.io API">
+    Let's make your first request to the eSignatures.io API to list your templates. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/templates" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/templates',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 eSignatures.io integration guides
+
+- [How do I link my account?](/api-integrations/esignatures-io/connect)  
+Copy your eSignatures.com Secret Token and connect your account.
+
+Official docs: [eSignatures.com API documentation](https://esignatures.com/docs/api)
+
+## 🧩 Pre-built syncs & tools for eSignatures.io
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/esignatures-io/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

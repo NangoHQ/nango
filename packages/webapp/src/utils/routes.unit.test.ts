@@ -1,10 +1,35 @@
 import { describe, expect, it } from 'vitest';
 
-import { inAppPath, isNonEnvPath, MAX_NEXT_LENGTH, safeNextPath, signinPathWithNext } from './routes.js';
+import { envSwitchPath, inAppPath, isNonEnvPath, MAX_NEXT_LENGTH, safeNextPath, signinPathWithNext } from './routes.js';
+
+describe('envSwitchPath', () => {
+    it('swaps the env segment', () => {
+        expect(envSwitchPath('/dev/logs', 'prod')).toBe('/prod/logs');
+        expect(envSwitchPath('/dev/integrations', 'prod')).toBe('/prod/integrations');
+    });
+
+    it('redirects integration and connection subpages to their parent page', () => {
+        expect(envSwitchPath('/dev/integrations/github', 'prod')).toBe('/prod/integrations');
+        expect(envSwitchPath('/dev/connections/github/abc', 'prod')).toBe('/prod/connections');
+    });
+
+    it('redirects getting started to the env homepage', () => {
+        expect(envSwitchPath('/dev/getting-started', 'prod')).toBe('/prod');
+    });
+
+    it('stays on non-env pages', () => {
+        expect(envSwitchPath('/team', 'prod')).toBeNull();
+        expect(envSwitchPath('/profile', 'prod')).toBeNull();
+        expect(envSwitchPath('/dev/team/billing', 'prod')).toBeNull();
+    });
+});
 
 describe('isNonEnvPath', () => {
     describe('direct non-env paths', () => {
         it('matches exact non-env paths', () => {
+            expect(isNonEnvPath('/team')).toBe(true);
+            expect(isNonEnvPath('/profile')).toBe(true);
+            expect(isNonEnvPath('/team/audit')).toBe(true);
             expect(isNonEnvPath('/team-settings')).toBe(true);
             expect(isNonEnvPath('/user-settings')).toBe(true);
             expect(isNonEnvPath('/team/billing')).toBe(true);
@@ -15,6 +40,7 @@ describe('isNonEnvPath', () => {
 
         it('matches non-env paths with sub-paths', () => {
             expect(isNonEnvPath('/team-settings/members')).toBe(true);
+            expect(isNonEnvPath('/profile/enable-2fa')).toBe(true);
             expect(isNonEnvPath('/team/billing/plans')).toBe(true);
             expect(isNonEnvPath('/api-keys/new')).toBe(true);
         });
@@ -29,6 +55,12 @@ describe('isNonEnvPath', () => {
             expect(isNonEnvPath('/team-settings-prod')).toBe(false);
             expect(isNonEnvPath('/user-settings-backup')).toBe(false);
             expect(isNonEnvPath('/teams')).toBe(false);
+            expect(isNonEnvPath('/profiles')).toBe(false);
+        });
+
+        it('treats the pages of an environment named team or profile as env pages', () => {
+            expect(isNonEnvPath('/team/integrations')).toBe(false);
+            expect(isNonEnvPath('/profile/connections')).toBe(false);
         });
     });
 
@@ -48,6 +80,11 @@ describe('isNonEnvPath', () => {
         it('does not match env-specific paths with similar segment names', () => {
             expect(isNonEnvPath('/dev/integrations')).toBe(false);
             expect(isNonEnvPath('/team-settings-prod/integrations')).toBe(false);
+        });
+
+        it('does not treat the new exact paths as legacy env-prefixed URLs', () => {
+            expect(isNonEnvPath('/dev/team')).toBe(false);
+            expect(isNonEnvPath('/dev/profile')).toBe(false);
         });
     });
 });

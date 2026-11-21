@@ -1,0 +1,85 @@
+---
+title: 'Honeybadger'
+sidebarTitle: 'Honeybadger'
+description: 'Integrate your application with the Honeybadger API'
+---
+
+## 🚀 Quickstart
+
+Connect to Honeybadger with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Honeybadger_.
+    </Step>
+    <Step id="authorize-honeybadger" title="Authorize Honeybadger">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then pick your Honeybadger region and enter your personal auth token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-honeybadger-api" title="Call the Honeybadger API">
+    Let's make your first request to the Honeybadger API to list your projects. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/projects" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/projects',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Honeybadger integration guides
+
+- [How do I link my account?](/api-integrations/honeybadger/connect)  
+Find your region, copy your personal auth token and connect it in the Connect UI.
+
+Official docs: [Honeybadger Data API](https://docs.honeybadger.io/api/)
+
+## 🧩 Pre-built syncs & actions for Honeybadger
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/honeybadger/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Call only API v2 endpoints (`/v2/...`) with this connection: the v2 personal auth token does not work with API v3 (`/v3/...`), which refuses HTTP Basic with `401 unsupported_auth_scheme` and needs a Bearer user or account API token. See [Authentication](https://docs.honeybadger.io/api/v3/authentication/).
+- Set the `region` connection config field to the host the account signs in to: `app.honeybadger.io` for the US region, `eu-app.honeybadger.io` for the EU region. EU accounts are separate accounts from US ones. See [Data residency](https://docs.honeybadger.io/resources/data-residency/).
+- Check `X-RateLimit-Remaining` when a call answers `403`: after 360 requests per hour, the API answers `403` (Forbidden) instead of `429`, the same status it uses for a permissions problem. `X-RateLimit-Reset` is the Unix timestamp in seconds when the counter resets. See [Data API](https://docs.honeybadger.io/api/getting-started/).
+- Read the error reason from the `errors` field: failed calls answer `{ "errors": "Reason for error" }`, with `403` for a permissions problem and `422` for an invalid request. See [Data API](https://docs.honeybadger.io/api/getting-started/).
+- Do not parse a body from a successful `PUT`: updates answer `204` with no response body, while `POST` creations answer `201` with the created resource. See [Data API](https://docs.honeybadger.io/api/getting-started/).
+
+---

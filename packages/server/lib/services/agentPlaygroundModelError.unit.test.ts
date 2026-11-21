@@ -2,7 +2,7 @@ import { APICallError, RetryError, streamText } from 'ai';
 import { convertArrayToReadableStream, MockLanguageModelV4 } from 'ai/test';
 import { describe, expect, it } from 'vitest';
 
-import { modelErrorCategory, modelUnavailableError } from './agentPlaygroundModelError.js';
+import { modelErrorCategory, ModelKeyMissingError, modelUnavailableError } from './agentPlaygroundModelError.js';
 
 function apiCallError({
     statusCode,
@@ -72,6 +72,10 @@ describe('modelErrorCategory', () => {
         expect(modelErrorCategory(error)).toBe('quota');
     });
 
+    it('sorts a missing key into missing_key', () => {
+        expect(modelErrorCategory(new ModelKeyMissingError())).toBe('missing_key');
+    });
+
     it('leaves errors that did not come from the provider alone', () => {
         expect(modelErrorCategory(new Error('The MCP server closed'))).toBeNull();
         expect(modelErrorCategory('boom')).toBeNull();
@@ -107,5 +111,6 @@ describe('modelUnavailableError', () => {
         expect(modelUnavailableError('rate_limit').error.retryable).toBe(true);
         expect(modelUnavailableError('quota').error.retryable).toBe(false);
         expect(modelUnavailableError('auth').error.retryable).toBe(false);
+        expect(modelUnavailableError('missing_key').error.retryable).toBe(false);
     });
 });

@@ -1,0 +1,52 @@
+---
+title: 'Benchmark Email - How do I link my account?'
+sidebarTitle: 'Benchmark Email'
+---
+
+## Overview
+
+To authenticate with Benchmark Email, you need:
+
+1. **API Key** — a Benchmark Email API key.
+2. **API Host** — the host of your account's API base URL, for example `api-us-west-2-a.benchmarkemail.io`.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Benchmark Email account. API keys are available on every plan, including Free.
+- The **Owner** role on the account. Only Owners can create and manage API keys.
+
+### Step 1: Create an API key
+
+1. Log in to [Benchmark Email](https://app.benchmarkemail.io) with an Owner account.
+2. Click **Integrations** in the left sidebar, then open the **API Keys** tab.
+
+<img src="/api-integrations/benchmark-email/integrations_api_keys_tab.png" alt="The API Keys tab under Integrations in Benchmark Email"/>
+
+3. Click **Create API Key**.
+4. Enter a **Key Name**, choose **Read** or **Read & Write** under **Permissions** for each resource your integration needs, and optionally set an **Expiration Date**. Without one, the key never expires.
+5. Click **Create Key**.
+
+<img src="/api-integrations/benchmark-email/create_api_key_dialog.png" alt="The Create API Key dialog with a key name, permissions and expiration date"/>
+
+6. Copy the API key now. It is shown only once, so store it somewhere safe, then click **Done**.
+
+<img src="/api-integrations/benchmark-email/api_key_created.png" alt="The API Key dialog showing the new key with a Copy button"/>
+
+### Step 2: Copy your API host
+
+1. On the same **API Keys** tab, find the **Base URL** under **My API Keys**.
+2. Copy its host, without `https://`. For example, for `https://api-us-west-2-a.benchmarkemail.io`, the API host is `api-us-west-2-a.benchmarkemail.io`.
+
+<img src="/api-integrations/benchmark-email/api_base_url.png" alt="The Base URL field under the API keys list in Benchmark Email"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Benchmark Email.
+2. Enter your **API Host** and **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/benchmark-email/form.png" alt="The Benchmark Email connection form in the Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Benchmark Email.

@@ -1,7 +1,7 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { freePlan, updatePlanByTeam } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, report } from '@nangohq/utils';
 
 import type { BillingCustomer, BillingSubscription, DBTeam, DBUser, Result } from '@nangohq/types';
 
@@ -37,4 +37,17 @@ export async function linkBillingFreeSubscription(account: DBTeam): Promise<Resu
     }
 
     return Ok(resCreate.value);
+}
+
+export async function linkNewTeamToBilling(account: DBTeam, user: DBUser): Promise<void> {
+    const linkCustomerRes = await linkBillingCustomer(account, user);
+    if (linkCustomerRes.isErr()) {
+        report(linkCustomerRes.error);
+        return;
+    }
+
+    const linkSubscriptionRes = await linkBillingFreeSubscription(account);
+    if (linkSubscriptionRes.isErr()) {
+        report(linkSubscriptionRes.error);
+    }
 }

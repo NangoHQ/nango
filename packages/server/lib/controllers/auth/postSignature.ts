@@ -28,7 +28,7 @@ import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { PostPublicSignatureAuthorization, ProviderSignature } from '@nangohq/types';
+import type { Metadata, PostPublicSignatureAuthorization, ProviderSignature } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
 const bodyValidation = z
@@ -83,6 +83,7 @@ export const postPublicSignatureAuthorization = asyncWrapperWithEnvironment<Post
     const queryString: PostPublicSignatureAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicSignatureAuthorization['Params'] = paramsVal.data;
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let metadata: Metadata = {};
     const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
@@ -153,6 +154,7 @@ export const postPublicSignatureAuthorization = asyncWrapperWithEnvironment<Post
                 return;
             }
             connectionId = connection?.connection_id;
+            metadata = connection.metadata ?? {};
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
@@ -183,7 +185,7 @@ export const postPublicSignatureAuthorization = asyncWrapperWithEnvironment<Post
             credentials,
             connectionConfig,
             webhookUrlOverride,
-            metadata: {},
+            metadata,
             config,
             environment,
             tags: connectSession?.tags

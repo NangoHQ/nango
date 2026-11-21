@@ -119,9 +119,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
 
     public override async uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
         this.throwIfAbortedOrKilled();
-        return executeUncontrolledFetch(
-            options,
-            ({ bytesSent, bytesReceived }) => {
+        return executeUncontrolledFetch(options, {
+            onBytes: ({ bytesSent, bytesReceived }) => {
                 this.telemetryRecorder?.record({
                     type: 'data_transfer',
                     callsite: 'uncontrolled_fetch',
@@ -133,8 +132,9 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                     count: 1
                 });
             },
-            runnerOutboundPolicy
-        );
+            outboundPolicy: runnerOutboundPolicy,
+            ErrorClass: this.scriptType === 'function' ? this.Error : this.ActionError
+        });
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -171,7 +171,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                         : {})
                 },
                 internalConfig: {
-                    providerName: this.provider!
+                    providerName: this.provider!,
+                    monitoringContext: { accountId: this.accountId, environmentId: this.environmentId, callsite: 'sdk' }
                 }
             }).unwrap(),
             outboundPolicy: runnerOutboundPolicy,
@@ -439,7 +440,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         return this.checkpointing.clearCheckpoint(this.checkpointKey);
     }
 
-    public getCheckpointRange(): CheckpointRange | null {
+    public override getCheckpointRange(): CheckpointRange | null {
         return this.checkpointing.getRange(this.checkpointKey);
     }
 }
@@ -901,7 +902,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return this.checkpointing.clearCheckpoint(this.checkpointKey);
     }
 
-    public getCheckpointRange(): CheckpointRange | null {
+    public override getCheckpointRange(): CheckpointRange | null {
         return this.checkpointing.getRange(this.checkpointKey);
     }
 }

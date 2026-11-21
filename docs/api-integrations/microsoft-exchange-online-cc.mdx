@@ -1,0 +1,82 @@
+---
+title: 'Microsoft Exchange Online Admin (Client Credentials)'
+sidebarTitle: 'Microsoft Exchange Online Admin (Client Credentials)'
+description: 'Integrate your application with the Exchange Online Admin API using Client Credentials'
+---
+
+## 🚀 Quickstart
+
+Connect to Microsoft Exchange Online Admin (Client Credentials) with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Microsoft Exchange Online Admin (Client Credentials)_.
+    </Step>
+    <Step id="authorize-microsoft-exchange-online" title="Authorize Exchange Online">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your **Tenant ID**, **Client ID**, and **Client Secret**. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-microsoft-exchange-online-api" title="Call the Exchange Online Admin API">
+    Let's make your first request to the Exchange Online Admin API to read your organization configuration. Every call needs an `X-AnchorMailbox` routing header; app-only calls use the organization's system mailbox. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, Tenant ID, and your tenant's domain (for example, `contoso.onmicrosoft.com`). The API version goes in the path:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/v2.0/<TENANT-ID>/OrganizationConfig" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -H "Nango-Proxy-X-AnchorMailbox: APP:SystemMailbox{bb558c35-97f1-4cb9-8ff7-d53741dc928c}@<TENANT-DOMAIN>" \
+              -d '{"CmdletInput": {"CmdletName": "Get-OrganizationConfig"}}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/v2.0/<TENANT-ID>/OrganizationConfig',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            headers: { 'X-AnchorMailbox': 'APP:SystemMailbox{bb558c35-97f1-4cb9-8ff7-d53741dc928c}@<TENANT-DOMAIN>' },
+            data: { CmdletInput: { CmdletName: 'Get-OrganizationConfig' } }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Microsoft Exchange Online Admin (Client Credentials) integration guides
+
+- [How do I link my account?](/api-integrations/microsoft-exchange-online-cc/connect)  
+Register an app in Microsoft Entra ID, grant it Exchange access, and get your Tenant ID, Client ID, and Client Secret.
+
+Official docs: [Exchange Online Admin API](https://learn.microsoft.com/en-us/exchange/reference/admin-api-overview)
+
+## 🧩 Pre-built syncs & tools for Microsoft Exchange Online Admin (Client Credentials)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/microsoft-exchange-online-cc/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

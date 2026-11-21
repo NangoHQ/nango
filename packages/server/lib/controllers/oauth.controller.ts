@@ -1146,7 +1146,8 @@ class OAuthController {
             } else if (clientIdMethod === 'dcr') {
                 clientInformation = await registerClient(mcpServerUrl, {
                     metadata,
-                    clientMetadata
+                    clientMetadata,
+                    fetchFn: genericMcpClient.mcpOAuthFetch
                 });
             } else {
                 clientInformation = {
@@ -2670,7 +2671,8 @@ class OAuthController {
                 codeVerifier,
                 redirectUri,
                 ...(resource && { resource }),
-                ...(authorizationResponseIssuer !== undefined ? { iss: authorizationResponseIssuer } : {})
+                ...(authorizationResponseIssuer !== undefined ? { iss: authorizationResponseIssuer } : {}),
+                fetchFn: genericMcpClient.mcpOAuthFetch
             });
 
             const parsedRawCredentials: OAuth2Credentials = {

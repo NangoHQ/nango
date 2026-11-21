@@ -7,6 +7,16 @@ on:
                 description: 'Commit hash to release'
                 required: true
                 type: string
+            dry_run:
+                description: 'Run everything but skip the image push, the git tag, the manifest commit and the release publish'
+                required: false
+                type: boolean
+                default: false
+            push_candidate:
+                description: 'With dry_run, still push nangohq/nango:managed-candidate-<sha> so the image can be deployed to one of our own installations'
+                required: false
+                type: boolean
+                default: false
 
 permissions:
     contents: write
@@ -21,9 +31,17 @@ jobs:
             app_version: ${{ steps.version-script.outputs.app_version }}
             commit_hash: ${{ inputs.commit_hash }}
         steps:
+            # The image signature is bound to the workflow's branch, and customers verify against
+            # master. Dry runs can still run from other branches to test changes to this workflow.
+            - name: Require master for releases
+              if: ${{ !env.ACT && !inputs.dry_run && github.ref != 'refs/heads/master' }}
+              run: |
+                  echo "Releases must be run from master, not ${GITHUB_REF}"
+                  exit 1
+
             - name: Get versions
               id: versions
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   ref: ${{ inputs.commit_hash }}
                   fetch-depth: 1
@@ -61,6 +79,7 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             status: ${{ steps.cluster-state.outputs.status }}
+            digest: ${{ steps.build.outputs.digest }}
         steps:
             - name: Setup kind
               uses: helm/kind-action@v1
@@ -73,11 +92,110 @@ jobs:
               with:
                   version: 'v3.12.3'
 
+            - name: Checkout release commit
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+              with:
+                  ref: ${{ needs.manage-versions.outputs.commit_hash }}
+                  fetch-depth: 1
+                  persist-credentials: false
+
+            # A dry run without push_candidate pushes nothing, so the image is built
+            # for amd64 only and loaded locally for the kind test.
+            - name: Decide whether to push
+              id: mode
+              run: |
+                  if [ -z "$ACT" ] && { [ "${{ inputs.dry_run }}" != "true" ] || [ "${{ inputs.push_candidate }}" = "true" ]; }; then
+                      echo "push=true" >> "$GITHUB_OUTPUT"
+                  else
+                      echo "push=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Login to Docker Hub
+              if: steps.mode.outputs.push == 'true'
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
+
+            # Built once for every platform the base image has, and pushed untagged.
+            # finalize-release tags this exact digest, so what the kind test runs below
+            # is what gets released.
+            - name: Build managed image
+              id: build
+              env:
+                  COMMIT_HASH: ${{ needs.manage-versions.outputs.commit_hash }}
+                  NANGO_LICENSE_PUBLIC_KEY: ${{ vars.NANGO_LICENSE_PUBLIC_KEY }}
+                  PUSH: ${{ steps.mode.outputs.push }}
+              run: |
+                  if [ -z "$NANGO_LICENSE_PUBLIC_KEY" ]; then
+                      echo "NANGO_LICENSE_PUBLIC_KEY is not set"
+                      exit 1
+                  fi
+
+                  CANDIDATE="nangohq/nango:managed-candidate-$COMMIT_HASH"
+
+                  if [ "$PUSH" = "true" ]; then
+                      # Commits built before nangohq/nango was multi-arch only have amd64
+                      PLATFORMS=$(docker buildx imagetools inspect --raw "nangohq/nango:$COMMIT_HASH" |
+                          jq -r '[.manifests[]?.platform | "\(.os)/\(.architecture)" | select(. == "linux/amd64" or . == "linux/arm64")] | if length == 0 then "linux/amd64" else join(",") end')
+                      echo "Building for $PLATFORMS"
+
+                      docker buildx build \
+                          --platform "$PLATFORMS" \
+                          --provenance=false \
+                          --build-arg BASE_IMAGE_HASH="$COMMIT_HASH" \
+                          --build-arg NANGO_LICENSE_PUBLIC_KEY \
+                          --file Dockerfile.managed \
+                          --output type=image,name=nangohq/nango,push-by-digest=true,name-canonical=true,push=true \
+                          --metadata-file "$RUNNER_TEMP/managed-metadata.json" \
+                          .
+
+                      DIGEST=$(jq -r '."containerimage.digest"' "$RUNNER_TEMP/managed-metadata.json")
+                      if [[ "$DIGEST" != sha256:* ]]; then
+                          echo "No digest in $RUNNER_TEMP/managed-metadata.json"
+                          exit 1
+                      fi
+                      echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+                      IMAGE="nangohq/nango@$DIGEST"
+
+                      docker pull --platform linux/amd64 "$IMAGE"
+                      docker tag "$IMAGE" "$CANDIDATE"
+                  else
+                      PLATFORMS="linux/amd64"
+                      docker buildx build \
+                          --platform linux/amd64 \
+                          --build-arg BASE_IMAGE_HASH="$COMMIT_HASH" \
+                          --build-arg NANGO_LICENSE_PUBLIC_KEY \
+                          --file Dockerfile.managed \
+                          --tag "$CANDIDATE" \
+                          --load \
+                          .
+                      IMAGE="$CANDIDATE"
+                  fi
+
+                  # Fails the release if the image has no license key, on any platform
+                  for platform in ${PLATFORMS//,/ }; do
+                      # Pull each platform explicitly, so the check never falls back to
+                      # the amd64 image already pulled above
+                      if [ "$PUSH" = "true" ]; then
+                          docker pull --platform "$platform" "$IMAGE"
+                      fi
+                      docker run --rm --platform "$platform" --entrypoint node "$IMAGE" \
+                          -e "import('/app/nango/packages/license/dist/key.js').then((m) => process.exit(m.licensePublicKey ? 0 : 1))"
+                  done
+
             - name: Deploy to sandbox
               run: |
                   echo "commit_hash: ${{ needs.manage-versions.outputs.commit_hash }}"
                   # Create a new kind cluster for testing
                   kind create cluster --name nango-test
+                  kind load docker-image "nangohq/nango:managed-candidate-${{ needs.manage-versions.outputs.commit_hash }}" --name nango-test
 
                   # Create namespace and secrets
                   kubectl create namespace nango
@@ -112,7 +230,7 @@ jobs:
                   echo "commit_hash: ${{ inputs.commit_hash }}"
 
                   # Debug: Show the exact command
-                  HELM_CMD="helm upgrade --install nango nangohq/nango --version 1.1.5 --namespace nango --create-namespace --set shared.namespace=nango --set shared.tag=\"${{ inputs.commit_hash }}\" --set shared.encryptionEnabled=true --set shared.NANGO_SERVER_URL=\"http://localhost:3003\" --set shared.NANGO_CALLBACK_URL=\"http://localhost:3003/oauth/callback\" --set shared.NANGO_LOGS_ENABLED=false --set server.useLoadBalancer=false --set server.RECORDS_DATABASE_SSL=false --set elasticsearch.enabled=false --set postgresql.auth.postgresPassword=nango123 --set postgresql.image.repository=bitnamilegacy/postgresql --set postgresql.image.tag=16.1.0-debian-11-r9 --wait=false"
+                  HELM_CMD="helm upgrade --install nango nangohq/nango --version 1.1.5 --namespace nango --create-namespace --set shared.namespace=nango --set shared.tag=\"managed-candidate-${{ needs.manage-versions.outputs.commit_hash }}\" --set imagePullPolicy=IfNotPresent --set shared.encryptionEnabled=true --set shared.NANGO_SERVER_URL=\"http://localhost:3003\" --set shared.NANGO_CALLBACK_URL=\"http://localhost:3003/oauth/callback\" --set shared.NANGO_LOGS_ENABLED=false --set server.useLoadBalancer=false --set server.RECORDS_DATABASE_SSL=false --set elasticsearch.enabled=false --set postgresql.auth.postgresPassword=nango123 --set postgresql.image.repository=bitnamilegacy/postgresql --set postgresql.image.tag=16.1.0-debian-11-r9 --wait=false"
                   echo "Executing: $HELM_CMD"
 
                   # Execute the command
@@ -260,7 +378,7 @@ jobs:
                   echo "EOF" >> $GITHUB_OUTPUT
 
             - name: Wait for approval on failure
-              if: (steps.cluster-state.outputs.status == 'failure' || failure()) && !env.ACT
+              if: (steps.cluster-state.outputs.status == 'failure' || failure()) && !env.ACT && !inputs.dry_run
               uses: trstringer/manual-approval@v1
               with:
                   secret: ${{ github.TOKEN }}
@@ -325,6 +443,16 @@ jobs:
         needs: [manage-versions, test-deployment]
         if: success()
         runs-on: ubuntu-latest
+        # Git pushes here use the GitHub App token, so GITHUB_TOKEN only needs to read.
+        # id-token lets cosign sign the image keylessly with this workflow's identity.
+        permissions:
+            contents: read
+            id-token: write
+        env:
+            # The identity in the cosign certificate, e.g.
+            # https://github.com/NangoHQ/nango/.github/workflows/managed-release.yaml@refs/heads/master
+            CERT_IDENTITY: https://github.com/${{ github.workflow_ref }}
+            CERT_OIDC_ISSUER: https://token.actions.githubusercontent.com
         steps:
             - uses: actions/create-github-app-token@v2
               id: create_github_app_token
@@ -337,7 +465,7 @@ jobs:
                       managed-image-releases
 
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   ref: 'master'
                   fetch-depth: 1
@@ -376,11 +504,17 @@ jobs:
                   username: ${{ secrets.DOCKER_USERNAME }}
                   password: ${{ secrets.DOCKER_PASSWORD }}
 
+            - name: Install cosign
+              if: ${{ !env.ACT }}
+              uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+              with:
+                  cosign-release: 'v3.1.4'
+
             - name: Log Docker operations (act)
               if: ${{ env.ACT }}
               run: |
                   echo "Running in act - would perform Docker operations:"
-                  echo "Would pull: nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }}"
+                  echo "Would tag the image built by test-deployment"
                   if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
                     echo "Would tag as: nangohq/nango:managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   else
@@ -390,10 +524,9 @@ jobs:
             - name: Retag and push final image
               id: retag-image
               if: ${{ !env.ACT }}
+              env:
+                  DIGEST: ${{ needs.test-deployment.outputs.digest }}
               run: |
-                  echo "Pulling image..."
-                  docker pull nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }}
-
                   if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
                       echo "Test deployment failed, using bumped major version"
                       IMAGE_TAG="managed-${{ steps.bump-major.outputs.image_version }}-${{ steps.bump-major.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
@@ -402,13 +535,55 @@ jobs:
                       IMAGE_TAG="managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}"
                   fi
 
-                  docker tag nangohq/nango:${{ needs.manage-versions.outputs.commit_hash }} nangohq/nango:${IMAGE_TAG}
-                  docker push nangohq/nango:${IMAGE_TAG}
+                  if [ "${{ inputs.dry_run }}" != "true" ]; then
+                      PUSH_TAG="${IMAGE_TAG}"
+                  elif [ "${{ inputs.push_candidate }}" = "true" ]; then
+                      PUSH_TAG="managed-candidate-${{ needs.manage-versions.outputs.commit_hash }}"
+                  fi
+
+                  if [ -n "$PUSH_TAG" ]; then
+                      if [ -z "$DIGEST" ]; then
+                          echo "test-deployment pushed no image"
+                          exit 1
+                      fi
+
+                      # Sign before tagging, so the tag is only pushed once the image is signed.
+                      # --recursive also signs each platform's manifest, not just the index.
+                      cosign sign --yes --recursive "nangohq/nango@${DIGEST}"
+
+                      # Docker Hub can take a few seconds to list a new signature, so retry before failing
+                      for attempt in 1 2 3 4 5 6; do
+                          if cosign verify "nangohq/nango@${DIGEST}" \
+                              --certificate-identity "$CERT_IDENTITY" \
+                              --certificate-oidc-issuer "$CERT_OIDC_ISSUER" > /dev/null; then
+                              break
+                          fi
+                          if [ "$attempt" = 6 ]; then
+                              echo "nangohq/nango@${DIGEST} was signed, but its signature could not be verified"
+                              exit 1
+                          fi
+                          echo "Signature not found yet, retrying in 10s"
+                          sleep 10
+                      done
+
+                      # --prefer-index=false copies the manifest byte for byte, so the tag points at
+                      # the signed digest. Without it, an amd64-only build (a single manifest, not an
+                      # index) gets wrapped in a new index with a different, unsigned digest.
+                      docker buildx imagetools create --prefer-index=false -t "nangohq/nango:${PUSH_TAG}" "nangohq/nango@${DIGEST}"
+
+                      # Safety net: buildx copies a single source as-is, so this should never fire
+                      TAG_DIGEST=$(docker buildx imagetools inspect "nangohq/nango:${PUSH_TAG}" --format '{{json .Manifest}}' | jq -r '.digest')
+                      if [ "$TAG_DIGEST" != "$DIGEST" ]; then
+                          echo "nangohq/nango:${PUSH_TAG} resolves to $TAG_DIGEST, but $DIGEST was signed"
+                          exit 1
+                      fi
+                  fi
 
                   echo "tag_name=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+                  echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
 
             - name: Tag commit with managed release
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
@@ -426,7 +601,7 @@ jobs:
                   git push origin "$TAG_NAME"
 
             - name: Update version manifest in master
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
@@ -453,7 +628,7 @@ jobs:
                   fi
 
             - name: Checkout release commit for changelog
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   repository: ${{ github.repository }}
@@ -464,7 +639,7 @@ jobs:
                   persist-credentials: false
 
             - name: Checkout managed-image-releases
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   repository: NangoHQ/managed-image-releases
@@ -472,11 +647,12 @@ jobs:
                   path: managed-image-releases
 
             - name: Publish managed image release
-              if: ${{ !env.ACT }}
+              if: ${{ !env.ACT && !inputs.dry_run }}
               env:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
                   GH_HOST: github.com
                   TAG_NAME: ${{ steps.retag-image.outputs.tag_name }}
+                  IMAGE_DIGEST: ${{ steps.retag-image.outputs.digest }}
                   IMAGE_VERSION: ${{ steps.release-versions.outputs.image_version }}
                   APP_VERSION: ${{ steps.release-versions.outputs.app_version }}
                   COMMIT_HASH: ${{ needs.manage-versions.outputs.commit_hash }}

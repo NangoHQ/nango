@@ -4,7 +4,7 @@ import { generateText, stepCountIs } from 'ai';
 import { MockLanguageModelV4 } from 'ai/test';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { seeders, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
@@ -22,7 +22,7 @@ import {
 import { sessionOwner } from './agentPlaygroundTags.js';
 
 import type { PlaygroundUIMessage } from './agentPlayground.service.js';
-import type { AgentSession } from '@nangohq/types';
+import type { AgentSession, DBSyncConfig } from '@nangohq/types';
 
 const executeAction = vi.hoisted(() => vi.fn());
 vi.mock('./action.service.js', () => ({ executeAction }));
@@ -157,7 +157,7 @@ describe('toolNeedsApproval', () => {
         { toolName: 'pg-google-docs__export-document', input: {}, expected: false },
         { toolName: 'pg-slack__post-message', input: {}, expected: true },
         { toolName: 'pg-slack__open-dm', input: {}, expected: true },
-        { toolName: 'nango_tool_search', input: { query: 'delete event' }, expected: false },
+        { toolName: 'nango_tool_search', input: { queries: ['delete event'] }, expected: false },
         { toolName: 'nango_create_connection', input: {}, expected: false }
     ])('$toolName $input → $expected', ({ toolName, input, expected }) => {
         expect(toolNeedsApproval(toolName, input)).toBe(expected);
@@ -237,6 +237,7 @@ describe('buildMcpTools', () => {
     let close: (() => Promise<void>) | undefined;
 
     beforeEach(async () => {
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'deployed', config: { enabled: true } as DBSyncConfig }));
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { title: 'Roadmap' } }) });
 
         const server = createAgentSessionMcpServer({
@@ -307,5 +308,6 @@ describe('buildMcpTools', () => {
         const result = await generateText({ model, prompt: 'Read my doc', tools, stopWhen: stepCountIs(5) });
 
         expect(result.steps[0]?.content).toEqual(expect.arrayContaining([expect.objectContaining({ type: 'tool-error', toolCallId: 'call-1' })]));
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ actionName: 'read_doc', input: { id: 'doc-1' } }));
     });
 });

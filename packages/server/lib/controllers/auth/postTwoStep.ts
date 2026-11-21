@@ -24,7 +24,7 @@ import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { PostPublicTwoStepAuthorization, ProviderTwoStep } from '@nangohq/types';
+import type { Metadata, PostPublicTwoStepAuthorization, ProviderTwoStep } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
 const bodyValidation = z.looseObject({});
@@ -73,6 +73,7 @@ export const postPublicTwoStepAuthorization = asyncWrapperWithEnvironment<PostPu
     const queryString: PostPublicTwoStepAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicTwoStepAuthorization['Params'] = paramsVal.data;
     let connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let metadata: Metadata = {};
     const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
@@ -143,6 +144,7 @@ export const postPublicTwoStepAuthorization = asyncWrapperWithEnvironment<PostPu
                 return;
             }
             connectionId = connection?.connection_id;
+            metadata = connection.metadata ?? {};
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
@@ -175,7 +177,7 @@ export const postPublicTwoStepAuthorization = asyncWrapperWithEnvironment<PostPu
             credentials,
             connectionConfig,
             webhookUrlOverride,
-            metadata: {},
+            metadata,
             config,
             environment,
             tags: connectSession?.tags

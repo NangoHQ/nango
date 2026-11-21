@@ -1,45 +1,52 @@
 import React from 'react';
 
 import { SidebarInset, SidebarProvider } from '@/components/ui/Sidebar';
+import { FunctionPlaygroundDrawer } from '@/features/Playground';
+import { useViewport } from '@/hooks/useViewport';
 import { AppHeader } from '@/layout/AppHeader';
 import { cn } from '@/utils/utils';
 import { AppSidebar } from './AppSidebar';
-import { CENTERED_MAX_WIDTH, SectionHeader } from './SectionHeader';
+
+// Caps include the `p-5` padding, so `narrow` leaves 768px of content.
+const WIDTH_CLASSES = {
+    full: '',
+    wide: 'max-w-[1280px]',
+    narrow: 'max-w-[808px]'
+} as const;
 
 interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
-    fullWidth?: boolean;
-    /** Section title rendered in the fixed header below the top bar. Omit to hide the section header. */
-    title?: string;
-    /** Optional content rendered before the section title (e.g. an integration logo). */
-    titleLeading?: React.ReactNode;
-    /** Optional badge rendered inline after the section title (e.g. an environment badge). */
-    titleBadge?: React.ReactNode;
-    /** Optional action rendered on the right of the section header (e.g. the page's primary button). */
-    titleActions?: React.ReactNode;
-    /**
-     * Caps and centers the page content *and* the section header row at the same width, so the title
-     * and its action line up with the content's edges. Use on `fullWidth` pages whose content doesn't
-     * read well edge-to-edge on a wide screen.
-     */
-    centered?: boolean;
+    /** The page's actions, shown on the right of the top bar. */
+    actions?: React.ReactNode;
+    /** A `PageHeader` row under the top bar, for pages about a single entity. Its title becomes the page's `h1`. */
+    pageHeader?: React.ReactNode;
+    /** The page renders its own `h1`, so the breadcrumb shouldn't. Implied by `pageHeader`. */
+    hasPageHeading?: boolean;
+    breadcrumbLabel?: string;
+    /** `wide` for forms and documents, `narrow` for a single column like a chat or a stepper. */
+    width?: keyof typeof WIDTH_CLASSES;
+    secondaryNav?: React.ReactNode;
 }
 
 const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
-    ({ children, className, fullWidth = false, title, titleLeading, titleBadge, titleActions, centered = false, ...props }, ref) => {
+    ({ children, className, actions, pageHeader, hasPageHeading = false, breadcrumbLabel, width = 'full', secondaryNav, ...props }, ref) => {
+        useViewport('desktop');
+
         return (
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset className="max-h-screen overflow-hidden">
-                    <AppHeader />
-                    {title != null && <SectionHeader title={title} leading={titleLeading} badge={titleBadge} actions={titleActions} centered={centered} />}
-                    <div
-                        ref={ref}
-                        className={cn('relative w-full flex-1 min-h-0 overflow-auto bg-surface-page min-w-3xl', fullWidth ? 'p-0' : 'p-11')}
-                        {...props}
-                    >
-                        <div className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-6' : 'min-w-[968px] max-w-[1056px]', className)}>
-                            {/* Mirrors SectionHeader's inner row: same cap inside the same padding, so the two line up */}
-                            {centered ? <div className={cn('mx-auto w-full', CENTERED_MAX_WIDTH)}>{children}</div> : children}
+                    <AppHeader actions={actions} breadcrumbIsHeading={!pageHeader && !hasPageHeading} breadcrumbLabel={breadcrumbLabel} />
+                    {pageHeader}
+                    <div className="flex min-h-0 flex-1">
+                        {secondaryNav}
+                        <div
+                            ref={ref}
+                            // `SidebarInset` clips overflow. With a secondary nav, the nav and the pane together keep the same 768px minimum.
+                            className={cn('relative flex-1 overflow-auto bg-surface-page', secondaryNav ? 'min-w-137' : 'min-w-3xl')}
+                            {...props}
+                        >
+                            <div className={cn('mx-auto h-auto w-full p-5', WIDTH_CLASSES[width], className)}>{children}</div>
+                            <FunctionPlaygroundDrawer />
                         </div>
                     </div>
                 </SidebarInset>
