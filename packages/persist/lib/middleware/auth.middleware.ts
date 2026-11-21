@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 
 import { jwtHeaderAlg } from '@nangohq/internal-auth';
-import { accountService } from '@nangohq/shared';
+import { accountService, SecretHashThrottledError } from '@nangohq/shared';
 import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
 
 import type { PersistAuthContext } from '@nangohq/types';
@@ -64,7 +64,8 @@ export async function authenticateSecret(req: Request, res: Response<any, AuthLo
 
     try {
         const result = await tracer.trace('persist.middleware.auth.getPersistAuthContext', async (span) => {
-            const traced = await accountService.getPersistAuthContext(secret);
+            // `req.ip` is undefined once the socket is gone; those callers share one budget rather than escaping it.
+            const traced = await accountService.getPersistAuthContext(secret, { clientIp: req.ip ?? 'unknown' });
             if (traced.isErr()) {
                 // Err is returned, not thrown, so the span must be failed explicitly
                 span?.setTag('error', traced.error);
@@ -72,6 +73,10 @@ export async function authenticateSecret(req: Request, res: Response<any, AuthLo
             return traced;
         });
         if (result.isErr()) {
+            if (result.error instanceof SecretHashThrottledError) {
+                res.status(429).json({ error: { code: 'too_many_unknown_secret_keys', message: 'Too many unrecognized secret keys. Retry later.' } });
+                return;
+            }
             res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(result.error)}` } });
             return;
         }
