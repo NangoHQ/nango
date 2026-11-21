@@ -4,6 +4,7 @@ import { accountService, configService, getGlobalClientMetadataDocumentUrl, getG
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
+import { knownIngressTargets } from '../../../middleware/webhook-ingress-ratelimit.middleware.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { GetPublicClientMetadata } from '@nangohq/types';
@@ -41,6 +42,7 @@ export const getClientMetadata = asyncWrapper<GetPublicClientMetadata>(async (re
         res.status(404).send({ error: { code: 'unknown_environment' } });
         return;
     }
+    knownIngressTargets.confirmEnvironment(environmentUuid);
     const { environment } = accountContext;
 
     const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
@@ -48,6 +50,7 @@ export const getClientMetadata = asyncWrapper<GetPublicClientMetadata>(async (re
         res.status(404).send({ error: { code: 'unknown_provider_config' } });
         return;
     }
+    knownIngressTargets.confirmIntegration(environmentUuid, providerConfigKey);
 
     const provider = getProvider(integration.provider);
     if (provider?.auth_mode !== 'MCP_OAUTH2' && provider?.auth_mode !== 'MCP_OAUTH2_GENERIC') {

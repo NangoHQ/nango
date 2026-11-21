@@ -146,7 +146,7 @@ import { withEnvironmentTarget } from './middleware/environment-target.middlewar
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { withTaskCapability } from './middleware/task-capability.js';
-import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
+import { clientMetadataRateLimit, webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { RequestLocals } from './utils/express.js';
@@ -258,7 +258,7 @@ publicAPI.use('/connect/telemetry', publicAPITelemetryCors);
 
 // API routes (Public key auth).
 publicAPI.route('/oauth/callback').get(cookieParser(), auditConnectionCreated, oauthController.oauthCallback.bind(oauthController));
-publicAPI.route('/oauth/client-metadata/:environmentUuid/:providerConfigKey').get(getClientMetadata);
+publicAPI.route('/oauth/client-metadata/:environmentUuid/:providerConfigKey').get(clientMetadataRateLimit, getClientMetadata);
 publicAPI.route('/app-auth/connect').get(auditConnectionCreated, appAuthController.connect.bind(appAuthController));
 
 publicAPI.use('/oauth', jsonContentTypeMiddleware);

@@ -772,14 +772,32 @@ describe('parse', () => {
     });
 
     describe('NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE', () => {
-        it('should default to false', () => {
+        it('should default to true', () => {
             const res = parseEnvs(ENVS, {});
-            expect(res.NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE).toBe(false);
+            expect(res.NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE).toBe(true);
         });
 
         it('should coerce "true"/"false" strings', () => {
             expect(parseEnvs(ENVS, { NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE: 'true' }).NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE).toBe(true);
             expect(parseEnvs(ENVS, { NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE: 'false' }).NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE).toBe(false);
+        });
+    });
+
+    describe('NANGO_WEBHOOK_INGRESS_UNKNOWN_ENVIRONMENT_RATE_LIMIT_PER_MIN', () => {
+        it('should default to 20', () => {
+            const res = parseEnvs(ENVS, {});
+            expect(res.NANGO_WEBHOOK_INGRESS_UNKNOWN_ENVIRONMENT_RATE_LIMIT_PER_MIN).toBe(20);
+        });
+
+        it('should accept positive overrides', () => {
+            const res = parseEnvs(ENVS, { NANGO_WEBHOOK_INGRESS_UNKNOWN_ENVIRONMENT_RATE_LIMIT_PER_MIN: '50' });
+            expect(res.NANGO_WEBHOOK_INGRESS_UNKNOWN_ENVIRONMENT_RATE_LIMIT_PER_MIN).toBe(50);
+        });
+
+        it('should reject 0', () => {
+            expect(() => {
+                parseEnvs(ENVS, { NANGO_WEBHOOK_INGRESS_UNKNOWN_ENVIRONMENT_RATE_LIMIT_PER_MIN: '0' });
+            }).toThrowError();
         });
     });
 
