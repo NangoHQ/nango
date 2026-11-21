@@ -15253,6 +15253,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `apiflash` | ApiFlash | API_KEY | [docs](https://nango.dev/docs/api-integrations/apiflash.md) | [connect](https://nango.dev/docs/api-integrations/apiflash/connect.md) |  | dev-tools |
 | `apiframe` | Apiframe | API_KEY | [docs](https://nango.dev/docs/api-integrations/apiframe.md) | [connect](https://nango.dev/docs/api-integrations/apiframe/connect.md) |  | dev-tools, other |
 | `apify` | Apify | API_KEY | [docs](https://nango.dev/docs/integrations/all/apify.md) | [connect](https://nango.dev/docs/integrations/all/apify/connect.md) |  | dev-tools, analytics, productivity |
+| `apiko` | APIKO | API_KEY | [docs](https://nango.dev/docs/api-integrations/apiko.md) | [connect](https://nango.dev/docs/api-integrations/apiko/connect.md) |  | dev-tools |
 | `apilio` | Apilio | BASIC | [docs](https://nango.dev/docs/api-integrations/apilio.md) | [connect](https://nango.dev/docs/api-integrations/apilio/connect.md) |  | other |
 | `apipie-ai` | APIpie AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/apipie-ai.md) | [connect](https://nango.dev/docs/api-integrations/apipie-ai/connect.md) |  | dev-tools |
 | `apiverve` | APIVerve | API_KEY | [docs](https://nango.dev/docs/api-integrations/apiverve.md) | [connect](https://nango.dev/docs/api-integrations/apiverve/connect.md) |  | dev-tools |
