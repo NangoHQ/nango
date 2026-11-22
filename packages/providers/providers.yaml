@@ -11911,6 +11911,27 @@ datagma:
             example: Kd****Qe
             doc_section: '#step-1-copy-your-api-key'
 
+datasite:
+    display_name: Datasite
+    categories:
+        - legal
+        - storage
+    auth_mode: OAUTH2
+    authorization_url: https://auth.datasite.com/as/authorization.oauth2
+    token_url: https://auth.datasite.com/as/token.oauth2
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.americas.datasite.com
+        headers:
+            x-datasite-api-version: '2024-04-01'
+    docs: https://nango.dev/docs/api-integrations/datasite
+    setup_guide_url: https://nango.dev/docs/api-integrations/datasite/how-to-register-your-own-datasite-api-oauth-app
+
 dayforce:
     display_name: Dayforce
     categories:

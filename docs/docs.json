@@ -996,6 +996,7 @@
               "api-integrations/datadog",
               "api-integrations/datadog-oauth",
               "api-integrations/datagma",
+              "api-integrations/datasite",
               "integrations/all/datev",
               "integrations/all/datto-rmm",
               "integrations/all/datto-rmm-password-grant",
