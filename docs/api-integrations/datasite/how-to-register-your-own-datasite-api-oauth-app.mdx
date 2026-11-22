@@ -16,7 +16,7 @@ This guide shows you how to create an app in the Datasite Developer Portal to ge
     3. Copy the **Client ID** and **Client Secret** from the _App Keys_ section. New keys can take up to 5 minutes to become active.
   </Step>
   <Step title="Add the redirect URI">
-    In the _Redirect URIs_ section of the app, add `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/auth-guide#custom-oauth-callback-url-optional)) and click **Save**.
+    In the _Redirect URIs_ section of the app, add `https://api.nango.dev/oauth/callback` (or your own [custom callback URL](/guides/auth/setup#custom-oauth-callback-url-optional)) and click **Save**.
   </Step>
   <Step title="Add the credentials in Nango">
     Paste the client ID and secret into your Datasite integration in Nango. Datasite does not require any scopes.
@@ -26,6 +26,6 @@ This guide shows you how to create an app in the Datasite Developer Portal to ge
   </Step>
 </Steps>
 
-Datasite requires the `x-datasite-api-version` header on every API request. Nango sends `2024-04-01` by default; pass the header yourself to use another version. Access tokens are valid for 10 minutes and Nango refreshes them automatically. For more details, see the [Datasite authorization guide](https://developer.datasite.com).
+Datasite requires the `x-datasite-api-version` header on every API request. Nango sends `2024-04-01` by default; pass the header yourself to use another version. Access tokens are valid for 10 minutes and Nango refreshes them automatically. For more details, see the [Datasite authorization guide](https://app.global.datasite.com/dev-portal/guides/authorization).
 
 ---
