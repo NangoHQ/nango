@@ -19196,7 +19196,6 @@ google-ads:
     proxy:
         base_url: https://googleads.googleapis.com
         headers:
-            developer-token: ${connectionConfig.developer_token}
             login-customer-id: ${connectionConfig.login_customer_id}
         paginate:
             type: cursor
@@ -19208,12 +19207,6 @@ google-ads:
     docs_connect: https://nango.dev/docs/api-integrations/google-ads/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/google-ads/how-to-register-your-own-google-ads-api-oauth-app
     connection_config:
-        developer_token:
-            type: string
-            title: ''
-            description: ''
-            secret: true
-            automated: true
         login_customer_id:
             type: string
             title: Login Customer ID
