@@ -1,4 +1,4 @@
-import { ChevronsUpDown, Contrast, CreditCard, History, KeyRound, LogOut, SlidersHorizontal, Sprout, UserCog, Users } from 'lucide-react';
+import { ChevronsUpDown, Contrast, CreditCard, History, KeyRound, LogOut, Server, SlidersHorizontal, Sprout, UserCog, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -33,6 +33,7 @@ export const ProfileDropdown: React.FC = () => {
     const { can } = usePermissions();
     const canReadAuditTrail = can('account:audit_trail:read');
     const canManageAccountKeys = can('account:api_keys:list');
+    const canReadInstallation = can('account:installation:read');
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const toggleDevPanel = useDevPanelStore((s) => s.toggle);
     const isDevToolsEnabled = useIsDevToolsEnabled();
@@ -76,6 +77,14 @@ export const ProfileDropdown: React.FC = () => {
             });
         }
 
+        if (globalEnv.isManaged && canReadInstallation) {
+            list.push({
+                label: 'Installation info',
+                icon: Server,
+                href: '/team/installation'
+            });
+        }
+
         if (meta && meta.gettingStartedDismissed && showGettingStarted) {
             list.push({
                 label: 'Getting Started',
@@ -85,7 +94,7 @@ export const ProfileDropdown: React.FC = () => {
         }
 
         return list;
-    }, [meta, showGettingStarted, canReadAuditTrail, canManageAccountKeys]);
+    }, [meta, showGettingStarted, canReadAuditTrail, canManageAccountKeys, canReadInstallation]);
 
     const initials = user?.name ? toAcronym(user.name) : '';
 

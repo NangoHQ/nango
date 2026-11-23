@@ -89,4 +89,13 @@ describe('getEnvJs', () => {
 
         expect(config.environment).toBe(nodeEnv);
     });
+
+    it.each([
+        { licensePublicKey: null, isManaged: false },
+        { licensePublicKey: '-----BEGIN PUBLIC KEY-----', isManaged: true }
+    ])('sets isManaged $isManaged from the compiled-in license key', async ({ licensePublicKey, isManaged }) => {
+        vi.doMock('@nangohq/license', () => ({ licensePublicKey }));
+        expect((await renderEnvJs({})).isManaged).toBe(isManaged);
+        vi.doUnmock('@nangohq/license');
+    });
 });
