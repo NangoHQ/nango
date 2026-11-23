@@ -43,7 +43,7 @@ const logger = getLogger('AgentPlayground');
 
 const MAX_STEPS = 10;
 
-export const PLAYGROUND_PROVIDERS = ['google-calendar', 'google-mail', 'github', 'slack', 'linear', 'hubspot'];
+export const PLAYGROUND_PROVIDERS = ['google-calendar', 'google-mail', 'github', 'google-drive', 'linear', 'notion'];
 export const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
 
 export function playgroundIntegrationId(provider: string): string {
