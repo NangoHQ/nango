@@ -5016,6 +5016,35 @@ hive:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 hover: []
 
+# source: https://www.hubrise.com/developers/api/authentication
+hubrise:
+    - account[all_catalogs.read]
+    - account[all_catalogs.write]
+    - account[all_customer_lists.read]
+    - account[all_customer_lists.write]
+    - account[catalog.read]
+    - account[catalog.write]
+    - account[customer_list.read]
+    - account[customer_list.write]
+    - account[inventory.read]
+    - account[inventory.write]
+    - account[orders.read]
+    - account[orders.write]
+    - location[all_catalogs.read]
+    - location[all_catalogs.write]
+    - location[all_customer_lists.read]
+    - location[all_customer_lists.write]
+    - location[catalog.read]
+    - location[catalog.write]
+    - location[customer_list.read]
+    - location[customer_list.write]
+    - location[inventory.read]
+    - location[inventory.write]
+    - location[orders.read]
+    - location[orders.write]
+    - profile
+    - profile_with_email
+
 # source: https://developers.hubspot.com/docs/guides/apps/authentication/scopes
 hubspot:
     - account-info.security.read
@@ -6726,6 +6755,10 @@ microsoft-admin:
     - UserRiskSummary.ReadWrite.All
     - UserSettings.Read.All
     - UserSettings.ReadWrite.All
+
+# source: https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow (client credentials only accept the /.default scope)
+microsoft-admin-cert:
+    - https://graph.microsoft.com/.default
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-consent
@@ -10696,6 +10729,9 @@ salesmsg-oauth2:
     - voice:write
     - website-chat:read
     - website-chat:write
+
+# source: https://developers.samsara.com/docs/oauth-20 (no scopes parameter — scopes are set on the OAuth app; admin:read / admin:write only come back in the token response)
+samsara: []
 
 # source: https://developer.concur.com/api-reference/authentication/app-center-learn-more.html
 sap-concur:

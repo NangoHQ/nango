@@ -2,7 +2,7 @@ import type { DBAPISecret, DBEnvironment } from '../environment/db.js';
 import type { DBPlan } from '../plans/db.js';
 import type { DBTeam } from '../team/db.js';
 
-export type ApiKeyAuthSource = 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var' | 'connect_session';
+export type ApiKeyAuthSource = 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var' | 'connect_session' | 'task_token';
 
 export interface ApiKeyPrincipal {
     type: 'api_key';
@@ -11,6 +11,8 @@ export interface ApiKeyPrincipal {
     scopes: string[];
     environmentIds: number[];
     keyId?: number;
+    /** Subject id when it is not derived from the key. A task token sets this to `task:<id>`. */
+    subjectId?: string;
     displayName?: string;
 }
 

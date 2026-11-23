@@ -1,11 +1,10 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
-import { Alert, AlertDescription, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, CopyButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { ScopesInput } from '@/components/patterns/ScopesInput';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -99,7 +98,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                 <InputGroup>
                     <InputGroupInput disabled value={callbackUrl} />
                     <InputGroupAddon align="inline-end">
-                        <CopyButton text={callbackUrl} />
+                        <CopyButton value={callbackUrl} />
                     </InputGroupAddon>
                 </InputGroup>
             </SettingsField>
@@ -130,20 +129,23 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                 )}
             </SettingsField>
 
-            <SettingsField label="Client secret" htmlFor="client_secret">
-                {isSharedCredentials ? (
-                    <NangoProvidedInput fakeValueSize={48} />
-                ) : (
-                    <EditableInput
-                        secret
-                        initialValue={integration.oauth_client_secret || ''}
-                        onSave={(value) => onSave({ clientSecret: value })}
-                        validate={validateNotEmpty}
-                        canEdit={canEdit}
-                        canRead={canEdit}
-                    />
-                )}
-            </SettingsField>
+            {/* Public OAuth 2.0 clients authenticate with the client ID alone */}
+            {!(template.auth_mode === 'OAUTH2' && template.token_request_auth_method === 'none') && (
+                <SettingsField label="Client secret" htmlFor="client_secret">
+                    {isSharedCredentials ? (
+                        <NangoProvidedInput fakeValueSize={48} />
+                    ) : (
+                        <EditableInput
+                            secret
+                            initialValue={integration.oauth_client_secret || ''}
+                            onSave={(value) => onSave({ clientSecret: value })}
+                            validate={validateNotEmpty}
+                            canEdit={canEdit}
+                            canRead={canEdit}
+                        />
+                    )}
+                </SettingsField>
+            )}
 
             {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (
                 <SettingsField label="Scopes" htmlFor="scopes">

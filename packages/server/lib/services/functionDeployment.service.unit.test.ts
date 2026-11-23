@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getFlags } from '@nangohq/feature-flags';
 import * as sandbox from '@nangohq/sandbox';
 import * as shared from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import flowService from './flow.service.js';
 import { deployFunction, deployTemplate, getDeploymentStatus } from './functionDeployment.service.js';
 import * as integrationTemplateService from './integrationTemplate.service.js';
 
@@ -13,6 +15,7 @@ import type { DBEnvironment, DBSyncConfig, DBTeam, FunctionSource, SyncDeploymen
 
 describe('functionDeploymentService', () => {
     beforeEach(() => {
+        vi.spyOn(shared.functionLookupService, 'hasActiveLegacyActions').mockResolvedValue(true);
         vi.spyOn(shared.functionConfigService, 'search').mockResolvedValue(Ok([]));
     });
 
@@ -182,6 +185,23 @@ describe('functionDeploymentService', () => {
         });
 
         expect(createSpy).toHaveBeenCalledOnce();
+    });
+
+    it('rejects an action deployment when the account has no active legacy actions', async () => {
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue({ id: 12 } as Config);
+        const hasActiveLegacyActionsSpy = vi.spyOn(shared.functionLookupService, 'hasActiveLegacyActions').mockResolvedValue(false);
+        mockExisting({});
+        const createSpy = vi.spyOn(sandbox, 'createFunctionDeployment');
+
+        const result = await deployFunction({
+            environment,
+            parentCustomerApiKeyId: 7,
+            body: { type: 'function', integration_id: 'github', function_name: 'create-issue', function_type: 'action', code: 'export default {}' }
+        });
+
+        expect(result.isErr() && result.error).toMatchObject({ code: 'legacy_actions_deprecated' });
+        expect(hasActiveLegacyActionsSpy).toHaveBeenCalledExactlyOnceWith({ accountId: environment.account_id });
+        expect(createSpy).not.toHaveBeenCalled();
     });
 
     it('updates a standalone tool and keeps allow_destructive', async () => {
@@ -417,6 +437,42 @@ describe('functionDeploymentService', () => {
         }
     });
 
+    it.skip.each([
+        { enabled: true, function_type: undefined },
+        { enabled: false, function_type: undefined },
+        { enabled: true, function_type: 'action' },
+        { enabled: false, function_type: 'action' }
+    ] as const)('rejects catalog tool templates ($enabled, $function_type)', async ({ enabled, function_type }) => {
+        vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(enabled);
+        const definition = shared
+            .listCatalogEntries('replicate')
+            .find(
+                (entry) => entry.type === 'tool' && !flowService.getFlowByIntegrationAndName({ provider: entry.provider, type: 'sync', scriptName: entry.name })
+            );
+        if (definition?.type !== 'tool') {
+            throw new Error('Expected a catalog tool without a legacy template');
+        }
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue({
+            id: 12,
+            unique_key: 'custom-replicate',
+            provider: definition.provider
+        } as Config);
+
+        const result = await deployTemplate({
+            account,
+            environment,
+            plan: null,
+            body: {
+                type: 'template',
+                integration_id: 'custom-replicate',
+                template: definition.name,
+                ...(function_type ? { function_type } : {})
+            }
+        });
+
+        expect(result.isErr() && result.error).toMatchObject({ code: 'template_not_found' });
+    });
+
     it.each(['tool', 'function'] as const)('rejects a %s template before deploying', async (function_type) => {
         const deploySpy = vi.spyOn(integrationTemplateService, 'deployIntegrationTemplate');
 
@@ -483,7 +539,7 @@ describe('functionDeploymentService', () => {
 
 const deploymentId = '3c66291f-6247-47a6-a100-f4d621d751f7';
 const account = { id: 1, name: 'Test account' } as DBTeam;
-const environment = { id: 42, name: 'dev' } as DBEnvironment;
+const environment = { id: 42, account_id: 24, name: 'dev' } as DBEnvironment;
 
 function existingFunction(source: FunctionSource): shared.functionConfigService.CurrentFunctionConfig {
     return { currentVersion: { source } } as shared.functionConfigService.CurrentFunctionConfig;

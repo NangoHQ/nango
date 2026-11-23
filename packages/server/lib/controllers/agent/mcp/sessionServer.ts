@@ -135,7 +135,7 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
         const tools = await withActionInputSchemas({ page, actions, environmentId: session.environmentId });
 
         return {
-            tools: tools.map((tool) => ({ ...tool, execution: { taskSupport: 'forbidden' as const } })),
+            tools,
             ...(next < listed.length ? { nextCursor: encodeCursor(next) } : {})
         };
     });

@@ -1,0 +1,43 @@
+---
+title: 'Cincopa - How do I link my account?'
+sidebarTitle: 'Cincopa'
+---
+
+## Overview
+
+To authenticate with Cincopa, you need:
+
+1. **API Token** — a Cincopa API token.
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- A Cincopa account. If you don't have one, [sign up](https://www.cincopa.com/register.aspx) for a free trial; no credit card is needed. Cincopa's [pricing page](https://www.cincopa.com/pricing) lists API access under the Growth plan.
+
+### Step 1: Create an API token
+
+1. Sign in to [Cincopa](https://www.cincopa.com/), click your profile icon in the top right corner, and select **Account Settings**.
+2. Click **API Tokens** in the left menu.
+
+<img src="/api-integrations/cincopa/account_settings_api_tokens.png" alt="Cincopa Account Settings with API Tokens highlighted in the left menu"/>
+
+3. Click **Create New Key** and enter a name for the token.
+4. Select the permissions the token needs for each resource. For read-only access, tick **Read data** for every resource. See [Permissions in API token](https://developer.cincopa.com/guides/general/permissions-in-api-token) for what each permission allows.
+5. Click **CREATE KEY**.
+
+<img src="/api-integrations/cincopa/create_api_token.png" alt="Cincopa new API token form with Read data ticked for every resource and the CREATE KEY button highlighted"/>
+
+6. The new token appears in the **Your API Tokens** list. Click **copy** next to it to copy the token.
+
+<img src="/api-integrations/cincopa/api_token_created.png" alt="Cincopa API Tokens list with the copy button of the new token highlighted"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Cincopa.
+2. Enter your token in the **API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/cincopa/form.png" alt="Cincopa Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Cincopa.

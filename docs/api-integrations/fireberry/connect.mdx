@@ -1,0 +1,42 @@
+---
+title: 'Fireberry - How do I link my account?'
+sidebarTitle: 'Fireberry'
+---
+
+## Overview
+
+To authenticate with Fireberry, you need:
+
+1. **API Access Token** — the personal token (TokenID) shown in your Fireberry profile.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Fireberry account. The free plan includes API access.
+
+### Step 1: Copy your API access token
+
+1. Log in to [Fireberry](https://app.fireberry.com/app/login), click your profile picture in the top right corner, and select **My Profile**.
+
+<img src="/api-integrations/fireberry/profile_menu.png" alt="Fireberry profile menu with My Profile highlighted" />
+
+2. In the left sidebar, click **Account Security**, then open the **API Access Token** tab.
+
+<img src="/api-integrations/fireberry/account_security_api_tab.png" alt="Fireberry Account Security page with the API Access Token tab highlighted" />
+
+3. Your API Access Token (TokenID) is shown on this tab. Click **Copy** next to it.
+
+<img src="/api-integrations/fireberry/api_access_token_copy.png" alt="Fireberry API Access Token tab with the Copy button next to the token highlighted" />
+
+The token belongs to your user: API requests can only reach the data your Fireberry user has permission to access.
+
+### Step 2: Enter your API access token in the Connect UI
+
+1. Open the form where you need to authenticate with Fireberry.
+2. Enter your token in the **API Access Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/fireberry/form.png" alt="Fireberry Connect UI form with the API Access Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Fireberry.

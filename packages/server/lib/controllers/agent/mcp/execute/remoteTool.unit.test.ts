@@ -285,7 +285,7 @@ describe('executeSessionTool on an MCP server tool', () => {
             result: Err(new ProxyServiceError({ code: 'connection_not_found', message: 'Connection not found', status: 404 }))
         });
 
-        expect(codeOf(await execute())).toBe('integration_not_connected');
+        expect(codeOf(await execute())).toBe('connection_deleted');
     });
 
     it('rejects an input that is not an object before calling the server', async () => {

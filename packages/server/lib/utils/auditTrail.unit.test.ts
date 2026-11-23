@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { canAccessAuditTrail, canRecordAuditTrail, canViewAuditTrail } from './auditTrail.js';
 
 import type * as NangoUtils from '@nangohq/utils';
@@ -36,6 +37,7 @@ describe('audit trail entitlement', () => {
         flags.hasAuditTrail = false;
         planFlag.enabled = true;
         backendFlag.configured = true;
+        envs.FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES = ['read_credentials'];
         vi.restoreAllMocks();
     });
 
@@ -107,6 +109,51 @@ describe('audit trail entitlement', () => {
 
             await expect(canViewAuditTrail(operator, { has_audit_trail_control_plane: false, has_audit_trail_access: true })).resolves.toBe(false);
             await expect(canViewAuditTrail(operator, notEntitled)).resolves.toBe(false);
+        });
+    });
+
+    describe('a data-plane event', () => {
+        const covered = { has_audit_trail_control_plane: true, audit_trail_data_plane_scopes: ['read_credentials' as const] };
+
+        it('records when the plan covers the scope', async () => {
+            setup({ optIn: false, hasPlan: true });
+
+            await expect(canRecordAuditTrail(covered, 'read_credentials')).resolves.toBe(true);
+        });
+
+        it.each([
+            { name: 'a missing plan', plan: null },
+            { name: 'a plan that is not recorded', plan: { ...covered, has_audit_trail_control_plane: false } },
+            { name: 'a plan without the scope', plan: { ...covered, audit_trail_data_plane_scopes: [] } }
+        ])('stays off for $name', async ({ plan }) => {
+            setup({ optIn: false, hasPlan: true });
+
+            await expect(canRecordAuditTrail(plan, 'read_credentials')).resolves.toBe(false);
+        });
+
+        it('without plans, records the scopes the deployment enables', async () => {
+            setup({ optIn: true, hasPlan: false });
+
+            await expect(canRecordAuditTrail(null, 'read_credentials')).resolves.toBe(true);
+        });
+
+        it('without plans, stays off when the deployment disables the scope', async () => {
+            setup({ optIn: true, hasPlan: false });
+            envs.FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES = [];
+
+            await expect(canRecordAuditTrail(null, 'read_credentials')).resolves.toBe(false);
+        });
+
+        it('without plans, stays off when the audit trail itself is off', async () => {
+            setup({ optIn: false, hasPlan: false });
+
+            await expect(canRecordAuditTrail(null, 'read_credentials')).resolves.toBe(false);
+        });
+
+        it('leaves a control-plane event to the plan alone', async () => {
+            setup({ optIn: false, hasPlan: true });
+
+            await expect(canRecordAuditTrail({ has_audit_trail_control_plane: true, audit_trail_data_plane_scopes: [] })).resolves.toBe(true);
         });
     });
 });

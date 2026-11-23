@@ -1,0 +1,43 @@
+---
+title: 'Felt - How do I link my account?'
+sidebarTitle: 'Felt'
+---
+
+## Overview
+
+To authenticate with Felt, you need:
+
+1. **API Token** — a token you generate in the Developers tab of your Felt workspace settings.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Felt workspace on the Business or Enterprise plan. The REST API is only available on these plans. New workspaces get a 7-day Business trial with no credit card.
+
+### Step 1: Generate an API token
+
+1. Log in to [Felt](https://felt.com/login), open **Workspace settings** and go to the [Developers](https://felt.com/maps/latest/developers) tab.
+2. Under **API tokens**, click **Generate a new token**.
+
+<img src="/api-integrations/felt/developers_tab_generate_token.png" alt="Felt Workspace settings Developers tab with the Generate a new token button highlighted" />
+
+3. Enter a unique **Name** for the token (for example, the name of your app), then click **Create**.
+
+<img src="/api-integrations/felt/name_token_create.png" alt="Felt Generate new API token dialog with the Name field and the Create button" />
+
+4. Copy the token with the copy button, then click **Done**. Felt shows the token only once.
+
+<img src="/api-integrations/felt/copy_api_token.png" alt="Felt dialog showing the new API token with the copy button highlighted" />
+
+A token can only access the workspace it was created in.
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Felt.
+2. Enter your API token in the **API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/felt/form.png" alt="Felt Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Felt.

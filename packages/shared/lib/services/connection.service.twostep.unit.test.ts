@@ -1,6 +1,9 @@
+import { generateKeyPairSync } from 'node:crypto';
 import http from 'node:http';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { getProvider } from '@nangohq/providers';
 
 import connectionService from './connection.service.js';
 import { assertSafeOAuthUrl } from './proxy/outbound-policy.js';
@@ -76,6 +79,121 @@ describe('getTwoStepCredentials', () => {
                 expect(assertSafeOAuthUrl).toHaveBeenCalledWith(`${baseUrl}/step2`);
             }
         );
+    });
+
+    describe('integration_config fields', () => {
+        function scopesProvider(baseUrl: string): ProviderTwoStep {
+            return {
+                display_name: 'Two Step',
+                docs: 'https://docs.example.com',
+                auth_mode: 'TWO_STEP',
+                token_url: `${baseUrl}/token`,
+                token_params: { scope: '${scopes}' },
+                token_response: { token: 'access_token' },
+                integration_config: { scopes: { type: 'string', title: 'Scopes', description: 'Scopes', optional: true, order: 1, automated: false } }
+            };
+        }
+
+        // Echoes the requested scope back as the token, so each test can see which value was sent.
+        function echoScope(req: http.IncomingMessage, res: http.ServerResponse) {
+            let body = '';
+            req.on('data', (chunk) => (body += chunk));
+            req.on('end', () => {
+                const scope = new URLSearchParams(body).get('scope') ?? JSON.parse(body || '{}').scope;
+                res.writeHead(200, { 'content-type': 'application/json' });
+                res.end(JSON.stringify({ access_token: `token-for:${scope}` }));
+            });
+        }
+
+        it('uses the integration value and keeps it as a fallback on a connection without its own', async () => {
+            await withServer(echoScope, async (baseUrl) => {
+                const result = await connectionService.getTwoStepCredentials('test', scopesProvider(baseUrl), {}, {}, false, { scopes: 'integration-scope' });
+
+                expect(result.response?.token).toBe('token-for:integration-scope');
+                expect(result.response?.['scopes']).toBe('integration-scope');
+            });
+        });
+
+        it('keeps working with the fallback once the integration value is cleared', async () => {
+            await withServer(echoScope, async (baseUrl) => {
+                const withPreset = await connectionService.getTwoStepCredentials('test', scopesProvider(baseUrl), {}, {}, false, {
+                    scopes: 'integration-scope'
+                });
+                const { token: _token, raw: _raw, type: _type, ...stored } = withPreset.response!;
+
+                const cleared = await connectionService.getTwoStepCredentials('test', scopesProvider(baseUrl), stored, {}, true, { scopes: '' });
+
+                expect(cleared.response?.token).toBe('token-for:integration-scope');
+            });
+        });
+
+        it('never persists a secret integration value on the connection', async () => {
+            await withServer(echoScope, async (baseUrl) => {
+                const provider = scopesProvider(baseUrl);
+                provider.integration_config!['scopes']!.secret = true;
+
+                const result = await connectionService.getTwoStepCredentials('test', provider, {}, {}, false, { scopes: 'integration-scope' });
+
+                expect(result.response?.token).toBe('token-for:integration-scope');
+                expect(result.response).not.toHaveProperty('scopes');
+            });
+        });
+
+        it("keeps the connection's own value while the integration value is used", async () => {
+            await withServer(echoScope, async (baseUrl) => {
+                const result = await connectionService.getTwoStepCredentials('test', scopesProvider(baseUrl), { scopes: 'connection-scope' }, {}, true, {
+                    scopes: 'integration-scope'
+                });
+
+                expect(result.response?.token).toBe('token-for:integration-scope');
+                expect(result.response?.['scopes']).toBe('connection-scope');
+            });
+        });
+
+        it("falls back to the connection's own value once the integration value is cleared", async () => {
+            await withServer(echoScope, async (baseUrl) => {
+                const withPreset = await connectionService.getTwoStepCredentials('test', scopesProvider(baseUrl), { scopes: 'connection-scope' }, {}, true, {
+                    scopes: 'integration-scope'
+                });
+                const { token: _token, raw: _raw, type: _type, ...stored } = withPreset.response!;
+
+                const cleared = await connectionService.getTwoStepCredentials('test', scopesProvider(baseUrl), stored, {}, true, { scopes: '' });
+
+                expect(cleared.response?.token).toBe('token-for:connection-scope');
+                expect(cleared.response?.['scopes']).toBe('connection-scope');
+            });
+        });
+
+        it('signs the integration scopes into the Google service account assertion', async () => {
+            const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+            let assertion = '';
+            await withServer(
+                (req, res) => {
+                    let body = '';
+                    req.on('data', (chunk) => (body += chunk));
+                    req.on('end', () => {
+                        assertion = new URLSearchParams(body).get('assertion') ?? '';
+                        res.writeHead(200, { 'content-type': 'application/json' });
+                        res.end(JSON.stringify({ access_token: 'google-token', expires_in: 3600 }));
+                    });
+                },
+                async (baseUrl) => {
+                    const provider = { ...(getProvider('google-service-account') as ProviderTwoStep), token_url: `${baseUrl}/token` };
+                    const credentials = {
+                        serviceAccountEmailAddress: 'test@project.iam.gserviceaccount.com',
+                        privateKey: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()
+                    };
+
+                    const result = await connectionService.getTwoStepCredentials('test', provider, credentials, {}, false, {
+                        scopes: 'https://www.googleapis.com/auth/drive'
+                    });
+
+                    expect(result.response?.token).toBe('google-token');
+                    const payload = JSON.parse(Buffer.from(assertion.split('.')[1] ?? '', 'base64url').toString()) as Record<string, unknown>;
+                    expect(payload['scope']).toBe('https://www.googleapis.com/auth/drive');
+                }
+            );
+        });
     });
 
     it('refreshes against the refresh_url when a refresh token is present', async () => {

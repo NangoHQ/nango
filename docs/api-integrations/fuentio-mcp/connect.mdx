@@ -1,0 +1,41 @@
+---
+title: 'Fuentio (MCP) - How do I link my account?'
+sidebarTitle: 'Fuentio (MCP)'
+---
+
+## Overview
+
+To authenticate with Fuentio, you need:
+
+1. **API Key** - a Fuentio API key.
+
+This guide shows you how to get one.
+
+### Prerequisites
+
+- An email address. The free plan gives 100 units a month, with no card needed.
+
+### Step 1: Get your free API key
+
+1. Open the [Fuentio pricing page](https://fuentio.com/pricing/#get-key) or the [Fuentio connect page](https://fuentio.com/connect/).
+2. Enter your **Email**, optionally choose a **Use case**, and accept the Terms.
+3. Click **Create my key**.
+4. Open the email from Fuentio with the subject **Your Fuentio API key** and copy the key. It starts with `sk_live_`.
+
+You can also create a key from the command line:
+
+```bash
+curl -X POST https://api.fuentio.com/v1/keys \
+  -H "Content-Type: application/json" \
+  -d '{"email": "YOUR_EMAIL"}'
+```
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Fuentio.
+2. Enter your **API Key** in the designated field.
+3. Click **Connect**. Nango checks the key with Fuentio and rejects it if it is wrong.
+
+<img src="/api-integrations/fuentio-mcp/form.png" alt="Nango Connect UI form for entering the Fuentio API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to Fuentio.

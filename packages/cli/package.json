@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.72.4",
+    "version": "0.72.6",
     "description": "Nango's CLI tool.",
     "type": "module",
     "bin": {
@@ -45,10 +45,10 @@
         "@babel/preset-typescript": "7.29.7",
         "@babel/traverse": "7.29.7",
         "@babel/types": "7.29.7",
-        "@nangohq/nango-yaml": "0.72.4",
-        "@nangohq/node": "0.72.4",
-        "@nangohq/providers": "0.72.4",
-        "@nangohq/runner-sdk": "0.72.4",
+        "@nangohq/nango-yaml": "0.72.6",
+        "@nangohq/node": "0.72.6",
+        "@nangohq/providers": "0.72.6",
+        "@nangohq/runner-sdk": "0.72.6",
         "@swc/core": "1.13.2",
         "@types/unzipper": "0.10.11",
         "ajv": "8.18.0",
@@ -63,6 +63,7 @@
         "dotenv": "16.5.0",
         "ejs": "3.1.10",
         "esbuild": "0.28.1",
+        "fast-safe-stringify": "2.1.1",
         "figlet": "1.12.0",
         "glob": "13.0.5",
         "import-meta-resolve": "4.1.0",
@@ -83,7 +84,7 @@
         "zod": "4.6.7"
     },
     "devDependencies": {
-        "@nangohq/types": "0.72.4",
+        "@nangohq/types": "0.72.6",
         "@types/babel__core": "7.20.5",
         "@types/babel__traverse": "7.20.7",
         "@types/columnify": "1.5.4",
@@ -100,7 +101,7 @@
         "json-schema": "0.4.0",
         "strip-ansi": "7.1.0",
         "type-fest": "4.41.0",
-        "vitest": "4.1.11"
+        "vitest": "4.1.12"
     },
     "engines": {
         "node": ">=22.22.2"

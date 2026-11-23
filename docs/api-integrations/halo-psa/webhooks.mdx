@@ -79,9 +79,9 @@ Nango uses the payload's top-level `event` field to match sync subscriptions. Ha
 webhookSubscriptions: ['new ticket logged'],
 ```
 
-Handle the payload in the sync function's `onWebhook` method. Add only the events that function needs; use `['*']` only when it must receive every event. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+Handle the payload in the sync function's `onWebhook` method. Add only the events that function needs; use `['*']` only when it must receive every event. See [Real-time syncs](/guides/syncs/realtime-syncs).
 
-You can also [forward external webhooks to your app](/guides/platform/webhook-forwarding). Nango preserves the payload and includes connection attribution.
+You can also [forward external webhooks to your app](/guides/triggers/webhook-forwarding). Nango preserves the payload and includes connection attribution.
 
 ## Stop deliveries or change the secret
 

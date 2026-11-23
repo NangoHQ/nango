@@ -10,6 +10,7 @@ import type {
     DeletePublicConnection,
     Endpoint,
     GetConnection,
+    GetPublicConnection,
     PatchConnection,
     PatchPublicConnection,
     PostConnectionMetadata,
@@ -93,6 +94,19 @@ export const auditConnectionCredentialsRead = maybeAuditable<GetConnection>({
     skipWhen: skipUnlessCredentialsRead(),
     subject: callerSubject,
     atFinish: (req) => ({ ...credentialsReadTargets('connection', req), metadata: providerConfigKeyMeta(query(req, 'provider_config_key')) })
+});
+
+// Data plane: the hot path, so nothing here does a lookup.
+export const auditPublicConnectionCredentialsRead = maybeAuditable<GetPublicConnection>({
+    policy: Audit.auditable({ resource: 'connection', action: 'credentials_read', scope: 'environment', dataPlaneScope: 'read_credentials' }),
+    // No parameter asks for credentials here: a plain read returns them when the API key's scopes allow it,
+    // so every denial is recorded, even one that might only have wanted the connection.
+    skipWhen: skipUnlessCredentialsRead(() => true),
+    subject: callerSubject,
+    atFinish: (req) => ({
+        ...credentialsReadTargets('connection', req, nonEmptyString(param(req, 'connectionId'))),
+        metadata: providerConfigKeyMeta(query(req, 'provider_config_key'))
+    })
 });
 
 function providerConfigKeyMeta(value: unknown): Record<string, unknown> | undefined {

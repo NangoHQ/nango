@@ -1,0 +1,34 @@
+---
+title: 'CastingWords - How do I link my account?'
+sidebarTitle: 'CastingWords'
+---
+
+## Overview
+
+To authenticate with CastingWords, you need:
+
+1. **API Key** - the secret API key of your CastingWords account.
+
+This guide shows you how to get it.
+
+### Prerequisites
+
+- A CastingWords customer account. You can [create one for free](https://castingwords.com/customer/login?just_create=1).
+
+### Step 1: Copy your API key
+
+1. Sign in to your [CastingWords account](https://castingwords.com/customer/).
+2. Open your [account settings](https://castingwords.com/customer/info).
+3. In the **Your API Key** row, copy the key. The key only appears there after the account's first paid order. Until then, the row says "Your API key appears here after your first paid order."
+
+<img src="/api-integrations/castingwords/account_settings_api_key.png" alt="CastingWords account settings page with the Your API Key row"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with CastingWords.
+2. Enter your **API Key** in the designated field.
+3. Click **Connect**. Nango checks the key with CastingWords and rejects it if it is wrong.
+
+<img src="/api-integrations/castingwords/form.png" alt="Nango Connect UI form for entering the CastingWords API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to CastingWords.

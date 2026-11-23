@@ -1,10 +1,9 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
-import { Alert, AlertDescription, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, CopyButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
@@ -77,7 +76,7 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
                     <InputGroup>
                         <InputGroupInput disabled value={callbackUrl} />
                         <InputGroupAddon align="inline-end">
-                            <CopyButton text={callbackUrl} />
+                            <CopyButton value={callbackUrl} />
                         </InputGroupAddon>
                     </InputGroup>
                 </SettingsField>

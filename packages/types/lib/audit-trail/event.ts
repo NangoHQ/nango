@@ -35,7 +35,7 @@ import type {
 // Canonical audit event vocabulary — the single source of truth shared by the emit side
 // (@nangohq/audit's AuditEvent) and the read/API side (ApiAuditTrailEvent).
 export type AuditTrailVersion = '2026-07-16';
-export type AuditActorType = 'user' | 'api_key' | 'public_key' | 'connect_session' | 'anonymous' | 'unknown';
+export type AuditActorType = 'user' | 'api_key' | 'public_key' | 'connect_session' | 'task_token' | 'anonymous' | 'unknown';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
 export type AuditViaType = 'impersonation';
 export type AuditInterface = 'api' | 'mcp';
@@ -204,12 +204,18 @@ export interface NoAttribution {
 // decision — a customer endpoint cannot be added without consciously opting in or out. The policy's
 // resource/action/scope are captured as type parameters so the endpoint's declaration and the
 // middleware spec that services it are checked against each other by the compiler.
-export interface AuditPolicy<R extends AuditResource = AuditResource, A extends AuditActionOf<R> = AuditActionOf<R>, S extends AuditScope = AuditScope> {
+// A data-plane endpoint also declares its data-plane scope, which the plan must include for it to record.
+export type AuditPolicy<
+    R extends AuditResource = AuditResource,
+    A extends AuditActionOf<R> = AuditActionOf<R>,
+    S extends AuditScope = AuditScope,
+    D extends AuditTrailDataPlaneScope | undefined = AuditTrailDataPlaneScope | undefined
+> = {
     kind: 'audit';
     resource: R;
     action: A;
     scope: S;
-}
+} & (D extends AuditTrailDataPlaneScope ? { dataPlaneScope: D } : { dataPlaneScope?: undefined });
 export interface NoAudit<Reason extends string = 'non-auditable'> {
     kind: 'no-audit';
     reason: Reason;

@@ -1,7 +1,6 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { connectionService, functionConfigService } from '@nangohq/shared';
+import { functionLookupService, resolveFunctionConnection } from '@nangohq/shared';
 import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema } from '../../../../../../../helpers/validation.js';
@@ -30,23 +29,27 @@ export const getFunctionInvocation = asyncWrapperWithEnvironment<GetFunctionInvo
 
     const { environment } = res.locals;
     const { connectionId, functionUuid } = paramValue.data;
-    const functions = await functionConfigService.search(db.knex, {
-        environmentId: environment.id,
-        filter: { uuid: functionUuid }
-    });
+    const functions = await functionLookupService.resolveFunctionByUuid({ environmentId: environment.id, functionUuid });
     if (functions.isErr()) {
         report(functions.error);
         res.status(500).json({ error: { code: 'server_error', message: 'Failed to find function' } });
         return;
     }
-    const [func] = functions.value;
+    const func = functions.value;
     if (!func) {
         res.status(404).json({ error: { code: 'function_not_found', message: `Function '${functionUuid}' was not found` } });
         return;
     }
-    const connection = await connectionService.getConnection(connectionId, func.integration.unique_key, environment.id);
-    if (!connection.success) {
-        res.status(404).json({ error: { code: 'connection_not_found', message: `Connection '${connectionId}' was not found` } });
+    const connection = await resolveFunctionConnection({ fn: func, connectionId, environmentId: environment.id });
+    if (connection.isErr()) {
+        if (connection.error.code === 'server_error') {
+            report(connection.error);
+            res.status(500).json({ error: { code: 'server_error', message: 'Failed to find connection' } });
+        } else if (connection.error.code === 'invalid_invocation') {
+            res.status(400).json({ error: { code: 'invalid_invocation', message: connection.error.message } });
+        } else {
+            res.status(404).json({ error: { code: 'connection_not_found', message: `Connection '${connectionId}' was not found` } });
+        }
         return;
     }
     const retryKey = paramValue.data.id;

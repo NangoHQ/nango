@@ -104,7 +104,7 @@ export const ConnectionCreate: React.FC = () => {
         return (
             <DashboardLayout width="wide">
                 <Helmet>
-                    <title>Create Test Connection - Nango</title>
+                    <title>Add test connection - Nango</title>
                 </Helmet>
                 <div className="grid grid-cols-2 text-text-strong">
                     <div className="pr-10 flex flex-col gap-10">
@@ -122,7 +122,7 @@ export const ConnectionCreate: React.FC = () => {
     return (
         <DashboardLayout width="wide">
             <Helmet>
-                <title>Create Test Connection - Nango</title>
+                <title>Add test connection - Nango</title>
             </Helmet>
             <div className="grid grid-cols-[2fr_1fr] text-text-strong">
                 <div className="pr-5">
@@ -163,7 +163,7 @@ export const ConnectionCreate: React.FC = () => {
                         <h2 className="text-2xl">Embed in your app</h2>
                         <a
                             className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong focus:border-border-strong focus:outline-0"
-                            href="https://nango.dev/docs/guides/auth/auth-guide"
+                            href="https://nango.dev/docs/guides/auth/setup#auth-from-your-app"
                             target="_blank"
                             rel="noreferrer"
                         >

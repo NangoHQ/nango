@@ -8,6 +8,7 @@ import {
     getCategoryLabel,
     getInitials,
     getInstantSetup,
+    getOneClickSetupBody,
     listCategories,
     sortProviders
 } from './catalog.utils';
@@ -21,7 +22,7 @@ function provider(overrides: Partial<ApiProviderListItem> & Pick<ApiProviderList
         docs: '',
         preConfigured: false,
         preConfiguredScopes: [],
-        functionCounts: { actions: 0, syncs: 0 },
+        functionCounts: { tools: 0, syncs: 0 },
         ...overrides
     };
 }
@@ -42,6 +43,52 @@ describe('getInstantSetup', () => {
     it('is not instant for MCP OAuth with a static client', () => {
         expect(getInstantSetup(provider({ name: 'x', authMode: 'MCP_OAUTH2', clientRegistration: 'static' }))).toBeNull();
         expect(getInstantSetup(provider({ name: 'x', authMode: 'MCP_OAUTH2', clientRegistration: 'dynamic' }))).toBe('no-dev-app');
+    });
+});
+
+describe('getOneClickSetupBody', () => {
+    it('uses Nango’s credentials when the provider is managed', () => {
+        expect(getOneClickSetupBody(provider({ name: 'hubspot', preConfigured: true }))).toEqual({ provider: 'hubspot', useSharedCredentials: true });
+    });
+
+    it.each(['API_KEY', 'BASIC', 'OAUTH2_CC', 'JWT', 'NONE'] as const)('creates a %s integration without credentials', (authMode) => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode }))).toEqual({ provider: 'x', useSharedCredentials: false });
+    });
+
+    it.each(['MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'] as const)('creates a %s integration with default auth settings', (authMode) => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode }))).toEqual({ provider: 'x', useSharedCredentials: false, auth: { authType: authMode } });
+    });
+
+    it('needs the setup form for MCP servers that require your own client', () => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode: 'MCP_OAUTH2', clientRegistration: 'static' }))).toBeNull();
+    });
+
+    it.each(['OAUTH2', 'TBA', 'INSTALL_PLUGIN'] as const)('needs the setup form for %s', (authMode) => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode }))).toBeNull();
+    });
+
+    it('needs the setup form when a managed provider has integration config', () => {
+        expect(
+            getOneClickSetupBody(
+                provider({
+                    name: 'x',
+                    preConfigured: true,
+                    integration_config: { region: { type: 'string', title: 'Region', description: '', order: 0, automated: false } }
+                })
+            )
+        ).toBeNull();
+    });
+
+    it('needs the setup form when the provider has integration config', () => {
+        expect(
+            getOneClickSetupBody(
+                provider({
+                    name: 'x',
+                    authMode: 'API_KEY',
+                    integration_config: { region: { type: 'string', title: 'Region', description: '', order: 0, automated: false } }
+                })
+            )
+        ).toBeNull();
     });
 });
 
@@ -107,18 +154,18 @@ describe('getCategoryLabel', () => {
 
 describe('formatFunctionCounts', () => {
     it('leaves out zero parts and pluralizes', () => {
-        expect(formatFunctionCounts({ actions: 32, syncs: 5 })).toBe('32 tools · 5 syncs');
-        expect(formatFunctionCounts({ actions: 1, syncs: 0 })).toBe('1 tool');
-        expect(formatFunctionCounts({ actions: 0, syncs: 2 })).toBe('2 syncs');
-        expect(formatFunctionCounts({ actions: 0, syncs: 0 })).toBeNull();
+        expect(formatFunctionCounts({ tools: 32, syncs: 5 })).toBe('32 tools · 5 syncs');
+        expect(formatFunctionCounts({ tools: 1, syncs: 0 })).toBe('1 tool');
+        expect(formatFunctionCounts({ tools: 0, syncs: 2 })).toBe('2 syncs');
+        expect(formatFunctionCounts({ tools: 0, syncs: 0 })).toBeNull();
     });
 });
 
 describe('getCardMeta', () => {
     it('shows function counts, never categories', () => {
-        expect(getCardMeta({ functionCounts: { actions: 3, syncs: 1 }, categories: ['crm'] })).toBe('3 tools · 1 sync');
-        expect(getCardMeta({ functionCounts: { actions: 0, syncs: 0 }, categories: ['popular', 'crm', 'dev-tools'] })).toBe('No pre-built tools yet');
-        expect(getCardMeta({ functionCounts: { actions: 0, syncs: 0 }, categories: ['productivity', 'mcp'] })).toBe('All MCP tools');
+        expect(getCardMeta({ functionCounts: { tools: 3, syncs: 1 }, categories: ['crm'] })).toBe('3 tools · 1 sync');
+        expect(getCardMeta({ functionCounts: { tools: 0, syncs: 0 }, categories: ['popular', 'crm', 'dev-tools'] })).toBe('No pre-built tools yet');
+        expect(getCardMeta({ functionCounts: { tools: 0, syncs: 0 }, categories: ['productivity', 'mcp'] })).toBe('All MCP tools');
     });
 });
 

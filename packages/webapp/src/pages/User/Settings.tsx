@@ -203,7 +203,7 @@ const MFASettings: React.FC = () => {
                             </Button>
                         </div>
                     ) : globalEnv.features.mfa ? (
-                        <Button onClick={() => navigate('/user-settings/enable-2fa')}>Enable 2FA</Button>
+                        <Button onClick={() => navigate('/profile/enable-2fa')}>Enable 2FA</Button>
                     ) : (
                         <p className="text-body-small-regular text-text-secondary">Two-factor authentication requires Nango Cloud or an enterprise license.</p>
                     )}

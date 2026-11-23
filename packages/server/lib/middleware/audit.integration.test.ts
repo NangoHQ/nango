@@ -9,7 +9,7 @@ import { envs } from '../env.js';
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
 import type { AuditAction, AuditResource } from '@nangohq/audit';
-import type { ApiKeyScope } from '@nangohq/types';
+import type { ApiKeyScope, AuditTrailDataPlaneScope } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
 
 // The single audit integration suite: only the cases that genuinely need the live stack. Everything
@@ -819,6 +819,90 @@ describe('audit middleware — live-stack contract', () => {
             });
         });
     });
+    describe('data-plane connection credentials read', () => {
+        async function seedConnection(dataPlaneScopes: AuditTrailDataPlaneScope[] = ['read_credentials']) {
+            const seeded = await seeders.seedAccountEnvAndUser({
+                plan: { has_audit_trail_control_plane: true, audit_trail_data_plane_scopes: dataPlaneScopes }
+            });
+            await seeders.createConfigSeed(seeded.env, 'algolia', 'algolia');
+            const connection = await seeders.createConnectionSeed({
+                env: seeded.env,
+                provider: 'algolia',
+                rawCredentials: { type: 'API_KEY', apiKey: 'audit-data-plane-secret' }
+            });
+            return { ...seeded, connection };
+        }
+
+        it('records the read on both routes', async () => {
+            const { account, env, apiKey, connection } = await seedConnection();
+
+            for (const path of ['/connections/:connectionId', '/connection/:connectionId']) {
+                auditSpy.mockClear();
+                // The endpoint type only declares the deprecated path.
+                const res = await api.fetch(path as '/connection/:connectionId', {
+                    method: 'GET',
+                    token: apiKey.secret,
+                    params: { connectionId: connection.connection_id },
+                    query: { provider_config_key: 'algolia' }
+                });
+
+                expect(res.res.status).toBe(200);
+                await vi.waitFor(() => {
+                    expect(auditEvent('connection', 'credentials_read')).toBeDefined();
+                });
+                const event = auditEvent('connection', 'credentials_read');
+                expect(event).toMatchObject({
+                    outcome: 'success',
+                    accountId: account.id,
+                    environment: { id: env.uuid, display: env.name },
+                    actor: { type: 'api_key', id: apiKey.uuid },
+                    targets: [{ type: 'connection', id: connection.connection_id }],
+                    metadata: { providerConfigKey: 'algolia' }
+                });
+                expect(JSON.stringify(event)).not.toContain('audit-data-plane-secret');
+            }
+        });
+
+        it('records a denial from the scope check, naming the connection from the path', async () => {
+            const { account, env, apiKey, connection } = await seedConnection();
+            (await customerKeyService.updateApiKeyScopes(db.knex, apiKey.id, ['environment:integrations:list'], env.id)).unwrap();
+
+            const res = await api.fetch('/connection/:connectionId', {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { connectionId: connection.connection_id },
+                query: { provider_config_key: 'algolia' }
+            });
+
+            expect(res.res.status).toBe(403);
+            await vi.waitFor(() => {
+                expect(auditEvent('connection', 'credentials_read')).toBeDefined();
+            });
+            expect(auditEvent('connection', 'credentials_read')).toMatchObject({
+                outcome: 'denied',
+                accountId: account.id,
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: apiKey.uuid },
+                targets: [{ type: 'connection', id: connection.connection_id }]
+            });
+        });
+
+        it('records nothing when the plan leaves the scope out', async () => {
+            const { apiKey, connection } = await seedConnection([]);
+
+            const res = await api.fetch('/connection/:connectionId', {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { connectionId: connection.connection_id },
+                query: { provider_config_key: 'algolia' }
+            });
+
+            expect(res.res.status).toBe(200);
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            expect(auditEvent('connection', 'credentials_read')).toBeUndefined();
+        });
+    });
+
     describe('impersonation', () => {
         const adminUuid = envs.NANGO_ADMIN_UUID;
         afterEach(() => {

@@ -1,3 +1,5 @@
+import type { ToolTags } from '../function/tool.js';
+
 /**
  * `allow` absent means every tool on the integration. `allow` present makes the
  * integration an allowlist. `deny` always subtracts from whatever `allow` gave.
@@ -20,6 +22,8 @@ export interface AgentSessionMcpToolDefinition {
 export interface AgentSessionCompiledTool {
     readonly name: string;
     readonly description: string;
+    readonly instructions?: string;
+    readonly tags?: ToolTags;
     readonly mcp?: AgentSessionMcpToolDefinition;
     /**
      * The name the session serves the tool under, stored only for a tool added after the session was

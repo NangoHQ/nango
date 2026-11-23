@@ -2,9 +2,8 @@ import { AlertTriangle } from 'lucide-react';
 import { useMemo } from 'react';
 import { z } from 'zod';
 
-import { Alert, AlertDescription, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, InputGroup, InputGroupInput, SecretInput } from '@nangohq/design-system';
 
-import { SecretInput } from '@/components/patterns/SecretInput';
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { isIntegrationConfigFieldVisible } from '@/utils/integrationConfig';
@@ -138,7 +137,7 @@ export const IntegrationConfigFormFields: React.FC<{
                                 ) : (
                                     <FormControl>
                                         {definition.secret ? (
-                                            <SecretInput {...field} aria-invalid={!!fieldState.error} />
+                                            <SecretInput editable {...field} aria-invalid={!!fieldState.error} />
                                         ) : (
                                             <InputGroup>
                                                 <InputGroupInput {...field} placeholder={definition.example} aria-invalid={!!fieldState.error} />

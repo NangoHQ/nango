@@ -8,15 +8,6 @@ import { Spinner } from './spinner';
 import type { SpinnerSize } from './spinner';
 import type { VariantProps } from 'class-variance-authority';
 
-// Disabled controls still receive pointer events — the base keeps them so `cursor-not-allowed` shows — so
-// a disabled link would underline on hover without this guard. Guarding the trigger beats re-setting
-// `no-underline` on top, which would depend on the order Tailwind emits the two utilities in.
-const LINK_UNDERLINE_STATES = [
-    'not-disabled:not-aria-disabled:hover:underline',
-    'not-disabled:not-aria-disabled:focus-visible:underline',
-    'not-disabled:not-aria-disabled:active:underline'
-];
-
 export const buttonVariants = cva(
     [
         'inline-flex items-center justify-center whitespace-nowrap',
@@ -89,76 +80,15 @@ export const buttonVariants = cva(
                     'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
                     'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
                     'focus-visible:shadow-focus-outline-danger'
-                ],
-                // Figma Type=Link-Accent — inline text link, no fill or box (see compoundVariants below).
-                // Hover has no color of its own; hover/focus/active are told apart by the underline, and disabled
-                // deliberately drops it so it can't be mistaken for an interactive state.
-                'link-accent': [
-                    'bg-transparent text-text-link border-transparent',
-                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
-                    '[&_svg]:text-icon-link',
-                    ...LINK_UNDERLINE_STATES,
-                    'active:text-text-link-active active:[&_svg]:text-icon-link-active',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
-                    'focus-visible:shadow-focus-outline-default'
-                ],
-                // Figma Type=Link-Danger — same underline-based states as link-accent, darkening on active.
-                'link-danger': [
-                    'bg-transparent text-text-link-danger border-transparent',
-                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
-                    '[&_svg]:text-icon-link-danger',
-                    ...LINK_UNDERLINE_STATES,
-                    'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
-                    'focus-visible:shadow-focus-outline-danger'
-                ],
-                // Figma Type=Link-Neutral — resting and hover both render text-secondary, told apart only by
-                // the underline; active darkens to text-strong.
-                'link-neutral': [
-                    'bg-transparent text-text-link-neutral border-transparent',
-                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
-                    '[&_svg]:text-icon-link-neutral',
-                    ...LINK_UNDERLINE_STATES,
-                    'active:text-text-link-neutral-active active:[&_svg]:text-icon-link-neutral-active',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
-                    'focus-visible:shadow-focus-outline-default'
-                ],
-                'link-neutral-danger': [
-                    'bg-transparent text-text-link-neutral border-transparent',
-                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
-                    '[&_svg]:text-icon-link-neutral',
-                    ...LINK_UNDERLINE_STATES,
-                    'not-disabled:not-aria-disabled:hover:text-text-link-danger not-disabled:not-aria-disabled:hover:[&_svg]:text-icon-link-danger',
-                    'not-disabled:not-aria-disabled:focus-visible:text-text-link-danger not-disabled:not-aria-disabled:focus-visible:[&_svg]:text-icon-link-danger',
-                    'not-disabled:not-aria-disabled:active:text-text-link-danger-active not-disabled:not-aria-disabled:active:[&_svg]:text-icon-link-danger-active',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
-                    'focus-visible:shadow-focus-outline-danger'
                 ]
             },
             size: {
-                // 20px square — smallest icon-only size (use with IconButton); icon sizing comes from the base
-                '2xs': 'size-5 p-1 gap-1 text-ds-xs',
                 xs: ['h-6 px-2 gap-1 text-ds-xs', "[&_svg:not([class*='size-'])]:size-3"],
                 sm: ['h-7 px-2.5 gap-1.5 text-ds-xs', "[&_svg:not([class*='size-'])]:size-3.5"],
                 md: 'h-8 px-3 gap-1.5 text-ds-sm',
                 lg: 'h-9 px-3.5 gap-2 text-ds-md'
             }
         },
-        compoundVariants: [
-            // Link variants are bare inline text in Figma — no fixed size, height comes from the line box.
-            // link-danger alone gets 2px horizontal padding that link-accent/link-neutral don't have.
-            { variant: ['link-accent', 'link-neutral', 'link-neutral-danger'], className: 'h-auto w-auto p-0' },
-            { variant: 'link-danger', className: 'h-auto w-auto px-0.5 py-0' },
-            // Link variants deliberately don't take the size scale's radius, gap or label size, only its icon size.
-            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], className: 'rounded-ds-xs' },
-            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'sm', className: 'gap-1' },
-            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'md', className: 'text-ds-md' },
-            { variant: ['link-accent', 'link-danger', 'link-neutral', 'link-neutral-danger'], size: 'lg', className: 'gap-1.5' }
-        ],
         defaultVariants: {
             variant: 'primary',
             size: 'md'
@@ -169,7 +99,7 @@ export const buttonVariants = cva(
 // ─── Button ───────────────────────────────────────────────────────────────────
 
 // Spinner matches each size's icon so it can stand in for the leading icon.
-const SPINNER_SIZE = { '2xs': 'md', xs: 'xs', sm: 'sm', md: 'md', lg: 'md' } as const satisfies Record<
+const SPINNER_SIZE = { xs: 'xs', sm: 'sm', md: 'md', lg: 'md' } as const satisfies Record<
     NonNullable<VariantProps<typeof buttonVariants>['size']>,
     SpinnerSize
 >;
@@ -287,10 +217,10 @@ export type IconButtonVariant = (typeof ICON_BUTTON_VARIANTS)[number];
 export type IconButtonSize = (typeof ICON_BUTTON_SIZES)[number];
 
 export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label'> {
-    /** The `link-*` variants are outside the IconButton spec and kept for existing call sites only. */
     variant?: ButtonVariant | null;
-    /** `2xs` is outside the IconButton spec and kept for existing call sites only. */
     size?: ButtonSize | null;
+    /** 20px box with the size's icon, for a button in a line of text. Only `xs` and `sm` icons fit it. */
+    inline?: boolean;
     asChild?: boolean;
     loading?: boolean;
     /** Accessible name, applied as `aria-label`, and as the `title` tooltip unless one is passed. */
@@ -298,7 +228,7 @@ export interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLBut
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, label, title, children, onClickCapture, ...props }, ref) => {
+    ({ className, variant, size, inline = false, asChild = false, loading = false, disabled, label, title, children, onClickCapture, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
         const renderChildren = (icon: React.ReactNode) => (loading ? <Spinner data-spinner size={SPINNER_SIZE[size ?? 'md']} /> : icon);
@@ -311,7 +241,13 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
-                className={cn(buttonVariants({ variant, size }), 'aspect-square px-0', isDisabled && asChild && 'pointer-events-none', className)}
+                className={cn(
+                    buttonVariants({ variant, size }),
+                    'aspect-square px-0',
+                    inline && 'size-5',
+                    isDisabled && asChild && 'pointer-events-none',
+                    className
+                )}
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}

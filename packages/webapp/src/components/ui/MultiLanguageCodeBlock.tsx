@@ -2,11 +2,10 @@ import { Prism } from '@mantine/prism';
 import { Loader, Play } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { Button, CopyButton } from '@nangohq/design-system';
 
 import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
-import { CopyButton } from './CopyButton.js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select.js';
 import { Tag } from './Tag.js';
 
@@ -52,7 +51,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
 
     return (
         <div {...props} className={cn('border border-border-muted rounded', props.className)}>
-            <header className="flex justify-between items-center py-1.5 px-3 bg-surface-panel-inset rounded-t">
+            <header className="flex justify-between items-center py-1.5 px-3 bg-surface-code border-b border-border-muted rounded-t">
                 <span className="text-text-muted text-s">{title}</span>
                 <div className="flex gap-2 items-center">
                     {snippets.length > 1 ? (
@@ -92,7 +91,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                             )}
                         </Button>
                     )}
-                    <CopyButton text={snippets[selectedSnippetIndex].code} />
+                    <CopyButton value={snippets[selectedSnippetIndex].code} size="sm" />
                 </div>
             </header>
             <div className="overflow-x-auto">

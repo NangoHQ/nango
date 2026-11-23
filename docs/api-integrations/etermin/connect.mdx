@@ -1,0 +1,46 @@
+---
+title: 'eTermin - How do I link my account?'
+sidebarTitle: 'eTermin'
+---
+
+## Overview
+
+To authenticate with eTermin, you need:
+
+1. **API Key (public key)** — your eTermin public API key.
+2. **Secret Key (private key)** — one of your eTermin private API keys.
+
+This guide will show you where to find them.
+
+### Prerequisites
+
+- An eTermin account.
+
+### Step 1: Open the API settings
+
+1. Log in to your eTermin account at [etermin.net/Login](https://www.etermin.net/Login).
+2. In the left menu, expand **API Schnittstellen** (API interfaces) and click **API & Web-Push**.
+
+<img src="/api-integrations/etermin/api_web_push_menu.png" alt="eTermin left menu with API Schnittstellen expanded and API & Web-Push selected"/>
+
+### Step 2: Copy your API keys
+
+eTermin creates the keys for your account automatically, so there is nothing to generate. Under **API Zugangsdaten** (API credentials):
+
+1. Copy the **Öffentlicher API Schlüssel** (public API key). This is your **API Key (public key)**.
+2. Copy a private key. This is your **Secret Key (private key)**:
+    - **Privater API Schlüssel (Read-only requests)** if your integration only reads data.
+    - **Privater API Schlüssel** if your integration also creates, updates or deletes data.
+
+<img src="/api-integrations/etermin/copy_api_keys.png" alt="eTermin API Zugangsdaten section with the private API keys and the public API key"/>
+
+### Step 3: Enter your keys in the Connect UI
+
+1. Open the form where you need to authenticate with eTermin.
+2. Paste the **Öffentlicher API Schlüssel** into the **API Key (public key)** field.
+3. Paste the private key you chose into the **Secret Key (private key)** field.
+4. Submit the form. Nango checks the keys with eTermin and rejects them if they are wrong.
+
+<img src="/api-integrations/etermin/form.png" alt="eTermin Connect UI form with the API Key (public key) and Secret Key (private key) fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to eTermin.
