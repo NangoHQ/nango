@@ -125,6 +125,38 @@ describe('TaskEventsHandler', () => {
 
             expect(disconnectedHandler).toHaveBeenCalled();
         });
+
+        it('should reconnect and keep receiving events after the connection is terminated', async () => {
+            // No 'error' listener on purpose: emitting 'error' must not throw and skip the reconnect
+            const reconnected = new Promise((resolve) => eventsHandler.once('connected', resolve));
+            const pid = (eventsHandler as any).client.processID;
+            await dbClient.db.raw('SELECT pg_terminate_backend(?)', [pid]);
+            await reconnected;
+
+            const event = taskEvents.taskCreated(mockActionTask);
+            const emitter2 = new TaskEventsHandler(dbClient.db);
+            await emitter2.connect();
+            try {
+                await new Promise((resolve) => {
+                    eventsHandler.once(event, resolve);
+                    emitter2.emit(event);
+                });
+            } finally {
+                await emitter2.disconnect();
+            }
+        });
+
+        it('should stop reconnecting after disconnect', async () => {
+            const pid = (eventsHandler as any).client.processID;
+            await eventsHandler.disconnect();
+            await dbClient.db.raw('SELECT pg_terminate_backend(?)', [pid]);
+
+            const connectedHandler = vi.fn();
+            eventsHandler.on('connected', connectedHandler);
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            expect(connectedHandler).not.toHaveBeenCalled();
+        });
     });
 
     describe.each([taskEvents.taskCreated(mockActionTask), taskEvents.taskCompleted(mockActionTask)])('cross-process communication', (event) => {
