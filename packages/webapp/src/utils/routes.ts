@@ -6,6 +6,7 @@ export const NON_ENV_PATH_PREFIXES = [
     '/user-settings',
     '/team/billing',
     '/team/audit',
+    '/team/installation',
     '/profile/enable-2fa',
     '/api-keys'
 ];

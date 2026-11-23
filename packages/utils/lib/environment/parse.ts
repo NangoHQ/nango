@@ -264,6 +264,8 @@ const ENVS_SHAPE = z.object({
 
     // Dockerfile
     GIT_HASH: z.string().optional(),
+    // Stamped by the managed release workflow
+    NANGO_MANAGED_VERSION: z.string().optional(),
 
     // Auth
     WORKOS_API_KEY: z.string().optional(),
