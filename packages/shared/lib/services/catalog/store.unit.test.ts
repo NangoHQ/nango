@@ -145,15 +145,6 @@ describe('CatalogStore', () => {
             catalog.getEntry('github');
             expect(readFile.mock.calls.filter(([file]) => String(file).endsWith('github.json'))).toHaveLength(2);
         });
-
-        it('fails clearly when an alias points at a provider without a file', () => {
-            writeCatalog(dir);
-            const index = JSON.parse(fs.readFileSync(path.join(dir, 'catalog.json'), 'utf8')) as CatalogIndex;
-            index.providers['broken'] = { aliasOf: 'missing' };
-            fs.writeFileSync(path.join(dir, 'catalog.json'), JSON.stringify(index));
-
-            expect(() => store().getEntry('broken')).toThrow("catalog.json: 'broken' points at 'missing', which has no file");
-        });
     });
 
     describe('reading flows.zero.json instead', () => {
@@ -181,6 +172,30 @@ describe('CatalogStore', () => {
         it('when catalog.json has another format version', () => {
             writeCatalog(dir, { formatVersion: 2 });
             expect(store().getEntry('linear')).toStrictEqual({ ...linear, symLinkTargetName: null });
+        });
+
+        it("when catalog.json isn't valid JSON", () => {
+            writeCatalog(dir);
+            fs.writeFileSync(path.join(dir, 'catalog.json'), '{"formatVersion": 1, "providers": {');
+            expect(store().listProviders()).toStrictEqual(['github', 'github-app', 'linear', 'notion']);
+        });
+
+        it.each([
+            ['has no providers', (index: CatalogIndex) => ({ formatVersion: index.formatVersion })],
+            ['has no format version', (index: CatalogIndex) => ({ providers: index.providers })],
+            ['lists a provider without its file', (index: CatalogIndex) => ({ ...index, providers: { ...index.providers, linear: { sha256: 'abc' } } })],
+            [
+                'lists an alias of a provider without a file',
+                (index: CatalogIndex) => ({ ...index, providers: { ...index.providers, broken: { aliasOf: 'missing' } } })
+            ]
+        ])('when catalog.json %s', (_, edit) => {
+            writeCatalog(dir);
+            const indexPath = path.join(dir, 'catalog.json');
+            fs.writeFileSync(indexPath, JSON.stringify(edit(JSON.parse(fs.readFileSync(indexPath, 'utf8')) as CatalogIndex)));
+
+            const catalog = store();
+            expect(catalog.getEntry('linear')).toStrictEqual({ ...linear, symLinkTargetName: null });
+            expect(catalog.listProviders()).toStrictEqual(['github', 'github-app', 'linear', 'notion']);
         });
     });
 
