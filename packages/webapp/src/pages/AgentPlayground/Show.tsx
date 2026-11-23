@@ -245,15 +245,21 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
             void refetchIntegrations();
         }
     }, [messages, labels, refetchIntegrations]);
-    const addedIntegrations = useMemo(
-        () =>
-            new Map(
-                (integrations?.data ?? [])
-                    .filter((integration) => integration.missing_fields.length === 0)
-                    .map((integration) => [integration.provider, integration.unique_key])
-            ),
-        [integrations]
-    );
+    const addedIntegrations = useMemo(() => {
+        // Matches the server's existingIntegrationFor, so the notice links to the integration the agent uses.
+        const rank = (key: string, provider: string) => [provider, `pg-${provider}`].indexOf(key) >>> 0;
+        const added = new Map<string, string>();
+        for (const integration of integrations?.data ?? []) {
+            const current = added.get(integration.provider);
+            if (
+                integration.missing_fields.length === 0 &&
+                (!current || rank(integration.unique_key, integration.provider) < rank(current, integration.provider))
+            ) {
+                added.set(integration.provider, integration.unique_key);
+            }
+        }
+        return added;
+    }, [integrations]);
     const integrationNames = useCallback((ids: string[]) => ids.map((id) => labelFor(id, labels).integrationName).join(' and '), [labels]);
 
     const [pendingConnections, setPendingConnections] = useState<string[]>([]);
@@ -391,6 +397,7 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                     const sessionCreated = message.metadata?.sessionCreated;
                     const sessionNotice = sessionCreated && <SessionNotice created={sessionCreated} replaced={message.id !== firstSessionMessageId} />;
                     const chatActive = message === lastMessage && busy;
+                    const approvalSending = message === lastMessage && status === 'ready';
                     const renderEntry = (entry: ReplyEntry) => {
                         if (entry.kind === 'text') {
                             const { text, state } = entry.part;
@@ -403,7 +410,7 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                                 part={part}
                                 labels={labels}
                                 chatActive={chatActive}
-                                approvalSending={message === lastMessage && status === 'ready'}
+                                approvalSending={approvalSending}
                                 connectedIntegrations={connectedIntegrations}
                                 onConnected={onConnected}
                                 onRequestNewLink={onRequestNewLink}
@@ -424,6 +431,7 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                                 entries={item.entries}
                                 labels={labels}
                                 chatActive={chatActive}
+                                approvalSending={approvalSending}
                                 renderEntry={renderEntry}
                             />
                         );

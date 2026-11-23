@@ -127,7 +127,9 @@ describe('continuesAfterSetUp', () => {
 
     it('does not continue again once the agent has replied after the setup', () => {
         const messages = reply([
+            { type: 'step-start' },
             setUpPart([{ provider: 'google-mail', integrationId: 'pg-google-mail', outcome: 'created' }]),
+            { type: 'step-start' },
             { type: 'text', text: 'Connect Gmail.' }
         ]);
 
