@@ -129,7 +129,8 @@ export function buildFlags(client: FeatureFlagsClient) {
          * instead of loading all of `flows.zero.json`. Global. Default `false`.
          */
         isCatalogIndexFileEnabled() {
-            return client.isEnabled('catalog-index-file', {}, false);
+            // Dev test build: default true, so catalog.json is read wherever the flag isn't defined.
+            return client.isEnabled('catalog-index-file', {}, true);
         },
         /**
          * Whether this data-plane credential read is recorded in the audit trail. Temporary, for the rollout,

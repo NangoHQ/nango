@@ -1,0 +1,2833 @@
+{
+    "providerConfigKey": "twitter-v2",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Bookmark a tweet for an authenticated user.",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_bookmarktweet",
+            "name": "bookmark-tweet",
+            "output": ["ActionOutput_twitter_v2_bookmarktweet"],
+            "scopes": ["tweet.read", "users.read", "bookmark.write"],
+            "usedModels": ["ActionInput_twitter_v2_bookmarktweet", "ActionOutput_twitter_v2_bookmarktweet"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_bookmarktweet": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The ID of the authenticated source User for whom to add bookmarks. Example: \"2244994945\""
+                            },
+                            "tweetId": {
+                                "type": "string",
+                                "description": "The ID of the Tweet to bookmark. Example: \"1460323737035677698\""
+                            }
+                        },
+                        "required": ["userId", "tweetId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_bookmarktweet": {
+                        "type": "object",
+                        "properties": {
+                            "bookmarked": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["bookmarked"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a liked tweet in Twitter/X",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_createlikedtweet",
+            "name": "create-liked-tweet",
+            "output": ["ActionOutput_twitter_v2_createlikedtweet"],
+            "scopes": ["like.write", "tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_createlikedtweet", "ActionOutput_twitter_v2_createlikedtweet"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_createlikedtweet": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The ID of the authenticated user that is requesting to like the Post. Must match the authenticated user."
+                            },
+                            "tweetId": {
+                                "type": "string",
+                                "description": "The ID of the Post to like. Example: \"1228393702244134912\""
+                            }
+                        },
+                        "required": ["userId", "tweetId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_createlikedtweet": {
+                        "type": "object",
+                        "properties": {
+                            "liked": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["liked"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a list in Twitter/X",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_createlist",
+            "name": "create-list",
+            "output": ["ActionOutput_twitter_v2_createlist"],
+            "scopes": ["list.read", "list.write", "tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_createlist", "ActionOutput_twitter_v2_createlist"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_createlist": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the list. Example: \"Tech News\""
+                            },
+                            "description": {
+                                "description": "Description for the list. Example: \"Top tech journalists and publications\"",
+                                "type": "string"
+                            },
+                            "private": {
+                                "description": "Whether the list is private. If true, only the owner can view the list.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_createlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier of the created list."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the created list."
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a tweet in Twitter/X.",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_createtweet",
+            "name": "create-tweet",
+            "output": ["ActionOutput_twitter_v2_createtweet"],
+            "scopes": ["tweet.read", "tweet.write", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_createtweet", "ActionOutput_twitter_v2_createtweet"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_createtweet": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "maxLength": 280,
+                                "description": "The text content of the tweet. Maximum 280 characters."
+                            },
+                            "replyToTweetId": {
+                                "description": "The ID of the tweet to reply to. If provided, creates a reply tweet.",
+                                "type": "string"
+                            },
+                            "quoteTweetId": {
+                                "description": "The ID of the tweet to quote. If provided, creates a quote tweet.",
+                                "type": "string"
+                            },
+                            "mediaIds": {
+                                "description": "Media IDs for media attachments to include in the tweet (from the upload endpoint).",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["text"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_createtweet": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the created tweet."
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "The text content of the created tweet."
+                            }
+                        },
+                        "required": ["id", "text"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a liked tweet (unlike) for the authenticated user.",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_deletelikedtweet",
+            "name": "delete-liked-tweet",
+            "output": ["ActionOutput_twitter_v2_deletelikedtweet"],
+            "scopes": ["tweet.read", "users.read", "like.write"],
+            "usedModels": ["ActionInput_twitter_v2_deletelikedtweet", "ActionOutput_twitter_v2_deletelikedtweet"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_deletelikedtweet": {
+                        "type": "object",
+                        "properties": {
+                            "tweet_id": {
+                                "type": "string",
+                                "description": "The ID of the liked tweet to remove. Example: \"1346889436626259968\""
+                            }
+                        },
+                        "required": ["tweet_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_deletelikedtweet": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "liked": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a List owned by the authenticated user",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_deletelist",
+            "name": "delete-list",
+            "output": ["ActionOutput_twitter_v2_deletelist"],
+            "scopes": ["list.write", "tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_deletelist", "ActionOutput_twitter_v2_deletelist"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_deletelist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the List to delete. Example: \"1234567890\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_deletelist": {
+                        "type": "object",
+                        "properties": {
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["deleted"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a tweet in Twitter/X",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_deletetweet",
+            "name": "delete-tweet",
+            "output": ["ActionOutput_twitter_v2_deletetweet"],
+            "scopes": ["tweet.read", "tweet.write", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_deletetweet", "ActionOutput_twitter_v2_deletetweet"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_deletetweet": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the tweet to be deleted. Example: \"1346889436626259968\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_deletetweet": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Follow a user from the authenticated account.",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_followuser",
+            "name": "follow-user",
+            "output": ["ActionOutput_twitter_v2_followuser"],
+            "scopes": ["follows.write", "tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_followuser", "ActionOutput_twitter_v2_followuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_followuser": {
+                        "type": "object",
+                        "properties": {
+                            "target_user_id": {
+                                "type": "string",
+                                "description": "The user ID of the user to follow. Example: \"2244994945\""
+                            }
+                        },
+                        "required": ["target_user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_followuser": {
+                        "type": "object",
+                        "properties": {
+                            "following": {
+                                "type": "boolean",
+                                "description": "Whether the follow was successful"
+                            },
+                            "pending_follow": {
+                                "type": "boolean",
+                                "description": "Whether the follow is pending (target user has protected account and must accept the request)"
+                            }
+                        },
+                        "required": ["following", "pending_follow"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single liked tweet from Twitter/X by its ID.",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_getlikedtweet",
+            "name": "get-liked-tweet",
+            "output": ["ActionOutput_twitter_v2_getlikedtweet"],
+            "scopes": ["tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_getlikedtweet", "ActionOutput_twitter_v2_getlikedtweet"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_getlikedtweet": {
+                        "type": "object",
+                        "properties": {
+                            "tweet_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the tweet to retrieve. Example: \"1346889436626259968\""
+                            }
+                        },
+                        "required": ["tweet_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_getlikedtweet": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of this tweet. Example: \"1346889436626259968\""
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "The content of the tweet. Example: \"Learn how to use the user Tweet timeline...\""
+                            },
+                            "author_id": {
+                                "description": "The unique identifier of the author of this tweet.",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "description": "Creation time of the tweet. Format: ISO 8601 date-time.",
+                                "type": "string"
+                            },
+                            "lang": {
+                                "description": "Language of the tweet, if detected by X.",
+                                "type": "string"
+                            },
+                            "possibly_sensitive": {
+                                "description": "Indicates if the tweet contains URLs marked as sensitive.",
+                                "type": "boolean"
+                            },
+                            "reply_settings": {
+                                "description": "Shows who can reply to this tweet.",
+                                "type": "string"
+                            },
+                            "source": {
+                                "description": "The source of the tweet.",
+                                "type": "string"
+                            },
+                            "conversation_id": {
+                                "description": "The conversation ID for the tweet.",
+                                "type": "string"
+                            },
+                            "in_reply_to_user_id": {
+                                "description": "If this tweet is a reply, the ID of the user it is replying to.",
+                                "type": "string"
+                            },
+                            "public_metrics": {
+                                "description": "Engagement metrics for the tweet.",
+                                "type": "object",
+                                "properties": {
+                                    "like_count": {
+                                        "type": "number"
+                                    },
+                                    "retweet_count": {
+                                        "type": "number"
+                                    },
+                                    "reply_count": {
+                                        "type": "number"
+                                    },
+                                    "quote_count": {
+                                        "type": "number"
+                                    },
+                                    "impression_count": {
+                                        "type": "number"
+                                    },
+                                    "bookmark_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "referenced_tweets": {
+                                "description": "A list of tweets this tweet refers to (retweets, quotes, replies).",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["retweeted", "quoted", "replied_to"]
+                                        }
+                                    },
+                                    "required": ["id", "type"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "text"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single list from Twitter/X",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_getlist",
+            "name": "get-list",
+            "output": ["ActionOutput_twitter_v2_getlist"],
+            "scopes": ["list.read", "tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_getlist", "ActionOutput_twitter_v2_getlist"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_getlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the List to lookup. Example: \"1355797419175383040\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_getlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "follower_count": {
+                                "type": "number"
+                            },
+                            "member_count": {
+                                "type": "number"
+                            },
+                            "owner_id": {
+                                "type": "string"
+                            },
+                            "private": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single mention from Twitter/X.",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_getmention",
+            "name": "get-mention",
+            "output": ["ActionOutput_twitter_v2_getmention"],
+            "scopes": ["tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_getmention", "ActionOutput_twitter_v2_getmention"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_getmention": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the Tweet to retrieve. Example: \"1234567890\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_getmention": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "edit_history_tweet_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "author_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "lang": {
+                                "type": "string"
+                            },
+                            "possibly_sensitive": {
+                                "type": "boolean"
+                            },
+                            "public_metrics": {
+                                "type": "object",
+                                "properties": {
+                                    "retweet_count": {
+                                        "type": "number"
+                                    },
+                                    "reply_count": {
+                                        "type": "number"
+                                    },
+                                    "like_count": {
+                                        "type": "number"
+                                    },
+                                    "quote_count": {
+                                        "type": "number"
+                                    },
+                                    "bookmark_count": {
+                                        "type": "number"
+                                    },
+                                    "impression_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "referenced_tweets": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "in_reply_to_user_id": {
+                                "type": "string"
+                            },
+                            "conversation_id": {
+                                "type": "string"
+                            },
+                            "reply_settings": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "text", "edit_history_tweet_ids"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single space from Twitter/X",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_getspace",
+            "name": "get-space",
+            "output": ["ActionOutput_twitter_v2_getspace"],
+            "scopes": ["space.read", "tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_getspace", "ActionOutput_twitter_v2_getspace"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_getspace": {
+                        "type": "object",
+                        "properties": {
+                            "space_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the Space to retrieve. Example: \"1zqKVXPQhvZJB\""
+                            }
+                        },
+                        "required": ["space_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_getspace": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string",
+                                "enum": ["live", "scheduled", "ended"]
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            "creator_id": {
+                                "type": "string"
+                            },
+                            "ended_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            "host_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "lang": {
+                                "type": "string"
+                            },
+                            "is_ticketed": {
+                                "type": "boolean"
+                            },
+                            "invited_user_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "participant_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "scheduled_start": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            "speaker_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "started_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            "subscriber_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "topic_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                        },
+                        "required": ["id", "state"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single tweet from Twitter/X.",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_gettweet",
+            "name": "get-tweet",
+            "output": ["ActionOutput_twitter_v2_gettweet"],
+            "scopes": ["tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_gettweet", "ActionOutput_twitter_v2_gettweet"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_gettweet": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the Tweet to retrieve. Example: \"1050118621198921728\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_gettweet": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "authorId": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "publicMetrics": {
+                                "type": "object",
+                                "properties": {
+                                    "retweetCount": {
+                                        "type": "number"
+                                    },
+                                    "replyCount": {
+                                        "type": "number"
+                                    },
+                                    "likeCount": {
+                                        "type": "number"
+                                    },
+                                    "quoteCount": {
+                                        "type": "number"
+                                    },
+                                    "bookmarkCount": {
+                                        "type": "number"
+                                    },
+                                    "impressionCount": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "lang": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "string"
+                            },
+                            "possiblySensitive": {
+                                "type": "boolean"
+                            },
+                            "replySettings": {
+                                "type": "string"
+                            },
+                            "conversationId": {
+                                "type": "string"
+                            },
+                            "inReplyToUserId": {
+                                "type": "string"
+                            },
+                            "referencedTweets": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "editHistoryTweetIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "editControls": {
+                                "type": "object",
+                                "properties": {
+                                    "editTweetIds": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "editableUntil": {
+                                        "type": "string"
+                                    },
+                                    "editsRemaining": {
+                                        "type": "number"
+                                    },
+                                    "isEditEligible": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "text"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single user from Twitter/X",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_getuser",
+            "name": "get-user",
+            "output": ["ActionOutput_twitter_v2_getuser"],
+            "scopes": ["tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_getuser", "ActionOutput_twitter_v2_getuser"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the User to lookup. Example: \"2244994945\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "profile_image_url": {
+                                "type": "string"
+                            },
+                            "protected": {
+                                "type": "boolean"
+                            },
+                            "public_metrics": {
+                                "type": "object",
+                                "properties": {
+                                    "followers_count": {
+                                        "type": "number"
+                                    },
+                                    "following_count": {
+                                        "type": "number"
+                                    },
+                                    "tweet_count": {
+                                        "type": "number"
+                                    },
+                                    "listed_count": {
+                                        "type": "number"
+                                    },
+                                    "like_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "verified_type": {
+                                "type": "string"
+                            },
+                            "subscription_type": {
+                                "type": "string"
+                            },
+                            "pinned_tweet_id": {
+                                "type": "string"
+                            },
+                            "most_recent_tweet_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "username"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Like a tweet",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_liketweet",
+            "name": "like-tweet",
+            "output": ["ActionOutput_twitter_v2_liketweet"],
+            "scopes": ["like.write", "tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_liketweet", "ActionOutput_twitter_v2_liketweet"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_liketweet": {
+                        "type": "object",
+                        "properties": {
+                            "tweetId": {
+                                "type": "string",
+                                "description": "The ID of the tweet to like. Example: \"1346889436626259968\""
+                            }
+                        },
+                        "required": ["tweetId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_liketweet": {
+                        "type": "object",
+                        "properties": {
+                            "liked": {
+                                "type": "boolean",
+                                "description": "Whether the tweet was successfully liked"
+                            }
+                        },
+                        "required": ["liked"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List liked tweets from a specific Twitter/X user",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_listlikedtweets",
+            "name": "list-liked-tweets",
+            "output": ["ActionOutput_twitter_v2_listlikedtweets"],
+            "scopes": ["like.read", "tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_listlikedtweets", "ActionOutput_twitter_v2_listlikedtweets"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_listlikedtweets": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The ID of the User to lookup liked tweets for. Example: \"2244994945\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor token for the next page of results. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "maxResults": {
+                                "description": "The maximum number of results per page (5-100). Default: 100.",
+                                "type": "number",
+                                "minimum": 5,
+                                "maximum": 100
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_listlikedtweets": {
+                        "type": "object",
+                        "properties": {
+                            "tweets": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "author_id": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "conversation_id": {
+                                            "type": "string"
+                                        },
+                                        "public_metrics": {
+                                            "type": "object",
+                                            "properties": {
+                                                "like_count": {
+                                                    "type": "number"
+                                                },
+                                                "reply_count": {
+                                                    "type": "number"
+                                                },
+                                                "retweet_count": {
+                                                    "type": "number"
+                                                },
+                                                "quote_count": {
+                                                    "type": "number"
+                                                },
+                                                "impression_count": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "lang": {
+                                            "type": "string"
+                                        },
+                                        "source": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Array of liked tweets"
+                            },
+                            "nextCursor": {
+                                "description": "Token for the next page of results. Null if there are no more pages.",
+                                "type": "string"
+                            },
+                            "previousCursor": {
+                                "description": "Token for the previous page of results.",
+                                "type": "string"
+                            },
+                            "resultCount": {
+                                "type": "number",
+                                "description": "Number of results returned in this response."
+                            }
+                        },
+                        "required": ["tweets", "resultCount"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all Lists owned by a specified user from X API",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_listlists",
+            "name": "list-lists",
+            "output": ["ActionOutput_twitter_v2_listlists"],
+            "scopes": ["list.read", "tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_listlists", "ActionOutput_twitter_v2_listlists"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_listlists": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The user ID whose owned Lists you would like to retrieve. Example: \"123456789\""
+                            },
+                            "maxResults": {
+                                "description": "The maximum number of results to be returned per page. This can be a number between 1 and 100. Default: 100",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "paginationToken": {
+                                "description": "Pagination token from the previous response to get the next page of results",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_listlists": {
+                        "type": "object",
+                        "properties": {
+                            "lists": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "followerCount": {
+                                            "type": "number"
+                                        },
+                                        "memberCount": {
+                                            "type": "number"
+                                        },
+                                        "ownerId": {
+                                            "type": "string"
+                                        },
+                                        "isPrivate": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextToken": {
+                                "type": "string"
+                            },
+                            "previousToken": {
+                                "type": "string"
+                            },
+                            "resultCount": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["lists", "resultCount"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List mentions from Twitter/X for a specified user.",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_listmentions",
+            "name": "list-mentions",
+            "output": ["ActionOutput_twitter_v2_listmentions"],
+            "scopes": ["tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_listmentions", "ActionOutput_twitter_v2_listmentions"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_listmentions": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The user ID whose mentions to retrieve. Example: \"2244994945\""
+                            },
+                            "cursor": {
+                                "description": "Pagination token from the previous response (meta.next_token). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "max_results": {
+                                "description": "Maximum number of results per page (5-100). Default: 10.",
+                                "type": "integer",
+                                "minimum": 5,
+                                "maximum": 100
+                            },
+                            "start_time": {
+                                "description": "Earliest UTC timestamp from which Tweets will be provided (ISO 8601). Example: \"2024-01-01T00:00:00Z\".",
+                                "type": "string"
+                            },
+                            "end_time": {
+                                "description": "Latest UTC timestamp to which Tweets will be provided (ISO 8601). Example: \"2024-12-31T23:59:59Z\".",
+                                "type": "string"
+                            },
+                            "since_id": {
+                                "description": "Minimum Tweet ID to be included in the result set. Takes precedence over start_time.",
+                                "type": "string"
+                            },
+                            "until_id": {
+                                "description": "Maximum Tweet ID to be included in the result set. Takes precedence over end_time.",
+                                "type": "string"
+                            },
+                            "exclude": {
+                                "description": "Types of Tweets to exclude from results.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["replies", "retweets"]
+                                }
+                            },
+                            "tweet_fields": {
+                                "description": "Comma-separated list of Tweet fields to return. Example: \"created_at,public_metrics,author_id\".",
+                                "type": "string"
+                            },
+                            "expansions": {
+                                "description": "Comma-separated list of fields to expand. Example: \"author_id,referenced_tweets.id\".",
+                                "type": "string"
+                            },
+                            "user_fields": {
+                                "description": "Comma-separated list of User fields to return for expanded users. Example: \"username,verified,public_metrics\".",
+                                "type": "string"
+                            },
+                            "media_fields": {
+                                "description": "Comma-separated list of Media fields to return.",
+                                "type": "string"
+                            },
+                            "place_fields": {
+                                "description": "Comma-separated list of Place fields to return.",
+                                "type": "string"
+                            },
+                            "poll_fields": {
+                                "description": "Comma-separated list of Poll fields to return.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_listmentions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "edit_history_tweet_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "author_id": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "conversation_id": {
+                                            "type": "string"
+                                        },
+                                        "in_reply_to_user_id": {
+                                            "type": "string"
+                                        },
+                                        "referenced_tweets": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["retweeted", "quoted", "replied_to"]
+                                                    }
+                                                },
+                                                "required": ["id", "type"],
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "attachments": {
+                                            "type": "object",
+                                            "properties": {
+                                                "media_keys": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "poll_ids": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "public_metrics": {
+                                            "type": "object",
+                                            "properties": {
+                                                "retweet_count": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "reply_count": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "like_count": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "quote_count": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "bookmark_count": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "impression_count": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "lang": {
+                                            "type": "string"
+                                        },
+                                        "source": {
+                                            "type": "string"
+                                        },
+                                        "reply_settings": {
+                                            "type": "string"
+                                        },
+                                        "possibly_sensitive": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "text"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "includes": {
+                                "type": "object",
+                                "properties": {
+                                    "users": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "username": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "verified": {
+                                                    "type": "boolean"
+                                                },
+                                                "created_at": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "public_metrics": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "followers_count": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991
+                                                        },
+                                                        "following_count": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991
+                                                        },
+                                                        "tweet_count": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991
+                                                        },
+                                                        "listed_count": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991
+                                                        }
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                "profile_image_url": {
+                                                    "type": "string"
+                                                },
+                                                "url": {
+                                                    "type": "string"
+                                                },
+                                                "location": {
+                                                    "type": "string"
+                                                },
+                                                "pinned_tweet_id": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "username", "name"],
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "tweets": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "text": {
+                                                    "type": "string"
+                                                },
+                                                "edit_history_tweet_ids": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "author_id": {
+                                                    "type": "string"
+                                                },
+                                                "created_at": {
+                                                    "type": "string"
+                                                },
+                                                "conversation_id": {
+                                                    "type": "string"
+                                                },
+                                                "in_reply_to_user_id": {
+                                                    "type": "string"
+                                                },
+                                                "referenced_tweets": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["retweeted", "quoted", "replied_to"]
+                                                            }
+                                                        },
+                                                        "required": ["id", "type"],
+                                                        "additionalProperties": {}
+                                                    }
+                                                },
+                                                "attachments": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "media_keys": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "poll_ids": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                "public_metrics": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "retweet_count": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991
+                                                        },
+                                                        "reply_count": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991
+                                                        },
+                                                        "like_count": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991
+                                                        },
+                                                        "quote_count": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991
+                                                        },
+                                                        "bookmark_count": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991
+                                                        },
+                                                        "impression_count": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991
+                                                        }
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                "lang": {
+                                                    "type": "string"
+                                                },
+                                                "source": {
+                                                    "type": "string"
+                                                },
+                                                "reply_settings": {
+                                                    "type": "string"
+                                                },
+                                                "possibly_sensitive": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": ["id", "text"],
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "media": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "media_key": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "url": {
+                                                    "type": "string"
+                                                },
+                                                "preview_image_url": {
+                                                    "type": "string"
+                                                },
+                                                "alt_text": {
+                                                    "type": "string"
+                                                },
+                                                "variants": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "bit_rate": {
+                                                                "type": "integer",
+                                                                "minimum": -9007199254740991,
+                                                                "maximum": 9007199254740991
+                                                            },
+                                                            "content_type": {
+                                                                "type": "string"
+                                                            },
+                                                            "url": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["content_type", "url"],
+                                                        "additionalProperties": false
+                                                    }
+                                                }
+                                            },
+                                            "required": ["media_key", "type"],
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "polls": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "places": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": {}
+                                        }
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "previous_cursor": {
+                                "type": "string"
+                            },
+                            "newest_id": {
+                                "type": "string"
+                            },
+                            "oldest_id": {
+                                "type": "string"
+                            },
+                            "result_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["items", "result_count"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Spaces from Twitter/X matching a search query",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_listspaces",
+            "name": "list-spaces",
+            "output": ["ActionOutput_twitter_v2_listspaces"],
+            "scopes": ["space.read", "tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_listspaces", "ActionOutput_twitter_v2_listspaces"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_listspaces": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Search term to filter Spaces by title. Example: \"crypto\""
+                            },
+                            "state": {
+                                "description": "Filter by Space state: live, scheduled, or all. Default: all",
+                                "type": "string",
+                                "enum": ["live", "scheduled", "all"]
+                            },
+                            "max_results": {
+                                "description": "Maximum number of results to return (1-100). Default: 100",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from previous response for fetching next page",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["query"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_listspaces": {
+                        "type": "object",
+                        "properties": {
+                            "spaces": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string",
+                                            "enum": ["live", "scheduled"]
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "creator_id": {
+                                            "type": "string"
+                                        },
+                                        "host_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "invited_user_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "speaker_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "participant_count": {
+                                            "type": "number"
+                                        },
+                                        "subscriber_count": {
+                                            "type": "number"
+                                        },
+                                        "is_ticketed": {
+                                            "type": "boolean"
+                                        },
+                                        "scheduled_start": {
+                                            "type": "string"
+                                        },
+                                        "started_at": {
+                                            "type": "string"
+                                        },
+                                        "ended_at": {
+                                            "type": "string"
+                                        },
+                                        "lang": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "topic_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "state"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["spaces"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List tweets from a specific Twitter/X user timeline.",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_listtweets",
+            "name": "list-tweets",
+            "output": ["ActionOutput_twitter_v2_listtweets"],
+            "scopes": ["tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_listtweets", "ActionOutput_twitter_v2_listtweets"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_listtweets": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The ID of the User whose tweets to retrieve. Example: \"2244994945\""
+                            },
+                            "max_results": {
+                                "description": "Maximum number of results per page (5-100).",
+                                "type": "number",
+                                "minimum": 5,
+                                "maximum": 100
+                            },
+                            "pagination_token": {
+                                "description": "Pagination token for fetching the next page of results.",
+                                "type": "string"
+                            },
+                            "since_id": {
+                                "description": "Minimum tweet ID to include in the result set.",
+                                "type": "string"
+                            },
+                            "until_id": {
+                                "description": "Maximum tweet ID to include in the result set.",
+                                "type": "string"
+                            },
+                            "start_time": {
+                                "description": "ISO 8601 timestamp. Earliest UTC timestamp from which tweets will be provided.",
+                                "type": "string"
+                            },
+                            "end_time": {
+                                "description": "ISO 8601 timestamp. Latest UTC timestamp to which tweets will be provided.",
+                                "type": "string"
+                            },
+                            "exclude": {
+                                "description": "Entities to exclude from results (replies or retweets).",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["replies", "retweets"]
+                                }
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_listtweets": {
+                        "type": "object",
+                        "properties": {
+                            "tweets": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "edit_history_tweet_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "author_id": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "conversation_id": {
+                                            "type": "string"
+                                        },
+                                        "in_reply_to_user_id": {
+                                            "type": "string"
+                                        },
+                                        "referenced_tweets": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["retweeted", "quoted", "replied_to"]
+                                                    },
+                                                    "id": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["type", "id"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "public_metrics": {
+                                            "type": "object",
+                                            "properties": {
+                                                "retweet_count": {
+                                                    "type": "number"
+                                                },
+                                                "reply_count": {
+                                                    "type": "number"
+                                                },
+                                                "like_count": {
+                                                    "type": "number"
+                                                },
+                                                "quote_count": {
+                                                    "type": "number"
+                                                },
+                                                "bookmark_count": {
+                                                    "type": "number"
+                                                },
+                                                "impression_count": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "lang": {
+                                            "type": "string"
+                                        },
+                                        "possibly_sensitive": {
+                                            "type": "boolean"
+                                        },
+                                        "reply_settings": {
+                                            "type": "string",
+                                            "enum": ["everyone", "mentionedUsers", "following"]
+                                        },
+                                        "source": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "text"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "meta": {
+                                "type": "object",
+                                "properties": {
+                                    "newest_id": {
+                                        "type": "string"
+                                    },
+                                    "oldest_id": {
+                                        "type": "string"
+                                    },
+                                    "result_count": {
+                                        "type": "number"
+                                    },
+                                    "next_token": {
+                                        "type": "string"
+                                    },
+                                    "previous_token": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["result_count"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["tweets", "meta"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List users from Twitter/X by IDs or usernames",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_twitter_v2_listusers"],
+            "scopes": ["tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_listusers", "ActionOutput_twitter_v2_listusers"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "ids": {
+                                "description": "List of user IDs to look up. Up to 100 IDs can be provided. Example: [\"2244994945\", \"783214\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "usernames": {
+                                "description": "List of usernames to look up. Up to 100 usernames can be provided. Example: [\"XDevelopers\", \"X\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "userFields": {
+                                "description": "Additional user fields to include in the response. Example: [\"created_at\", \"description\", \"public_metrics\", \"verified\", \"location\", \"profile_image_url\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "expansions": {
+                                "description": "Expansions to include in the response. Example: [\"pinned_tweet_id\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "username": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "type": "string"
+                                        },
+                                        "profile_image_url": {
+                                            "type": "string"
+                                        },
+                                        "verified": {
+                                            "type": "boolean"
+                                        },
+                                        "protected": {
+                                            "type": "boolean"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "pinned_tweet_id": {
+                                            "type": "string"
+                                        },
+                                        "public_metrics": {
+                                            "type": "object",
+                                            "properties": {
+                                                "followers_count": {
+                                                    "type": "number"
+                                                },
+                                                "following_count": {
+                                                    "type": "number"
+                                                },
+                                                "tweet_count": {
+                                                    "type": "number"
+                                                },
+                                                "listed_count": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "name", "username"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "errors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "resource_type": {
+                                            "type": "string"
+                                        },
+                                        "parameter": {
+                                            "type": "string"
+                                        },
+                                        "resource_id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["value"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["users"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a tweet bookmark",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_removebookmark",
+            "name": "remove-bookmark",
+            "output": ["ActionOutput_twitter_v2_removebookmark"],
+            "scopes": ["bookmark.write", "users.read", "tweet.read"],
+            "usedModels": ["ActionInput_twitter_v2_removebookmark", "ActionOutput_twitter_v2_removebookmark"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_removebookmark": {
+                        "type": "object",
+                        "properties": {
+                            "tweet_id": {
+                                "type": "string",
+                                "description": "The ID of the tweet to remove from bookmarks. Example: \"1234567890\""
+                            }
+                        },
+                        "required": ["tweet_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_removebookmark": {
+                        "type": "object",
+                        "properties": {
+                            "bookmark_removed": {
+                                "type": "boolean",
+                                "description": "Whether the bookmark was successfully removed"
+                            },
+                            "tweet_id": {
+                                "type": "string",
+                                "description": "The ID of the tweet that was removed from bookmarks"
+                            }
+                        },
+                        "required": ["bookmark_removed", "tweet_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Unfollow a user from the authenticated account",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_unfollowuser",
+            "name": "unfollow-user",
+            "output": ["ActionOutput_twitter_v2_unfollowuser"],
+            "scopes": ["tweet.read", "users.read", "follows.write"],
+            "usedModels": ["ActionInput_twitter_v2_unfollowuser", "ActionOutput_twitter_v2_unfollowuser"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_unfollowuser": {
+                        "type": "object",
+                        "properties": {
+                            "target_user_id": {
+                                "type": "string",
+                                "description": "The user ID of the user to unfollow. Example: \"123456789\""
+                            }
+                        },
+                        "required": ["target_user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_unfollowuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "following": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Unlike a Tweet",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_unliketweet",
+            "name": "unlike-tweet",
+            "output": ["ActionOutput_twitter_v2_unliketweet"],
+            "scopes": ["tweet.read", "users.read", "like.write"],
+            "usedModels": ["ActionInput_twitter_v2_unliketweet", "ActionOutput_twitter_v2_unliketweet"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_unliketweet": {
+                        "type": "object",
+                        "properties": {
+                            "tweet_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the Tweet to unlike. Example: \"1234567890123456789\""
+                            }
+                        },
+                        "required": ["tweet_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_unliketweet": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "liked": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a list in Twitter/X.",
+            "endpoint": null,
+            "input": "ActionInput_twitter_v2_updatelist",
+            "name": "update-list",
+            "output": ["ActionOutput_twitter_v2_updatelist"],
+            "scopes": ["list.write", "tweet.read", "users.read"],
+            "usedModels": ["ActionInput_twitter_v2_updatelist", "ActionOutput_twitter_v2_updatelist"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_twitter_v2_updatelist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the List to modify. Example: \"1146654567674912769\""
+                            },
+                            "name": {
+                                "description": "The name of the List. Example: \"test v2 update list\"",
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 25
+                            },
+                            "description": {
+                                "description": "The description of the List. Example: \"example update\"",
+                                "type": "string",
+                                "maxLength": 100
+                            },
+                            "private": {
+                                "description": "Determines whether the List should be private.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_twitter_v2_updatelist": {
+                        "type": "object",
+                        "properties": {
+                            "updated": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["updated"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync liked tweets from Twitter/X",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/liked-tweets"
+                }
+            ],
+            "input": null,
+            "name": "liked-tweets",
+            "output": ["LikedTweet"],
+            "runs": "every hour",
+            "scopes": ["like.read", "tweet.read", "users.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["LikedTweet"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "LikedTweet": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "author_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "public_metrics": {
+                                "type": "object",
+                                "properties": {
+                                    "like_count": {
+                                        "type": "number"
+                                    },
+                                    "retweet_count": {
+                                        "type": "number"
+                                    },
+                                    "reply_count": {
+                                        "type": "number"
+                                    },
+                                    "quote_count": {
+                                        "type": "number"
+                                    },
+                                    "impression_count": {
+                                        "type": "number"
+                                    },
+                                    "bookmark_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "edit_history_tweet_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id", "text"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync lists from Twitter/X.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/lists"
+                }
+            ],
+            "input": null,
+            "name": "lists",
+            "output": ["List"],
+            "runs": "every hour",
+            "scopes": ["list.read", "tweet.read", "users.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["List"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "List": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "private": {
+                                "type": "boolean"
+                            },
+                            "owner_id": {
+                                "type": "string"
+                            },
+                            "follower_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "member_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync mentions from Twitter/X",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/mentions"
+                }
+            ],
+            "input": null,
+            "name": "mentions",
+            "output": ["Mention"],
+            "runs": "every hour",
+            "scopes": ["tweet.read", "users.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Mention"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Mention": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "author_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "edit_history_tweet_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "conversation_id": {
+                                "type": "string"
+                            },
+                            "in_reply_to_user_id": {
+                                "type": "string"
+                            },
+                            "public_metrics": {
+                                "type": "object",
+                                "properties": {
+                                    "retweet_count": {
+                                        "type": "number"
+                                    },
+                                    "reply_count": {
+                                        "type": "number"
+                                    },
+                                    "like_count": {
+                                        "type": "number"
+                                    },
+                                    "quote_count": {
+                                        "type": "number"
+                                    },
+                                    "bookmark_count": {
+                                        "type": "number"
+                                    },
+                                    "impression_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "lang": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync spaces from Twitter/X using the search endpoint",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/spaces"
+                }
+            ],
+            "input": null,
+            "name": "spaces",
+            "output": ["Space"],
+            "runs": "every hour",
+            "scopes": ["space.read", "tweet.read", "users.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Space"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Space": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string",
+                                "enum": ["live", "scheduled", "ended"]
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "creator_id": {
+                                "type": "string"
+                            },
+                            "host_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "speaker_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "invited_user_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "participant_count": {
+                                "type": "number"
+                            },
+                            "subscriber_count": {
+                                "type": "number"
+                            },
+                            "is_ticketed": {
+                                "type": "boolean"
+                            },
+                            "lang": {
+                                "type": "string"
+                            },
+                            "scheduled_start": {
+                                "type": "string"
+                            },
+                            "started_at": {
+                                "type": "string"
+                            },
+                            "ended_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "state"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync tweets from Twitter/X user timeline",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/tweets"
+                }
+            ],
+            "input": null,
+            "name": "tweets",
+            "output": ["Tweet"],
+            "runs": "every hour",
+            "scopes": ["tweet.read", "users.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Tweet"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Tweet": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "author_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "conversation_id": {
+                                "type": "string"
+                            },
+                            "in_reply_to_user_id": {
+                                "type": "string"
+                            },
+                            "referenced_tweets": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["retweeted", "quoted", "replied_to"]
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "public_metrics": {
+                                "type": "object",
+                                "properties": {
+                                    "retweet_count": {
+                                        "type": "number"
+                                    },
+                                    "reply_count": {
+                                        "type": "number"
+                                    },
+                                    "like_count": {
+                                        "type": "number"
+                                    },
+                                    "impression_count": {
+                                        "type": "number"
+                                    },
+                                    "bookmark_count": {
+                                        "type": "number"
+                                    },
+                                    "quote_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "text"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync users from Twitter/X",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/users"
+                }
+            ],
+            "input": null,
+            "name": "users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": ["tweet.read", "users.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "profile_image_url": {
+                                "type": "string"
+                            },
+                            "protected": {
+                                "type": "boolean"
+                            },
+                            "public_metrics": {
+                                "type": "object",
+                                "properties": {
+                                    "followers_count": {
+                                        "type": "number"
+                                    },
+                                    "following_count": {
+                                        "type": "number"
+                                    },
+                                    "tweet_count": {
+                                        "type": "number"
+                                    },
+                                    "listed_count": {
+                                        "type": "number"
+                                    },
+                                    "like_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "verified": {
+                                "type": "boolean"
+                            },
+                            "verified_type": {
+                                "type": "string"
+                            },
+                            "subscription_type": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "username"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,3116 @@
+{
+    "providerConfigKey": "dropbox",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Copy multiple files or folders to new Dropbox paths in one batch job",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_batchcopyfilesorfolders",
+            "name": "batch-copy-files-or-folders",
+            "output": ["ActionOutput_dropbox_batchcopyfilesorfolders"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_batchcopyfilesorfolders", "ActionOutput_dropbox_batchcopyfilesorfolders"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_batchcopyfilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            "entries": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from_path": {
+                                            "type": "string",
+                                            "description": "Source path in Dropbox. Example: \"/folder/file.txt\""
+                                        },
+                                        "to_path": {
+                                            "type": "string",
+                                            "description": "Destination path in Dropbox. Example: \"/folder/destination.txt\""
+                                        }
+                                    },
+                                    "required": ["from_path", "to_path"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of source and destination path pairs to copy"
+                            },
+                            "autorename": {
+                                "description": "If true, auto-rename conflicting files",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["entries"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_batchcopyfilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            "async_job_id": {
+                                "type": "string"
+                            },
+                            "entries": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "object",
+                                            "properties": {
+                                                "metadata": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "path_lower": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "content_hash": {
+                                                            "type": "string"
+                                                        },
+                                                        "server_modified": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["name", "path_lower", "id"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["metadata"],
+                                            "additionalProperties": false
+                                        },
+                                        "failure": {
+                                            "type": "object",
+                                            "properties": {
+                                                "failure_reason": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        ".tag": {
+                                                            "type": "string"
+                                                        },
+                                                        "description": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [".tag"],
+                                                    "additionalProperties": false
+                                                },
+                                                ".tag": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        ".tag": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "is_complete": {
+                                "type": "boolean"
+                            },
+                            ".tag": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create multiple Dropbox folders in one batch request",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_batchcreatefolders",
+            "name": "batch-create-folders",
+            "output": ["ActionOutput_dropbox_batchcreatefolders"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_batchcreatefolders", "ActionOutput_dropbox_batchcreatefolders"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_batchcreatefolders": {
+                        "type": "object",
+                        "properties": {
+                            "paths": {
+                                "minItems": 1,
+                                "maxItems": 10000,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "description": "List of paths to be created in the Dropbox. Max 10000 items. Example: [\"/Projects/2024\", \"/Projects/2025\"]"
+                            },
+                            "autorename": {
+                                "description": "If there is a conflict, have the Dropbox server try to autorename the folder to avoid the conflict. Default: false",
+                                "type": "boolean"
+                            },
+                            "force_async": {
+                                "description": "Whether to force the create to happen asynchronously. Default: false",
+                                "type": "boolean"
+                            },
+                            "poll_interval_ms": {
+                                "description": "Polling interval in milliseconds when checking async job status. Default: 1000",
+                                "type": "integer",
+                                "minimum": 100,
+                                "maximum": 30000
+                            },
+                            "max_poll_attempts": {
+                                "description": "Maximum number of polling attempts for async job status. Default: 30",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 60
+                            }
+                        },
+                        "required": ["paths"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_batchcreatefolders": {
+                        "type": "object",
+                        "properties": {
+                            "completed": {
+                                "type": "boolean",
+                                "description": "Whether the batch operation completed successfully"
+                            },
+                            "async_job_id": {
+                                "description": "The async job ID if the operation is still in progress",
+                                "type": "string"
+                            },
+                            "folders": {
+                                "description": "Array of results for each folder creation attempt",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["path", "success"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Total number of folders in the batch"
+                            },
+                            "success_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Number of folders successfully created"
+                            },
+                            "failure_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Number of folders that failed to create"
+                            }
+                        },
+                        "required": ["completed", "total_count", "success_count", "failure_count"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete multiple Dropbox files or folders in one batch job",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_batchdeletefilesorfolders",
+            "name": "batch-delete-files-or-folders",
+            "output": ["ActionOutput_dropbox_batchdeletefilesorfolders"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_batchdeletefilesorfolders", "ActionOutput_dropbox_batchdeletefilesorfolders"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_batchdeletefilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            "entries": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "path": {
+                                            "type": "string",
+                                            "description": "Path in the user's Dropbox to delete. Example: \"/Homework/math/Prime_Numbers.txt\""
+                                        }
+                                    },
+                                    "required": ["path"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of files/folders to delete. Each entry has a path field."
+                            }
+                        },
+                        "required": ["entries"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_batchdeletefilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": ["complete", "in_progress", "failed"],
+                                "description": "Status of the batch deletion operation"
+                            },
+                            "async_job_id": {
+                                "description": "If status is in_progress, the job ID to poll for completion",
+                                "type": "string"
+                            },
+                            "entries": {
+                                "description": "Results for each entry if the operation is complete",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        ".tag": {
+                                            "type": "string"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                ".tag": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "path_lower": {
+                                                    "type": "string"
+                                                },
+                                                "path_display": {
+                                                    "type": "string"
+                                                },
+                                                "parent_shared_folder_id": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [".tag"],
+                                            "additionalProperties": false
+                                        },
+                                        "success": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": false
+                                        },
+                                        "failure": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [".tag"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move multiple Dropbox files or folders to new locations in one batch job.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_batchmovefilesorfolders",
+            "name": "batch-move-files-or-folders",
+            "output": ["ActionOutput_dropbox_batchmovefilesorfolders"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_batchmovefilesorfolders", "ActionOutput_dropbox_batchmovefilesorfolders"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_batchmovefilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            "entries": {
+                                "minItems": 1,
+                                "maxItems": 1000,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from_path": {
+                                            "type": "string",
+                                            "description": "Path of the file or folder to move. Example: \"/folder/file.txt\""
+                                        },
+                                        "to_path": {
+                                            "type": "string",
+                                            "description": "Destination path for the file or folder. Example: \"/newfolder/file.txt\""
+                                        }
+                                    },
+                                    "required": ["from_path", "to_path"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of up to 1000 entries to move, each with from_path and to_path."
+                            }
+                        },
+                        "required": ["entries"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_batchmovefilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            "job_status": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "complete"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "in_progress"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "failed"
+                                    }
+                                ]
+                            },
+                            "async_job_id": {
+                                "description": "If job is in progress, this ID can be used to check status later.",
+                                "type": "string"
+                            },
+                            "entries": {
+                                "type": "array",
+                                "items": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "status": {
+                                                    "type": "string",
+                                                    "const": "success"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "path_display": {
+                                                    "type": "string"
+                                                },
+                                                "path_lower": {
+                                                    "type": "string"
+                                                },
+                                                "tag": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string",
+                                                            "const": "file"
+                                                        },
+                                                        {
+                                                            "type": "string",
+                                                            "const": "folder"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "required": ["status", "id", "tag"],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "status": {
+                                                    "type": "string",
+                                                    "const": "failure"
+                                                },
+                                                "error_tag": {
+                                                    "type": "string"
+                                                },
+                                                "error_message": {
+                                                    "type": "string"
+                                                },
+                                                "to_path": {
+                                                    "type": "string"
+                                                },
+                                                "from_path": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["status", "error_tag", "error_message"],
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "required": ["job_status", "entries"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check the status of a Dropbox batch copy job using its async job ID.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_checkbatchcopyfilesorfolders",
+            "name": "check-batch-copy-files-or-folders",
+            "output": ["ActionOutput_dropbox_checkbatchcopyfilesorfolders"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_checkbatchcopyfilesorfolders", "ActionOutput_dropbox_checkbatchcopyfilesorfolders"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_checkbatchcopyfilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            "async_job_id": {
+                                "type": "string",
+                                "description": "The async job ID returned by batch-copy-files-or-folders. Example: \"dbjid:AAAcrHLQ...\""
+                            }
+                        },
+                        "required": ["async_job_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_checkbatchcopyfilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            ".tag": {
+                                "type": "string",
+                                "enum": ["in_progress", "complete", "failed"]
+                            },
+                            "entries": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        ".tag": {
+                                            "type": "string"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "path_lower": {
+                                                    "type": "string"
+                                                },
+                                                "path_display": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "content_hash": {
+                                                    "type": "string"
+                                                },
+                                                "server_modified": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["name", "path_lower", "id"],
+                                            "additionalProperties": false
+                                        },
+                                        "failure": {
+                                            "type": "object",
+                                            "properties": {
+                                                ".tag": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [".tag"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [".tag"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [".tag"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check the status of a Dropbox batch delete job using its async job ID.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_checkbatchdeletefilesorfolders",
+            "name": "check-batch-delete-files-or-folders",
+            "output": ["ActionOutput_dropbox_checkbatchdeletefilesorfolders"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_checkbatchdeletefilesorfolders", "ActionOutput_dropbox_checkbatchdeletefilesorfolders"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_checkbatchdeletefilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            "async_job_id": {
+                                "type": "string",
+                                "description": "The async job ID returned by batch-delete-files-or-folders. Example: \"dbjid:AAAcrHLQ...\""
+                            }
+                        },
+                        "required": ["async_job_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_checkbatchdeletefilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": ["complete", "in_progress", "failed"],
+                                "description": "Status of the batch deletion check"
+                            },
+                            "entries": {
+                                "description": "Per-entry results when status is complete",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        ".tag": {
+                                            "type": "string"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                ".tag": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "path_lower": {
+                                                    "type": "string"
+                                                },
+                                                "path_display": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [".tag"],
+                                            "additionalProperties": false
+                                        },
+                                        "failure": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": [".tag"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check the status of a Dropbox batch move job using its async job ID.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_checkbatchmovefilesorfolders",
+            "name": "check-batch-move-files-or-folders",
+            "output": ["ActionOutput_dropbox_checkbatchmovefilesorfolders"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_checkbatchmovefilesorfolders", "ActionOutput_dropbox_checkbatchmovefilesorfolders"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_checkbatchmovefilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            "async_job_id": {
+                                "type": "string",
+                                "description": "The async job ID returned by batch-move-files-or-folders. Example: \"dbjid:AAAcrHLQ...\""
+                            }
+                        },
+                        "required": ["async_job_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_checkbatchmovefilesorfolders": {
+                        "type": "object",
+                        "properties": {
+                            "job_status": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "complete"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "in_progress"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "failed"
+                                    }
+                                ]
+                            },
+                            "entries": {
+                                "type": "array",
+                                "items": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "status": {
+                                                    "type": "string",
+                                                    "const": "success"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "path_display": {
+                                                    "type": "string"
+                                                },
+                                                "path_lower": {
+                                                    "type": "string"
+                                                },
+                                                "tag": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string",
+                                                            "const": "file"
+                                                        },
+                                                        {
+                                                            "type": "string",
+                                                            "const": "folder"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "required": ["status", "id", "tag"],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "status": {
+                                                    "type": "string",
+                                                    "const": "failure"
+                                                },
+                                                "error_tag": {
+                                                    "type": "string"
+                                                },
+                                                "error_message": {
+                                                    "type": "string"
+                                                },
+                                                "to_path": {
+                                                    "type": "string"
+                                                },
+                                                "from_path": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["status", "error_tag", "error_message"],
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "required": ["job_status", "entries"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check the status of a Dropbox unshare folder job using its async job ID.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_checkunsharefolder",
+            "name": "check-unshare-folder",
+            "output": ["ActionOutput_dropbox_checkunsharefolder"],
+            "scopes": ["sharing.write"],
+            "usedModels": ["ActionInput_dropbox_checkunsharefolder", "ActionOutput_dropbox_checkunsharefolder"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_checkunsharefolder": {
+                        "type": "object",
+                        "properties": {
+                            "async_job_id": {
+                                "type": "string",
+                                "description": "The async job ID returned by unshare-folder. Example: \"dbjid:AAAcrHLQ...\""
+                            }
+                        },
+                        "required": ["async_job_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_checkunsharefolder": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["complete", "in_progress", "failed"]
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Copy a Dropbox file or folder to a different path.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_copyfileorfolder",
+            "name": "copy-file-or-folder",
+            "output": ["ActionOutput_dropbox_copyfileorfolder"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_copyfileorfolder", "ActionOutput_dropbox_copyfileorfolder"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_copyfileorfolder": {
+                        "type": "object",
+                        "properties": {
+                            "from_path": {
+                                "type": "string",
+                                "description": "The path of the file or folder to copy. Example: \"/folder/myfile.txt\""
+                            },
+                            "to_path": {
+                                "type": "string",
+                                "description": "The destination path for the copy. Example: \"/folder/myfile_copy.txt\""
+                            },
+                            "allow_shared_folder": {
+                                "description": "If true, copy contents of shared folders.",
+                                "type": "boolean"
+                            },
+                            "autorename": {
+                                "description": "If true, auto-rename conflicting files.",
+                                "type": "boolean"
+                            },
+                            "allow_ownership_transfer": {
+                                "description": "If true, allow ownership transfer for files in shared folders.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["from_path", "to_path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_copyfileorfolder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique ID of the copied file or folder"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the copied file or folder"
+                            },
+                            "path_lower": {
+                                "description": "The lowercased path of the copy",
+                                "type": "string"
+                            },
+                            "path_display": {
+                                "description": "The display path of the copy",
+                                "type": "string"
+                            },
+                            "size": {
+                                "description": "Size in bytes",
+                                "type": "number"
+                            },
+                            "client_modified": {
+                                "description": "Client modified timestamp for files",
+                                "type": "string"
+                            },
+                            "server_modified": {
+                                "description": "Server modified timestamp",
+                                "type": "string"
+                            },
+                            "rev": {
+                                "description": "Revision identifier",
+                                "type": "string"
+                            },
+                            "content_hash": {
+                                "description": "Content hash for files",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a folder at a Dropbox path.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_createfolder",
+            "name": "create-folder",
+            "output": ["ActionOutput_dropbox_createfolder"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_createfolder", "ActionOutput_dropbox_createfolder"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_createfolder": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "The path in Dropbox where the folder should be created. Example: \"/home/TestFolder\""
+                            },
+                            "autorename": {
+                                "description": "If true, the folder will be renamed to avoid conflicts if a folder already exists at the given path. Default: false",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_createfolder": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "path_lower": {
+                                "type": "string"
+                            },
+                            "path_display": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name", "id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a shared link for a Dropbox file or folder with optional settings.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_createsharedlink",
+            "name": "create-shared-link",
+            "output": ["ActionOutput_dropbox_createsharedlink"],
+            "scopes": ["sharing.write"],
+            "usedModels": ["ActionInput_dropbox_createsharedlink", "ActionOutput_dropbox_createsharedlink"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_createsharedlink": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "The path to the file or folder in the Dropbox account. Example: /folder/file.txt"
+                            },
+                            "settings": {
+                                "description": "Optional settings for the shared link including visibility, audience, access level, password, and expiry.",
+                                "type": "object",
+                                "properties": {
+                                    "requested_visibility": {
+                                        "description": "The requested visibility for the shared link. Can be public, password (link is publicly visible, but only accessible with the password), or team_only (only members of the same team can access).",
+                                        "type": "string",
+                                        "enum": ["public", "password", "team_only"]
+                                    },
+                                    "audience": {
+                                        "description": "The audience of the shared link. Can be public (anyone with the link can access), team (only members of the same team can access), no_one (link is disabled), or members (only specific members can access).",
+                                        "type": "string",
+                                        "enum": ["public", "team", "no_one", "members"]
+                                    },
+                                    "access": {
+                                        "description": "The access level on the link. Can be viewer, viewer_no_comment (can view but not comment), editor, or owner.",
+                                        "type": "string",
+                                        "enum": ["viewer", "viewer_no_comment", "editor", "owner"]
+                                    },
+                                    "allow_download": {
+                                        "description": "Whether to allow downloads via the shared link.",
+                                        "type": "boolean"
+                                    },
+                                    "password": {
+                                        "description": "The password for the shared link. Required if requested_visibility is set to password.",
+                                        "type": "string"
+                                    },
+                                    "expires": {
+                                        "description": "The expiration time for the shared link in ISO 8601 format (e.g., 2025-12-31T23:59:59Z).",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_createsharedlink": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "description": "The shared link URL that can be used to access the file or folder."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the file or folder."
+                            },
+                            "path": {
+                                "type": "string",
+                                "description": "The lowercased full path to the file or folder."
+                            },
+                            "link_permissions": {
+                                "description": "The permissions associated with the shared link.",
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "expiry": {
+                                "description": "The expiration time of the shared link if set.",
+                                "type": "string"
+                            },
+                            "password_protected": {
+                                "description": "Whether the shared link is password protected.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["url", "name", "path"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Creates a user in Dropbox. Requires Dropbox Business.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_createuser",
+            "name": "create-user",
+            "output": ["ActionOutput_dropbox_createuser"],
+            "scopes": ["members.write"],
+            "usedModels": ["ActionInput_dropbox_createuser", "ActionOutput_dropbox_createuser"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the new user. Example: \"john.doe@example.com\""
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "description": "First name of the new user. Example: \"John\""
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "description": "Last name of the new user. Example: \"Doe\""
+                            }
+                        },
+                        "required": ["email", "firstName", "lastName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "firstName", "lastName", "email"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Dropbox file or folder by path",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_deletefileorfolder",
+            "name": "delete-file-or-folder",
+            "output": ["ActionOutput_dropbox_deletefileorfolder"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_deletefileorfolder", "ActionOutput_dropbox_deletefileorfolder"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_deletefileorfolder": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "Path to the file or folder to delete. Example: \"/path/to/file.txt\" or \"/path/to/folder\""
+                            }
+                        },
+                        "required": ["path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_deletefileorfolder": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "path_lower": {
+                                "type": "string"
+                            },
+                            "path_display": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "client_modified": {
+                                "type": "string"
+                            },
+                            "server_modified": {
+                                "type": "string"
+                            },
+                            "rev": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "is_downloadable": {
+                                "type": "boolean"
+                            },
+                            "content_hash": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name", "id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Deletes a user in Dropbox. Requires Dropbox Business.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_deleteuser",
+            "name": "delete-user",
+            "output": ["ActionOutput_dropbox_deleteuser"],
+            "scopes": ["members.delete"],
+            "usedModels": ["ActionInput_dropbox_deleteuser", "ActionOutput_dropbox_deleteuser"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The team member ID of the user to delete. Example: \"dbmid:abc123\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Download file contents from Dropbox.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_downloadfile",
+            "name": "download-file",
+            "output": ["ActionOutput_dropbox_downloadfile"],
+            "scopes": ["files.content.read", "files.metadata.read"],
+            "usedModels": ["ActionInput_dropbox_downloadfile", "ActionOutput_dropbox_downloadfile"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_downloadfile": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "The path of the file to download. Example: \"/Homework/math/Prime_Numbers.txt\" or \"id:a4ayc_80_OEAAAAAAAAAYa\""
+                            }
+                        },
+                        "required": ["path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_downloadfile": {
+                        "type": "object",
+                        "properties": {
+                            "metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "path_lower": {
+                                        "type": "string"
+                                    },
+                                    "path_display": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "client_modified": {
+                                        "type": "string"
+                                    },
+                                    "server_modified": {
+                                        "type": "string"
+                                    },
+                                    "rev": {
+                                        "type": "string"
+                                    },
+                                    "size": {
+                                        "type": "number"
+                                    },
+                                    "content_hash": {
+                                        "type": "string"
+                                    },
+                                    "is_downloadable": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["name", "id"],
+                                "additionalProperties": false
+                            },
+                            "bytes": {
+                                "type": "string",
+                                "description": "Base64-encoded file content"
+                            }
+                        },
+                        "required": ["metadata", "bytes"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Download a Dropbox folder as a zip archive",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_downloadfolderaszip",
+            "name": "download-folder-as-zip",
+            "output": ["ActionOutput_dropbox_downloadfolderaszip"],
+            "scopes": ["files.content.read"],
+            "usedModels": ["ActionInput_dropbox_downloadfolderaszip", "ActionOutput_dropbox_downloadfolderaszip"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_downloadfolderaszip": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "The path of the folder to download. Example: \"/my-folder\". Note: The root folder \"/\" is not supported."
+                            }
+                        },
+                        "required": ["path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_downloadfolderaszip": {
+                        "type": "object",
+                        "properties": {
+                            "metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "path_lower": {
+                                        "type": "string"
+                                    },
+                                    "path_display": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "zip_content": {
+                                "type": "string",
+                                "description": "Base64-encoded zip file content"
+                            }
+                        },
+                        "required": ["metadata", "zip_content"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the authenticated Dropbox account profile.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_getcurrentaccount",
+            "name": "get-current-account",
+            "output": ["ActionOutput_dropbox_getcurrentaccount"],
+            "scopes": ["account_info.read"],
+            "usedModels": ["ActionInput_dropbox_getcurrentaccount", "ActionOutput_dropbox_getcurrentaccount"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_getcurrentaccount": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_getcurrentaccount": {
+                        "type": "object",
+                        "properties": {
+                            "account_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "object",
+                                "properties": {
+                                    "given_name": {
+                                        "type": "string"
+                                    },
+                                    "surname": {
+                                        "type": "string"
+                                    },
+                                    "familiar_name": {
+                                        "type": "string"
+                                    },
+                                    "display_name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["given_name", "surname", "familiar_name", "display_name"],
+                                "additionalProperties": false
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "account_type": {
+                                "type": "string"
+                            },
+                            "email_verified": {
+                                "type": "boolean"
+                            },
+                            "disabled": {
+                                "type": "boolean"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "referral_link": {
+                                "type": "string"
+                            },
+                            "is_paired": {
+                                "type": "boolean"
+                            },
+                            "profile_photo_url": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "team": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["name", "id"],
+                                "additionalProperties": false
+                            },
+                            "team_member_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["account_id", "name", "email", "account_type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve metadata for a Dropbox file or folder",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_getfileorfoldermetadata",
+            "name": "get-file-or-folder-metadata",
+            "output": ["ActionOutput_dropbox_getfileorfoldermetadata"],
+            "scopes": ["files.metadata.read"],
+            "usedModels": ["ActionInput_dropbox_getfileorfoldermetadata", "ActionOutput_dropbox_getfileorfoldermetadata"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_getfileorfoldermetadata": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "description": "Path in the user's Dropbox to get metadata for. Example: \"/folder/file.txt\"",
+                                "type": "string"
+                            },
+                            "id": {
+                                "description": "Unique identifier for the file or folder. Can be used instead of path. Example: \"id:a4ayc_80_OEAAAAAAAAAXw\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_getfileorfoldermetadata": {
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "file"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "client_modified": {
+                                        "type": "string"
+                                    },
+                                    "server_modified": {
+                                        "type": "string"
+                                    },
+                                    "rev": {
+                                        "type": "string"
+                                    },
+                                    "size": {
+                                        "type": "number"
+                                    },
+                                    "path_lower": {
+                                        "type": "string"
+                                    },
+                                    "path_display": {
+                                        "type": "string"
+                                    },
+                                    "sharing_info": {
+                                        "type": "object",
+                                        "properties": {
+                                            "read_only": {
+                                                "type": "boolean"
+                                            },
+                                            "parent_shared_folder_id": {
+                                                "type": "string"
+                                            },
+                                            "modified_by": {
+                                                "type": "string"
+                                            },
+                                            "traverse_only": {
+                                                "type": "boolean"
+                                            },
+                                            "no_access": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "content_hash": {
+                                        "type": "string"
+                                    },
+                                    "has_explicit_shared_members": {
+                                        "type": "boolean"
+                                    },
+                                    "is_downloadable": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["type", "name", "id", "client_modified", "server_modified", "rev", "size"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "folder"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "path_lower": {
+                                        "type": "string"
+                                    },
+                                    "path_display": {
+                                        "type": "string"
+                                    },
+                                    "sharing_info": {
+                                        "type": "object",
+                                        "properties": {
+                                            "read_only": {
+                                                "type": "boolean"
+                                            },
+                                            "parent_shared_folder_id": {
+                                                "type": "string"
+                                            },
+                                            "modified_by": {
+                                                "type": "string"
+                                            },
+                                            "traverse_only": {
+                                                "type": "boolean"
+                                            },
+                                            "no_access": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["type", "name", "id"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "deleted"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "path_lower": {
+                                        "type": "string"
+                                    },
+                                    "path_display": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["type", "name"],
+                                "additionalProperties": false
+                            }
+                        ]
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Generate a temporary Dropbox link for file content streaming.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_getfiletemporarylink",
+            "name": "get-file-temporary-link",
+            "output": ["ActionOutput_dropbox_getfiletemporarylink"],
+            "scopes": ["files.content.read"],
+            "usedModels": ["ActionInput_dropbox_getfiletemporarylink", "ActionOutput_dropbox_getfiletemporarylink"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_getfiletemporarylink": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "The path to the file you want a temporary link to. Example: \"/folder/file.txt\""
+                            }
+                        },
+                        "required": ["path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_getfiletemporarylink": {
+                        "type": "object",
+                        "properties": {
+                            "metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "path_lower": {
+                                        "type": "string"
+                                    },
+                                    "path_display": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "client_modified": {
+                                        "type": "string"
+                                    },
+                                    "server_modified": {
+                                        "type": "string"
+                                    },
+                                    "rev": {
+                                        "type": "string"
+                                    },
+                                    "size": {
+                                        "type": "number"
+                                    },
+                                    "is_downloadable": {
+                                        "type": "boolean"
+                                    },
+                                    "content_hash": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["name", "id"],
+                                "additionalProperties": false
+                            },
+                            "link": {
+                                "type": "string",
+                                "description": "Temporary link to stream content of the file. Expires after four hours."
+                            }
+                        },
+                        "required": ["metadata", "link"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List revisions for a Dropbox file by path or file id.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_listfilerevisions",
+            "name": "list-file-revisions",
+            "output": ["ActionOutput_dropbox_listfilerevisions"],
+            "scopes": ["files.metadata.read"],
+            "usedModels": ["ActionInput_dropbox_listfilerevisions", "ActionOutput_dropbox_listfilerevisions"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_listfilerevisions": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "The path to the file or a file ID. Example: \"/folder/document.txt\" or \"id:a4aycG80J0UAAAAAAAAcZA\""
+                            },
+                            "mode": {
+                                "description": "Specify how to interpret the path argument. \"path\" (default): revisions at the same file path are returned. \"id\": revisions for the file ID (survives moves and renames).",
+                                "type": "string",
+                                "enum": ["path", "id"]
+                            },
+                            "limit": {
+                                "description": "Maximum number of revisions to return. Defaults to 10.",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "required": ["path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_listfilerevisions": {
+                        "type": "object",
+                        "properties": {
+                            "is_deleted": {
+                                "description": "If true, this file was deleted.",
+                                "type": "boolean"
+                            },
+                            "entries": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The last component of the path (including extension)."
+                                        },
+                                        "path_lower": {
+                                            "description": "The lowercased full path in the user's Dropbox.",
+                                            "type": "string"
+                                        },
+                                        "path_display": {
+                                            "description": "The cased path to be shown to the user.",
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string",
+                                            "description": "A unique identifier for the file."
+                                        },
+                                        "client_modified": {
+                                            "description": "For files, this is the modification time set by the client.",
+                                            "type": "string"
+                                        },
+                                        "server_modified": {
+                                            "type": "string",
+                                            "description": "The last modified time of the file."
+                                        },
+                                        "rev": {
+                                            "type": "string",
+                                            "description": "A unique identifier for the current revision of a file."
+                                        },
+                                        "size": {
+                                            "type": "number",
+                                            "description": "The file size in bytes."
+                                        },
+                                        "content_hash": {
+                                            "description": "A hash of the file content.",
+                                            "type": "string"
+                                        },
+                                        "is_downloadable": {
+                                            "description": "If true, file can be downloaded directly.",
+                                            "type": "boolean"
+                                        },
+                                        "has_explicit_shared_members": {
+                                            "description": "Whether this file has any explicit shared members.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["name", "id", "server_modified", "rev", "size"],
+                                    "additionalProperties": false
+                                },
+                                "description": "The revisions for the file."
+                            },
+                            "cursor": {
+                                "description": "Pass the cursor into files/list_revisions/continue to paginate through the entries.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["entries"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Dropbox folder contents with pagination and optional recursion.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_listfolder",
+            "name": "list-folder",
+            "output": ["ActionOutput_dropbox_listfolder"],
+            "scopes": ["files.metadata.read"],
+            "usedModels": ["ActionInput_dropbox_listfolder", "ActionOutput_dropbox_listfolder"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_listfolder": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "description": "The path to the folder to list. Use \"\" (empty string) or omit for root folder. Example: \"/Homework/math\"",
+                                "type": "string"
+                            },
+                            "recursive": {
+                                "description": "If true, list contents recursively for all subfolders. Default: false",
+                                "type": "boolean"
+                            },
+                            "include_deleted": {
+                                "description": "If true, include entries for files and folders that were deleted. Default: false",
+                                "type": "boolean"
+                            },
+                            "limit": {
+                                "description": "Maximum number of entries to return per request (1-2000).",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 2000
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from a previous response. If provided, continues listing from that point.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_listfolder": {
+                        "type": "object",
+                        "properties": {
+                            "entries": {
+                                "type": "array",
+                                "items": {},
+                                "description": "The files and folders in the directory."
+                            },
+                            "cursor": {
+                                "description": "Cursor for retrieving more entries via list_folder/continue.",
+                                "type": "string"
+                            },
+                            "has_more": {
+                                "type": "boolean",
+                                "description": "True if more entries are available."
+                            }
+                        },
+                        "required": ["entries", "has_more"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List shared folders available to the current Dropbox user.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_listsharedfolders",
+            "name": "list-shared-folders",
+            "output": ["ActionOutput_dropbox_listsharedfolders"],
+            "scopes": ["sharing.read"],
+            "usedModels": ["ActionInput_dropbox_listsharedfolders", "ActionOutput_dropbox_listsharedfolders"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_listsharedfolders": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "The maximum number of results to return per request. Default is 100.",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_listsharedfolders": {
+                        "type": "object",
+                        "properties": {
+                            "folders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "shared_folder_id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "path_lower": {
+                                            "type": "string"
+                                        },
+                                        "preview_url": {
+                                            "type": "string"
+                                        },
+                                        "access_type": {
+                                            "type": "string"
+                                        },
+                                        "is_team_folder": {
+                                            "type": "boolean"
+                                        },
+                                        "is_inside_team_folder": {
+                                            "type": "boolean"
+                                        },
+                                        "time_invited": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "shared_folder_id",
+                                        "name",
+                                        "preview_url",
+                                        "access_type",
+                                        "is_team_folder",
+                                        "is_inside_team_folder",
+                                        "time_invited"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["folders"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List shared links for the current user or for a specific path",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_listsharedlinks",
+            "name": "list-shared-links",
+            "output": ["ActionOutput_dropbox_listsharedlinks"],
+            "scopes": ["sharing.read"],
+            "usedModels": ["ActionInput_dropbox_listsharedlinks", "ActionOutput_dropbox_listsharedlinks"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_listsharedlinks": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "description": "Path to the file or folder to get shared links for. If not provided, returns all shared links for the current user.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Cursor returned from previous call to get the next page of results. Cursor is only returned when no path is provided.",
+                                "type": "string"
+                            },
+                            "direct_only": {
+                                "description": "If true, only return links directly to the given path. If false or omitted, also return links to parent folders.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_listsharedlinks": {
+                        "type": "object",
+                        "properties": {
+                            "links": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        ".tag": {
+                                            "type": "string",
+                                            "enum": ["file", "folder"]
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "path_lower": {
+                                            "type": "string"
+                                        },
+                                        "link_permissions": {
+                                            "type": "object",
+                                            "properties": {
+                                                "can_revoke": {
+                                                    "type": "boolean"
+                                                },
+                                                "resolved_visibility": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        ".tag": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [".tag"],
+                                                    "additionalProperties": false
+                                                },
+                                                "requested_visibility": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        ".tag": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [".tag"],
+                                                    "additionalProperties": false
+                                                },
+                                                "revoke_failure_reason": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        ".tag": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [".tag"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "team_member_info": {
+                                            "type": "object",
+                                            "properties": {
+                                                "team_info": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["id", "name"],
+                                                    "additionalProperties": false
+                                                },
+                                                "display_name": {
+                                                    "type": "string"
+                                                },
+                                                "member_id": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["team_info", "display_name", "member_id"],
+                                            "additionalProperties": false
+                                        },
+                                        "expires": {
+                                            "type": "string"
+                                        },
+                                        "content_owner_team_info": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "name"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [".tag", "url", "id", "name", "path_lower"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "has_more": {
+                                "type": "boolean"
+                            },
+                            "cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["links", "has_more"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update settings on an existing Dropbox shared link.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_modifysharedlinksettings",
+            "name": "modify-shared-link-settings",
+            "output": ["ActionOutput_dropbox_modifysharedlinksettings"],
+            "scopes": ["sharing.write"],
+            "usedModels": ["ActionInput_dropbox_modifysharedlinksettings", "ActionOutput_dropbox_modifysharedlinksettings"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_modifysharedlinksettings": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "description": "URL of the shared link to change its settings. Example: \"https://www.dropbox.com/s/abc123/file.txt\""
+                            },
+                            "settings": {
+                                "description": "Set of settings for the shared link.",
+                                "type": "object",
+                                "properties": {
+                                    "requested_visibility": {
+                                        "description": "Use `audience` instead. The requested access for this shared link.",
+                                        "type": "string",
+                                        "enum": ["public", "team_only", "password"]
+                                    },
+                                    "audience": {
+                                        "description": "The new audience who can benefit from the access level.",
+                                        "type": "string",
+                                        "enum": ["public", "team", "no_one", "members"]
+                                    },
+                                    "access": {
+                                        "description": "Requested access level. Note: modifying access level for an existing link is not supported.",
+                                        "type": "string",
+                                        "enum": ["viewer", "editor", "max"]
+                                    },
+                                    "expires": {
+                                        "description": "Expiration time of the shared link in ISO 8601 format. By default the link won't expire.",
+                                        "type": "string"
+                                    },
+                                    "require_password": {
+                                        "description": "Boolean flag to enable or disable password protection.",
+                                        "type": "boolean"
+                                    },
+                                    "link_password": {
+                                        "description": "If require_password is true, this specifies the password to access the link.",
+                                        "type": "string"
+                                    },
+                                    "allow_download": {
+                                        "description": "Boolean flag to allow or disallow download capabilities for shared links.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "remove_expiration": {
+                                "description": "If set to true, removes the expiration of the shared link.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["url"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_modifysharedlinksettings": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "link_permissions": {
+                                "type": "object",
+                                "properties": {
+                                    "can_revoke": {
+                                        "type": "boolean"
+                                    },
+                                    "resolved_visibility": {
+                                        "type": "string",
+                                        "enum": ["public", "team_only", "password", "team_and_password", "shared_folder_only", "no_one"]
+                                    },
+                                    "requested_visibility": {
+                                        "type": "string",
+                                        "enum": ["public", "team_only", "password"]
+                                    },
+                                    "effective_audience": {
+                                        "type": "string",
+                                        "enum": ["public", "team", "no_one", "members"]
+                                    },
+                                    "link_access_level": {
+                                        "type": "string",
+                                        "enum": ["viewer", "editor", "max"]
+                                    },
+                                    "can_set_expiration": {
+                                        "type": "boolean"
+                                    },
+                                    "can_set_password": {
+                                        "type": "boolean"
+                                    },
+                                    "can_remove_password": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_download": {
+                                        "type": "boolean"
+                                    },
+                                    "can_allow_download": {
+                                        "type": "boolean"
+                                    },
+                                    "require_password": {
+                                        "type": "boolean"
+                                    },
+                                    "can_request_password": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "expires": {
+                                "type": "string"
+                            },
+                            "path_lower": {
+                                "type": "string"
+                            },
+                            "file_id": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "client_modified": {
+                                "type": "string"
+                            },
+                            "server_modified": {
+                                "type": "string"
+                            },
+                            "rev": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "is_downloadable": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["url"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move a Dropbox file or folder to a different path",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_movefileorfolder",
+            "name": "move-file-or-folder",
+            "output": ["ActionOutput_dropbox_movefileorfolder"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_movefileorfolder", "ActionOutput_dropbox_movefileorfolder"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_movefileorfolder": {
+                        "type": "object",
+                        "properties": {
+                            "from_path": {
+                                "type": "string",
+                                "description": "The path to the file or folder to be moved. Example: \"/Folder/File.txt\""
+                            },
+                            "to_path": {
+                                "type": "string",
+                                "description": "The destination path, including the new name for the file or folder. Example: \"/NewFolder/NewFile.txt\""
+                            },
+                            "allow_shared_folder": {
+                                "description": "If true, move will take into account the shared folder permissions. Default: false",
+                                "type": "boolean"
+                            },
+                            "autorename": {
+                                "description": "If true, rename will be attempted if a conflict occurs. Default: false",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["from_path", "to_path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_movefileorfolder": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "path_lower": {
+                                "type": "string"
+                            },
+                            "path_display": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "content_hash": {
+                                "type": "string"
+                            },
+                            "rev": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "client_modified": {
+                                "type": "string"
+                            },
+                            "server_modified": {
+                                "type": "string"
+                            },
+                            "is_downloadable": {
+                                "type": "boolean"
+                            },
+                            "tag": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "file"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "folder"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["name", "id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Restore a previous Dropbox file revision to the current path",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_restorefilerevision",
+            "name": "restore-file-revision",
+            "output": ["ActionOutput_dropbox_restorefilerevision"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_restorefilerevision", "ActionOutput_dropbox_restorefilerevision"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_restorefilerevision": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "The path of the file to restore. Example: \"/Documents/example.txt\""
+                            },
+                            "rev": {
+                                "type": "string",
+                                "description": "The revision ID to restore to. Example: \"015a01044acb99900000001aa8954d0\""
+                            }
+                        },
+                        "required": ["path", "rev"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_restorefilerevision": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "client_modified": {
+                                "type": "string"
+                            },
+                            "server_modified": {
+                                "type": "string"
+                            },
+                            "rev": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "path_lower": {
+                                "type": "string"
+                            },
+                            "path_display": {
+                                "type": "string"
+                            },
+                            "content_hash": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name", "id", "rev", "size"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Revoke a Dropbox shared link so it no longer grants access.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_revokesharedlink",
+            "name": "revoke-shared-link",
+            "output": ["ActionOutput_dropbox_revokesharedlink"],
+            "scopes": ["sharing.write"],
+            "usedModels": ["ActionInput_dropbox_revokesharedlink", "ActionOutput_dropbox_revokesharedlink"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_revokesharedlink": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "description": "The URL of the shared link to revoke. Example: \"https://www.dropbox.com/s/...\""
+                            }
+                        },
+                        "required": ["url"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_revokesharedlink": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the shared link was successfully revoked."
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search Dropbox files and folders by query text and path scope.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_searchfilesandfolders",
+            "name": "search-files-and-folders",
+            "output": ["ActionOutput_dropbox_searchfilesandfolders"],
+            "scopes": ["files.metadata.read"],
+            "usedModels": ["ActionInput_dropbox_searchfilesandfolders", "ActionOutput_dropbox_searchfilesandfolders"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_searchfilesandfolders": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The string to search for. May match across multiple fields based on the request arguments."
+                            },
+                            "path": {
+                                "description": "A specific folder path to search in. If not specified, searches the entire Dropbox. Example: \"/home/Documents\"",
+                                "type": "string"
+                            },
+                            "max_results": {
+                                "description": "Maximum number of results to return. Default: 100. Range: 1-1000.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "order_by": {
+                                "description": "Order of results. Default: relevance.",
+                                "type": "string",
+                                "enum": ["relevance", "last_modified_time"]
+                            },
+                            "file_status": {
+                                "description": "Filter by file status. Default: active.",
+                                "type": "string",
+                                "enum": ["active", "deleted"]
+                            },
+                            "filename_only": {
+                                "description": "If true, restricts search to file names only. Default: false.",
+                                "type": "boolean"
+                            },
+                            "file_extensions": {
+                                "description": "Restrict search to specific file extensions. Only works for active files. Example: [\"pdf\", \"txt\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "file_categories": {
+                                "description": "Restrict search to specific file categories. Only works for active files.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": ["image", "document", "pdf", "spreadsheet", "presentation", "audio", "video", "folder", "paper", "other"]
+                                }
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from a previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["query"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_searchfilesandfolders": {
+                        "type": "object",
+                        "properties": {
+                            "matches": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "match_type": {
+                                            "type": "object",
+                                            "properties": {
+                                                ".tag": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [".tag"],
+                                            "additionalProperties": false
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                ".tag": {
+                                                    "type": "string",
+                                                    "enum": ["metadata", "unmounted", "not_found"]
+                                                },
+                                                "metadata": {}
+                                            },
+                                            "required": [".tag"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "description": "List of search result matches"
+                            },
+                            "has_more": {
+                                "type": "boolean",
+                                "description": "If true, more results are available"
+                            },
+                            "cursor": {
+                                "description": "Cursor for fetching the next page of results",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["matches", "has_more"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Turn a Dropbox folder into a shared folder for collaborators",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_sharefolder",
+            "name": "share-folder",
+            "output": ["ActionOutput_dropbox_sharefolder"],
+            "scopes": ["sharing.write"],
+            "usedModels": ["ActionInput_dropbox_sharefolder", "ActionOutput_dropbox_sharefolder"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_sharefolder": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "Dropbox path to the folder to share. Example: \"/my-folder\""
+                            },
+                            "force_async": {
+                                "description": "If true, force the share operation to run asynchronously",
+                                "type": "boolean"
+                            },
+                            "member_policy": {
+                                "description": "Who can be a member of this shared folder",
+                                "type": "string",
+                                "enum": ["anyone", "team"]
+                            },
+                            "shared_link_policy": {
+                                "description": "Who can access shared links for the folder",
+                                "type": "string",
+                                "enum": ["anyone", "members"]
+                            },
+                            "viewer_info_policy": {
+                                "description": "Whether to enable viewer info for this folder",
+                                "type": "string",
+                                "enum": ["disabled", "enabled"]
+                            },
+                            "access_inheritance": {
+                                "description": "How access levels are inherited",
+                                "type": "string",
+                                "enum": ["inherit", "no_inherit"]
+                            }
+                        },
+                        "required": ["path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_sharefolder": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "async_job_id": {
+                                "type": "string"
+                            },
+                            "shared_folder_metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "shared_folder_id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "path_lower": {
+                                        "type": "string"
+                                    },
+                                    "preview_url": {
+                                        "type": "string"
+                                    },
+                                    "access_type": {
+                                        "type": "string"
+                                    },
+                                    "is_team_folder": {
+                                        "type": "boolean"
+                                    },
+                                    "is_inside_team_folder": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["shared_folder_id", "name"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Unshare a Dropbox shared folder as its owner.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_unsharefolder",
+            "name": "unshare-folder",
+            "output": ["ActionOutput_dropbox_unsharefolder"],
+            "scopes": ["sharing.write"],
+            "usedModels": ["ActionInput_dropbox_unsharefolder", "ActionOutput_dropbox_unsharefolder"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_unsharefolder": {
+                        "type": "object",
+                        "properties": {
+                            "sharedFolderId": {
+                                "type": "string",
+                                "description": "The ID for the shared folder. Example: \"84528192421\""
+                            },
+                            "leaveACopy": {
+                                "description": "If true, members of this shared folder will get a copy of this folder after it is unshared. Otherwise, it will be removed from their Dropbox. The current user, who is an owner, will always retain their copy.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["sharedFolderId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_unsharefolder": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload a small file directly to Dropbox.",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_uploadfile",
+            "name": "upload-file",
+            "output": ["ActionOutput_dropbox_uploadfile"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_uploadfile", "ActionOutput_dropbox_uploadfile"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_uploadfile": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "Path in the user's Dropbox to save the file. Example: \"/folder/document.txt\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The file content as a base64-encoded string or raw string for text files."
+                            },
+                            "encoding": {
+                                "description": "The encoding of the content. Defaults to \"utf8\".",
+                                "type": "string",
+                                "enum": ["base64", "utf8"]
+                            },
+                            "mode": {
+                                "description": "Selects what to do if the file already exists. \"add\" will add a new file, \"overwrite\" will overwrite, \"update\" will update only if the revision matches (requires rev). Defaults to \"add\".",
+                                "type": "string",
+                                "enum": ["add", "overwrite", "update"]
+                            },
+                            "rev": {
+                                "description": "The revision of the file to update. Required when mode is \"update\".",
+                                "type": "string"
+                            },
+                            "autorename": {
+                                "description": "If true and there's a conflict, Dropbox will try to autorename the file to avoid the conflict. Defaults to false.",
+                                "type": "boolean"
+                            },
+                            "mute": {
+                                "description": "If true, suppresses user notifications for this modification. Defaults to false.",
+                                "type": "boolean"
+                            },
+                            "client_modified": {
+                                "description": "The value to store as the client_modified timestamp in ISO 8601 format. If not set, Dropbox uses the current time.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["path", "content"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_uploadfile": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the file."
+                            },
+                            "path_lower": {
+                                "type": "string",
+                                "description": "The lowercase full path of the file."
+                            },
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the file."
+                            },
+                            "client_modified": {
+                                "type": "string",
+                                "description": "The timestamp when the file was last modified by the client."
+                            },
+                            "server_modified": {
+                                "type": "string",
+                                "description": "The timestamp when the file was last modified on the server."
+                            },
+                            "rev": {
+                                "type": "string",
+                                "description": "The revision of the file."
+                            },
+                            "size": {
+                                "type": "number",
+                                "description": "The file size in bytes."
+                            }
+                        },
+                        "required": ["name", "path_lower", "id", "client_modified", "server_modified", "rev", "size"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload a large file to Dropbox with an upload session",
+            "endpoint": null,
+            "input": "ActionInput_dropbox_uploadlargefile",
+            "name": "upload-large-file",
+            "output": ["ActionOutput_dropbox_uploadlargefile"],
+            "scopes": ["files.content.write"],
+            "usedModels": ["ActionInput_dropbox_uploadlargefile", "ActionOutput_dropbox_uploadlargefile"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dropbox_uploadlargefile": {
+                        "type": "object",
+                        "properties": {
+                            "file_content_base64": {
+                                "type": "string",
+                                "description": "The file content as a base64-encoded string"
+                            },
+                            "dropbox_path": {
+                                "type": "string",
+                                "description": "The destination path in Dropbox. Example: \"/folder/file.txt\""
+                            },
+                            "mode": {
+                                "description": "What to do if the file already exists. Default: \"add\"",
+                                "type": "string",
+                                "enum": ["add", "overwrite"]
+                            },
+                            "chunk_size": {
+                                "description": "Size of each chunk in bytes. Default: 4194304 (4MB). Max: 150MB",
+                                "type": "number"
+                            },
+                            "autorename": {
+                                "description": "If true, rename the file if a conflict occurs. Default: false",
+                                "type": "boolean"
+                            },
+                            "mute": {
+                                "description": "If true, suppresses email notification. Default: false",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["file_content_base64", "dropbox_path"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dropbox_uploadlargefile": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "path": {
+                                "type": "string"
+                            },
+                            "file_id": {
+                                "type": "string"
+                            },
+                            "content_hash": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "path"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync Dropbox file metadata from configured root paths using list folder cursors.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/files"
+                }
+            ],
+            "input": "SyncMetadata_dropbox_files",
+            "name": "files",
+            "output": ["File"],
+            "runs": "every hour",
+            "scopes": ["files.metadata.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["File", "SyncMetadata_dropbox_files"],
+            "version": "3.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "File": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "dropbox_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "path_lower": {
+                                "type": "string"
+                            },
+                            "path_display": {
+                                "type": "string"
+                            },
+                            "server_modified": {
+                                "type": "string"
+                            },
+                            "client_modified": {
+                                "type": "string"
+                            },
+                            "rev": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "content_hash": {
+                                "type": "string"
+                            },
+                            "is_downloadable": {
+                                "type": "boolean"
+                            },
+                            "has_explicit_shared_members": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "dropbox_id", "name", "path_lower", "path_display", "server_modified", "client_modified", "rev", "size"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_dropbox_files": {
+                        "type": "object",
+                        "properties": {
+                            "rootPaths": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync Dropbox folder metadata from configured root paths.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/folders"
+                }
+            ],
+            "input": "SyncMetadata_dropbox_folders",
+            "name": "folders",
+            "output": ["Folder"],
+            "runs": "every hour",
+            "scopes": ["files.metadata.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Folder", "SyncMetadata_dropbox_folders"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Folder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "dropbox_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "path_lower": {
+                                "type": "string"
+                            },
+                            "path_display": {
+                                "type": "string"
+                            },
+                            "parent_folder_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "dropbox_id", "name", "path_lower", "path_display"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_dropbox_folders": {
+                        "type": "object",
+                        "properties": {
+                            "root_paths": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync shared folder metadata visible to the current Dropbox user.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "shared-folders",
+            "output": ["SharedFolder"],
+            "runs": "every hour",
+            "scopes": ["sharing.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["SharedFolder"],
+            "version": "1.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SharedFolder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "sharedFolderId": {
+                                "type": "string"
+                            },
+                            "sharedFolderName": {
+                                "type": "string"
+                            },
+                            "isTeamFolder": {
+                                "type": "boolean"
+                            },
+                            "parentSharedFolderId": {
+                                "type": "string"
+                            },
+                            "sharedFolderPathLower": {
+                                "type": "string"
+                            },
+                            "sharedFolderPreviewPath": {
+                                "type": "string"
+                            },
+                            "accessType": {
+                                "type": "string"
+                            },
+                            "isInsideTeamFolder": {
+                                "type": "boolean"
+                            },
+                            "isMountManaged": {
+                                "type": "boolean"
+                            },
+                            "aclUpdatePolicy": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "sharedFolderId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Dropbox shared links for the current user or configured path scopes.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/shared-links"
+                }
+            ],
+            "input": null,
+            "name": "shared-links",
+            "output": ["SharedLink"],
+            "runs": "every hour",
+            "scopes": ["sharing.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["SharedLink"],
+            "version": "1.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SharedLink": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "path_lower": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "file"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "folder"
+                                    }
+                                ]
+                            },
+                            "client_modified": {
+                                "type": "string"
+                            },
+                            "server_modified": {
+                                "type": "string"
+                            },
+                            "expires": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "url", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

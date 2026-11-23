@@ -1,0 +1,1505 @@
+{
+    "providerConfigKey": "brightcrowd",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches analytics for a specified list of books from Brightcrowd.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/book-analytics",
+                    "group": "Books"
+                }
+            ],
+            "input": "SyncMetadata_brightcrowd_bookanalytics",
+            "name": "book-analytics",
+            "output": ["BookAnalytics"],
+            "runs": "every day",
+            "scopes": ["bcb.partner/book.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["BookAnalytics", "SyncMetadata_brightcrowd_bookanalytics"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "BookAnalytics": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "object",
+                                "properties": {
+                                    "notifications": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "uri": {
+                                                    "type": "string"
+                                                },
+                                                "topicUri": {
+                                                    "type": "string"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "messageCount": {
+                                                    "type": "number"
+                                                },
+                                                "openCount": {
+                                                    "type": "number"
+                                                },
+                                                "clickCount": {
+                                                    "type": "number"
+                                                },
+                                                "uniqueOpenCount": {
+                                                    "type": "number"
+                                                },
+                                                "uniqueClickCount": {
+                                                    "type": "number"
+                                                },
+                                                "bounceCount": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "uri",
+                                                "topicUri",
+                                                "status",
+                                                "messageCount",
+                                                "openCount",
+                                                "clickCount",
+                                                "uniqueOpenCount",
+                                                "uniqueClickCount",
+                                                "bounceCount"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "invitations": {
+                                        "type": "object",
+                                        "properties": {
+                                            "messageCount": {
+                                                "type": "number"
+                                            },
+                                            "uniqueOpenCount": {
+                                                "type": "number"
+                                            },
+                                            "uniqueClickCount": {
+                                                "type": "number"
+                                            },
+                                            "bounceCount": {
+                                                "type": "number"
+                                            },
+                                            "uniqueInvitationOpenUserCount": {
+                                                "type": "number"
+                                            },
+                                            "uniqueInvitationBounceUserCount": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": [
+                                            "messageCount",
+                                            "uniqueOpenCount",
+                                            "uniqueClickCount",
+                                            "bounceCount",
+                                            "uniqueInvitationOpenUserCount",
+                                            "uniqueInvitationBounceUserCount"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "web": {
+                                        "type": "object",
+                                        "properties": {
+                                            "dateRange": {
+                                                "type": "string"
+                                            },
+                                            "values": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "visitors": {
+                                                        "type": "number"
+                                                    },
+                                                    "totalPageViews": {
+                                                        "type": "number"
+                                                    },
+                                                    "sessions": {
+                                                        "type": "number"
+                                                    },
+                                                    "socialClicks": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": ["visitors", "totalPageViews", "sessions", "socialClicks"],
+                                                "additionalProperties": false
+                                            },
+                                            "previousValues": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "visitors": {
+                                                        "type": "number"
+                                                    },
+                                                    "totalPageViews": {
+                                                        "type": "number"
+                                                    },
+                                                    "sessions": {
+                                                        "type": "number"
+                                                    },
+                                                    "socialClicks": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": ["visitors", "totalPageViews", "sessions", "socialClicks"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["dateRange", "values", "previousValues"],
+                                        "additionalProperties": false
+                                    },
+                                    "book": {
+                                        "type": "object",
+                                        "properties": {
+                                            "values": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "pagesCreated": {
+                                                        "type": "number"
+                                                    },
+                                                    "pagesUpdated": {
+                                                        "type": "number"
+                                                    },
+                                                    "taggedUsers": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": ["pagesCreated", "pagesUpdated", "taggedUsers"],
+                                                "additionalProperties": false
+                                            },
+                                            "previousValues": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "pagesCreated": {
+                                                        "type": "number"
+                                                    },
+                                                    "pagesUpdated": {
+                                                        "type": "number"
+                                                    },
+                                                    "taggedUsers": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": ["pagesCreated", "pagesUpdated", "taggedUsers"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["values", "previousValues"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["notifications", "invitations", "web", "book"],
+                                "additionalProperties": false
+                            },
+                            "web": {
+                                "type": "object",
+                                "properties": {
+                                    "dateRange": {
+                                        "type": "string"
+                                    },
+                                    "values": {
+                                        "type": "object",
+                                        "properties": {
+                                            "visitors": {
+                                                "type": "number"
+                                            },
+                                            "totalPageViews": {
+                                                "type": "number"
+                                            },
+                                            "sessions": {
+                                                "type": "number"
+                                            },
+                                            "socialClicks": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["visitors", "totalPageViews", "sessions", "socialClicks"],
+                                        "additionalProperties": false
+                                    },
+                                    "previousValues": {
+                                        "type": "object",
+                                        "properties": {
+                                            "visitors": {
+                                                "type": "number"
+                                            },
+                                            "totalPageViews": {
+                                                "type": "number"
+                                            },
+                                            "sessions": {
+                                                "type": "number"
+                                            },
+                                            "socialClicks": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["visitors", "totalPageViews", "sessions", "socialClicks"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["dateRange", "values", "previousValues"],
+                                "additionalProperties": false
+                            },
+                            "book": {
+                                "type": "object",
+                                "properties": {
+                                    "values": {
+                                        "type": "object",
+                                        "properties": {
+                                            "pagesCreated": {
+                                                "type": "number"
+                                            },
+                                            "pagesUpdated": {
+                                                "type": "number"
+                                            },
+                                            "taggedUsers": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["pagesCreated", "pagesUpdated", "taggedUsers"],
+                                        "additionalProperties": false
+                                    },
+                                    "previousValues": {
+                                        "type": "object",
+                                        "properties": {
+                                            "pagesCreated": {
+                                                "type": "number"
+                                            },
+                                            "pagesUpdated": {
+                                                "type": "number"
+                                            },
+                                            "taggedUsers": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["pagesCreated", "pagesUpdated", "taggedUsers"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["values", "previousValues"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "email", "web", "book"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_brightcrowd_bookanalytics": {
+                        "type": "object",
+                        "properties": {
+                            "bookIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "timeframe": {
+                                "anyOf": [
+                                    {},
+                                    {},
+                                    {},
+                                    {
+                                        "type": "string",
+                                        "const": "all"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["bookIds"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of all books in an account from Brightcrowd.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/books",
+                    "group": "Books"
+                }
+            ],
+            "input": "SyncMetadata_brightcrowd_books",
+            "name": "books",
+            "output": ["Book"],
+            "runs": "every day",
+            "scopes": ["bcb.partner/book.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Book", "SyncMetadata_brightcrowd_books"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Book": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "alias": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "pictureId": {
+                                "type": ["string", "null"]
+                            },
+                            "config": {
+                                "type": ["string", "null"]
+                            },
+                            "coverPictureId": {
+                                "type": ["string", "null"]
+                            },
+                            "bannerPictureId": {
+                                "type": ["string", "null"]
+                            },
+                            "affiliation": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "const": "OtherAffiliation"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "const": "UniversityAffiliation"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "const": "CompanyAffiliation"
+                                                    }
+                                                ]
+                                            },
+                                            "organization": {
+                                                "type": ["string", "null"]
+                                            },
+                                            "major": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "degree": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "school": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "graduationYear": {
+                                                "type": ["number", "null"]
+                                            },
+                                            "specialty": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "category": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "startYear": {
+                                                "type": ["number", "null"]
+                                            },
+                                            "endYear": {
+                                                "type": ["number", "null"]
+                                            },
+                                            "office": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "group": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": ["type"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "description": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "warning": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "route": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "questionHeader": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "questionSubheader": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "headline": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "active": {
+                                            "type": "boolean"
+                                        },
+                                        "required": {
+                                            "type": "boolean"
+                                        },
+                                        "adminOnly": {
+                                            "type": "boolean"
+                                        },
+                                        "fields": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "label": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "headline": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "placeholder": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "active": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "required": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "maxcount": {
+                                                        "type": ["number", "null"]
+                                                    },
+                                                    "maxlength": {
+                                                        "type": ["number", "null"]
+                                                    },
+                                                    "allowMentions": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "customizable": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["id", "label", "type", "active", "required", "allowMentions", "customizable"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "type", "name", "route", "questionHeader", "active", "required", "adminOnly", "fields"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "flags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "publishedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "closedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "lockedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "created": {
+                                "type": "string"
+                            },
+                            "modified": {
+                                "type": "string"
+                            },
+                            "frontMatter": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "sections": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "uri": {
+                                                            "type": "string"
+                                                        },
+                                                        "title": {
+                                                            "type": "string"
+                                                        },
+                                                        "snippet": {
+                                                            "type": "string"
+                                                        },
+                                                        "disabled": {
+                                                            "type": "boolean"
+                                                        }
+                                                    },
+                                                    "required": ["uri", "title", "snippet"],
+                                                    "additionalProperties": false
+                                                }
+                                            }
+                                        },
+                                        "required": ["sections"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "preface": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "text": {
+                                                "type": ["string", "null"]
+                                            },
+                                            "docId": {
+                                                "type": ["string", "null"]
+                                            },
+                                            "video": {
+                                                "type": ["string", "null"]
+                                            },
+                                            "pictures": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": ["text"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "alias",
+                            "name",
+                            "pictureId",
+                            "config",
+                            "coverPictureId",
+                            "bannerPictureId",
+                            "affiliation",
+                            "questions",
+                            "flags",
+                            "created",
+                            "modified",
+                            "frontMatter"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_brightcrowd_books": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of specified books from Brightcrowd.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/books-by-Id",
+                    "group": "Books"
+                }
+            ],
+            "input": "SyncMetadata_brightcrowd_booksbyid",
+            "name": "books-by-id",
+            "output": ["BookById"],
+            "runs": "every day",
+            "scopes": ["bcb.partner/book.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["BookById", "SyncMetadata_brightcrowd_booksbyid"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "BookById": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "alias": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "pictureId": {
+                                "type": ["string", "null"]
+                            },
+                            "config": {
+                                "type": ["string", "null"]
+                            },
+                            "coverPictureId": {
+                                "type": ["string", "null"]
+                            },
+                            "bannerPictureId": {
+                                "type": ["string", "null"]
+                            },
+                            "affiliation": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "const": "OtherAffiliation"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "const": "UniversityAffiliation"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "const": "CompanyAffiliation"
+                                                    }
+                                                ]
+                                            },
+                                            "organization": {
+                                                "type": ["string", "null"]
+                                            },
+                                            "major": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "degree": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "school": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "graduationYear": {
+                                                "type": ["number", "null"]
+                                            },
+                                            "specialty": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "category": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "startYear": {
+                                                "type": ["number", "null"]
+                                            },
+                                            "endYear": {
+                                                "type": ["number", "null"]
+                                            },
+                                            "office": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "group": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": ["type"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "description": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "warning": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "route": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "questionHeader": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "questionSubheader": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "headline": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "active": {
+                                            "type": "boolean"
+                                        },
+                                        "required": {
+                                            "type": "boolean"
+                                        },
+                                        "adminOnly": {
+                                            "type": "boolean"
+                                        },
+                                        "fields": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "label": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "headline": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "placeholder": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "active": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "required": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "maxcount": {
+                                                        "type": ["number", "null"]
+                                                    },
+                                                    "maxlength": {
+                                                        "type": ["number", "null"]
+                                                    },
+                                                    "allowMentions": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "customizable": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["id", "label", "type", "active", "required", "allowMentions", "customizable"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "type", "name", "route", "questionHeader", "active", "required", "adminOnly", "fields"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "flags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "publishedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "closedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "lockedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "created": {
+                                "type": "string"
+                            },
+                            "modified": {
+                                "type": "string"
+                            },
+                            "frontMatter": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "sections": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "uri": {
+                                                            "type": "string"
+                                                        },
+                                                        "title": {
+                                                            "type": "string"
+                                                        },
+                                                        "snippet": {
+                                                            "type": "string"
+                                                        },
+                                                        "disabled": {
+                                                            "type": "boolean"
+                                                        }
+                                                    },
+                                                    "required": ["uri", "title", "snippet"],
+                                                    "additionalProperties": false
+                                                }
+                                            }
+                                        },
+                                        "required": ["sections"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "preface": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "text": {
+                                                "type": ["string", "null"]
+                                            },
+                                            "docId": {
+                                                "type": ["string", "null"]
+                                            },
+                                            "video": {
+                                                "type": ["string", "null"]
+                                            },
+                                            "pictures": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": ["text"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "alias",
+                            "name",
+                            "pictureId",
+                            "config",
+                            "coverPictureId",
+                            "bannerPictureId",
+                            "affiliation",
+                            "questions",
+                            "flags",
+                            "created",
+                            "modified",
+                            "frontMatter"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_brightcrowd_booksbyid": {
+                        "type": "object",
+                        "properties": {
+                            "bookIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "timeframe": {
+                                "anyOf": [
+                                    {},
+                                    {},
+                                    {},
+                                    {
+                                        "type": "string",
+                                        "const": "all"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["bookIds"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of all pages in a book from Brightcrowd.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/pages",
+                    "group": "Books"
+                }
+            ],
+            "input": "SyncMetadata_brightcrowd_pages",
+            "name": "pages",
+            "output": ["Page"],
+            "runs": "every day",
+            "scopes": ["bcb.partner/page.read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Page", "SyncMetadata_brightcrowd_pages"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Page": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "alias": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "draft"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "published"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "hidden"
+                                    }
+                                ]
+                            },
+                            "content": {
+                                "type": "object",
+                                "properties": {
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "previousName": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "suffix": {
+                                        "type": "string"
+                                    },
+                                    "partnerFirstName": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "partnerLastName": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "pronouns": {
+                                        "type": "string"
+                                    },
+                                    "pictureId": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "audioId": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "required": ["firstName", "lastName"],
+                                "additionalProperties": false
+                            },
+                            "pictures": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string",
+                                                            "const": "profile"
+                                                        },
+                                                        {
+                                                            "type": "string",
+                                                            "const": "content"
+                                                        },
+                                                        {
+                                                            "type": "string",
+                                                            "const": "caption"
+                                                        }
+                                                    ]
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "caption": {
+                                                    "type": ["string", "null"]
+                                                }
+                                            },
+                                            "required": ["type", "id"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "videos": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "url": {
+                                                    "type": "string"
+                                                },
+                                                "caption": {
+                                                    "type": ["string", "null"]
+                                                }
+                                            },
+                                            "required": ["url"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "tagUsers": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "homeTown": {
+                                "type": ["string", "null"]
+                            },
+                            "currentCity": {
+                                "type": ["string", "null"]
+                            },
+                            "campusResidence": {
+                                "type": ["string", "null"]
+                            },
+                            "affiliations": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string",
+                                                            "const": "OtherAffiliation"
+                                                        },
+                                                        {
+                                                            "type": "string",
+                                                            "const": "UniversityAffiliation"
+                                                        },
+                                                        {
+                                                            "type": "string",
+                                                            "const": "CompanyAffiliation"
+                                                        }
+                                                    ]
+                                                },
+                                                "organization": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "major": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "degree": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "school": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "graduationYear": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "specialty": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "category": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "title": {
+                                                    "type": "string"
+                                                },
+                                                "startYear": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "endYear": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "office": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "group": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "required": ["type"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "plan": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "school"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "work"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "other"
+                                    }
+                                ]
+                            },
+                            "created": {
+                                "type": "string"
+                            },
+                            "modifiedByUserAt": {
+                                "type": ["string", "null"]
+                            },
+                            "completedByUserAt": {
+                                "type": ["string", "null"]
+                            },
+                            "externalId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "alias", "name", "status", "content", "created"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_brightcrowd_pages": {
+                        "type": "object",
+                        "properties": {
+                            "bookIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "timeframe": {
+                                "anyOf": [
+                                    {},
+                                    {},
+                                    {},
+                                    {
+                                        "type": "string",
+                                        "const": "all"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["bookIds"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

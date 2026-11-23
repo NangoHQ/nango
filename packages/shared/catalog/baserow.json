@@ -1,0 +1,1055 @@
+{
+    "providerConfigKey": "baserow",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create up to 200 rows in a single request.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_batchcreaterows",
+            "name": "batch-create-rows",
+            "output": ["ActionOutput_baserow_batchcreaterows"],
+            "scopes": ["table:write"],
+            "usedModels": ["ActionInput_baserow_batchcreaterows", "ActionOutput_baserow_batchcreaterows"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_batchcreaterows": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Table ID. Example: 1080602"
+                            },
+                            "items": {
+                                "minItems": 1,
+                                "maxItems": 200,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                },
+                                "description": "Row field objects to create. Each object uses field_<id> keys (or display names when userFieldNames is true). Minimum 1, maximum 200."
+                            },
+                            "userFieldNames": {
+                                "description": "If true, use user-specified field names instead of field_<id> keys in request and response.",
+                                "type": "boolean"
+                            },
+                            "before": {
+                                "description": "If provided, inserts all new rows immediately before the row with this id.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["tableId", "items"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_batchcreaterows": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "order": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete up to 200 rows in a single request.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_batchdeleterows",
+            "name": "batch-delete-rows",
+            "output": ["ActionOutput_baserow_batchdeleterows"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_batchdeleterows", "ActionOutput_baserow_batchdeleterows"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_batchdeleterows": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Table ID. Example: 1080602"
+                            },
+                            "items": {
+                                "minItems": 1,
+                                "maxItems": 200,
+                                "type": "array",
+                                "items": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                },
+                                "description": "Array of 1 to 200 row IDs to delete. Example: [15, 16]"
+                            }
+                        },
+                        "required": ["tableId", "items"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_batchdeleterows": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "deletedCount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["success", "deletedCount"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update up to 200 rows in a single request.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_batchupdaterows",
+            "name": "batch-update-rows",
+            "output": ["ActionOutput_baserow_batchupdaterows"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_batchupdaterows", "ActionOutput_baserow_batchupdaterows"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_batchupdaterows": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The table ID. Example: 1080602"
+                            },
+                            "items": {
+                                "minItems": 1,
+                                "maxItems": 200,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "exclusiveMinimum": 0,
+                                            "maximum": 9007199254740991,
+                                            "description": "Row ID to update. Example: 17"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {},
+                                    "description": "Row update payload. Must include id plus only the fields being changed."
+                                },
+                                "description": "Rows to update. 1 to 200 items."
+                            },
+                            "userFieldNames": {
+                                "description": "If true, use field display names instead of field_<id> keys in the request and response.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["tableId", "items"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_batchupdaterows": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "order": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                },
+                                "description": "Updated rows."
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Verify that the configured database token is valid.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_checktoken",
+            "name": "check-token",
+            "output": ["ActionOutput_baserow_checktoken"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_checktoken", "ActionOutput_baserow_checktoken"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_checktoken": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_checktoken": {
+                        "type": "object",
+                        "properties": {
+                            "token": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["token"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a row in a table.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_createrow",
+            "name": "create-row",
+            "output": ["ActionOutput_baserow_createrow"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_createrow", "ActionOutput_baserow_createrow"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_createrow": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The ID of the table to create the row in. Example: 1080602"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Field values to set. Keys are field_<id> by default, or display names when userFieldNames is true."
+                            },
+                            "userFieldNames": {
+                                "description": "If true, use field display names as keys in fields and response.",
+                                "type": "boolean"
+                            },
+                            "before": {
+                                "description": "Row ID to insert the new row immediately before. Omit to append at the end.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["tableId", "fields"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_createrow": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "order": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a row.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_deleterow",
+            "name": "delete-row",
+            "output": ["ActionOutput_baserow_deleterow"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_deleterow", "ActionOutput_baserow_deleterow"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_deleterow": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Table ID. Example: 1080602"
+                            },
+                            "rowId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Row ID. Example: 7"
+                            }
+                        },
+                        "required": ["tableId", "rowId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_deleterow": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "const": true
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single row by id.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_getrow",
+            "name": "get-row",
+            "output": ["ActionOutput_baserow_getrow"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_getrow", "ActionOutput_baserow_getrow"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_getrow": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Table ID. Example: 1080602"
+                            },
+                            "rowId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Row ID. Example: 1"
+                            },
+                            "userFieldNames": {
+                                "description": "Return field names instead of field IDs.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["tableId", "rowId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_getrow": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "order": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the fields (columns) of a table.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_listfields",
+            "name": "list-fields",
+            "output": ["ActionOutput_baserow_listfields"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_listfields", "ActionOutput_baserow_listfields"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_listfields": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The ID of the table to list fields for. Example: 1080602"
+                            }
+                        },
+                        "required": ["tableId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_listfields": {
+                        "type": "object",
+                        "properties": {
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "table_id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "order": {
+                                            "type": "number"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "type": "boolean"
+                                        },
+                                        "read_only": {
+                                            "type": "boolean"
+                                        },
+                                        "description": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "select_options": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "number"
+                                                    },
+                                                    "value": {
+                                                        "type": "string"
+                                                    },
+                                                    "color": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "value"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "link_row_table_id": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "link_row_related_field_id": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "date_format": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "date_include_time": {
+                                            "type": ["boolean", "null"]
+                                        },
+                                        "number_decimal_places": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "number_negative": {
+                                            "type": ["boolean", "null"]
+                                        },
+                                        "text_alignment": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["id", "table_id", "name", "order", "type", "primary"],
+                                    "additionalProperties": {}
+                                },
+                                "description": "The list of fields in the table."
+                            }
+                        },
+                        "required": ["fields"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Look up display names (primary field values) for specific rows across one or more tables.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_listrownames",
+            "name": "list-row-names",
+            "output": ["ActionOutput_baserow_listrownames"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_listrownames", "ActionOutput_baserow_listrownames"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_listrownames": {
+                        "type": "object",
+                        "properties": {
+                            "tables": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "pattern": "^[1-9]\\d*$"
+                                },
+                                "additionalProperties": {
+                                    "minItems": 1,
+                                    "type": "array",
+                                    "items": {
+                                        "type": "integer",
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "description": "Map of table IDs to arrays of row IDs to look up. Example: {\"1080602\": [1, 2]}"
+                            }
+                        },
+                        "required": ["tables"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_listrownames": {
+                        "type": "object",
+                        "properties": {
+                            "names": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "description": "Map of table IDs to maps of row IDs to primary field values. Example: {\"1080602\": {\"1\": \"Design UI\"}}"
+                            }
+                        },
+                        "required": ["names"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List rows in a table with optional filtering, search, sorting, and pagination",
+            "endpoint": null,
+            "input": "ActionInput_baserow_listrows",
+            "name": "list-rows",
+            "output": ["ActionOutput_baserow_listrows"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_listrows", "ActionOutput_baserow_listrows"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_listrows": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Table ID. Example: 1080602"
+                            },
+                            "page": {
+                                "description": "Page number. Default: 1",
+                                "type": "number"
+                            },
+                            "size": {
+                                "description": "Page size. Default: 100, max: 200",
+                                "type": "number"
+                            },
+                            "search": {
+                                "description": "Search query string",
+                                "type": "string"
+                            },
+                            "orderBy": {
+                                "description": "Comma-separated field ids or display names. Example: field_9571320 or -field_9571320 for descending",
+                                "type": "string"
+                            },
+                            "filter": {
+                                "description": "Filter params. Keys like filter__field_<id>__<type>, values are filter values",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": ["string", "number"]
+                                }
+                            },
+                            "filterType": {
+                                "description": "Filter logic when multiple filter params are provided",
+                                "type": "string",
+                                "enum": ["AND", "OR"]
+                            },
+                            "filters": {
+                                "description": "JSON-serialized filter tree. If present, all filter__ params are ignored",
+                                "type": "string"
+                            },
+                            "viewId": {
+                                "description": "View ID to inherit stored filters and sorts",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "include": {
+                                "description": "Comma-separated field names or field_<id> to include",
+                                "type": "string"
+                            },
+                            "exclude": {
+                                "description": "Comma-separated field names or field_<id> to exclude",
+                                "type": "string"
+                            },
+                            "userFieldNames": {
+                                "description": "When true, response keys and order_by/include/exclude use display names instead of field_<id>",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["tableId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_listrows": {
+                        "type": "object",
+                        "properties": {
+                            "count": {
+                                "type": "number"
+                            },
+                            "next": {
+                                "type": ["string", "null"]
+                            },
+                            "previous": {
+                                "type": ["string", "null"]
+                            },
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "order": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "order"],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["count", "results"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all tables the database token can access.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_listtables",
+            "name": "list-tables",
+            "output": ["ActionOutput_baserow_listtables"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_listtables", "ActionOutput_baserow_listtables"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_listtables": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_listtables": {
+                        "type": "object",
+                        "properties": {
+                            "tables": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "order": {
+                                            "type": "number"
+                                        },
+                                        "database_id": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id", "name", "order", "database_id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["tables"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move a row to a new position (reorder within the table).",
+            "endpoint": null,
+            "input": "ActionInput_baserow_moverow",
+            "name": "move-row",
+            "output": ["ActionOutput_baserow_moverow"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_moverow", "ActionOutput_baserow_moverow"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_moverow": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Table ID. Example: 1080602"
+                            },
+                            "rowId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Row ID to move. Example: 12"
+                            },
+                            "beforeId": {
+                                "description": "Row ID to move immediately before. Omit to move to the end of the table.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["tableId", "rowId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_moverow": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "order": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "order"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a row.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_updaterow",
+            "name": "update-row",
+            "output": ["ActionOutput_baserow_updaterow"],
+            "scopes": ["database:row:update"],
+            "usedModels": ["ActionInput_baserow_updaterow", "ActionOutput_baserow_updaterow"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_updaterow": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Table ID. Example: 1080602"
+                            },
+                            "rowId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Row ID. Example: 9"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Partial row fields to update. Keys are field_<id> or display names when user_field_names is true."
+                            },
+                            "userFieldNames": {
+                                "description": "If true, use display names as field keys instead of field_<id>.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["tableId", "rowId", "fields"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_updaterow": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "order": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Verify a password value against a Password-type field on a row.",
+            "endpoint": null,
+            "input": "ActionInput_baserow_verifypasswordfield",
+            "name": "verify-password-field",
+            "output": ["ActionOutput_baserow_verifypasswordfield"],
+            "scopes": [],
+            "usedModels": ["ActionInput_baserow_verifypasswordfield", "ActionOutput_baserow_verifypasswordfield"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_baserow_verifypasswordfield": {
+                        "type": "object",
+                        "properties": {
+                            "field_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The ID of the password field to verify against. Example: 9574050"
+                            },
+                            "row_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "The ID of the row containing the password. Example: 1"
+                            },
+                            "password": {
+                                "type": "string",
+                                "description": "The plaintext password to verify. Example: \"NangoTest123!\""
+                            }
+                        },
+                        "required": ["field_id", "row_id", "password"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_baserow_verifypasswordfield": {
+                        "type": "object",
+                        "properties": {
+                            "is_correct": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["is_correct"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync field (column) definitions for a configured table",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_baserow_fields",
+            "name": "fields",
+            "output": ["Field"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Field", "SyncMetadata_baserow_fields"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Field": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    },
+                    "SyncMetadata_baserow_fields": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["tableId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync rows for a configured table",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_baserow_rows",
+            "name": "rows",
+            "output": ["Row"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Row", "SyncMetadata_baserow_rows"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Row": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "tableId": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "data": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "tableId", "data"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_baserow_rows": {
+                        "type": "object",
+                        "properties": {
+                            "tableId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["tableId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync all tables visible to the database token.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "tables",
+            "output": ["Table"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Table"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Table": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "order": {
+                                "type": "number"
+                            },
+                            "database_id": {
+                                "type": "number"
+                            },
+                            "created_on": {
+                                "type": "string"
+                            },
+                            "last_modified": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

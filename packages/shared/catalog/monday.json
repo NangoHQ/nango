@@ -1,0 +1,3269 @@
+{
+    "providerConfigKey": "monday",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Archive an item in monday.com (sets state to archived, distinct from delete).",
+            "endpoint": null,
+            "input": "ActionInput_monday_archiveitem",
+            "name": "archive-item",
+            "output": ["ActionOutput_monday_archiveitem"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_archiveitem", "ActionOutput_monday_archiveitem"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_archiveitem": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "string",
+                                "description": "The ID of the item to archive. Example: \"2933609588\""
+                            }
+                        },
+                        "required": ["item_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_archiveitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Change a monday.com item column value.",
+            "endpoint": null,
+            "input": "ActionInput_monday_changecolumnvalue",
+            "name": "change-column-value",
+            "output": ["ActionOutput_monday_changecolumnvalue"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_changecolumnvalue", "ActionOutput_monday_changecolumnvalue"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_changecolumnvalue": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "string",
+                                "description": "The ID of the item to update. Example: \"2933609588\""
+                            },
+                            "column_id": {
+                                "type": "string",
+                                "description": "The ID of the column to update. Example: \"task_status\""
+                            },
+                            "board_id": {
+                                "type": "string",
+                                "description": "The ID of the board containing the item. Example: \"5096980653\""
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "The new column value as a JSON-formatted string. Example: \"{\\\"label\\\":\\\"Done\\\"}\""
+                            },
+                            "create_labels_if_missing": {
+                                "description": "If true, creates new Status or Dropdown labels that do not already exist.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["item_id", "column_id", "board_id", "value"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_changecolumnvalue": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the updated item."
+                            },
+                            "name": {
+                                "description": "The name of the updated item.",
+                                "type": "string"
+                            },
+                            "column_values": {
+                                "description": "The column values of the updated item.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a board in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_createboard",
+            "name": "create-board",
+            "output": ["ActionOutput_monday_createboard"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_createboard", "ActionOutput_monday_createboard"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_createboard": {
+                        "type": "object",
+                        "properties": {
+                            "board_name": {
+                                "type": "string",
+                                "description": "The new board's name. Example: \"My Board\""
+                            },
+                            "board_kind": {
+                                "type": "string",
+                                "enum": ["private", "public", "share"],
+                                "description": "The type of board to create."
+                            },
+                            "description": {
+                                "description": "The new board's description.",
+                                "type": "string"
+                            },
+                            "workspace_id": {
+                                "description": "The workspace ID to create the board in. Example: \"6502905\"",
+                                "type": "string"
+                            },
+                            "empty": {
+                                "description": "Creates an empty board without any default items.",
+                                "type": "boolean"
+                            },
+                            "folder_id": {
+                                "description": "The board's folder ID.",
+                                "type": "string"
+                            },
+                            "template_id": {
+                                "description": "The board's template ID.",
+                                "type": "string"
+                            },
+                            "board_owner_ids": {
+                                "description": "A list of user IDs who will be board owners.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "board_subscriber_ids": {
+                                "description": "A list of user IDs who will subscribe to the board.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "prompt": {
+                                "description": "An AI prompt to generate the board's structure and content.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["board_name", "board_kind"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_createboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "board_kind": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "workspace_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "state", "board_kind", "url"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a column in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_createcolumn",
+            "name": "create-column",
+            "output": ["ActionOutput_monday_createcolumn"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_createcolumn", "ActionOutput_monday_createcolumn"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_createcolumn": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The ID of the board to add the column to. Example: \"5096980653\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "The display title for the new column."
+                            },
+                            "column_type": {
+                                "type": "string",
+                                "description": "The type of column to create. Example: \"text\", \"status\", \"numbers\""
+                            },
+                            "description": {
+                                "description": "An optional description shown in the column header tooltip.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["board_id", "title", "column_type"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_createcolumn": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "title", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a group in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_creategroup",
+            "name": "create-group",
+            "output": ["ActionOutput_monday_creategroup"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_creategroup", "ActionOutput_monday_creategroup"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "Board ID. Example: \"5096980653\""
+                            },
+                            "group_name": {
+                                "type": "string",
+                                "description": "Group name. Maximum 255 characters."
+                            },
+                            "group_color": {
+                                "description": "Group color HEX code. Example: \"#ff642e\"",
+                                "type": "string"
+                            },
+                            "relative_to": {
+                                "description": "Group ID to position relative to.",
+                                "type": "string"
+                            },
+                            "position_relative_method": {
+                                "description": "Position relative method.",
+                                "type": "string",
+                                "enum": ["before_at", "after_at"]
+                            }
+                        },
+                        "required": ["board_id", "group_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an item in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_createitem",
+            "name": "create-item",
+            "output": ["ActionOutput_monday_createitem"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_createitem", "ActionOutput_monday_createitem"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_createitem": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The board ID to create the item on. Example: \"5096980653\""
+                            },
+                            "group_id": {
+                                "description": "The group ID to create the item in. Example: \"topics\"",
+                                "type": "string"
+                            },
+                            "item_name": {
+                                "type": "string",
+                                "description": "The name of the new item."
+                            },
+                            "column_values": {
+                                "description": "Column values as a JSON object. Keys are column IDs, values are type-specific.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "create_labels_if_missing": {
+                                "description": "Whether to create missing status/dropdown labels.",
+                                "type": "boolean"
+                            },
+                            "relative_to": {
+                                "description": "The item ID to position the new item relative to.",
+                                "type": "string"
+                            },
+                            "position_relative_method": {
+                                "description": "Position relative to the specified item.",
+                                "type": "string",
+                                "enum": ["before_at", "after_at"]
+                            }
+                        },
+                        "required": ["board_id", "item_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_createitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "board_id": {
+                                "type": "string"
+                            },
+                            "group_id": {
+                                "type": "string"
+                            },
+                            "group_title": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a subitem under a parent item in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_createsubitem",
+            "name": "create-subitem",
+            "output": ["ActionOutput_monday_createsubitem"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_createsubitem", "ActionOutput_monday_createsubitem"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_createsubitem": {
+                        "type": "object",
+                        "properties": {
+                            "parent_item_id": {
+                                "type": "string",
+                                "description": "The parent item ID. Example: \"2933602562\""
+                            },
+                            "item_name": {
+                                "type": "string",
+                                "description": "The new subitem name. Example: \"Design mockup\""
+                            }
+                        },
+                        "required": ["parent_item_id", "item_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_createsubitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "board_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "board_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a update in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_createupdate",
+            "name": "create-update",
+            "output": ["ActionOutput_monday_createupdate"],
+            "scopes": ["updates:write"],
+            "usedModels": ["ActionInput_monday_createupdate", "ActionOutput_monday_createupdate"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_createupdate": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "string",
+                                "description": "The item ID to create the update on. Example: \"2933609588\""
+                            },
+                            "body": {
+                                "type": "string",
+                                "description": "The update text. HTML formatting is supported."
+                            },
+                            "parent_id": {
+                                "description": "The parent update ID to reply to. Omit for top-level updates.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["item_id", "body"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_createupdate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "creator_id": {
+                                "type": "string"
+                            },
+                            "item_id": {
+                                "type": "string"
+                            },
+                            "text_body": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a board in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_deleteboard",
+            "name": "delete-board",
+            "output": ["ActionOutput_monday_deleteboard"],
+            "scopes": ["boards:read", "boards:write"],
+            "usedModels": ["ActionInput_monday_deleteboard", "ActionOutput_monday_deleteboard"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_deleteboard": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the board to delete or archive. Example: \"5096980653\""
+                            },
+                            "permanent": {
+                                "description": "If true, permanently deletes the board. If false or omitted, archives the board.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["board_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_deleteboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a column in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_deletecolumn",
+            "name": "delete-column",
+            "output": ["ActionOutput_monday_deletecolumn"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_deletecolumn", "ActionOutput_monday_deletecolumn"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_deletecolumn": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the board that contains the column to delete. Example: \"5096980653\""
+                            },
+                            "column_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the column to delete. Example: \"task_status\""
+                            }
+                        },
+                        "required": ["board_id", "column_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_deletecolumn": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the deleted column."
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a group in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_deletegroup",
+            "name": "delete-group",
+            "output": ["ActionOutput_monday_deletegroup"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_deletegroup", "ActionOutput_monday_deletegroup"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The board's unique identifier. Example: \"5096980653\""
+                            },
+                            "group_id": {
+                                "type": "string",
+                                "description": "The group's unique identifier. Example: \"topics\""
+                            },
+                            "permanent": {
+                                "description": "If true, permanently deletes the group. If false or omitted, archives the group (soft delete).",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["board_id", "group_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive an item in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_deleteitem",
+            "name": "delete-item",
+            "output": ["ActionOutput_monday_deleteitem"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_deleteitem", "ActionOutput_monday_deleteitem"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_deleteitem": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "string",
+                                "description": "The item ID to delete or archive. Example: \"2933609588\""
+                            },
+                            "permanent": {
+                                "description": "If true, permanently delete the item. If false or omitted, archive the item (recoverable).",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["item_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_deleteitem": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "string"
+                            },
+                            "operation": {
+                                "type": "string",
+                                "enum": ["archive", "delete"]
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["item_id", "operation", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an update in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_deleteupdate",
+            "name": "delete-update",
+            "output": ["ActionOutput_monday_deleteupdate"],
+            "scopes": ["updates:write"],
+            "usedModels": ["ActionInput_monday_deleteupdate", "ActionOutput_monday_deleteupdate"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_deleteupdate": {
+                        "type": "object",
+                        "properties": {
+                            "updateId": {
+                                "type": "string",
+                                "description": "The unique identifier of the update to delete. Example: \"1234567890\""
+                            }
+                        },
+                        "required": ["updateId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_deleteupdate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the deleted update."
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Duplicate a board in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_duplicateboard",
+            "name": "duplicate-board",
+            "output": ["ActionOutput_monday_duplicateboard"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_duplicateboard", "ActionOutput_monday_duplicateboard"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_duplicateboard": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The ID of the board to duplicate. Example: \"5096980653\""
+                            },
+                            "duplicate_type": {
+                                "type": "string",
+                                "enum": ["duplicate_board_with_structure", "duplicate_board_with_pulses", "duplicate_board_with_pulses_and_updates"],
+                                "description": "The type of duplication to perform."
+                            },
+                            "board_name": {
+                                "description": "The name for the duplicated board.",
+                                "type": "string"
+                            },
+                            "workspace_id": {
+                                "description": "The workspace ID to place the duplicated board in.",
+                                "type": "string"
+                            },
+                            "folder_id": {
+                                "description": "The folder ID to place the duplicated board in.",
+                                "type": "string"
+                            },
+                            "keep_subscribers": {
+                                "description": "Whether to keep subscribers on the duplicated board.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["board_id", "duplicate_type"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_duplicateboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single board from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_getboard",
+            "name": "get-board",
+            "output": ["ActionOutput_monday_getboard"],
+            "scopes": ["boards:read"],
+            "usedModels": ["ActionInput_monday_getboard", "ActionOutput_monday_getboard"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_getboard": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the board to retrieve. Example: \"5096980653\""
+                            }
+                        },
+                        "required": ["board_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_getboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "board_kind": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "workspace": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "title"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "columns": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "title", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "items_count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single column from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_getcolumn",
+            "name": "get-column",
+            "output": ["ActionOutput_monday_getcolumn"],
+            "scopes": ["boards:read"],
+            "usedModels": ["ActionInput_monday_getcolumn", "ActionOutput_monday_getcolumn"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_getcolumn": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The board ID. Example: \"5096980653\""
+                            },
+                            "column_id": {
+                                "type": "string",
+                                "description": "The column ID. Example: \"task_status\""
+                            }
+                        },
+                        "required": ["board_id", "column_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_getcolumn": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "width": {
+                                "type": "number"
+                            },
+                            "settings": {}
+                        },
+                        "required": ["id", "title", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single group from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_getgroup",
+            "name": "get-group",
+            "output": ["ActionOutput_monday_getgroup"],
+            "scopes": ["boards:read"],
+            "usedModels": ["ActionInput_monday_getgroup", "ActionOutput_monday_getgroup"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The board ID that contains the group. Example: \"5096980653\""
+                            },
+                            "group_id": {
+                                "type": "string",
+                                "description": "The group ID to retrieve. Example: \"topics\""
+                            }
+                        },
+                        "required": ["board_id", "group_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "title", "color", "position"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single item from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_getitem",
+            "name": "get-item",
+            "output": ["ActionOutput_monday_getitem"],
+            "scopes": ["boards:read"],
+            "usedModels": ["ActionInput_monday_getitem", "ActionOutput_monday_getitem"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_getitem": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the item to retrieve. Example: \"2933609588\""
+                            }
+                        },
+                        "required": ["item_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_getitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "board_id": {
+                                "type": "string"
+                            },
+                            "group_id": {
+                                "type": "string"
+                            },
+                            "group_title": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "column_values": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "creator": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single subitem from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_getsubitem",
+            "name": "get-subitem",
+            "output": ["ActionOutput_monday_getsubitem"],
+            "scopes": ["boards:read"],
+            "usedModels": ["ActionInput_monday_getsubitem", "ActionOutput_monday_getsubitem"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_getsubitem": {
+                        "type": "object",
+                        "properties": {
+                            "subitem_id": {
+                                "type": "string",
+                                "description": "The ID of the subitem to retrieve. Example: \"2933645613\""
+                            }
+                        },
+                        "required": ["subitem_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_getsubitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "board_id": {
+                                "type": "string"
+                            },
+                            "column_values": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single team from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_getteam",
+            "name": "get-team",
+            "output": ["ActionOutput_monday_getteam"],
+            "scopes": ["teams:read"],
+            "usedModels": ["ActionInput_monday_getteam", "ActionOutput_monday_getteam"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "team_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the team to retrieve. Example: \"13240071\""
+                            }
+                        },
+                        "required": ["team_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "picture_url": {
+                                "type": "string"
+                            },
+                            "owners": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "name"],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single update from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_getupdate",
+            "name": "get-update",
+            "output": ["ActionOutput_monday_getupdate"],
+            "scopes": ["updates:read"],
+            "usedModels": ["ActionInput_monday_getupdate", "ActionOutput_monday_getupdate"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_getupdate": {
+                        "type": "object",
+                        "properties": {
+                            "update_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the update. Example: \"579526624\""
+                            }
+                        },
+                        "required": ["update_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_getupdate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "string"
+                            },
+                            "text_body": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "edited_at": {
+                                "type": "string"
+                            },
+                            "creator_id": {
+                                "type": "string"
+                            },
+                            "item_id": {
+                                "type": "string"
+                            },
+                            "creator": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "body"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single user from monday.com",
+            "endpoint": null,
+            "input": "ActionInput_monday_getuser",
+            "name": "get-user",
+            "output": ["ActionOutput_monday_getuser"],
+            "scopes": ["users:read"],
+            "usedModels": ["ActionInput_monday_getuser", "ActionOutput_monday_getuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The unique identifier of the user. Example: \"104094154\""
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "photo_thumb": {
+                                "type": "string"
+                            },
+                            "photo_original": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "time_zone_identifier": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "teams": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "name", "email", "url"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single workspace from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_getworkspace",
+            "name": "get-workspace",
+            "output": ["ActionOutput_monday_getworkspace"],
+            "scopes": ["workspaces:read"],
+            "usedModels": ["ActionInput_monday_getworkspace", "ActionOutput_monday_getworkspace"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_getworkspace": {
+                        "type": "object",
+                        "properties": {
+                            "workspaceId": {
+                                "type": "string",
+                                "description": "The unique identifier of the monday.com workspace to retrieve."
+                            }
+                        },
+                        "required": ["workspaceId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_getworkspace": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "kind": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List boards from monday.com",
+            "endpoint": null,
+            "input": "ActionInput_monday_listboards",
+            "name": "list-boards",
+            "output": ["ActionOutput_monday_listboards"],
+            "scopes": ["boards:read"],
+            "usedModels": ["ActionInput_monday_listboards", "ActionOutput_monday_listboards"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_listboards": {
+                        "type": "object",
+                        "properties": {
+                            "ids": {
+                                "description": "Specific board IDs to return. Example: [\"5096980653\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "board_kind": {
+                                "description": "The type of board to return.",
+                                "type": "string",
+                                "enum": ["private", "public", "share"]
+                            },
+                            "state": {
+                                "description": "The state of the board to return. Defaults to active.",
+                                "type": "string",
+                                "enum": ["active", "all", "archived", "deleted"]
+                            },
+                            "workspace_ids": {
+                                "description": "Workspace IDs that contain the boards to return. Example: [\"6502905\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "limit": {
+                                "description": "The number of boards to return. Defaults to 25.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "page": {
+                                "description": "The page number to return. Starts at 1.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_listboards": {
+                        "type": "object",
+                        "properties": {
+                            "boards": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "board_kind": {
+                                            "type": "string"
+                                        },
+                                        "workspace_id": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["boards"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List columns from monday.com",
+            "endpoint": null,
+            "input": "ActionInput_monday_listcolumns",
+            "name": "list-columns",
+            "output": ["ActionOutput_monday_listcolumns"],
+            "scopes": ["boards:read"],
+            "usedModels": ["ActionInput_monday_listcolumns", "ActionOutput_monday_listcolumns"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_listcolumns": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "description": "Board ID to filter columns by. Example: \"5096980653\"",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of boards to retrieve per page.",
+                                "type": "number"
+                            },
+                            "page": {
+                                "description": "Page number for board pagination. Omit for the first page.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_listcolumns": {
+                        "type": "object",
+                        "properties": {
+                            "columns": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "settings_str": {
+                                            "type": "string"
+                                        },
+                                        "board_id": {
+                                            "type": "string"
+                                        },
+                                        "board_name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "title", "type", "board_id", "board_name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["columns"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List groups from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_listgroups",
+            "name": "list-groups",
+            "output": ["ActionOutput_monday_listgroups"],
+            "scopes": ["boards:read"],
+            "usedModels": ["ActionInput_monday_listgroups", "ActionOutput_monday_listgroups"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The board ID to list groups from. Example: \"5096980653\""
+                            },
+                            "ids": {
+                                "description": "Optional group IDs to filter by.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["board_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "type": "string"
+                                        },
+                                        "archived": {
+                                            "type": "boolean"
+                                        },
+                                        "deleted": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "title"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["groups"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List items from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_listitems",
+            "name": "list-items",
+            "output": ["ActionOutput_monday_listitems"],
+            "scopes": ["boards:read"],
+            "usedModels": ["ActionInput_monday_listitems", "ActionOutput_monday_listitems"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_listitems": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The board ID to list items from. Example: \"5096980653\""
+                            },
+                            "limit": {
+                                "description": "Number of items to return. Maximum is 500. Default is 25.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 500
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "query_params": {
+                                "description": "Filter, sort, and scope parameters. Cannot be used with cursor.",
+                                "type": "object",
+                                "properties": {
+                                    "rules": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "column_id": {
+                                                    "type": "string"
+                                                },
+                                                "compare_value": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "number"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": ["string", "number"]
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "operator": {
+                                                    "type": "string"
+                                                },
+                                                "compare_attribute": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["column_id"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "operator": {
+                                        "type": "string",
+                                        "enum": ["and", "or"]
+                                    },
+                                    "order_by": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "column_id": {
+                                                    "type": "string"
+                                                },
+                                                "direction": {
+                                                    "type": "string",
+                                                    "enum": ["asc", "desc"]
+                                                }
+                                            },
+                                            "required": ["column_id"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["board_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_listitems": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "board_id": {
+                                            "type": "string"
+                                        },
+                                        "group_id": {
+                                            "type": "string"
+                                        },
+                                        "group_title": {
+                                            "type": "string"
+                                        },
+                                        "column_values": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "text": {
+                                                        "type": ["string", "null"]
+                                                    },
+                                                    "value": {
+                                                        "type": ["string", "null"]
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List subitems of a parent item in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_listsubitems",
+            "name": "list-subitems",
+            "output": ["ActionOutput_monday_listsubitems"],
+            "scopes": ["boards:read"],
+            "usedModels": ["ActionInput_monday_listsubitems", "ActionOutput_monday_listsubitems"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_listsubitems": {
+                        "type": "object",
+                        "properties": {
+                            "parent_item_id": {
+                                "type": "string",
+                                "description": "Parent item ID. Example: \"2933602562\""
+                            }
+                        },
+                        "required": ["parent_item_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_listsubitems": {
+                        "type": "object",
+                        "properties": {
+                            "subitems": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "board_id": {
+                                            "type": "string"
+                                        },
+                                        "column_values": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "text": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "name", "board_id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["subitems"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List teams from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_listteams",
+            "name": "list-teams",
+            "output": ["ActionOutput_monday_listteams"],
+            "scopes": ["teams:read"],
+            "usedModels": ["ActionInput_monday_listteams", "ActionOutput_monday_listteams"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "ids": {
+                                "description": "Filter by specific team IDs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "limit": {
+                                "description": "Number of teams to return per page. Default: 25.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "teams": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "picture_url": {
+                                            "type": "string"
+                                        },
+                                        "owners": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["teams"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List updates from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_listupdates",
+            "name": "list-updates",
+            "output": ["ActionOutput_monday_listupdates"],
+            "scopes": ["updates:read"],
+            "usedModels": ["ActionInput_monday_listupdates", "ActionOutput_monday_listupdates"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_listupdates": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of updates to return per page. Default: 25. Maximum: 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "from_date": {
+                                "description": "Start of date range filter in ISO 8601 format. Must be used with to_date.",
+                                "type": "string"
+                            },
+                            "to_date": {
+                                "description": "End of date range filter in ISO 8601 format. Must be used with from_date.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_listupdates": {
+                        "type": "object",
+                        "properties": {
+                            "updates": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "body": {
+                                            "type": "string"
+                                        },
+                                        "text_body": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "creator": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "replies": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "body": {
+                                                        "type": "string"
+                                                    },
+                                                    "text_body": {
+                                                        "type": "string"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string"
+                                                    },
+                                                    "creator": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "item_id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["updates"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List users from monday.com",
+            "endpoint": null,
+            "input": "ActionInput_monday_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_monday_listusers"],
+            "scopes": ["users:read"],
+            "usedModels": ["ActionInput_monday_listusers", "ActionOutput_monday_listusers"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "The number of users to return. Maximum 1000.",
+                                "type": "number"
+                            },
+                            "page": {
+                                "description": "The page number to return. Starts at 1.",
+                                "type": "number"
+                            },
+                            "ids": {
+                                "description": "The unique identifiers of specific users to return.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "emails": {
+                                "description": "The specific user emails to return.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "name": {
+                                "description": "A fuzzy search of users by name.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "is_admin": {
+                                            "type": "boolean"
+                                        },
+                                        "is_guest": {
+                                            "type": "boolean"
+                                        },
+                                        "is_view_only": {
+                                            "type": "boolean"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
+                                        },
+                                        "teams": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "name", "email"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["users"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List workspaces from monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_listworkspaces",
+            "name": "list-workspaces",
+            "output": ["ActionOutput_monday_listworkspaces"],
+            "scopes": ["workspaces:read"],
+            "usedModels": ["ActionInput_monday_listworkspaces", "ActionOutput_monday_listworkspaces"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_listworkspaces": {
+                        "type": "object",
+                        "properties": {
+                            "ids": {
+                                "description": "Filter by specific workspace IDs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "kind": {
+                                "description": "Filter by workspace kind.",
+                                "type": "string",
+                                "enum": ["closed", "open", "template"]
+                            },
+                            "limit": {
+                                "description": "Number of workspaces to return per page. Min: 1, max: 100, default: 25.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "state": {
+                                "description": "Filter by workspace state. Default: active.",
+                                "type": "string",
+                                "enum": ["active", "all", "archived", "deleted"]
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_listworkspaces": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "kind": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move an item to another board.",
+            "endpoint": null,
+            "input": "ActionInput_monday_moveitemtoboard",
+            "name": "move-item-to-board",
+            "output": ["ActionOutput_monday_moveitemtoboard"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_moveitemtoboard", "ActionOutput_monday_moveitemtoboard"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_moveitemtoboard": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the item to move. Example: \"2933602562\""
+                            },
+                            "board_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the target board. Example: \"5096980652\""
+                            },
+                            "group_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the target group on the target board. Example: \"new_group\""
+                            }
+                        },
+                        "required": ["item_id", "board_id", "group_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_moveitemtoboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "board_id": {
+                                "type": "string"
+                            },
+                            "group_id": {
+                                "type": "string"
+                            },
+                            "group_title": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move an item to a different group within the same board.",
+            "endpoint": null,
+            "input": "ActionInput_monday_moveitemtogroup",
+            "name": "move-item-to-group",
+            "output": ["ActionOutput_monday_moveitemtogroup"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_moveitemtogroup", "ActionOutput_monday_moveitemtogroup"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_moveitemtogroup": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "string",
+                                "description": "Item ID. Example: \"2933609588\""
+                            },
+                            "group_id": {
+                                "type": "string",
+                                "description": "Group ID. Example: \"topics\", \"new_group313\""
+                            }
+                        },
+                        "required": ["item_id", "group_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_moveitemtogroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a board in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_updateboard",
+            "name": "update-board",
+            "output": ["ActionOutput_monday_updateboard"],
+            "scopes": ["boards:read", "boards:write"],
+            "usedModels": ["ActionInput_monday_updateboard", "ActionOutput_monday_updateboard"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_updateboard": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "The board unique identifier. Example: \"5096980653\""
+                            },
+                            "board_attribute": {
+                                "type": "string",
+                                "enum": ["name", "description", "communication", "item_nickname"],
+                                "description": "The board attribute to update"
+                            },
+                            "new_value": {
+                                "type": "string",
+                                "description": "The new attribute value"
+                            }
+                        },
+                        "required": ["board_id", "board_attribute", "new_value"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_updateboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "board_kind": {
+                                "type": "string"
+                            },
+                            "workspace_id": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a column in monday.com",
+            "endpoint": null,
+            "input": "ActionInput_monday_updatecolumn",
+            "name": "update-column",
+            "output": ["ActionOutput_monday_updatecolumn"],
+            "scopes": ["boards:read", "boards:write"],
+            "usedModels": ["ActionInput_monday_updatecolumn", "ActionOutput_monday_updatecolumn"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_updatecolumn": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "Board ID. Example: \"5096980653\""
+                            },
+                            "column_id": {
+                                "type": "string",
+                                "description": "Column ID. Example: \"task_status\""
+                            },
+                            "title": {
+                                "description": "Updated column title",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Updated column description",
+                                "type": "string"
+                            },
+                            "width": {
+                                "description": "Updated column width in pixels",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["board_id", "column_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_updatecolumn": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "width": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a group in monday.com.",
+            "endpoint": null,
+            "input": "ActionInput_monday_updategroup",
+            "name": "update-group",
+            "output": ["ActionOutput_monday_updategroup"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_updategroup", "ActionOutput_monday_updategroup"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "Board ID. Example: \"5096980653\""
+                            },
+                            "group_id": {
+                                "type": "string",
+                                "description": "Group ID. Example: \"topics\""
+                            },
+                            "group_attribute": {
+                                "type": "string",
+                                "enum": ["color", "position", "relative_position_after", "relative_position_before", "title"],
+                                "description": "The group attribute to update."
+                            },
+                            "new_value": {
+                                "type": "string",
+                                "description": "The new attribute value."
+                            }
+                        },
+                        "required": ["board_id", "group_id", "group_attribute", "new_value"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a item in monday.com",
+            "endpoint": null,
+            "input": "ActionInput_monday_updateitem",
+            "name": "update-item",
+            "output": ["ActionOutput_monday_updateitem"],
+            "scopes": ["boards:write"],
+            "usedModels": ["ActionInput_monday_updateitem", "ActionOutput_monday_updateitem"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_monday_updateitem": {
+                        "type": "object",
+                        "properties": {
+                            "item_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the item to update. Example: \"2933602562\""
+                            },
+                            "board_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the board containing the item. Example: \"5096980653\""
+                            },
+                            "column_values": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Column values to update keyed by column ID. Example: { \"task_estimation\": \"5\" }"
+                            }
+                        },
+                        "required": ["item_id", "board_id", "column_values"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_monday_updateitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "column_values": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync boards from monday.com.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/boards"
+                }
+            ],
+            "input": null,
+            "name": "boards",
+            "output": ["Board"],
+            "runs": "every hour",
+            "scopes": ["boards:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Board"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Board": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "board_kind": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "workspace_id": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "state", "board_kind", "updated_at", "url"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync columns from monday.com",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/columns"
+                }
+            ],
+            "input": null,
+            "name": "columns",
+            "output": ["Column"],
+            "runs": "every hour",
+            "scopes": ["boards:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Column"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Column": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "board_id": {
+                                "type": "string"
+                            },
+                            "column_id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "settings_str": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "board_id", "column_id", "title", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync groups from monday.com",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/groups"
+                }
+            ],
+            "input": null,
+            "name": "groups",
+            "output": ["Group"],
+            "runs": "every hour",
+            "scopes": ["boards:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Group"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Group": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "board_id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "board_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync items from monday.com",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "items",
+            "output": ["Item"],
+            "runs": "every hour",
+            "scopes": ["boards:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Item"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Item": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "creator_id": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "board_id": {
+                                "type": "string"
+                            },
+                            "group_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync subitems from monday.com",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "subitems",
+            "output": ["Subitem"],
+            "runs": "every hour",
+            "scopes": ["boards:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Subitem"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Subitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "board_id": {
+                                "type": "string"
+                            },
+                            "column_values": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "board_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync teams from monday.com",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/teams"
+                }
+            ],
+            "input": null,
+            "name": "teams",
+            "output": ["Team"],
+            "runs": "every hour",
+            "scopes": ["teams:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Team"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Team": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "picture_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync updates from monday.com.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/updates"
+                }
+            ],
+            "input": null,
+            "name": "updates",
+            "output": ["Update"],
+            "runs": "every hour",
+            "scopes": ["updates:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Update"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Update": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "string"
+                            },
+                            "text_body": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "edited_at": {
+                                "type": "string"
+                            },
+                            "creator_id": {
+                                "type": "string"
+                            },
+                            "creator_name": {
+                                "type": "string"
+                            },
+                            "item_id": {
+                                "type": "string"
+                            },
+                            "item_name": {
+                                "type": "string"
+                            },
+                            "replies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "body": {
+                                            "type": "string"
+                                        },
+                                        "text_body": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "creator_id": {
+                                            "type": "string"
+                                        },
+                                        "creator_name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync users from monday.com.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/users"
+                }
+            ],
+            "input": null,
+            "name": "users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": ["users:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "photo_thumb": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "mobile_phone": {
+                                "type": "string"
+                            },
+                            "time_zone_identifier": {
+                                "type": "string"
+                            },
+                            "utc_hours_diff": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync workspaces from monday.com.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/workspaces"
+                }
+            ],
+            "input": null,
+            "name": "workspaces",
+            "output": ["Workspace"],
+            "runs": "every hour",
+            "scopes": ["workspaces:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Workspace"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Workspace": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "kind": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,2122 @@
+{
+    "providerConfigKey": "anthropic",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Cancel an Anthropic Message Batch.",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_cancelmessagebatch",
+            "name": "cancel-message-batch",
+            "output": ["ActionOutput_anthropic_cancelmessagebatch"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_cancelmessagebatch", "ActionOutput_anthropic_cancelmessagebatch"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_cancelmessagebatch": {
+                        "type": "object",
+                        "properties": {
+                            "message_batch_id": {
+                                "type": "string",
+                                "description": "ID of the Message Batch to cancel. Example: \"msgbatch_013Zva2CMHLNnXjNJJKqJ2EF\""
+                            }
+                        },
+                        "required": ["message_batch_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_cancelmessagebatch": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "archived_at": {
+                                "type": "string"
+                            },
+                            "cancel_initiated_at": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "ended_at": {
+                                "type": "string"
+                            },
+                            "expires_at": {
+                                "type": "string"
+                            },
+                            "processing_status": {
+                                "type": "string",
+                                "enum": ["in_progress", "canceling", "ended"]
+                            },
+                            "request_counts": {
+                                "type": "object",
+                                "properties": {
+                                    "canceled": {
+                                        "type": "number"
+                                    },
+                                    "errored": {
+                                        "type": "number"
+                                    },
+                                    "expired": {
+                                        "type": "number"
+                                    },
+                                    "processing": {
+                                        "type": "number"
+                                    },
+                                    "succeeded": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["canceled", "errored", "expired", "processing", "succeeded"],
+                                "additionalProperties": false
+                            },
+                            "results_url": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "message_batch"
+                            }
+                        },
+                        "required": ["id", "created_at", "expires_at", "processing_status", "request_counts", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Count tokens for an Anthropic message request.",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_countmessagetokens",
+            "name": "count-message-tokens",
+            "output": ["ActionOutput_anthropic_countmessagetokens"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_countmessagetokens", "ActionOutput_anthropic_countmessagetokens"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_countmessagetokens": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "type": "string",
+                                "description": "The model that will count tokens. Example: \"claude-sonnet-4-0\""
+                            },
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "role": {
+                                            "type": "string",
+                                            "enum": ["user", "assistant"]
+                                        },
+                                        "content": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "propertyNames": {
+                                                            "type": "string"
+                                                        },
+                                                        "additionalProperties": {}
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["role", "content"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Input messages to count tokens for."
+                            },
+                            "system": {
+                                "description": "System prompt.",
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    }
+                                ]
+                            },
+                            "thinking": {
+                                "description": "Thinking configuration."
+                            },
+                            "tools": {
+                                "description": "Tool definitions.",
+                                "type": "array",
+                                "items": {}
+                            },
+                            "tool_choice": {
+                                "description": "Tool choice configuration."
+                            },
+                            "cache_control": {
+                                "description": "Cache control configuration."
+                            },
+                            "output_config": {
+                                "description": "Output format configuration."
+                            }
+                        },
+                        "required": ["model", "messages"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_countmessagetokens": {
+                        "type": "object",
+                        "properties": {
+                            "input_tokens": {
+                                "type": "number",
+                                "description": "The total number of tokens across the provided list of messages, system prompt, and tools."
+                            }
+                        },
+                        "required": ["input_tokens"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a message batch in Anthropic.",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_createmessagebatch",
+            "name": "create-message-batch",
+            "output": ["ActionOutput_anthropic_createmessagebatch"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_createmessagebatch", "ActionOutput_anthropic_createmessagebatch"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_createmessagebatch": {
+                        "type": "object",
+                        "properties": {
+                            "requests": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "custom_id": {
+                                            "type": "string",
+                                            "description": "Unique identifier for the request within the batch. Must be unique. Example: \"my-request-1\""
+                                        },
+                                        "params": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {},
+                                            "description": "Messages API creation parameters for the individual request. See https://docs.anthropic.com/en/api/messages"
+                                        }
+                                    },
+                                    "required": ["custom_id", "params"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of requests for prompt completion. Each is an individual request to create a Message."
+                            }
+                        },
+                        "required": ["requests"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_createmessagebatch": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "processing_status": {
+                                "type": "string"
+                            },
+                            "request_counts": {
+                                "type": "object",
+                                "properties": {
+                                    "processing": {
+                                        "type": "number"
+                                    },
+                                    "succeeded": {
+                                        "type": "number"
+                                    },
+                                    "errored": {
+                                        "type": "number"
+                                    },
+                                    "canceled": {
+                                        "type": "number"
+                                    },
+                                    "expired": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["processing", "succeeded", "errored", "canceled", "expired"],
+                                "additionalProperties": false
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "expires_at": {
+                                "type": "string"
+                            },
+                            "ended_at": {
+                                "type": "string"
+                            },
+                            "cancel_initiated_at": {
+                                "type": "string"
+                            },
+                            "results_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "type", "processing_status", "request_counts", "created_at", "expires_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an Anthropic model message.",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_createmessage",
+            "name": "create-message",
+            "output": ["ActionOutput_anthropic_createmessage"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_createmessage", "ActionOutput_anthropic_createmessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_createmessage": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "type": "string",
+                                "description": "Anthropic model ID. Example: \"claude-3-5-sonnet-20241022\""
+                            },
+                            "max_tokens": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Maximum tokens to generate. Example: 1024"
+                            },
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "role": {
+                                            "type": "string",
+                                            "enum": ["user", "assistant"]
+                                        },
+                                        "content": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "const": "text"
+                                                                    },
+                                                                    "text": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "text"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "const": "image"
+                                                                    },
+                                                                    "source": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "type": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "media_type": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "data": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": ["type", "media_type", "data"],
+                                                                        "additionalProperties": false
+                                                                    }
+                                                                },
+                                                                "required": ["type", "source"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "const": "tool_use"
+                                                                    },
+                                                                    "id": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "input": {
+                                                                        "type": "object",
+                                                                        "propertyNames": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "additionalProperties": {}
+                                                                    }
+                                                                },
+                                                                "required": ["type", "id", "name", "input"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "const": "tool_result"
+                                                                    },
+                                                                    "tool_use_id": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "content": {
+                                                                        "anyOf": [
+                                                                            {
+                                                                                "type": "string"
+                                                                            },
+                                                                            {
+                                                                                "type": "array",
+                                                                                "items": {
+                                                                                    "anyOf": [
+                                                                                        {
+                                                                                            "type": "object",
+                                                                                            "properties": {
+                                                                                                "type": {
+                                                                                                    "type": "string",
+                                                                                                    "const": "text"
+                                                                                                },
+                                                                                                "text": {
+                                                                                                    "type": "string"
+                                                                                                }
+                                                                                            },
+                                                                                            "required": ["type", "text"],
+                                                                                            "additionalProperties": false
+                                                                                        },
+                                                                                        {
+                                                                                            "type": "object",
+                                                                                            "properties": {
+                                                                                                "type": {
+                                                                                                    "type": "string",
+                                                                                                    "const": "image"
+                                                                                                },
+                                                                                                "source": {
+                                                                                                    "type": "object",
+                                                                                                    "properties": {
+                                                                                                        "type": {
+                                                                                                            "type": "string"
+                                                                                                        },
+                                                                                                        "media_type": {
+                                                                                                            "type": "string"
+                                                                                                        },
+                                                                                                        "data": {
+                                                                                                            "type": "string"
+                                                                                                        }
+                                                                                                    },
+                                                                                                    "required": ["type", "media_type", "data"],
+                                                                                                    "additionalProperties": false
+                                                                                                }
+                                                                                            },
+                                                                                            "required": ["type", "source"],
+                                                                                            "additionalProperties": false
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            }
+                                                                        ]
+                                                                    },
+                                                                    "is_error": {
+                                                                        "type": "boolean"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "tool_use_id"],
+                                                                "additionalProperties": false
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["role", "content"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Conversation messages"
+                            },
+                            "system": {
+                                "description": "System prompt",
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "text"
+                                                },
+                                                "text": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["type", "text"],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                ]
+                            },
+                            "tools": {
+                                "description": "Tools available to the model",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "input_schema": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "object"
+                                                },
+                                                "properties": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                "required": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "required": ["type"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["name", "description", "input_schema"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "tool_choice": {
+                                "description": "Tool choice configuration",
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "description": "Tool choice type. Example: \"auto\", \"any\", \"tool\""
+                                    },
+                                    "name": {
+                                        "description": "Tool name when type is \"tool\". Example: \"my_tool\"",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["type"],
+                                "additionalProperties": false
+                            },
+                            "thinking": {
+                                "description": "Thinking configuration",
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "description": "Thinking configuration type. Example: \"enabled\""
+                                    },
+                                    "budget_tokens": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Token budget for thinking. Example: 1024"
+                                    }
+                                },
+                                "required": ["type", "budget_tokens"],
+                                "additionalProperties": false
+                            },
+                            "temperature": {
+                                "description": "Sampling temperature",
+                                "type": "number"
+                            },
+                            "top_k": {
+                                "description": "Top-k sampling parameter",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "top_p": {
+                                "description": "Top-p sampling parameter",
+                                "type": "number"
+                            },
+                            "stop_sequences": {
+                                "description": "Stop sequences",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "metadata": {
+                                "description": "Metadata key-value pairs",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["model", "max_tokens", "messages"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_createmessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "message"
+                            },
+                            "role": {
+                                "type": "string",
+                                "const": "assistant"
+                            },
+                            "content": {
+                                "type": "array",
+                                "items": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "text"
+                                                },
+                                                "text": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["type", "text"],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "tool_use"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "input": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                }
+                                            },
+                                            "required": ["type", "id", "name", "input"],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "thinking"
+                                                },
+                                                "thinking": {
+                                                    "type": "string"
+                                                },
+                                                "signature": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["type", "thinking"],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "redacted_thinking"
+                                                },
+                                                "data": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["type", "data"],
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                }
+                            },
+                            "model": {
+                                "type": "string"
+                            },
+                            "stop_reason": {
+                                "type": ["string", "null"]
+                            },
+                            "stop_sequence": {
+                                "type": ["string", "null"]
+                            },
+                            "usage": {
+                                "type": "object",
+                                "properties": {
+                                    "input_tokens": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "output_tokens": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "cache_creation_input_tokens": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "cache_read_input_tokens": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "required": ["input_tokens", "output_tokens"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "type", "role", "content", "model", "usage"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a file in Anthropic.",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_deletefile",
+            "name": "delete-file",
+            "output": ["ActionOutput_anthropic_deletefile"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_deletefile", "ActionOutput_anthropic_deletefile"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_deletefile": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "ID of the File to delete. Example: \"file_011CNha8iCJcU1wXNR6q4V8w\""
+                            }
+                        },
+                        "required": ["file_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_deletefile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "file_deleted"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single file from Anthropic.",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_getfile",
+            "name": "get-file",
+            "output": ["ActionOutput_anthropic_getfile"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_getfile", "ActionOutput_anthropic_getfile"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_getfile": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The ID of the file to retrieve. Example: \"file_01HqW8Kq0Z2Q2W8Kq0Z2Q2W8\""
+                            }
+                        },
+                        "required": ["file_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_getfile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "filename": {
+                                "type": "string"
+                            },
+                            "mime_type": {
+                                "type": "string"
+                            },
+                            "size_bytes": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "file"
+                            },
+                            "downloadable": {
+                                "type": "boolean"
+                            },
+                            "scope": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "const": "session"
+                                            }
+                                        },
+                                        "required": ["id", "type"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["id", "created_at", "filename", "mime_type", "size_bytes", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single message batch from Anthropic.",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_getmessagebatch",
+            "name": "get-message-batch",
+            "output": ["ActionOutput_anthropic_getmessagebatch"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_getmessagebatch", "ActionOutput_anthropic_getmessagebatch"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_getmessagebatch": {
+                        "type": "object",
+                        "properties": {
+                            "message_batch_id": {
+                                "type": "string",
+                                "description": "The ID of the message batch to retrieve. Example: \"msgbatch_01Ab2cDe3Fg4hIj5Kl6mNo7Pq8r\""
+                            }
+                        },
+                        "required": ["message_batch_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_getmessagebatch": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "archived_at": {
+                                "type": ["string", "null"]
+                            },
+                            "cancel_initiated_at": {
+                                "type": ["string", "null"]
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "ended_at": {
+                                "type": ["string", "null"]
+                            },
+                            "expires_at": {
+                                "type": "string"
+                            },
+                            "processing_status": {
+                                "type": "string",
+                                "enum": ["in_progress", "canceling", "ended"]
+                            },
+                            "request_counts": {
+                                "type": "object",
+                                "properties": {
+                                    "canceled": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "errored": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "expired": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "processing": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "succeeded": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "required": ["canceled", "errored", "expired", "processing", "succeeded"],
+                                "additionalProperties": false
+                            },
+                            "results_url": {
+                                "type": ["string", "null"]
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "message_batch"
+                            }
+                        },
+                        "required": ["id", "created_at", "expires_at", "processing_status", "request_counts", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single model from Anthropic.",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_getmodel",
+            "name": "get-model",
+            "output": ["ActionOutput_anthropic_getmodel"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_getmodel", "ActionOutput_anthropic_getmodel"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_getmodel": {
+                        "type": "object",
+                        "properties": {
+                            "model_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Model identifier or alias. Example: \"claude-opus-4-6\""
+                            }
+                        },
+                        "required": ["model_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_getmodel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "capabilities": {
+                                "type": "object",
+                                "properties": {
+                                    "batch": {
+                                        "type": "object",
+                                        "properties": {
+                                            "supported": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["supported"],
+                                        "additionalProperties": false
+                                    },
+                                    "citations": {
+                                        "type": "object",
+                                        "properties": {
+                                            "supported": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["supported"],
+                                        "additionalProperties": false
+                                    },
+                                    "code_execution": {
+                                        "type": "object",
+                                        "properties": {
+                                            "supported": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["supported"],
+                                        "additionalProperties": false
+                                    },
+                                    "context_management": {
+                                        "type": "object",
+                                        "properties": {
+                                            "clear_thinking_20251015": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            "clear_tool_uses_20250919": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            "compact_20260112": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            "supported": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["clear_thinking_20251015", "clear_tool_uses_20250919", "compact_20260112", "supported"],
+                                        "additionalProperties": false
+                                    },
+                                    "effort": {
+                                        "type": "object",
+                                        "properties": {
+                                            "high": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            "low": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            "max": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            "medium": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            "supported": {
+                                                "type": "boolean"
+                                            },
+                                            "xhigh": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["high", "low", "max", "medium", "supported"],
+                                        "additionalProperties": false
+                                    },
+                                    "image_input": {
+                                        "type": "object",
+                                        "properties": {
+                                            "supported": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["supported"],
+                                        "additionalProperties": false
+                                    },
+                                    "pdf_input": {
+                                        "type": "object",
+                                        "properties": {
+                                            "supported": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["supported"],
+                                        "additionalProperties": false
+                                    },
+                                    "structured_outputs": {
+                                        "type": "object",
+                                        "properties": {
+                                            "supported": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "required": ["supported"],
+                                        "additionalProperties": false
+                                    },
+                                    "thinking": {
+                                        "type": "object",
+                                        "properties": {
+                                            "supported": {
+                                                "type": "boolean"
+                                            },
+                                            "types": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "adaptive": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "supported": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": ["supported"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    "enabled": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "supported": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": ["supported"],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "required": ["adaptive", "enabled"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["supported", "types"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": [
+                                    "batch",
+                                    "citations",
+                                    "code_execution",
+                                    "context_management",
+                                    "effort",
+                                    "image_input",
+                                    "pdf_input",
+                                    "structured_outputs",
+                                    "thinking"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "display_name": {
+                                "type": "string"
+                            },
+                            "max_input_tokens": {
+                                "type": "number"
+                            },
+                            "max_tokens": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "capabilities", "created_at", "display_name", "max_input_tokens", "max_tokens", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List files from Anthropic.",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_listfiles",
+            "name": "list-files",
+            "output": ["ActionOutput_anthropic_listfiles"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_listfiles", "ActionOutput_anthropic_listfiles"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_listfiles": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of items to return per page. Defaults to 20. Ranges from 1 to 1000.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "scope_id": {
+                                "description": "Filter by scope ID. Only returns files associated with the specified scope (e.g., a session ID).",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_listfiles": {
+                        "type": "object",
+                        "properties": {
+                            "files": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "filename": {
+                                            "type": "string"
+                                        },
+                                        "mime_type": {
+                                            "type": "string"
+                                        },
+                                        "size_bytes": {
+                                            "type": "number"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "downloadable": {
+                                            "type": "boolean"
+                                        },
+                                        "scope": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "type": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["id", "type"],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["id", "created_at", "filename", "mime_type", "size_bytes", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["files"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Stream or retrieve results for an Anthropic Message Batch",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_listmessagebatchresults",
+            "name": "list-message-batch-results",
+            "output": ["ActionOutput_anthropic_listmessagebatchresults"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_listmessagebatchresults", "ActionOutput_anthropic_listmessagebatchresults"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_listmessagebatchresults": {
+                        "type": "object",
+                        "properties": {
+                            "message_batch_id": {
+                                "type": "string",
+                                "description": "The ID of the Message Batch to retrieve results for. Example: \"msgbatch_01AbCdEfGhIjKlMnOpQrStUv\""
+                            }
+                        },
+                        "required": ["message_batch_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_listmessagebatchresults": {
+                        "type": "object",
+                        "properties": {
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "custom_id": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["custom_id", "result"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["results"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List message batches from Anthropic.",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_listmessagebatches",
+            "name": "list-message-batches",
+            "output": ["ActionOutput_anthropic_listmessagebatches"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_listmessagebatches", "ActionOutput_anthropic_listmessagebatches"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_listmessagebatches": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "before_id": {
+                                "description": "ID of the object to use as a cursor for pagination. Returns the page immediately before this object.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of items to return per page. Defaults to 20. Ranges from 1 to 1000.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_listmessagebatches": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "archived_at": {
+                                            "type": "string"
+                                        },
+                                        "cancel_initiated_at": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "ended_at": {
+                                            "type": "string"
+                                        },
+                                        "expires_at": {
+                                            "type": "string"
+                                        },
+                                        "processing_status": {
+                                            "type": "string",
+                                            "enum": ["in_progress", "canceling", "ended"]
+                                        },
+                                        "request_counts": {
+                                            "type": "object",
+                                            "properties": {
+                                                "canceled": {
+                                                    "type": "number"
+                                                },
+                                                "errored": {
+                                                    "type": "number"
+                                                },
+                                                "expired": {
+                                                    "type": "number"
+                                                },
+                                                "processing": {
+                                                    "type": "number"
+                                                },
+                                                "succeeded": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": ["canceled", "errored", "expired", "processing", "succeeded"],
+                                            "additionalProperties": false
+                                        },
+                                        "results_url": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "message_batch"
+                                        }
+                                    },
+                                    "required": ["id", "created_at", "expires_at", "processing_status", "request_counts", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List models from Anthropic.",
+            "endpoint": null,
+            "input": "ActionInput_anthropic_listmodels",
+            "name": "list-models",
+            "output": ["ActionOutput_anthropic_listmodels"],
+            "scopes": [],
+            "usedModels": ["ActionInput_anthropic_listmodels", "ActionOutput_anthropic_listmodels"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_anthropic_listmodels": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of items to return per page. Defaults to 20. Ranges from 1 to 1000.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_anthropic_listmodels": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "capabilities": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "display_name": {
+                                            "type": "string"
+                                        },
+                                        "max_input_tokens": {
+                                            "type": "number"
+                                        },
+                                        "max_tokens": {
+                                            "type": "number"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "model"
+                                        }
+                                    },
+                                    "required": ["id", "capabilities", "created_at", "display_name", "max_input_tokens", "max_tokens", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync files from Anthropic.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/files"
+                }
+            ],
+            "input": null,
+            "name": "files",
+            "output": ["File"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["File"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "File": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "filename": {
+                                "type": "string"
+                            },
+                            "mime_type": {
+                                "type": "string"
+                            },
+                            "size_bytes": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "downloadable": {
+                                "type": "boolean"
+                            },
+                            "scope_id": {
+                                "type": "string"
+                            },
+                            "scope_type": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "created_at", "filename", "mime_type", "size_bytes", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync message batches from Anthropic.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/message-batches"
+                }
+            ],
+            "input": null,
+            "name": "message-batches",
+            "output": ["MessageBatch"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["MessageBatch"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MessageBatch": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "archived_at": {
+                                "type": ["string", "null"]
+                            },
+                            "cancel_initiated_at": {
+                                "type": ["string", "null"]
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "ended_at": {
+                                "type": ["string", "null"]
+                            },
+                            "expires_at": {
+                                "type": "string"
+                            },
+                            "processing_status": {
+                                "type": "string",
+                                "enum": ["in_progress", "canceling", "ended"]
+                            },
+                            "request_counts": {
+                                "type": "object",
+                                "properties": {
+                                    "canceled": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "errored": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "expired": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "processing": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "succeeded": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "required": ["canceled", "errored", "expired", "processing", "succeeded"],
+                                "additionalProperties": false
+                            },
+                            "results_url": {
+                                "type": ["string", "null"]
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "message_batch"
+                            }
+                        },
+                        "required": ["id", "created_at", "expires_at", "processing_status", "request_counts", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync models from Anthropic",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/models"
+                }
+            ],
+            "input": null,
+            "name": "models",
+            "output": ["Model"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Model"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Model": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "display_name": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "max_input_tokens": {
+                                "type": "number"
+                            },
+                            "max_tokens": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "capabilities": {
+                                "type": "object",
+                                "properties": {
+                                    "batch": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "citations": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "code_execution": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "context_management": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "clear_thinking_20251015": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "supported": {
+                                                                        "type": "boolean"
+                                                                    }
+                                                                },
+                                                                "required": ["supported"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "clear_tool_uses_20250919": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "supported": {
+                                                                        "type": "boolean"
+                                                                    }
+                                                                },
+                                                                "required": ["supported"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "compact_20260112": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "supported": {
+                                                                        "type": "boolean"
+                                                                    }
+                                                                },
+                                                                "required": ["supported"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": {}
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "effort": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "high": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "supported": {
+                                                                        "type": "boolean"
+                                                                    }
+                                                                },
+                                                                "required": ["supported"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "low": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "supported": {
+                                                                        "type": "boolean"
+                                                                    }
+                                                                },
+                                                                "required": ["supported"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "max": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "supported": {
+                                                                        "type": "boolean"
+                                                                    }
+                                                                },
+                                                                "required": ["supported"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "medium": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "supported": {
+                                                                        "type": "boolean"
+                                                                    }
+                                                                },
+                                                                "required": ["supported"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "xhigh": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "supported": {
+                                                                        "type": "boolean"
+                                                                    }
+                                                                },
+                                                                "required": ["supported"],
+                                                                "additionalProperties": false
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": {}
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "image_input": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "pdf_input": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "structured_outputs": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "thinking": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "supported": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "types": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "adaptive": {
+                                                                        "anyOf": [
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "supported": {
+                                                                                        "type": "boolean"
+                                                                                    }
+                                                                                },
+                                                                                "required": ["supported"],
+                                                                                "additionalProperties": false
+                                                                            },
+                                                                            {
+                                                                                "type": "null"
+                                                                            }
+                                                                        ]
+                                                                    },
+                                                                    "enabled": {
+                                                                        "anyOf": [
+                                                                            {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "supported": {
+                                                                                        "type": "boolean"
+                                                                                    }
+                                                                                },
+                                                                                "required": ["supported"],
+                                                                                "additionalProperties": false
+                                                                            },
+                                                                            {
+                                                                                "type": "null"
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "additionalProperties": {}
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "required": ["supported"],
+                                                "additionalProperties": {}
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "display_name", "created_at", "max_input_tokens", "max_tokens", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

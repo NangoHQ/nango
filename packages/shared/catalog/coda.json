@@ -1,0 +1,3664 @@
+{
+    "providerConfigKey": "coda",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Share a doc with a user or make it public.",
+            "endpoint": {
+                "path": "/actions/add-permission",
+                "method": "POST"
+            },
+            "input": "ActionInput_coda_addpermission",
+            "name": "add-permission",
+            "output": ["ActionOutput_coda_addpermission"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_addpermission", "ActionOutput_coda_addpermission"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_addpermission": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the doc to share. Example: \"AbCDeFGH\""
+                            },
+                            "access": {
+                                "type": "string",
+                                "enum": ["readonly", "write", "comment"],
+                                "description": "Access level to grant."
+                            },
+                            "principalType": {
+                                "type": "string",
+                                "enum": ["email", "anyone"],
+                                "description": "Type of principal to share with."
+                            },
+                            "email": {
+                                "description": "Email address of the user to share with. Required when principalType is \"email\".",
+                                "type": "string"
+                            },
+                            "suppressEmail": {
+                                "description": "When true, suppresses the email notification.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["docId", "access", "principalType"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_addpermission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "access": {
+                                "type": "string"
+                            },
+                            "principal": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new doc, optionally copying from a source doc.",
+            "endpoint": null,
+            "input": "ActionInput_coda_createdoc",
+            "name": "create-doc",
+            "output": ["ActionOutput_coda_createdoc"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_createdoc", "ActionOutput_coda_createdoc"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_createdoc": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "description": "Title of the new doc. Defaults to \"Untitled\".",
+                                "type": "string"
+                            },
+                            "folderId": {
+                                "description": "ID of the folder to create the doc in. Example: \"fl-1Ab234\".",
+                                "type": "string"
+                            },
+                            "sourceDoc": {
+                                "description": "ID of an existing doc to copy from. Example: \"AbCDeFGH\".",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_createdoc": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "browserLink": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "ownerName": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "workspace": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "organizationId": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "type"],
+                                "additionalProperties": false
+                            },
+                            "folder": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "type"],
+                                "additionalProperties": false
+                            },
+                            "workspaceId": {
+                                "type": "string"
+                            },
+                            "folderId": {
+                                "type": "string"
+                            },
+                            "icon": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "docSize": {
+                                "type": "object",
+                                "properties": {
+                                    "totalRowCount": {
+                                        "type": "number"
+                                    },
+                                    "tableAndViewCount": {
+                                        "type": "number"
+                                    },
+                                    "pageCount": {
+                                        "type": "number"
+                                    },
+                                    "overApiSizeLimit": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "sourceDoc": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "type"],
+                                "additionalProperties": false
+                            },
+                            "published": {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "imageLink": {
+                                        "type": "string"
+                                    },
+                                    "discoverable": {
+                                        "type": "boolean"
+                                    },
+                                    "earnCredit": {
+                                        "type": "boolean"
+                                    },
+                                    "mode": {
+                                        "type": "string"
+                                    },
+                                    "categories": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "requestId": {
+                                "type": "string"
+                            },
+                            "copyCompleted": {
+                                "description": "Whether the async copy (if any) has completed.",
+                                "type": "boolean"
+                            },
+                            "copyWarning": {
+                                "description": "Warning returned by the mutation status endpoint, if any.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "type", "href", "browserLink", "name", "owner", "ownerName", "createdAt", "updatedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new page in a doc.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/create-page"
+            },
+            "input": "ActionInput_coda_createpage",
+            "name": "create-page",
+            "output": ["ActionOutput_coda_createpage"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_createpage", "ActionOutput_coda_createpage"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_createpage": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "Doc ID. Example: \"L_hgEASd6n\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the page."
+                            },
+                            "subtitle": {
+                                "description": "Subtitle of the page.",
+                                "type": "string"
+                            },
+                            "iconName": {
+                                "description": "Name of the icon.",
+                                "type": "string"
+                            },
+                            "imageUrl": {
+                                "description": "URL of the cover image to use.",
+                                "type": "string"
+                            },
+                            "parentPageId": {
+                                "description": "The ID of this new page's parent, if creating a subpage.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId", "name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_createpage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "requestId": {
+                                "type": "string"
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "requestId", "completed"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete a doc.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/delete-doc"
+            },
+            "input": "ActionInput_coda_deletedoc",
+            "name": "delete-doc",
+            "output": ["ActionOutput_coda_deletedoc"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_deletedoc", "ActionOutput_coda_deletedoc"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_deletedoc": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "The ID of the doc to delete. Example: \"a97K6uAljP\""
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_deletedoc": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a page from a doc.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/delete-page"
+            },
+            "input": "ActionInput_coda_deletepage",
+            "name": "delete-page",
+            "output": ["ActionOutput_coda_deletepage"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_deletepage", "ActionOutput_coda_deletepage"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_deletepage": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "Doc ID. Example: \"L_hgEASd6n\""
+                            },
+                            "pageIdOrName": {
+                                "type": "string",
+                                "description": "Page ID or name. Example: \"canvas-taIuEN56H1\""
+                            }
+                        },
+                        "required": ["docId", "pageIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_deletepage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "requestId": {
+                                "type": "string"
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "requestId", "completed"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a single row from a Coda table.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/delete-row"
+            },
+            "input": "ActionInput_coda_deleterow",
+            "name": "delete-row",
+            "output": ["ActionOutput_coda_deleterow"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_deleterow", "ActionOutput_coda_deleterow"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_deleterow": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "The ID of the document containing the table. Example: \"L_hgEASd6n\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "The ID or name of the table containing the row. Example: \"grid-123\""
+                            },
+                            "rowIdOrName": {
+                                "type": "string",
+                                "description": "The ID or name of the row to delete. Example: \"i-123\""
+                            }
+                        },
+                        "required": ["docId", "tableIdOrName", "rowIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_deleterow": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "description": "The async request ID for tracking the mutation status."
+                            }
+                        },
+                        "required": ["requestId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete multiple rows in a single request.",
+            "endpoint": null,
+            "input": "ActionInput_coda_deleterows",
+            "name": "delete-rows",
+            "output": ["ActionOutput_coda_deleterows"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_deleterows", "ActionOutput_coda_deleterows"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_deleterows": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "The ID of the doc containing the table. Example: \"AbCDeFGH\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "The ID or name of the table to delete rows from. Example: \"grid-tE68GY5gIp\""
+                            },
+                            "rowIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "The IDs of the rows to delete. Up to 100 row IDs per call."
+                            }
+                        },
+                        "required": ["docId", "tableIdOrName", "rowIds"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_deleterows": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "description": "The mutation request ID for tracking async completion."
+                            }
+                        },
+                        "required": ["requestId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single column by ID or name.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-column"
+            },
+            "input": "ActionInput_coda_getcolumn",
+            "name": "get-column",
+            "output": ["ActionOutput_coda_getcolumn"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_getcolumn", "ActionOutput_coda_getcolumn"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_getcolumn": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the doc. Example: \"AbCDeFGH\""
+                            },
+                            "tableId": {
+                                "type": "string",
+                                "description": "ID or name of the table. Example: \"grid-pqRst-U\""
+                            },
+                            "columnId": {
+                                "type": "string",
+                                "description": "ID or name of the column. Example: \"c-tuVwxYz\""
+                            }
+                        },
+                        "required": ["docId", "tableId", "columnId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_getcolumn": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "display": {
+                                "type": "boolean"
+                            },
+                            "calculated": {
+                                "type": "boolean"
+                            },
+                            "formula": {
+                                "type": "string"
+                            },
+                            "defaultValue": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "parent": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "tableType": {
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "parent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "href": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    }
+                                },
+                                "required": ["id", "type", "tableType", "href", "browserLink", "name"],
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "type", "name", "href"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single control by ID or name.",
+            "endpoint": null,
+            "input": "ActionInput_coda_getcontrol",
+            "name": "get-control",
+            "output": ["ActionOutput_coda_getcontrol"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_getcontrol", "ActionOutput_coda_getcontrol"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_getcontrol": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the Coda doc. Example: \"L_hgEASd6n\""
+                            },
+                            "controlIdOrName": {
+                                "type": "string",
+                                "description": "ID or name of the control. Example: \"ctrl-F38u5bVLOn\""
+                            }
+                        },
+                        "required": ["docId", "controlIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_getcontrol": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "controlType": {
+                                "type": "string"
+                            },
+                            "value": {},
+                            "parent": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "type"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "type", "href", "name", "controlType"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single doc by ID.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-doc"
+            },
+            "input": "ActionInput_coda_getdoc",
+            "name": "get-doc",
+            "output": ["ActionOutput_coda_getdoc"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_getdoc", "ActionOutput_coda_getdoc"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_getdoc": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the Coda doc. Example: \"AbCDeFGH\""
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_getdoc": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "browserLink": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "ownerName": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "workspace": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "organizationId": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "folder": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "workspaceId": {
+                                "type": "string"
+                            },
+                            "folderId": {
+                                "type": "string"
+                            },
+                            "icon": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "docSize": {
+                                "type": "object",
+                                "properties": {
+                                    "totalRowCount": {
+                                        "type": "number"
+                                    },
+                                    "tableAndViewCount": {
+                                        "type": "number"
+                                    },
+                                    "pageCount": {
+                                        "type": "number"
+                                    },
+                                    "overApiSizeLimit": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "sourceDoc": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "published": {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "imageLink": {
+                                        "type": "string"
+                                    },
+                                    "discoverable": {
+                                        "type": "boolean"
+                                    },
+                                    "earnCredit": {
+                                        "type": "boolean"
+                                    },
+                                    "mode": {
+                                        "type": "string"
+                                    },
+                                    "categories": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "type", "href", "browserLink", "name", "owner", "ownerName", "createdAt", "updatedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single named formula by ID or name.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-formula"
+            },
+            "input": "ActionInput_coda_getformula",
+            "name": "get-formula",
+            "output": ["ActionOutput_coda_getformula"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_getformula", "ActionOutput_coda_getformula"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_getformula": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the Coda doc. Example: \"L_hgEASd6n\""
+                            },
+                            "formulaIdOrName": {
+                                "type": "string",
+                                "description": "ID or name of the formula. Example: \"f-fgHijkLm\""
+                            }
+                        },
+                        "required": ["docId", "formulaIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_getformula": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "anyOf": [
+                                    {
+                                        "type": ["string", "number", "boolean"]
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": ["string", "number", "boolean"]
+                                        }
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": ["string", "number", "boolean"]
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "parent": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "type", "href", "browserLink", "name"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "type", "href", "name", "value"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Poll the status of an async mutation (page create/update/delete, row upsert, etc.).",
+            "endpoint": null,
+            "input": "ActionInput_coda_getmutationstatus",
+            "name": "get-mutation-status",
+            "output": ["ActionOutput_coda_getmutationstatus"],
+            "scopes": ["doc:read"],
+            "usedModels": ["ActionInput_coda_getmutationstatus", "ActionOutput_coda_getmutationstatus"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_getmutationstatus": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "description": "The requestId returned by an async mutation such as page create/update/delete or row upsert. Example: \"request-123\""
+                            }
+                        },
+                        "required": ["requestId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_getmutationstatus": {
+                        "type": "object",
+                        "properties": {
+                            "completed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["completed"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single page by ID or name.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-page"
+            },
+            "input": "ActionInput_coda_getpage",
+            "name": "get-page",
+            "output": ["ActionOutput_coda_getpage"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_getpage", "ActionOutput_coda_getpage"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_getpage": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "Doc ID. Example: \"L_hgEASd6n\""
+                            },
+                            "pageIdOrName": {
+                                "type": "string",
+                                "description": "Page ID or page name. Example: \"canvas-51lnQjKXyv\""
+                            }
+                        },
+                        "required": ["docId", "pageIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_getpage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "browserLink": {
+                                "type": "string"
+                            },
+                            "isHidden": {
+                                "type": "boolean"
+                            },
+                            "isEffectivelyHidden": {
+                                "type": "boolean"
+                            },
+                            "contentType": {
+                                "type": "string"
+                            },
+                            "children": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "href": {
+                                            "type": "string"
+                                        },
+                                        "browserLink": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "type", "href", "browserLink", "name"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "subtitle": {
+                                "type": "string"
+                            },
+                            "icon": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "image": {
+                                "type": "object",
+                                "properties": {
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "width": {
+                                        "type": "number"
+                                    },
+                                    "height": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "parent": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "type", "href", "browserLink", "name"],
+                                "additionalProperties": {}
+                            },
+                            "authors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "createdBy": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "updatedBy": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "type", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single row by ID or name.",
+            "endpoint": {
+                "path": "/actions/get-row",
+                "method": "GET"
+            },
+            "input": "ActionInput_coda_getrow",
+            "name": "get-row",
+            "output": ["ActionOutput_coda_getrow"],
+            "scopes": ["doc:read"],
+            "usedModels": ["ActionInput_coda_getrow", "ActionOutput_coda_getrow"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_getrow": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the doc. Example: \"AbCDeFGH\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "ID or name of the table. Example: \"grid-pqRst-U\""
+                            },
+                            "rowIdOrName": {
+                                "type": "string",
+                                "description": "ID or name of the row. Example: \"i-tuVwxYz\""
+                            },
+                            "useColumnNames": {
+                                "description": "Use column names instead of column IDs in the returned output.",
+                                "type": "boolean"
+                            },
+                            "valueFormat": {
+                                "description": "The format that cell values are returned as.",
+                                "type": "string",
+                                "enum": ["simple", "simpleWithArrays", "rich"]
+                            }
+                        },
+                        "required": ["docId", "tableIdOrName", "rowIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_getrow": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "index": {
+                                "type": "number"
+                            },
+                            "browserLink": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "values": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "parent": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "tableType": {
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "parent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "href": {
+                                                "type": "string"
+                                            },
+                                            "browserLink": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id", "type"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["id", "type"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve sharing capabilities for a doc.",
+            "endpoint": null,
+            "input": "ActionInput_coda_getsharingmetadata",
+            "name": "get-sharing-metadata",
+            "output": ["ActionOutput_coda_getsharingmetadata"],
+            "scopes": ["read:docs"],
+            "usedModels": ["ActionInput_coda_getsharingmetadata", "ActionOutput_coda_getsharingmetadata"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_getsharingmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "Doc ID. Example: \"L_hgEASd6n\""
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_getsharingmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "canShare": {
+                                "type": "boolean"
+                            },
+                            "canShareWithWorkspace": {
+                                "type": "boolean"
+                            },
+                            "canShareWithOrg": {
+                                "type": "boolean"
+                            },
+                            "canCopy": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["canShare", "canShareWithWorkspace", "canShareWithOrg", "canCopy"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single table or view by ID or name.",
+            "endpoint": {
+                "path": "/actions/get-table",
+                "method": "GET"
+            },
+            "input": "ActionInput_coda_gettable",
+            "name": "get-table",
+            "output": ["ActionOutput_coda_gettable"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_gettable", "ActionOutput_coda_gettable"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_gettable": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the Coda doc. Example: \"AbCDeFGH\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "ID or name of the table. Example: \"grid-pqRst-U\""
+                            }
+                        },
+                        "required": ["docId", "tableIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_gettable": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "tableType": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "browserLink": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "parent": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "type", "href", "browserLink", "name"],
+                                "additionalProperties": false
+                            },
+                            "displayColumn": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "type", "href"],
+                                "additionalProperties": false
+                            },
+                            "rowCount": {
+                                "type": "number"
+                            },
+                            "sorts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "column": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "href": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "type", "href"],
+                                            "additionalProperties": false
+                                        },
+                                        "direction": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["column", "direction"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "layout": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "viewId": {
+                                "type": "string"
+                            },
+                            "parentTable": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "tableType": {
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "parent": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "href": {
+                                                "type": "string"
+                                            },
+                                            "browserLink": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id", "type", "href", "browserLink", "name"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["id", "type", "tableType", "href", "browserLink", "name"],
+                                "additionalProperties": false
+                            },
+                            "filter": {
+                                "type": "object",
+                                "properties": {
+                                    "valid": {
+                                        "type": "boolean"
+                                    },
+                                    "isVolatile": {
+                                        "type": "boolean"
+                                    },
+                                    "hasUserFormula": {
+                                        "type": "boolean"
+                                    },
+                                    "hasTodayFormula": {
+                                        "type": "boolean"
+                                    },
+                                    "hasNowFormula": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["valid", "isVolatile", "hasUserFormula", "hasTodayFormula", "hasNowFormula"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type",
+                            "tableType",
+                            "href",
+                            "browserLink",
+                            "name",
+                            "parent",
+                            "displayColumn",
+                            "rowCount",
+                            "sorts",
+                            "layout",
+                            "createdAt",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the authenticated user's profile and workspace info.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-user"
+            },
+            "input": "ActionInput_coda_getuser",
+            "name": "get-user",
+            "output": ["ActionOutput_coda_getuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_getuser", "ActionOutput_coda_getuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_getuser": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "loginId": {
+                                "type": "string"
+                            },
+                            "tokenName": {
+                                "type": "string"
+                            },
+                            "scoped": {
+                                "type": "boolean"
+                            },
+                            "workspace": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "organizationId": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "type"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["name", "loginId", "tokenName", "scoped", "workspace"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Coda template categories.",
+            "endpoint": null,
+            "input": "ActionInput_coda_listcategories",
+            "name": "list-categories",
+            "output": ["ActionOutput_coda_listcategories"],
+            "scopes": ["doc:read"],
+            "usedModels": ["ActionInput_coda_listcategories", "ActionOutput_coda_listcategories"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_listcategories": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_listcategories": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List columns in a table.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-columns"
+            },
+            "input": "ActionInput_coda_listcolumns",
+            "name": "list-columns",
+            "output": ["ActionOutput_coda_listcolumns"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_listcolumns", "ActionOutput_coda_listcolumns"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_listcolumns": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "Doc ID. Example: \"wGUhBwDpCh\""
+                            },
+                            "tableId": {
+                                "type": "string",
+                                "description": "Table ID or name. Example: \"table-x21g6d40h7\""
+                            },
+                            "visibleOnly": {
+                                "description": "If true, only returns visible columns.",
+                                "type": "boolean"
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId", "tableId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_listcolumns": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "href": {
+                                            "type": "string"
+                                        },
+                                        "display": {
+                                            "type": "boolean"
+                                        },
+                                        "calculated": {
+                                            "type": "boolean"
+                                        },
+                                        "format": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "type", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List interactive controls (buttons, checkboxes, sliders) in a doc.",
+            "endpoint": {
+                "path": "/actions/list-controls",
+                "method": "GET"
+            },
+            "input": "ActionInput_coda_listcontrols",
+            "name": "list-controls",
+            "output": ["ActionOutput_coda_listcontrols"],
+            "scopes": ["doc:read"],
+            "usedModels": ["ActionInput_coda_listcontrols", "ActionOutput_coda_listcontrols"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_listcontrols": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the Coda doc. Example: \"L_hgEASd6n\""
+                            },
+                            "sortBy": {
+                                "description": "Sort order for controls. Example: \"name\"",
+                                "type": "string",
+                                "enum": ["name", "createdAt"]
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return. Example: 25",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_listcontrols": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "href": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "controlType": {
+                                            "type": "string"
+                                        },
+                                        "parent": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "href": {
+                                                    "type": "string"
+                                                },
+                                                "browserLink": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "type", "href"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "type", "href", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            },
+                            "nextPageLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve analytics events for docs.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-doc-analytics"
+            },
+            "input": "ActionInput_coda_listdocanalytics",
+            "name": "list-doc-analytics",
+            "output": ["ActionOutput_coda_listdocanalytics"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_listdocanalytics", "ActionOutput_coda_listdocanalytics"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_listdocanalytics": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "description": "ID of a doc to filter analytics. Example: \"AbCDeFGH\"",
+                                "type": "string"
+                            },
+                            "isPublished": {
+                                "description": "Limit results to only published items.",
+                                "type": "boolean"
+                            },
+                            "publishType": {
+                                "description": "Filter by publish type.",
+                                "type": "string"
+                            },
+                            "sinceDate": {
+                                "description": "Limit results to activity on or after this date (YYYY-MM-DD). Example: \"2020-08-01\"",
+                                "type": "string"
+                            },
+                            "untilDate": {
+                                "description": "Limit results to activity on or before this date (YYYY-MM-DD). Example: \"2020-08-05\"",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return. Example: 10",
+                                "type": "number"
+                            },
+                            "pageToken": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_listdocanalytics": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "doc": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "href": {
+                                                    "type": "string"
+                                                },
+                                                "browserLink": {
+                                                    "type": "string"
+                                                },
+                                                "title": {
+                                                    "type": "string"
+                                                },
+                                                "icon": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "type": {
+                                                            "type": "string"
+                                                        },
+                                                        "browserLink": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "createdAt": {
+                                                    "type": "string"
+                                                },
+                                                "publishedAt": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        },
+                                        "metrics": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "date": {
+                                                        "type": "string"
+                                                    },
+                                                    "views": {
+                                                        "type": "number"
+                                                    },
+                                                    "copies": {
+                                                        "type": "number"
+                                                    },
+                                                    "likes": {
+                                                        "type": "number"
+                                                    },
+                                                    "sessionsMobile": {
+                                                        "type": "number"
+                                                    },
+                                                    "sessionsDesktop": {
+                                                        "type": "number"
+                                                    },
+                                                    "sessionsOther": {
+                                                        "type": "number"
+                                                    },
+                                                    "totalSessions": {
+                                                        "type": "number"
+                                                    },
+                                                    "aiCreditsChat": {
+                                                        "type": "number"
+                                                    },
+                                                    "aiCreditsBlock": {
+                                                        "type": "number"
+                                                    },
+                                                    "aiCreditsColumn": {
+                                                        "type": "number"
+                                                    },
+                                                    "aiCreditsAssistant": {
+                                                        "type": "number"
+                                                    },
+                                                    "aiCreditsReviewer": {
+                                                        "type": "number"
+                                                    },
+                                                    "aiCredits": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List docs accessible to the authenticated user.",
+            "endpoint": {
+                "path": "/actions/list-docs",
+                "method": "POST"
+            },
+            "input": "ActionInput_coda_listdocs",
+            "name": "list-docs",
+            "output": ["ActionOutput_coda_listdocs"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_listdocs", "ActionOutput_coda_listdocs"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_listdocs": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "description": "Search term used to filter down results. Example: \"Project Tracker\"",
+                                "type": "string"
+                            },
+                            "isOwner": {
+                                "description": "Show only docs owned by the user.",
+                                "type": "boolean"
+                            },
+                            "isPublished": {
+                                "description": "Show only published docs.",
+                                "type": "boolean"
+                            },
+                            "workspaceId": {
+                                "description": "Show only docs belonging to the given workspace. Example: \"ws-oZFDiLKJ45\"",
+                                "type": "string"
+                            },
+                            "folderId": {
+                                "description": "Show only docs belonging to the given folder.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return. Example: 10",
+                                "type": "number"
+                            },
+                            "pageToken": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_listdocs": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "href": {
+                                            "type": "string"
+                                        },
+                                        "browserLink": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "ownerName": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "type", "href", "browserLink", "name", "owner", "ownerName", "createdAt", "updatedAt"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List named formulas in a doc.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-formulas"
+            },
+            "input": "ActionInput_coda_listformulas",
+            "name": "list-formulas",
+            "output": ["ActionOutput_coda_listformulas"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_listformulas", "ActionOutput_coda_listformulas"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_listformulas": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "Doc ID. Example: \"L_hgEASd6n\""
+                            },
+                            "sortBy": {
+                                "description": "Sort order: name or createdAt",
+                                "type": "string",
+                                "enum": ["name", "createdAt"]
+                            },
+                            "limit": {
+                                "description": "Maximum number of results per page",
+                                "type": "number"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Maps to pageToken.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_listformulas": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "href": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "parent": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "href": {
+                                                    "type": "string"
+                                                },
+                                                "browserLink": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "type", "href", "browserLink", "name"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "type", "href", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all pages in a doc.",
+            "endpoint": null,
+            "input": "ActionInput_coda_listpages",
+            "name": "list-pages",
+            "output": ["ActionOutput_coda_listpages"],
+            "scopes": ["doc:read"],
+            "usedModels": ["ActionInput_coda_listpages", "ActionOutput_coda_listpages"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_listpages": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the Coda doc. Example: \"L_hgEASd6n\""
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return. Example: 10",
+                                "type": "number"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_listpages": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "href": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "isHidden": {
+                                            "type": "boolean"
+                                        },
+                                        "isEffectivelyHidden": {
+                                            "type": "boolean"
+                                        },
+                                        "browserLink": {
+                                            "type": "string"
+                                        },
+                                        "children": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "href": {
+                                                        "type": "string"
+                                                    },
+                                                    "browserLink": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "type", "href", "browserLink", "name"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "contentType": {
+                                            "type": "string"
+                                        },
+                                        "subtitle": {
+                                            "type": "string"
+                                        },
+                                        "icon": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "browserLink": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "image": {
+                                            "type": "object",
+                                            "properties": {
+                                                "browserLink": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "width": {
+                                                    "type": "number"
+                                                },
+                                                "height": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "parent": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "href": {
+                                                    "type": "string"
+                                                },
+                                                "browserLink": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "type", "href", "browserLink", "name"],
+                                            "additionalProperties": false
+                                        },
+                                        "authors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "@context": {
+                                                        "type": "string"
+                                                    },
+                                                    "@type": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalType": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "email": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "createdBy": {
+                                            "type": "object",
+                                            "properties": {
+                                                "@context": {
+                                                    "type": "string"
+                                                },
+                                                "@type": {
+                                                    "type": "string"
+                                                },
+                                                "additionalType": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedBy": {
+                                            "type": "object",
+                                            "properties": {
+                                                "@context": {
+                                                    "type": "string"
+                                                },
+                                                "@type": {
+                                                    "type": "string"
+                                                },
+                                                "additionalType": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "type", "href", "name", "isHidden", "isEffectivelyHidden", "browserLink", "children", "contentType"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List sharing permissions on a doc.",
+            "endpoint": {
+                "path": "/actions/list-permissions",
+                "method": "GET"
+            },
+            "input": "ActionInput_coda_listpermissions",
+            "name": "list-permissions",
+            "output": ["ActionOutput_coda_listpermissions"],
+            "scopes": ["write"],
+            "usedModels": ["ActionInput_coda_listpermissions", "ActionOutput_coda_listpermissions"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_listpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the Coda doc. Example: \"AbCDeFGH\""
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return. Example: 10",
+                                "type": "number"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (pageToken) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_listpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "access": {
+                                            "type": "string"
+                                        },
+                                        "principal": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["type"],
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "access", "principal"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List rows in a table with optional filtering and pagination.",
+            "endpoint": {
+                "path": "/actions/list-rows",
+                "method": "POST"
+            },
+            "input": "ActionInput_coda_listrows",
+            "name": "list-rows",
+            "output": ["ActionOutput_coda_listrows"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_listrows", "ActionOutput_coda_listrows"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_listrows": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the doc. Example: AbCDeFGH"
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "ID or name of the table. Example: grid-pqRst-U"
+                            },
+                            "useColumnNames": {
+                                "description": "Use column names instead of column IDs in the returned output",
+                                "type": "boolean"
+                            },
+                            "valueFormat": {
+                                "description": "The format that cell values are returned as",
+                                "type": "string",
+                                "enum": ["simple", "simpleWithArrays", "rich"]
+                            },
+                            "sortBy": {
+                                "description": "Specifies the sort order of the rows returned",
+                                "type": "string",
+                                "enum": ["natural", "id", "createdAt", "updatedAt"]
+                            },
+                            "visibleOnly": {
+                                "description": "If true, returns only visible rows and columns for the table",
+                                "type": "boolean"
+                            },
+                            "query": {
+                                "description": "Query used to filter returned rows, specified as <column_id_or_name>:<value>",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return",
+                                "type": "number"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Maps to the pageToken parameter.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId", "tableIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_listrows": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "href": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "index": {
+                                            "type": "number"
+                                        },
+                                        "browserLink": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "values": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "type", "href"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            },
+                            "nextPageLink": {
+                                "type": "string"
+                            },
+                            "nextSyncToken": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List tables and views in a doc.",
+            "endpoint": {
+                "path": "/actions/list-tables",
+                "method": "GET"
+            },
+            "input": "ActionInput_coda_listtables",
+            "name": "list-tables",
+            "output": ["ActionOutput_coda_listtables"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_listtables", "ActionOutput_coda_listtables"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_listtables": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the Coda doc. Example: \"L_hgEASd6n\""
+                            },
+                            "tableType": {
+                                "description": "Single table type to filter by. Do not use comma-separated values.",
+                                "type": "string",
+                                "enum": ["table", "view", "formula", "detail"]
+                            },
+                            "sortBy": {
+                                "description": "Sort order for results.",
+                                "type": "string",
+                                "enum": ["name", "createdAt"]
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_listtables": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "tableType": {
+                                            "type": "string"
+                                        },
+                                        "href": {
+                                            "type": "string"
+                                        },
+                                        "browserLink": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "parent": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "href": {
+                                                    "type": "string"
+                                                },
+                                                "browserLink": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "type", "href", "browserLink", "name"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "type", "href", "browserLink", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a page's name, subtitle, or icon",
+            "endpoint": null,
+            "input": "ActionInput_coda_updatepage",
+            "name": "update-page",
+            "output": ["ActionOutput_coda_updatepage"],
+            "scopes": ["doc:write"],
+            "usedModels": ["ActionInput_coda_updatepage", "ActionOutput_coda_updatepage"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_updatepage": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "Doc ID. Example: \"L_hgEASd6n\""
+                            },
+                            "pageIdOrName": {
+                                "type": "string",
+                                "description": "Page ID or name. Example: \"canvas-bP8xBdFUGb\""
+                            },
+                            "name": {
+                                "description": "New page name",
+                                "type": "string"
+                            },
+                            "subtitle": {
+                                "description": "New page subtitle",
+                                "type": "string"
+                            },
+                            "iconName": {
+                                "description": "Icon name for the page",
+                                "type": "string"
+                            },
+                            "imageUrl": {
+                                "description": "Custom image URL for the page icon",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId", "pageIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_updatepage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "requestId": {
+                                "type": "string"
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "requestId", "completed"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update cells in a specific row.",
+            "endpoint": null,
+            "input": "ActionInput_coda_updaterow",
+            "name": "update-row",
+            "output": ["ActionOutput_coda_updaterow"],
+            "scopes": ["doc:write"],
+            "usedModels": ["ActionInput_coda_updaterow", "ActionOutput_coda_updaterow"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_updaterow": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "Doc ID. Example: \"6O6-VWsNpq\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Table ID or name. Example: \"grid-tE68GY5gIp\""
+                            },
+                            "rowIdOrName": {
+                                "type": "string",
+                                "description": "Row ID or name. Example: \"i-qdoCaT1Gba\""
+                            },
+                            "cells": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "column": {
+                                            "type": "string",
+                                            "description": "Column ID or name. Example: \"c-i_UwVI012F\""
+                                        },
+                                        "value": {
+                                            "description": "New value for the cell."
+                                        }
+                                    },
+                                    "required": ["column", "value"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Cells to update."
+                            }
+                        },
+                        "required": ["docId", "tableIdOrName", "rowIdOrName", "cells"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_updaterow": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "requestId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "requestId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Insert or update rows in a table.",
+            "endpoint": null,
+            "input": "ActionInput_coda_upsertrows",
+            "name": "upsert-rows",
+            "output": ["ActionOutput_coda_upsertrows"],
+            "scopes": [],
+            "usedModels": ["ActionInput_coda_upsertrows", "ActionOutput_coda_upsertrows"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_coda_upsertrows": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the doc. Example: \"AbCDeFGH\""
+                            },
+                            "tableId": {
+                                "type": "string",
+                                "description": "ID or name of the table. Example: \"grid-123\""
+                            },
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "cells": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "column": {
+                                                        "type": "string",
+                                                        "description": "Column ID or name. Example: \"c-bCdeFgh\""
+                                                    },
+                                                    "value": {
+                                                        "description": "The cell value."
+                                                    }
+                                                },
+                                                "required": ["column", "value"],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "The cells to set for this row."
+                                        }
+                                    },
+                                    "required": ["cells"],
+                                    "additionalProperties": false
+                                },
+                                "description": "The rows to insert or upsert."
+                            },
+                            "keyColumns": {
+                                "description": "Column IDs or names to use for upsert matching.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["docId", "tableId", "rows"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_coda_upsertrows": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "description": "The request ID for tracking the async mutation."
+                            },
+                            "addedRowIds": {
+                                "description": "IDs of newly added rows.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "completed": {
+                                "type": "boolean",
+                                "description": "Whether the mutation has completed."
+                            },
+                            "warning": {
+                                "description": "Warning if the mutation completed with caveats.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["requestId", "completed"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync columns for a configured doc and table.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/columns"
+                }
+            ],
+            "input": "SyncMetadata_coda_columns",
+            "name": "columns",
+            "output": ["Column"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Column", "SyncMetadata_coda_columns"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Column": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "display": {
+                                "type": "boolean"
+                            },
+                            "calculated": {
+                                "type": "boolean"
+                            },
+                            "formula": {
+                                "type": "string"
+                            },
+                            "defaultValue": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "parentId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_coda_columns": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string"
+                            },
+                            "tableId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId", "tableId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync interactive controls (buttons, checkboxes, sliders) for a configured doc.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/controls"
+                }
+            ],
+            "input": "SyncMetadata_coda_controls",
+            "name": "controls",
+            "output": ["Control"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Control", "SyncMetadata_coda_controls"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Control": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "e.g. ctrl-xxx"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "controlType": {
+                                "type": "string"
+                            },
+                            "value": {},
+                            "parent": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "browserLink": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_coda_controls": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "ID of the doc to sync controls from"
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync all docs accessible to the authenticated user",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/docs"
+                }
+            ],
+            "input": null,
+            "name": "docs",
+            "output": ["Doc"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Doc"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Doc": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "browserLink": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "ownerName": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "workspaceId": {
+                                "type": "string"
+                            },
+                            "folderId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync named formulas for a configured doc",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/formulas"
+                }
+            ],
+            "input": "SyncMetadata_coda_formulas",
+            "name": "formulas",
+            "output": ["Formula"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Formula", "SyncMetadata_coda_formulas"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Formula": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "parentId": {
+                                "type": "string"
+                            },
+                            "parentName": {
+                                "type": "string"
+                            },
+                            "parentType": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_coda_formulas": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync pages for a configured doc",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_coda_pages",
+            "name": "pages",
+            "output": ["Page"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Page", "SyncMetadata_coda_pages"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Page": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "browserLink": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_coda_pages": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync sharing permissions for a configured doc",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/permissions"
+                }
+            ],
+            "input": "SyncMetadata_coda_permissions",
+            "name": "permissions",
+            "output": ["Permission"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Permission", "SyncMetadata_coda_permissions"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Permission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "permissionId": {
+                                "type": "string"
+                            },
+                            "access": {
+                                "type": "string"
+                            },
+                            "principalType": {
+                                "type": "string"
+                            },
+                            "principalEmail": {
+                                "type": "string"
+                            },
+                            "principalGroupId": {
+                                "type": "string"
+                            },
+                            "principalGroupName": {
+                                "type": "string"
+                            },
+                            "principalDomain": {
+                                "type": "string"
+                            },
+                            "principalWorkspaceId": {
+                                "type": "string"
+                            },
+                            "principalUserId": {
+                                "type": "string"
+                            },
+                            "principalLoginId": {
+                                "type": "string"
+                            },
+                            "principalName": {
+                                "type": "string"
+                            },
+                            "principalPictureLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "permissionId", "access", "principalType"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_coda_permissions": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync rows for a configured doc and table.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/rows"
+                }
+            ],
+            "input": "SyncMetadata_coda_rows",
+            "name": "rows",
+            "output": ["Row"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Row", "SyncMetadata_coda_rows"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Row": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "index": {
+                                "type": "number"
+                            },
+                            "browserLink": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "values": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_coda_rows": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string",
+                                "description": "The ID of the Coda doc containing the table"
+                            },
+                            "tableId": {
+                                "type": "string",
+                                "description": "The ID of the table to sync rows from"
+                            }
+                        },
+                        "required": ["docId", "tableId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync tables and views for a configured doc",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/tables"
+                }
+            ],
+            "input": "SyncMetadata_coda_tables",
+            "name": "tables",
+            "output": ["Table"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Table", "SyncMetadata_coda_tables"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Table": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "tableType": {
+                                "type": "string"
+                            },
+                            "href": {
+                                "type": "string"
+                            },
+                            "browserLink": {
+                                "type": "string"
+                            },
+                            "rowCount": {
+                                "type": "number"
+                            },
+                            "layout": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "parentTableId": {
+                                "type": "string"
+                            },
+                            "parentPageId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_coda_tables": {
+                        "type": "object",
+                        "properties": {
+                            "docId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["docId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

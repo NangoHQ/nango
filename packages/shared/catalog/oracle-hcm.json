@@ -1,0 +1,560 @@
+{
+    "providerConfigKey": "oracle-hcm",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetch all employees from Oracle HCM in the native Oracle data model",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/employees",
+                    "group": "Oracle HCM API"
+                }
+            ],
+            "input": "SyncMetadata_oracle_hcm_employees",
+            "name": "employees",
+            "output": ["Employee"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Employee", "SyncMetadata_oracle_hcm_employees"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Employee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "personNumber": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "workEmail": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "departmentId": {
+                                "type": "string"
+                            },
+                            "departmentName": {
+                                "type": "string"
+                            },
+                            "assignmentStatusType": {
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "terminationDate": {
+                                "type": "string"
+                            },
+                            "managerId": {
+                                "type": "string"
+                            },
+                            "managerName": {
+                                "type": "string"
+                            },
+                            "workLocationName": {
+                                "type": "string"
+                            },
+                            "workLocationType": {
+                                "type": "string"
+                            },
+                            "correspondenceLanguage": {
+                                "type": ["string", "null"]
+                            },
+                            "bloodType": {
+                                "type": ["string", "null"]
+                            },
+                            "dateOfBirth": {
+                                "type": ["string", "null"]
+                            },
+                            "dateOfDeath": {
+                                "type": ["string", "null"]
+                            },
+                            "countryOfBirth": {
+                                "type": ["string", "null"]
+                            },
+                            "regionOfBirth": {
+                                "type": ["string", "null"]
+                            },
+                            "townOfBirth": {
+                                "type": ["string", "null"]
+                            },
+                            "applicantNumber": {
+                                "type": ["string", "null"]
+                            },
+                            "createdBy": {
+                                "type": "string"
+                            },
+                            "lastUpdatedBy": {
+                                "type": "string"
+                            },
+                            "creationDate": {
+                                "type": "string"
+                            },
+                            "lastUpdateDate": {
+                                "type": "string"
+                            },
+                            "workLocationAddress": {
+                                "type": "object",
+                                "properties": {
+                                    "addressLine1": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "addressLine2": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "townOrCity": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "region2": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "postalCode": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "addressType": {
+                                        "type": "string"
+                                    },
+                                    "primaryFlag": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "addressLine1": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "addressLine2": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "townOrCity": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "region2": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "postalCode": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "addressType": {
+                                            "type": "string"
+                                        },
+                                        "primaryFlag": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "phones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "phoneType": {
+                                            "type": "string"
+                                        },
+                                        "phoneNumber": {
+                                            "type": "string"
+                                        },
+                                        "primaryFlag": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailType": {
+                                            "type": "string"
+                                        },
+                                        "emailAddress": {
+                                            "type": "string"
+                                        },
+                                        "primaryFlag": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_oracle_hcm_employees": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Fetch all employees from Oracle HCM",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/employees/unified",
+                    "group": "Unified HRIS API"
+                }
+            ],
+            "input": "SyncMetadata_oracle_hcm_unifiedemployees",
+            "name": "unified-employees",
+            "output": ["StandardEmployee"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["StandardEmployee", "SyncMetadata_oracle_hcm_unifiedemployees"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "StandardEmployee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "employeeNumber": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "employmentType": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "FULL_TIME"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "PART_TIME"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "CONTRACTOR"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "INTERN"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "TEMPORARY"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "OTHER"
+                                    }
+                                ]
+                            },
+                            "employmentStatus": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "ACTIVE"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "TERMINATED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "ON_LEAVE"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "SUSPENDED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "PENDING"
+                                    }
+                                ]
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "terminationDate": {
+                                "type": "string"
+                            },
+                            "manager": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "workLocation": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "const": "OFFICE"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "REMOTE"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "HYBRID"
+                                            }
+                                        ]
+                                    },
+                                    "primaryAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                            "street": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "const": "WORK"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "const": "HOME"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": ["type"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["name", "type"],
+                                "additionalProperties": false
+                            },
+                            "addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "street": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "postalCode": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "HOME"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "phones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "HOME"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "MOBILE"
+                                                }
+                                            ]
+                                        },
+                                        "number": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "number"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "WORK"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "PERSONAL"
+                                                }
+                                            ]
+                                        },
+                                        "address": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "address"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "providerSpecific": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "displayName",
+                            "department",
+                            "employmentType",
+                            "employmentStatus",
+                            "startDate",
+                            "workLocation",
+                            "providerSpecific",
+                            "createdAt",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_oracle_hcm_unifiedemployees": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

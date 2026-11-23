@@ -1,0 +1,3572 @@
+{
+    "providerConfigKey": "outlook",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Attach a small file (under 3 MB) to an Outlook event.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_addeventattachment",
+            "name": "add-event-attachment",
+            "output": ["ActionOutput_outlook_addeventattachment"],
+            "scopes": ["Calendars.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_addeventattachment", "ActionOutput_outlook_addeventattachment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_addeventattachment": {
+                        "type": "object",
+                        "properties": {
+                            "eventId": {
+                                "type": "string",
+                                "description": "Event ID. Example: \"AAMkAGI1AAAt9AHjAAA=\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "File name. Example: \"menu.txt\""
+                            },
+                            "contentBytes": {
+                                "type": "string",
+                                "description": "Base64-encoded file content. Example: \"bWFjIGFuZCBjaGVlc2UgdG9kYXk=\""
+                            },
+                            "contentType": {
+                                "description": "MIME type of the attachment. Example: \"text/plain\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["eventId", "name", "contentBytes"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_addeventattachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "contentType": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "isInline": {
+                                "type": "boolean"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Attach a file to a draft message. Note: 3 MB simple upload limit applies.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_addmessageattachment",
+            "name": "add-message-attachment",
+            "output": ["ActionOutput_outlook_addmessageattachment"],
+            "scopes": ["Mail.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_addmessageattachment", "ActionOutput_outlook_addmessageattachment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_addmessageattachment": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string",
+                                "description": "The ID of the draft message to attach the file to. Example: \"AQMkAGFk...\""
+                            },
+                            "fileName": {
+                                "type": "string",
+                                "description": "The name of the file to attach. Example: \"document.pdf\""
+                            },
+                            "contentType": {
+                                "type": "string",
+                                "description": "The MIME type of the file. Example: \"application/pdf\""
+                            },
+                            "contentBytes": {
+                                "type": "string",
+                                "description": "The base64-encoded content of the file. Example: \"JVBERi0xLjQK...\""
+                            }
+                        },
+                        "required": ["messageId", "fileName", "contentType", "contentBytes"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_addmessageattachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "contentType": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Cancel a meeting and send the cancellation notice to attendees",
+            "endpoint": null,
+            "input": "ActionInput_outlook_cancelevent",
+            "name": "cancel-event",
+            "output": ["ActionOutput_outlook_cancelevent"],
+            "scopes": ["Calendars.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_cancelevent", "ActionOutput_outlook_cancelevent"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_cancelevent": {
+                        "type": "object",
+                        "properties": {
+                            "eventId": {
+                                "type": "string",
+                                "description": "The ID of the event to cancel. Example: \"AQMkAGI2...\""
+                            },
+                            "comment": {
+                                "description": "An optional comment to include in the cancellation message sent to attendees.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["eventId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_cancelevent": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Copy a message to another mail folder.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_copymessage",
+            "name": "copy-message",
+            "output": ["ActionOutput_outlook_copymessage"],
+            "scopes": ["Mail.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_copymessage", "ActionOutput_outlook_copymessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_copymessage": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string",
+                                "description": "The ID of the message to copy. Example: \"AQMkADAwATM0MDAAMS1iN...\""
+                            },
+                            "destinationId": {
+                                "type": "string",
+                                "description": "The ID of the destination mail folder, or a well-known folder name such as \"inbox\", \"drafts\", \"sentitems\", \"deleteditems\"."
+                            }
+                        },
+                        "required": ["messageId", "destinationId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_copymessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "receivedDateTime": {
+                                "type": "string"
+                            },
+                            "sentDateTime": {
+                                "type": "string"
+                            },
+                            "hasAttachments": {
+                                "type": "boolean"
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "bodyPreview": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a secondary calendar in the mailbox.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_createcalendar",
+            "name": "create-calendar",
+            "output": ["ActionOutput_outlook_createcalendar"],
+            "scopes": ["Calendars.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_createcalendar", "ActionOutput_outlook_createcalendar"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_createcalendar": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name of the new calendar. Example: \"Team Events\""
+                            },
+                            "color": {
+                                "description": "Color theme for the calendar. Example: \"lightBlue\"",
+                                "type": "string",
+                                "enum": [
+                                    "lightBlue",
+                                    "lightGreen",
+                                    "lightOrange",
+                                    "lightGray",
+                                    "lightYellow",
+                                    "lightTeal",
+                                    "lightPink",
+                                    "lightBrown",
+                                    "lightRed",
+                                    "maxColor"
+                                ]
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_createcalendar": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": ["string", "number"]
+                            },
+                            "canShare": {
+                                "type": "boolean"
+                            },
+                            "canViewPrivateItems": {
+                                "type": "boolean"
+                            },
+                            "isDefaultCalendar": {
+                                "type": "boolean"
+                            },
+                            "isTallyingResponses": {
+                                "type": "boolean"
+                            },
+                            "ownerName": {
+                                "type": "string"
+                            },
+                            "ownerAddress": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a draft email message",
+            "endpoint": null,
+            "input": "ActionInput_outlook_createdraftmessage",
+            "name": "create-draft-message",
+            "output": ["ActionOutput_outlook_createdraftmessage"],
+            "scopes": ["Mail.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_createdraftmessage", "ActionOutput_outlook_createdraftmessage"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_createdraftmessage": {
+                        "type": "object",
+                        "properties": {
+                            "subject": {
+                                "type": "string",
+                                "description": "Subject of the message. Example: \"Meeting notes\""
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string",
+                                        "enum": ["text", "html"],
+                                        "description": "Content type: \"text\" or \"html\""
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "description": "Body content of the message"
+                                    }
+                                },
+                                "required": ["contentType", "content"],
+                                "additionalProperties": false,
+                                "description": "Body of the message"
+                            },
+                            "toRecipients": {
+                                "description": "List of recipients to send the message to",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string",
+                                                    "description": "Email address. Example: \"recipient@example.com\""
+                                                },
+                                                "name": {
+                                                    "description": "Display name. Example: \"John Doe\"",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["address"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["emailAddress"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "ccRecipients": {
+                                "description": "List of CC recipients",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string",
+                                                    "description": "Email address. Example: \"recipient@example.com\""
+                                                },
+                                                "name": {
+                                                    "description": "Display name. Example: \"John Doe\"",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["address"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["emailAddress"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "bccRecipients": {
+                                "description": "List of BCC recipients",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string",
+                                                    "description": "Email address. Example: \"recipient@example.com\""
+                                                },
+                                                "name": {
+                                                    "description": "Display name. Example: \"John Doe\"",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["address"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["emailAddress"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "importance": {
+                                "description": "Importance level. Example: \"normal\"",
+                                "type": "string",
+                                "enum": ["low", "normal", "high"]
+                            },
+                            "isReadReceiptRequested": {
+                                "description": "Whether a read receipt was requested",
+                                "type": "boolean"
+                            },
+                            "isDeliveryReceiptRequested": {
+                                "description": "Whether a delivery receipt was requested",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["subject", "body"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_createdraftmessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string",
+                                        "enum": ["text", "html"],
+                                        "description": "Content type: \"text\" or \"html\""
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "description": "Body content of the message"
+                                    }
+                                },
+                                "required": ["contentType", "content"],
+                                "additionalProperties": false
+                            },
+                            "toRecipients": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string",
+                                                    "description": "Email address. Example: \"recipient@example.com\""
+                                                },
+                                                "name": {
+                                                    "description": "Display name. Example: \"John Doe\"",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["address"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["emailAddress"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "ccRecipients": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string",
+                                                    "description": "Email address. Example: \"recipient@example.com\""
+                                                },
+                                                "name": {
+                                                    "description": "Display name. Example: \"John Doe\"",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["address"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["emailAddress"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "bccRecipients": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string",
+                                                    "description": "Email address. Example: \"recipient@example.com\""
+                                                },
+                                                "name": {
+                                                    "description": "Display name. Example: \"John Doe\"",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["address"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["emailAddress"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "importance": {
+                                "type": "string",
+                                "enum": ["low", "normal", "high"]
+                            },
+                            "isDraft": {
+                                "type": "boolean"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "webLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an event on a calendar.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_createevent",
+            "name": "create-event",
+            "output": ["ActionOutput_outlook_createevent"],
+            "scopes": ["Calendars.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_createevent", "ActionOutput_outlook_createevent"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_createevent": {
+                        "type": "object",
+                        "properties": {
+                            "calendarId": {
+                                "description": "Calendar ID. If omitted, the event is created in the default calendar. Example: \"AQMkAGI2...\"",
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string",
+                                "description": "Event subject/title. Example: \"Team Meeting\""
+                            },
+                            "start": {
+                                "type": "object",
+                                "properties": {
+                                    "dateTime": {
+                                        "type": "string",
+                                        "description": "Start time in ISO 8601 format. Example: \"2024-06-15T10:00:00\""
+                                    },
+                                    "timeZone": {
+                                        "type": "string",
+                                        "description": "Time zone for start time. Example: \"UTC\" or \"Pacific Standard Time\""
+                                    }
+                                },
+                                "required": ["dateTime", "timeZone"],
+                                "additionalProperties": false
+                            },
+                            "end": {
+                                "type": "object",
+                                "properties": {
+                                    "dateTime": {
+                                        "type": "string",
+                                        "description": "End time in ISO 8601 format. Example: \"2024-06-15T11:00:00\""
+                                    },
+                                    "timeZone": {
+                                        "type": "string",
+                                        "description": "Time zone for end time. Example: \"UTC\" or \"Pacific Standard Time\""
+                                    }
+                                },
+                                "required": ["dateTime", "timeZone"],
+                                "additionalProperties": false
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "description": "Body content type.",
+                                        "type": "string",
+                                        "enum": ["text", "html"]
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "description": "Event body/description content."
+                                    }
+                                },
+                                "required": ["content"],
+                                "additionalProperties": false
+                            },
+                            "location": {
+                                "type": "object",
+                                "properties": {
+                                    "displayName": {
+                                        "type": "string",
+                                        "description": "Location display name. Example: \"Conference Room A\""
+                                    }
+                                },
+                                "required": ["displayName"],
+                                "additionalProperties": false
+                            },
+                            "attendees": {
+                                "description": "List of attendees to invite to the event.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string",
+                                                    "description": "Attendee email address. Example: \"user@example.com\""
+                                                },
+                                                "name": {
+                                                    "description": "Attendee display name.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["address"],
+                                            "additionalProperties": false
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["required", "optional", "resource"]
+                                        }
+                                    },
+                                    "required": ["emailAddress"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "isOnlineMeeting": {
+                                "description": "Whether to create an online meeting (Teams).",
+                                "type": "boolean"
+                            },
+                            "onlineMeetingProvider": {
+                                "description": "Online meeting provider.",
+                                "type": "string",
+                                "enum": ["teamsForBusiness", "skypeForBusiness", "skypeForConsumer", "unknown"]
+                            },
+                            "sensitivity": {
+                                "type": "string",
+                                "enum": ["normal", "personal", "private", "confidential"]
+                            },
+                            "showAs": {
+                                "type": "string",
+                                "enum": ["free", "tentative", "busy", "oof", "workingElsewhere", "unknown"]
+                            }
+                        },
+                        "required": ["subject", "start", "end"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_createevent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "start": {
+                                "type": "object",
+                                "properties": {
+                                    "dateTime": {
+                                        "type": "string"
+                                    },
+                                    "timeZone": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["dateTime", "timeZone"],
+                                "additionalProperties": false
+                            },
+                            "end": {
+                                "type": "object",
+                                "properties": {
+                                    "dateTime": {
+                                        "type": "string"
+                                    },
+                                    "timeZone": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["dateTime", "timeZone"],
+                                "additionalProperties": false
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "location": {
+                                "type": "object",
+                                "properties": {
+                                    "displayName": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "attendees": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["required", "optional", "resource"]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "isOnlineMeeting": {
+                                "type": "boolean"
+                            },
+                            "onlineMeeting": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "joinUrl": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "webLink": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a child mail folder in Outlook.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_createmailfolder",
+            "name": "create-mail-folder",
+            "output": ["ActionOutput_outlook_createmailfolder"],
+            "scopes": ["Mail.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_createmailfolder", "ActionOutput_outlook_createmailfolder"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_createmailfolder": {
+                        "type": "object",
+                        "properties": {
+                            "parentFolderId": {
+                                "type": "string",
+                                "description": "The unique identifier of the parent mail folder. Example: \"AQMkAGI2...\""
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "The display name of the new mail folder. Example: \"Work\""
+                            },
+                            "hidden": {
+                                "description": "Whether the folder should be hidden from standard folder lists.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["parentFolderId", "displayName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_createmailfolder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "parentFolderId": {
+                                "type": "string"
+                            },
+                            "childFolderCount": {
+                                "type": "number"
+                            },
+                            "unreadItemCount": {
+                                "type": "number"
+                            },
+                            "totalItemCount": {
+                                "type": "number"
+                            },
+                            "isHidden": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "displayName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a secondary calendar.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_deletecalendar",
+            "name": "delete-calendar",
+            "output": ["ActionOutput_outlook_deletecalendar"],
+            "scopes": ["Calendars.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_deletecalendar", "ActionOutput_outlook_deletecalendar"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_deletecalendar": {
+                        "type": "object",
+                        "properties": {
+                            "calendarId": {
+                                "type": "string",
+                                "description": "The ID of the calendar to delete. Example: \"AAMkAGI...\""
+                            }
+                        },
+                        "required": ["calendarId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_deletecalendar": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "calendarId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "calendarId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an event from a calendar.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_deleteevent",
+            "name": "delete-event",
+            "output": ["ActionOutput_outlook_deleteevent"],
+            "scopes": ["Calendars.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_deleteevent", "ActionOutput_outlook_deleteevent"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_deleteevent": {
+                        "type": "object",
+                        "properties": {
+                            "event_id": {
+                                "type": "string",
+                                "description": "The ID of the event to delete. Example: \"AAMkAGI2...\""
+                            },
+                            "calendar_id": {
+                                "description": "Optional calendar ID. If omitted, uses the default calendar.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["event_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_deleteevent": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "message"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a message from the mailbox",
+            "endpoint": null,
+            "input": "ActionInput_outlook_deletemessage",
+            "name": "delete-message",
+            "output": ["ActionOutput_outlook_deletemessage"],
+            "scopes": ["Mail.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_deletemessage", "ActionOutput_outlook_deletemessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_deletemessage": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string",
+                                "description": "The unique identifier of the message to delete. Example: \"AAMkAGVmMDEzM...\""
+                            }
+                        },
+                        "required": ["messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_deletemessage": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the deletion was successful"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Download the content of a file attachment on a message.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_downloadmessageattachment",
+            "name": "download-message-attachment",
+            "output": ["ActionOutput_outlook_downloadmessageattachment"],
+            "scopes": ["Mail.Read"],
+            "usedModels": ["ActionInput_outlook_downloadmessageattachment", "ActionOutput_outlook_downloadmessageattachment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_downloadmessageattachment": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string",
+                                "description": "The ID of the message containing the attachment. Example: \"AAMkAGVmMD...\""
+                            },
+                            "attachmentId": {
+                                "type": "string",
+                                "description": "The ID of the attachment to download. Example: \"AAMkAGVmMD...\""
+                            }
+                        },
+                        "required": ["messageId", "attachmentId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_downloadmessageattachment": {
+                        "type": "object",
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "description": "The base64-encoded content of the attachment."
+                            },
+                            "contentType": {
+                                "type": "string",
+                                "description": "The MIME type of the attachment content."
+                            },
+                            "name": {
+                                "description": "The name of the attachment file.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["content", "contentType"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a calendar by ID.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_getcalendar",
+            "name": "get-calendar",
+            "output": ["ActionOutput_outlook_getcalendar"],
+            "scopes": ["Calendars.Read"],
+            "usedModels": ["ActionInput_outlook_getcalendar", "ActionOutput_outlook_getcalendar"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_getcalendar": {
+                        "type": "object",
+                        "properties": {
+                            "calendarId": {
+                                "type": "string",
+                                "description": "The unique identifier of the calendar. Example: \"AAMkAGI2TGuLAAA=\""
+                            }
+                        },
+                        "required": ["calendarId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_getcalendar": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "isDefaultCalendar": {
+                                "type": "boolean"
+                            },
+                            "changeKey": {
+                                "type": "string"
+                            },
+                            "canShare": {
+                                "type": "boolean"
+                            },
+                            "canViewPrivateItems": {
+                                "type": "boolean"
+                            },
+                            "hexColor": {
+                                "type": "string"
+                            },
+                            "canEdit": {
+                                "type": "boolean"
+                            },
+                            "allowedOnlineMeetingProviders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "defaultOnlineMeetingProvider": {
+                                "type": "string"
+                            },
+                            "isTallyingResponses": {
+                                "type": "boolean"
+                            },
+                            "isRemovable": {
+                                "type": "boolean"
+                            },
+                            "owner": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve an event by ID from the user's calendar",
+            "endpoint": null,
+            "input": "ActionInput_outlook_getevent",
+            "name": "get-event",
+            "output": ["ActionOutput_outlook_getevent"],
+            "scopes": ["Calendars.Read"],
+            "usedModels": ["ActionInput_outlook_getevent", "ActionOutput_outlook_getevent"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_getevent": {
+                        "type": "object",
+                        "properties": {
+                            "eventId": {
+                                "type": "string",
+                                "description": "The unique identifier of the event. Example: \"AAMkAGI1AAAoZDOFAAA=\""
+                            },
+                            "timezone": {
+                                "description": "The time zone to use for returning event dates. Example: \"Pacific Standard Time\"",
+                                "type": "string"
+                            },
+                            "select": {
+                                "description": "A comma-separated list of properties to include in the response. Example: \"subject,start,end,location\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["eventId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_getevent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": ["string", "null"]
+                            },
+                            "bodyPreview": {
+                                "type": ["string", "null"]
+                            },
+                            "bodyContentType": {
+                                "type": ["string", "null"]
+                            },
+                            "bodyContent": {
+                                "type": ["string", "null"]
+                            },
+                            "start": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "dateTime": {
+                                                "type": "string"
+                                            },
+                                            "timeZone": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "end": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "dateTime": {
+                                                "type": "string"
+                                            },
+                                            "timeZone": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "locationDisplayName": {
+                                "type": ["string", "null"]
+                            },
+                            "locationType": {
+                                "type": ["string", "null"]
+                            },
+                            "locations": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "displayName": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "locationType": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "uniqueId": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "uniqueIdType": {
+                                                    "type": ["string", "null"]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "attendees": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "response": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "emailName": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "emailAddress": {
+                                                    "type": ["string", "null"]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "organizerName": {
+                                "type": ["string", "null"]
+                            },
+                            "organizerAddress": {
+                                "type": ["string", "null"]
+                            },
+                            "isOrganizer": {
+                                "type": ["boolean", "null"]
+                            },
+                            "isCancelled": {
+                                "type": ["boolean", "null"]
+                            },
+                            "isAllDay": {
+                                "type": ["boolean", "null"]
+                            },
+                            "importance": {
+                                "type": ["string", "null"]
+                            },
+                            "showAs": {
+                                "type": ["string", "null"]
+                            },
+                            "sensitivity": {
+                                "type": ["string", "null"]
+                            },
+                            "recurrence": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "pattern": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": ["string", "null"]
+                                                            },
+                                                            "interval": {
+                                                                "type": ["number", "null"]
+                                                            },
+                                                            "month": {
+                                                                "type": ["number", "null"]
+                                                            },
+                                                            "dayOfMonth": {
+                                                                "type": ["number", "null"]
+                                                            },
+                                                            "daysOfWeek": {
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "array",
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "firstDayOfWeek": {
+                                                                "type": ["string", "null"]
+                                                            },
+                                                            "index": {
+                                                                "type": ["string", "null"]
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "range": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": ["string", "null"]
+                                                            },
+                                                            "startDate": {
+                                                                "type": ["string", "null"]
+                                                            },
+                                                            "endDate": {
+                                                                "type": ["string", "null"]
+                                                            },
+                                                            "numberOfOccurrences": {
+                                                                "type": ["number", "null"]
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "seriesMasterId": {
+                                "type": ["string", "null"]
+                            },
+                            "type": {
+                                "type": ["string", "null"]
+                            },
+                            "webLink": {
+                                "type": ["string", "null"]
+                            },
+                            "onlineMeetingUrl": {
+                                "type": ["string", "null"]
+                            },
+                            "createdDateTime": {
+                                "type": ["string", "null"]
+                            },
+                            "lastModifiedDateTime": {
+                                "type": ["string", "null"]
+                            },
+                            "iCalUId": {
+                                "type": ["string", "null"]
+                            },
+                            "response": {
+                                "type": ["string", "null"]
+                            },
+                            "responseTime": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a message by ID.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_getmessage",
+            "name": "get-message",
+            "output": ["ActionOutput_outlook_getmessage"],
+            "scopes": ["Mail.Read"],
+            "usedModels": ["ActionInput_outlook_getmessage", "ActionOutput_outlook_getmessage"],
+            "version": "1.1.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_getmessage": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string",
+                                "description": "The unique identifier of the message. Example: \"AAMkAGVmMD...\""
+                            },
+                            "expandAttachments": {
+                                "description": "If true, expands the attachments relationship in the response.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_getmessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "bodyPreview": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "receivedDateTime": {
+                                "type": "string"
+                            },
+                            "sentDateTime": {
+                                "type": "string"
+                            },
+                            "importance": {
+                                "type": "string"
+                            },
+                            "isRead": {
+                                "type": "boolean"
+                            },
+                            "isDraft": {
+                                "type": "boolean"
+                            },
+                            "from": {
+                                "type": "object",
+                                "properties": {
+                                    "emailAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                            "address": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "toRecipients": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "ccRecipients": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "bccRecipients": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "replyTo": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "contentType": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List events from a calendar or date window.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_listcalendarevents",
+            "name": "list-calendar-events",
+            "output": ["ActionOutput_outlook_listcalendarevents"],
+            "scopes": ["Calendars.Read"],
+            "usedModels": ["ActionInput_outlook_listcalendarevents", "ActionOutput_outlook_listcalendarevents"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_listcalendarevents": {
+                        "type": "object",
+                        "properties": {
+                            "calendar_id": {
+                                "description": "The ID of the calendar to list events from. If omitted, the default calendar is used. Example: \"AQMkADAwATM0...\"",
+                                "type": "string"
+                            },
+                            "start_date_time": {
+                                "description": "Start of the date range (ISO 8601 format). Required when using calendarView. Example: \"2024-01-01T00:00:00Z\"",
+                                "type": "string"
+                            },
+                            "end_date_time": {
+                                "description": "End of the date range (ISO 8601 format). Required when using calendarView. Example: \"2024-01-31T23:59:59Z\"",
+                                "type": "string"
+                            },
+                            "top": {
+                                "description": "Maximum number of events to return per page. Default: 10, Max: 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_listcalendarevents": {
+                        "type": "object",
+                        "properties": {
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        },
+                                        "body_preview": {
+                                            "type": "string"
+                                        },
+                                        "start_date_time": {
+                                            "type": "string"
+                                        },
+                                        "start_time_zone": {
+                                            "type": "string"
+                                        },
+                                        "end_date_time": {
+                                            "type": "string"
+                                        },
+                                        "end_time_zone": {
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "type": "string"
+                                        },
+                                        "is_all_day": {
+                                            "type": "boolean"
+                                        },
+                                        "show_as": {
+                                            "type": "string"
+                                        },
+                                        "web_link": {
+                                            "type": "string"
+                                        },
+                                        "created_date_time": {
+                                            "type": "string"
+                                        },
+                                        "last_modified_date_time": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_link": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["events"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List calendars in the mailbox.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_listcalendars",
+            "name": "list-calendars",
+            "output": ["ActionOutput_outlook_listcalendars"],
+            "scopes": ["Calendars.Read"],
+            "usedModels": ["ActionInput_outlook_listcalendars", "ActionOutput_outlook_listcalendars"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_listcalendars": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Full @odata.nextLink URL from the previous response for pagination. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of calendars to return. Default is 10, maximum is 50.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_listcalendars": {
+                        "type": "object",
+                        "properties": {
+                            "calendars": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        },
+                                        "changeKey": {
+                                            "type": "string"
+                                        },
+                                        "canShare": {
+                                            "type": "boolean"
+                                        },
+                                        "canViewPrivateItems": {
+                                            "type": "boolean"
+                                        },
+                                        "canEdit": {
+                                            "type": "boolean"
+                                        },
+                                        "owner": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "address": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["calendars"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List attachments on an event.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_listeventattachments",
+            "name": "list-event-attachments",
+            "output": ["ActionOutput_outlook_listeventattachments"],
+            "scopes": ["Calendars.Read"],
+            "usedModels": ["ActionInput_outlook_listeventattachments", "ActionOutput_outlook_listeventattachments"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_listeventattachments": {
+                        "type": "object",
+                        "properties": {
+                            "eventId": {
+                                "type": "string",
+                                "description": "The ID of the event to list attachments for. Example: \"AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OABGAAAAAAAiQ8W967B7TKBjgx9rVEURBwAiIsqMbYjsT5e-T7KzowPTAAAAAAENAAAiIsqMbYjsT5e-T7KzowPTAAAa_WKzAAA=\""
+                            }
+                        },
+                        "required": ["eventId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_listeventattachments": {
+                        "type": "object",
+                        "properties": {
+                            "attachments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "contentType": {
+                                            "type": "string"
+                                        },
+                                        "isInline": {
+                                            "type": "boolean"
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextLink": {
+                                "description": "Pagination link for the next page of results. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["attachments"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List child folders under a mail folder",
+            "endpoint": null,
+            "input": "ActionInput_outlook_listmailfolderchildren",
+            "name": "list-mail-folder-children",
+            "output": ["ActionOutput_outlook_listmailfolderchildren"],
+            "scopes": ["Mail.Read"],
+            "usedModels": ["ActionInput_outlook_listmailfolderchildren", "ActionOutput_outlook_listmailfolderchildren"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_listmailfolderchildren": {
+                        "type": "object",
+                        "properties": {
+                            "folderId": {
+                                "type": "string",
+                                "description": "The ID of the mail folder to list children for. Example: \"AAMkAGVmODUyMzE1LTM0MDctNDNlMS05YjQ1LTI4MjE5MjJmYzY1ZgAuAAAAAADY3h3zQIGrQ6Pm8GPMwoNdAQCr0pwLSY4vT6AX1L4UHn_uAAAAAAEJAAA=\""
+                            },
+                            "limit": {
+                                "description": "Maximum number of folders to return per page. Default is 10.",
+                                "type": "number"
+                            },
+                            "cursor": {
+                                "description": "Full @odata.nextLink URL from the previous response for pagination. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["folderId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_listmailfolderchildren": {
+                        "type": "object",
+                        "properties": {
+                            "folders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "parentFolderId": {
+                                            "type": "string"
+                                        },
+                                        "childFolderCount": {
+                                            "type": "number"
+                                        },
+                                        "unreadItemCount": {
+                                            "type": "number"
+                                        },
+                                        "totalItemCount": {
+                                            "type": "number"
+                                        },
+                                        "sizeInBytes": {
+                                            "type": "number"
+                                        },
+                                        "isHidden": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Cursor to fetch the next page of results. Absent if there are no more pages.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["folders"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List top-level mail folders from the mailbox",
+            "endpoint": null,
+            "input": "ActionInput_outlook_listmailfolders",
+            "name": "list-mail-folders",
+            "output": ["ActionOutput_outlook_listmailfolders"],
+            "scopes": ["Mail.Read"],
+            "usedModels": ["ActionInput_outlook_listmailfolders", "ActionOutput_outlook_listmailfolders"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_listmailfolders": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Number of folders to return per page. Max 50.",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "nextLink": {
+                                "description": "OData nextLink for pagination from previous response",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_listmailfolders": {
+                        "type": "object",
+                        "properties": {
+                            "folders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "parentFolderId": {
+                                            "type": "string"
+                                        },
+                                        "childFolderCount": {
+                                            "type": "number"
+                                        },
+                                        "unreadItemCount": {
+                                            "type": "number"
+                                        },
+                                        "totalItemCount": {
+                                            "type": "number"
+                                        },
+                                        "wellKnownName": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextLink": {
+                                "description": "OData nextLink for retrieving the next page",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["folders"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List attachments on a message.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_listmessageattachments",
+            "name": "list-message-attachments",
+            "output": ["ActionOutput_outlook_listmessageattachments"],
+            "scopes": ["Mail.Read"],
+            "usedModels": ["ActionInput_outlook_listmessageattachments", "ActionOutput_outlook_listmessageattachments"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_listmessageattachments": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string",
+                                "description": "The unique identifier of the message to list attachments for. Example: \"AAMkAGVmMD...\""
+                            }
+                        },
+                        "required": ["messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_listmessageattachments": {
+                        "type": "object",
+                        "properties": {
+                            "attachments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "contentType": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "number"
+                                        },
+                                        "isInline": {
+                                            "type": "boolean"
+                                        },
+                                        "contentId": {
+                                            "type": "string"
+                                        },
+                                        "contentLocation": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["attachments"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List messages from a mail folder.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_listmessages",
+            "name": "list-messages",
+            "output": ["ActionOutput_outlook_listmessages"],
+            "scopes": ["Mail.Read"],
+            "usedModels": ["ActionInput_outlook_listmessages", "ActionOutput_outlook_listmessages"],
+            "version": "1.1.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_listmessages": {
+                        "type": "object",
+                        "properties": {
+                            "folderId": {
+                                "description": "Mail folder ID. Use \"inbox\" for the inbox folder. Example: \"inbox\"",
+                                "type": "string"
+                            },
+                            "filter": {
+                                "description": "OData filter expression for receivedDateTime. Example: \"receivedDateTime ge 2024-01-01T00:00:00Z\"",
+                                "type": "string"
+                            },
+                            "select": {
+                                "description": "Comma-separated list of properties to include. Example: \"id,subject,receivedDateTime,from\"",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination link (odata.nextLink) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of messages to return per page. Default: 10, Max: 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_listmessages": {
+                        "type": "object",
+                        "properties": {
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        },
+                                        "receivedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "sentDateTime": {
+                                            "type": "string"
+                                        },
+                                        "from": {
+                                            "type": "object",
+                                            "properties": {
+                                                "emailAddress": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "address": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "toRecipients": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "emailAddress": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "address": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "ccRecipients": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "emailAddress": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "address": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "bccRecipients": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "emailAddress": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "address": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "isRead": {
+                                            "type": "boolean"
+                                        },
+                                        "importance": {
+                                            "type": "string"
+                                        },
+                                        "conversationId": {
+                                            "type": "string"
+                                        },
+                                        "internetMessageId": {
+                                            "type": "string"
+                                        },
+                                        "hasAttachments": {
+                                            "type": "boolean"
+                                        },
+                                        "bodyPreview": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["messages"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move a message to another mail folder.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_movemessage",
+            "name": "move-message",
+            "output": ["ActionOutput_outlook_movemessage"],
+            "scopes": ["Mail.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_movemessage", "ActionOutput_outlook_movemessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_movemessage": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string",
+                                "description": "The unique identifier of the message to move. Example: \"AAMkAGVmMDEz...\""
+                            },
+                            "destinationId": {
+                                "type": "string",
+                                "description": "The unique identifier of the destination mail folder. Example: \"AAMkAGVmMDEzMjA...\""
+                            }
+                        },
+                        "required": ["messageId", "destinationId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_movemessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "parentFolderId": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "receivedDateTime": {
+                                "type": "string"
+                            },
+                            "sentDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "parentFolderId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Reply to all recipients on a message",
+            "endpoint": null,
+            "input": "ActionInput_outlook_replyalltomessage",
+            "name": "reply-all-to-message",
+            "output": ["ActionOutput_outlook_replyalltomessage"],
+            "scopes": ["Mail.ReadWrite", "Mail.Send"],
+            "usedModels": ["ActionInput_outlook_replyalltomessage", "ActionOutput_outlook_replyalltomessage"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_replyalltomessage": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string",
+                                "description": "The ID of the message to reply to"
+                            },
+                            "comment": {
+                                "description": "A comment to include in the reply. Required when not creating a draft.",
+                                "type": "string"
+                            },
+                            "createDraft": {
+                                "description": "If true, creates a draft reply instead of sending immediately",
+                                "type": "boolean"
+                            },
+                            "body": {
+                                "description": "The body of the reply message. Use instead of comment for more control.",
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string",
+                                        "enum": ["text", "html"]
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["contentType", "content"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_replyalltomessage": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "draftId": {
+                                "description": "The ID of the created draft (only when createDraft is true)",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Reply to a message sender.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_replytomessage",
+            "name": "reply-to-message",
+            "output": ["ActionOutput_outlook_replytomessage"],
+            "scopes": ["Mail.Send"],
+            "usedModels": ["ActionInput_outlook_replytomessage", "ActionOutput_outlook_replytomessage"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_replytomessage": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string",
+                                "description": "The ID of the message to reply to. Example: \"AAMkAGVmMDEZ...\""
+                            },
+                            "comment": {
+                                "type": "string",
+                                "description": "The plain text body of the reply message. Example: \"Thank you for your email. I will get back to you soon.\""
+                            }
+                        },
+                        "required": ["messageId", "comment"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_replytomessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "messageId": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "sender": {
+                                "type": "object",
+                                "properties": {
+                                    "emailAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                            "address": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "toRecipients": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "sentDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["messageId", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Send an existing draft message.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_senddraftmessage",
+            "name": "send-draft-message",
+            "output": ["ActionOutput_outlook_senddraftmessage"],
+            "scopes": ["Mail.Send"],
+            "usedModels": ["ActionInput_outlook_senddraftmessage", "ActionOutput_outlook_senddraftmessage"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_senddraftmessage": {
+                        "type": "object",
+                        "properties": {
+                            "message_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the draft message to send. Example: \"AAMkAGVmMDEz...\""
+                            }
+                        },
+                        "required": ["message_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_senddraftmessage": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the draft was sent successfully"
+                            },
+                            "message_id": {
+                                "type": "string",
+                                "description": "The ID of the draft that was sent. This equals the input draft ID; the send endpoint returns no body to confirm the sent item ID."
+                            }
+                        },
+                        "required": ["success", "message_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Send a new email message immediately",
+            "endpoint": null,
+            "input": "ActionInput_outlook_sendmail",
+            "name": "send-mail",
+            "output": ["ActionOutput_outlook_sendmail"],
+            "scopes": ["Mail.Send"],
+            "usedModels": ["ActionInput_outlook_sendmail", "ActionOutput_outlook_sendmail"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_sendmail": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "object",
+                                "properties": {
+                                    "subject": {
+                                        "type": "string",
+                                        "description": "The subject of the message. Example: \"Hello from Nango\""
+                                    },
+                                    "body": {
+                                        "type": "object",
+                                        "properties": {
+                                            "contentType": {
+                                                "type": "string",
+                                                "enum": ["text", "html"],
+                                                "description": "The content type of the body. Example: \"html\""
+                                            },
+                                            "content": {
+                                                "type": "string",
+                                                "description": "The content of the body. Example: \"Hello world\""
+                                            }
+                                        },
+                                        "required": ["contentType", "content"],
+                                        "additionalProperties": false
+                                    },
+                                    "toRecipients": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "emailAddress": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "address": {
+                                                            "type": "string",
+                                                            "description": "The email address. Example: \"user@example.com\""
+                                                        },
+                                                        "name": {
+                                                            "description": "The display name of the recipient. Example: \"John Doe\"",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["address"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["emailAddress"],
+                                            "additionalProperties": false
+                                        },
+                                        "description": "The recipients of the message"
+                                    },
+                                    "ccRecipients": {
+                                        "description": "The CC recipients of the message",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "emailAddress": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "address": {
+                                                            "type": "string",
+                                                            "description": "The email address. Example: \"user@example.com\""
+                                                        },
+                                                        "name": {
+                                                            "description": "The display name of the recipient. Example: \"John Doe\"",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["address"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["emailAddress"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "bccRecipients": {
+                                        "description": "The BCC recipients of the message",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "emailAddress": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "address": {
+                                                            "type": "string",
+                                                            "description": "The email address. Example: \"user@example.com\""
+                                                        },
+                                                        "name": {
+                                                            "description": "The display name of the recipient. Example: \"John Doe\"",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["address"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["emailAddress"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "replyTo": {
+                                        "description": "The reply-to recipients of the message",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "emailAddress": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "address": {
+                                                            "type": "string",
+                                                            "description": "The email address. Example: \"user@example.com\""
+                                                        },
+                                                        "name": {
+                                                            "description": "The display name of the recipient. Example: \"John Doe\"",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["address"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["emailAddress"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "importance": {
+                                        "description": "The importance of the message. Example: \"normal\"",
+                                        "type": "string",
+                                        "enum": ["low", "normal", "high"]
+                                    }
+                                },
+                                "required": ["subject", "body", "toRecipients"],
+                                "additionalProperties": false
+                            },
+                            "saveToSentItems": {
+                                "description": "Whether to save the message in Sent Items. Default: true",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["message"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_sendmail": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update calendar properties.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_updatecalendar",
+            "name": "update-calendar",
+            "output": ["ActionOutput_outlook_updatecalendar"],
+            "scopes": ["Calendars.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_updatecalendar", "ActionOutput_outlook_updatecalendar"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_updatecalendar": {
+                        "type": "object",
+                        "properties": {
+                            "calendarId": {
+                                "type": "string",
+                                "description": "The unique identifier of the calendar to update. Example: \"AQMkAGI...\""
+                            },
+                            "name": {
+                                "description": "The calendar name. Example: \"Work Calendar\"",
+                                "type": "string"
+                            },
+                            "color": {
+                                "description": "The color of the calendar in hex format or a preset color constant. Example: \"#2B579A\" or \"lightBlue\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["calendarId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_updatecalendar": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update event details in Outlook calendar.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_updateevent",
+            "name": "update-event",
+            "output": ["ActionOutput_outlook_updateevent"],
+            "scopes": ["Calendars.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_updateevent", "ActionOutput_outlook_updateevent"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_updateevent": {
+                        "type": "object",
+                        "properties": {
+                            "eventId": {
+                                "type": "string",
+                                "description": "The unique identifier of the event to update. Example: \"AAMkAGI1...\""
+                            },
+                            "subject": {
+                                "description": "The subject of the event.",
+                                "type": "string"
+                            },
+                            "body": {
+                                "description": "The body of the event.",
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string",
+                                        "enum": ["text", "html"]
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "attendees": {
+                                "description": "The attendees of the event.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["address"],
+                                            "additionalProperties": false
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["required", "optional", "resource"]
+                                        }
+                                    },
+                                    "required": ["emailAddress"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "start": {
+                                "description": "The start time of the event.",
+                                "type": "object",
+                                "properties": {
+                                    "dateTime": {
+                                        "type": "string",
+                                        "description": "The start date and time in ISO 8601 format."
+                                    },
+                                    "timeZone": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["dateTime"],
+                                "additionalProperties": false
+                            },
+                            "end": {
+                                "description": "The end time of the event.",
+                                "type": "object",
+                                "properties": {
+                                    "dateTime": {
+                                        "type": "string",
+                                        "description": "The end date and time in ISO 8601 format."
+                                    },
+                                    "timeZone": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["dateTime"],
+                                "additionalProperties": false
+                            },
+                            "location": {
+                                "description": "The location of the event.",
+                                "type": "object",
+                                "properties": {
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "object",
+                                        "properties": {
+                                            "street": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "countryOrRegion": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["eventId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_updateevent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "attendees": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "address": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["address"],
+                                            "additionalProperties": false
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["emailAddress"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "start": {
+                                "type": "object",
+                                "properties": {
+                                    "dateTime": {
+                                        "type": "string"
+                                    },
+                                    "timeZone": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "end": {
+                                "type": "object",
+                                "properties": {
+                                    "dateTime": {
+                                        "type": "string"
+                                    },
+                                    "timeZone": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "location": {
+                                "type": "object",
+                                "properties": {
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "object",
+                                        "properties": {
+                                            "street": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "countryOrRegion": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "webLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a draft or mutable message fields.",
+            "endpoint": null,
+            "input": "ActionInput_outlook_updatemessage",
+            "name": "update-message",
+            "output": ["ActionOutput_outlook_updatemessage"],
+            "scopes": ["Mail.ReadWrite"],
+            "usedModels": ["ActionInput_outlook_updatemessage", "ActionOutput_outlook_updatemessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_outlook_updatemessage": {
+                        "type": "object",
+                        "properties": {
+                            "messageId": {
+                                "type": "string",
+                                "description": "The unique identifier of the message to update. Example: \"AAMkAGVmMDEz\""
+                            },
+                            "subject": {
+                                "description": "The subject of the message.",
+                                "type": "string"
+                            },
+                            "body": {
+                                "description": "The body of the message.",
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string",
+                                        "enum": ["text", "html"],
+                                        "description": "The content type of the body."
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "description": "The content of the body."
+                                    }
+                                },
+                                "required": ["contentType", "content"],
+                                "additionalProperties": false
+                            },
+                            "categories": {
+                                "description": "The categories associated with the message.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "isRead": {
+                                "description": "Indicates whether the message has been read.",
+                                "type": "boolean"
+                            },
+                            "flag": {
+                                "description": "The flag status of the message.",
+                                "type": "object",
+                                "properties": {
+                                    "flagStatus": {
+                                        "type": "string",
+                                        "enum": ["notFlagged", "complete", "flagged"],
+                                        "description": "The flag status of the message."
+                                    }
+                                },
+                                "required": ["flagStatus"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_outlook_updatemessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["contentType", "content"],
+                                "additionalProperties": false
+                            },
+                            "categories": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "isRead": {
+                                "type": "boolean"
+                            },
+                            "flag": {
+                                "type": "object",
+                                "properties": {
+                                    "flagStatus": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["flagStatus"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync mailbox calendars and basic calendar metadata",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/calendars",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "calendars",
+            "output": ["Calendar"],
+            "runs": "every hour",
+            "scopes": ["Calendars.Read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Calendar"],
+            "version": "3.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Calendar": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "changeKey": {
+                                "type": "string"
+                            },
+                            "canShare": {
+                                "type": "boolean"
+                            },
+                            "canViewPrivateItems": {
+                                "type": "boolean"
+                            },
+                            "canEdit": {
+                                "type": "boolean"
+                            },
+                            "owner": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync events in a bounded calendar view with delta tokens.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/events"
+                }
+            ],
+            "input": "SyncMetadata_outlook_events",
+            "name": "events",
+            "output": ["Event"],
+            "runs": "every hour",
+            "scopes": ["Calendars.Read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Event", "SyncMetadata_outlook_events"],
+            "version": "3.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Event": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "bodyPreview": {
+                                "type": "string"
+                            },
+                            "bodyContentType": {
+                                "type": "string"
+                            },
+                            "bodyContent": {
+                                "type": "string"
+                            },
+                            "start": {
+                                "type": "object",
+                                "properties": {
+                                    "dateTime": {
+                                        "type": "string"
+                                    },
+                                    "timeZone": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["dateTime", "timeZone"],
+                                "additionalProperties": false
+                            },
+                            "end": {
+                                "type": "object",
+                                "properties": {
+                                    "dateTime": {
+                                        "type": "string"
+                                    },
+                                    "timeZone": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["dateTime", "timeZone"],
+                                "additionalProperties": false
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "isAllDay": {
+                                "type": "boolean"
+                            },
+                            "isCancelled": {
+                                "type": "boolean"
+                            },
+                            "isDraft": {
+                                "type": "boolean"
+                            },
+                            "isOnlineMeeting": {
+                                "type": "boolean"
+                            },
+                            "onlineMeetingProvider": {
+                                "type": "string"
+                            },
+                            "importance": {
+                                "type": "string"
+                            },
+                            "sensitivity": {
+                                "type": "string"
+                            },
+                            "showAs": {
+                                "type": "string"
+                            },
+                            "webLink": {
+                                "type": "string"
+                            },
+                            "iCalUId": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "seriesMasterId": {
+                                "type": "string"
+                            },
+                            "organizerEmail": {
+                                "type": "string"
+                            },
+                            "organizerName": {
+                                "type": "string"
+                            },
+                            "categories": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "originalStartTimeZone": {
+                                "type": "string"
+                            },
+                            "originalEndTimeZone": {
+                                "type": "string"
+                            },
+                            "hasAttachments": {
+                                "type": "boolean"
+                            },
+                            "changeKey": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_outlook_events": {
+                        "type": "object",
+                        "properties": {
+                            "backfillPeriodMs": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync the mail folder hierarchy",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/mail-folders"
+                }
+            ],
+            "input": null,
+            "name": "mail-folders",
+            "output": ["MailFolder"],
+            "runs": "every hour",
+            "scopes": ["Mail.Read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["MailFolder"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MailFolder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "parentFolderId": {
+                                "type": "string"
+                            },
+                            "childFolderCount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "totalItemCount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "unreadItemCount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "sizeInBytes": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "isHidden": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "displayName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync folder-scoped messages with delta tokens",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/messages",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "messages",
+            "output": ["Message"],
+            "runs": "every hour",
+            "scopes": ["Mail.Read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Message"],
+            "version": "1.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Message": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "folderId": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "bodyPreview": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "importance": {
+                                "type": "string"
+                            },
+                            "conversationId": {
+                                "type": "string"
+                            },
+                            "receivedDateTime": {
+                                "type": "string"
+                            },
+                            "sentDateTime": {
+                                "type": "string"
+                            },
+                            "isRead": {
+                                "type": "boolean"
+                            },
+                            "isDraft": {
+                                "type": "boolean"
+                            },
+                            "internetMessageId": {
+                                "type": "string"
+                            },
+                            "sender": {
+                                "type": "object",
+                                "properties": {
+                                    "emailAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "address": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "from": {
+                                "type": "object",
+                                "properties": {
+                                    "emailAddress": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "address": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "toRecipients": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "emailAddress": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "address": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "webLink": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "folderId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

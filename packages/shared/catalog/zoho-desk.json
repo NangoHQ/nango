@@ -1,0 +1,2778 @@
+{
+    "providerConfigKey": "zoho-desk",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a contact.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_createcontact",
+            "name": "create-contact",
+            "output": ["ActionOutput_zoho_desk_createcontact"],
+            "scopes": ["Desk.contacts.CREATE"],
+            "usedModels": ["ActionInput_zoho_desk_createcontact", "ActionOutput_zoho_desk_createcontact"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_createcontact": {
+                        "type": "object",
+                        "properties": {
+                            "lastName": {
+                                "type": "string",
+                                "description": "Last name of the contact. Example: \"Doe\""
+                            },
+                            "firstName": {
+                                "description": "First name of the contact. Example: \"John\"",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Email ID of the contact. Example: \"john@example.com\"",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "Phone number of the contact.",
+                                "type": "string"
+                            },
+                            "mobile": {
+                                "description": "Mobile number of the contact.",
+                                "type": "string"
+                            },
+                            "country": {
+                                "description": "Contact country of residence.",
+                                "type": "string"
+                            },
+                            "city": {
+                                "description": "Contact city of residence.",
+                                "type": "string"
+                            },
+                            "state": {
+                                "description": "Contact state of residence.",
+                                "type": "string"
+                            },
+                            "street": {
+                                "description": "Contact street address.",
+                                "type": "string"
+                            },
+                            "zip": {
+                                "description": "Zip code.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Contact description.",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "Contact title.",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Contact type.",
+                                "type": "string"
+                            },
+                            "ownerId": {
+                                "description": "ID of the user who creates the contact.",
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "description": "Account to which the contact is mapped.",
+                                "type": "string"
+                            },
+                            "facebook": {
+                                "description": "Facebook ID of the contact.",
+                                "type": "string"
+                            },
+                            "twitter": {
+                                "description": "Twitter ID of the contact.",
+                                "type": "string"
+                            },
+                            "secondaryEmail": {
+                                "description": "Secondary email ID of the contact.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["lastName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_createcontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "ID of the created contact."
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "mobile": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "street": {
+                                "type": "string"
+                            },
+                            "zip": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "ownerId": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "facebook": {
+                                "type": "string"
+                            },
+                            "twitter": {
+                                "type": "string"
+                            },
+                            "secondaryEmail": {
+                                "type": "string"
+                            },
+                            "photoURL": {
+                                "type": "string"
+                            },
+                            "isDeleted": {
+                                "type": "boolean"
+                            },
+                            "isTrashed": {
+                                "type": "boolean"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "zohoCRMContact": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "customerHappiness": {
+                                "type": "object",
+                                "properties": {
+                                    "badPercentage": {
+                                        "type": "string"
+                                    },
+                                    "okPercentage": {
+                                        "type": "string"
+                                    },
+                                    "goodPercentage": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "isFollowing": {
+                                "type": ["string", "boolean"]
+                            },
+                            "isAnonymous": {
+                                "type": "boolean"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "isSpam": {
+                                "type": "boolean"
+                            },
+                            "cf": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a ticket",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_createticket",
+            "name": "create-ticket",
+            "output": ["ActionOutput_zoho_desk_createticket"],
+            "scopes": ["Desk.tickets.CREATE"],
+            "usedModels": ["ActionInput_zoho_desk_createticket", "ActionOutput_zoho_desk_createticket"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_createticket": {
+                        "type": "object",
+                        "properties": {
+                            "subject": {
+                                "type": "string",
+                                "description": "Subject of the ticket. Example: \"Support request\""
+                            },
+                            "departmentId": {
+                                "type": "string",
+                                "description": "ID of the department in which the ticket should be created. Example: \"1892000000006907\""
+                            },
+                            "contactId": {
+                                "type": "string",
+                                "description": "ID of the contact who raised the ticket. Example: \"1892000000042032\""
+                            },
+                            "description": {
+                                "description": "Description of the ticket.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Status of the ticket. Example: \"Open\"",
+                                "type": "string"
+                            },
+                            "priority": {
+                                "description": "Priority of the ticket. Example: \"High\"",
+                                "type": "string"
+                            },
+                            "assigneeId": {
+                                "description": "ID of the agent to whom the ticket is assigned. Example: \"1892000000056007\"",
+                                "type": "string"
+                            },
+                            "category": {
+                                "description": "Category of the ticket. Example: \"general\"",
+                                "type": "string"
+                            },
+                            "subCategory": {
+                                "description": "Subcategory of the ticket.",
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "description": "Due date for resolving the ticket. Example: \"2025-12-01T10:00:00.000Z\"",
+                                "type": "string"
+                            },
+                            "channel": {
+                                "description": "Channel through which the ticket originated. Example: \"Email\"",
+                                "type": "string"
+                            },
+                            "classification": {
+                                "description": "Type of ticket.",
+                                "type": "string"
+                            },
+                            "language": {
+                                "description": "Language of the ticket. Example: \"English\"",
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "description": "ID of the team assigned to resolve the ticket.",
+                                "type": "string"
+                            },
+                            "productId": {
+                                "description": "ID of the product to which the ticket is mapped.",
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "description": "ID of the account associated with the ticket.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Email address associated with the ticket.",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "Phone number associated with the ticket.",
+                                "type": "string"
+                            },
+                            "resolution": {
+                                "description": "Resolution of the ticket.",
+                                "type": "string"
+                            },
+                            "customFields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "cf": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["subject", "departmentId", "contactId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_createticket": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "ticketNumber": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "statusType": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": "string"
+                            },
+                            "departmentId": {
+                                "type": "string"
+                            },
+                            "contactId": {
+                                "type": "string"
+                            },
+                            "assigneeId": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "productId": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "category": {
+                                "type": "string"
+                            },
+                            "subCategory": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "channel": {
+                                "type": "string"
+                            },
+                            "classification": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "resolution": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "closedTime": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "customFields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "cf": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a ticket",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_deleteticket",
+            "name": "delete-ticket",
+            "output": ["ActionOutput_zoho_desk_deleteticket"],
+            "scopes": ["Desk.tickets.DELETE"],
+            "usedModels": ["ActionInput_zoho_desk_deleteticket", "ActionOutput_zoho_desk_deleteticket"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_deleteticket": {
+                        "type": "object",
+                        "properties": {
+                            "ticket_id": {
+                                "type": "string",
+                                "description": "Ticket ID to delete. Example: \"123456789\""
+                            }
+                        },
+                        "required": ["ticket_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_deleteticket": {
+                        "type": "object",
+                        "properties": {
+                            "ticket_id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["ticket_id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a ticket.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_getticket",
+            "name": "get-ticket",
+            "output": ["ActionOutput_zoho_desk_getticket"],
+            "scopes": ["Desk.tickets.READ"],
+            "usedModels": ["ActionInput_zoho_desk_getticket", "ActionOutput_zoho_desk_getticket"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_getticket": {
+                        "type": "object",
+                        "properties": {
+                            "ticketId": {
+                                "type": "string",
+                                "description": "Ticket ID. Example: \"1892000000042034\""
+                            }
+                        },
+                        "required": ["ticketId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_getticket": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "ticketNumber": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "statusType": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": ["string", "null"]
+                            },
+                            "departmentId": {
+                                "type": "string"
+                            },
+                            "contactId": {
+                                "type": "string"
+                            },
+                            "assigneeId": {
+                                "type": ["string", "null"]
+                            },
+                            "productId": {
+                                "type": ["string", "null"]
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": ["string", "null"]
+                            },
+                            "closedTime": {
+                                "type": ["string", "null"]
+                            },
+                            "onholdTime": {
+                                "type": ["string", "null"]
+                            },
+                            "channel": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "email": {
+                                "type": ["string", "null"]
+                            },
+                            "phone": {
+                                "type": ["string", "null"]
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "isSpam": {
+                                "type": "boolean"
+                            },
+                            "isRead": {
+                                "type": "boolean"
+                            },
+                            "isTrashed": {
+                                "type": "boolean"
+                            },
+                            "isDeleted": {
+                                "type": ["boolean", "string"]
+                            },
+                            "isOverDue": {
+                                "type": "boolean"
+                            },
+                            "isFollowing": {
+                                "type": ["boolean", "string"]
+                            },
+                            "threadCount": {
+                                "type": "string"
+                            },
+                            "commentCount": {
+                                "type": "string"
+                            },
+                            "taskCount": {
+                                "type": "string"
+                            },
+                            "timeEntryCount": {
+                                "type": "string"
+                            },
+                            "followerCount": {
+                                "type": "string"
+                            },
+                            "sharedCount": {
+                                "type": "string"
+                            },
+                            "approvalCount": {
+                                "type": "string"
+                            },
+                            "customerResponseTime": {
+                                "type": "string"
+                            },
+                            "resolution": {
+                                "type": ["string", "null"]
+                            },
+                            "classification": {
+                                "type": ["string", "null"]
+                            },
+                            "subCategory": {
+                                "type": ["string", "null"]
+                            },
+                            "category": {
+                                "type": ["string", "null"]
+                            },
+                            "source": {
+                                "type": "object",
+                                "properties": {
+                                    "appName": {},
+                                    "extId": {},
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "permalink": {},
+                                    "uuid": {},
+                                    "appPhotoURL": {}
+                                },
+                                "additionalProperties": false
+                            },
+                            "contact": {
+                                "type": "object",
+                                "properties": {
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "phone": {
+                                        "type": "string"
+                                    },
+                                    "mobile": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "isSpam": {
+                                        "type": "boolean"
+                                    },
+                                    "type": {},
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "account": {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "department": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "assignee": {
+                                "type": "object",
+                                "properties": {
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "photoURL": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "team": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "logoUrl": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "product": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "channelRelatedInfo": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "layoutDetails": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "cf": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "secondaryContacts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "sharedDepartments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "entitySkills": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List accounts.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_listaccounts",
+            "name": "list-accounts",
+            "output": ["ActionOutput_zoho_desk_listaccounts"],
+            "scopes": ["Desk.basic.READ"],
+            "usedModels": ["ActionInput_zoho_desk_listaccounts", "ActionOutput_zoho_desk_listaccounts"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_listaccounts": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of accounts to fetch. Defaults to 50.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_listaccounts": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "accountName": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "phone": {
+                                            "type": "string"
+                                        },
+                                        "website": {
+                                            "type": "string"
+                                        },
+                                        "webUrl": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "modifiedTime": {
+                                            "type": "string"
+                                        },
+                                        "zohoCRMAccount": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "customerHappiness": {
+                                            "type": "object",
+                                            "properties": {
+                                                "badPercentage": {
+                                                    "type": "string"
+                                                },
+                                                "okPercentage": {
+                                                    "type": "string"
+                                                },
+                                                "goodPercentage": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List agents.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_listagents",
+            "name": "list-agents",
+            "output": ["ActionOutput_zoho_desk_listagents"],
+            "scopes": ["Desk.basic.READ"],
+            "usedModels": ["ActionInput_zoho_desk_listagents", "ActionOutput_zoho_desk_listagents"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_listagents": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of agents to return per page. Defaults to 50.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_listagents": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "firstName": {
+                                            "type": "string"
+                                        },
+                                        "lastName": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "emailId": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "roleId": {
+                                            "type": "string"
+                                        },
+                                        "rolePermissionType": {
+                                            "type": "string"
+                                        },
+                                        "isConfirmed": {
+                                            "type": "boolean"
+                                        },
+                                        "profileId": {
+                                            "type": "string"
+                                        },
+                                        "associatedDepartmentIds": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "photoURL": {
+                                            "type": "string"
+                                        },
+                                        "zuid": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List knowledge base articles.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_listarticles",
+            "name": "list-articles",
+            "output": ["ActionOutput_zoho_desk_listarticles"],
+            "scopes": ["Desk.articles.READ"],
+            "usedModels": ["ActionInput_zoho_desk_listarticles", "ActionOutput_zoho_desk_listarticles"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_listarticles": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of articles to fetch per page. Maximum is 50.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_listarticles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "permission": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "modifiedTime": {
+                                            "type": "string"
+                                        },
+                                        "categoryId": {
+                                            "type": "string"
+                                        },
+                                        "authorId": {
+                                            "type": "string"
+                                        },
+                                        "webUrl": {
+                                            "type": "string"
+                                        },
+                                        "portalUrl": {
+                                            "type": "string"
+                                        },
+                                        "locale": {
+                                            "type": "string"
+                                        },
+                                        "viewCount": {
+                                            "type": "string"
+                                        },
+                                        "likeCount": {
+                                            "type": "string"
+                                        },
+                                        "dislikeCount": {
+                                            "type": "string"
+                                        },
+                                        "commentCount": {
+                                            "type": "string"
+                                        },
+                                        "feedbackCount": {
+                                            "type": "string"
+                                        },
+                                        "attachmentCount": {
+                                            "type": "string"
+                                        },
+                                        "departmentId": {
+                                            "type": "string"
+                                        },
+                                        "isTemplate": {
+                                            "type": "boolean"
+                                        },
+                                        "isTrashed": {
+                                            "type": "boolean"
+                                        },
+                                        "latestVersionStatus": {
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "type": "string"
+                                        },
+                                        "rootCategoryId": {
+                                            "type": "string"
+                                        },
+                                        "usageCount": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "photoURL": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "status": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "zuid": {
+                                                    "type": ["string", "null"]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "category": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "locale": {
+                                                    "type": ["string", "null"]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List contacts",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_listcontacts",
+            "name": "list-contacts",
+            "output": ["ActionOutput_zoho_desk_listcontacts"],
+            "scopes": ["Desk.contacts.READ"],
+            "usedModels": ["ActionInput_zoho_desk_listcontacts", "ActionOutput_zoho_desk_listcontacts"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_listcontacts": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_listcontacts": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "firstName": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "lastName": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "email": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "phone": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "mobile": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "accountId": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "createdTime": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "modifiedTime": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List departments",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_listdepartments",
+            "name": "list-departments",
+            "output": ["ActionOutput_zoho_desk_listdepartments"],
+            "scopes": ["Desk.settings.READ"],
+            "usedModels": ["ActionInput_zoho_desk_listdepartments", "ActionOutput_zoho_desk_listdepartments"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_listdepartments": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (maps to `from` offset). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of records per page. Default 10, max 50.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_listdepartments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Department ID. Example: \"1329983000000006907\""
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Department name. Example: \"NangoDesk\""
+                                        },
+                                        "description": {
+                                            "description": "Department description",
+                                            "type": ["string", "null"]
+                                        },
+                                        "createdTime": {
+                                            "description": "ISO timestamp when the department was created",
+                                            "type": "string"
+                                        },
+                                        "chatStatus": {
+                                            "description": "Chat status for the department",
+                                            "type": "string"
+                                        },
+                                        "nameInCustomerPortal": {
+                                            "description": "Name displayed in the customer portal",
+                                            "type": "string"
+                                        },
+                                        "creatorId": {
+                                            "description": "ID of the user who created the department",
+                                            "type": "string"
+                                        },
+                                        "isEnabled": {
+                                            "description": "Whether the department is enabled",
+                                            "type": "boolean"
+                                        },
+                                        "isDefault": {
+                                            "description": "Whether this is the default department",
+                                            "type": "boolean"
+                                        },
+                                        "isAssignToTeamEnabled": {
+                                            "description": "Whether assign to team is enabled",
+                                            "type": "boolean"
+                                        },
+                                        "isVisibleInCustomerPortal": {
+                                            "description": "Whether visible in customer portal",
+                                            "type": "boolean"
+                                        },
+                                        "hasLogo": {
+                                            "description": "Whether the department has a logo",
+                                            "type": "boolean"
+                                        },
+                                        "sanitizedName": {
+                                            "description": "Sanitized name for URLs",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Cursor for the next page. Omit if no more pages.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List ticket threads.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_listticketthreads",
+            "name": "list-ticket-threads",
+            "output": ["ActionOutput_zoho_desk_listticketthreads"],
+            "scopes": ["Desk.tickets.READ"],
+            "usedModels": ["ActionInput_zoho_desk_listticketthreads", "ActionOutput_zoho_desk_listticketthreads"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_listticketthreads": {
+                        "type": "object",
+                        "properties": {
+                            "ticketId": {
+                                "type": "string",
+                                "description": "Ticket ID. Example: \"1329983000000410241\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of threads to retrieve per page. Default: 50.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["ticketId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_listticketthreads": {
+                        "type": "object",
+                        "properties": {
+                            "threads": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "channel": {
+                                            "type": "string"
+                                        },
+                                        "canReply": {
+                                            "type": "boolean"
+                                        },
+                                        "contentType": {
+                                            "type": "string"
+                                        },
+                                        "hasAttach": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "photoURL": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "firstName": {
+                                                    "type": "string"
+                                                },
+                                                "lastName": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "attachmentCount": {
+                                            "type": "string"
+                                        },
+                                        "sentiment": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "aspects": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "channelRelatedInfo": {
+                                            "anyOf": [
+                                                {},
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "respondedIn": {
+                                            "anyOf": [
+                                                {},
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "lastRatingIconURL": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "readReceipts": {
+                                            "anyOf": [
+                                                {},
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "impersonatedUser": {
+                                            "anyOf": [
+                                                {},
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "source": {
+                                            "type": "object",
+                                            "properties": {
+                                                "extId": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "appName": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "appPhotoURL": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "permalink": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "isDescriptionThread": {
+                                            "type": "boolean"
+                                        },
+                                        "keyWords": {
+                                            "anyOf": [
+                                                {},
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "visibility": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "actions": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "direction": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "nextCursor": {
+                                "description": "Pagination cursor for the next page. Omit if there are no more pages.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["threads"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List tickets.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_listtickets",
+            "name": "list-tickets",
+            "output": ["ActionOutput_zoho_desk_listtickets"],
+            "scopes": ["Desk.tickets.READ"],
+            "usedModels": ["ActionInput_zoho_desk_listtickets", "ActionOutput_zoho_desk_listtickets"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_listtickets": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (from index). Example: \"0\"",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of records per page. Default: 10, max: 100.",
+                                "type": "number"
+                            },
+                            "departmentId": {
+                                "description": "Department ID to filter tickets.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Status to filter tickets. Example: \"Open\"",
+                                "type": "string"
+                            },
+                            "modifiedTimeRange": {
+                                "description": "Time range to filter tickets by modified time. Example: \"2024-01-01T00:00:00Z,2024-12-31T23:59:59Z\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_listtickets": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "ticketNumber": {
+                                            "type": "string"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "priority": {
+                                            "type": "string"
+                                        },
+                                        "departmentId": {
+                                            "type": "string"
+                                        },
+                                        "contactId": {
+                                            "type": "string"
+                                        },
+                                        "assigneeId": {
+                                            "type": "string"
+                                        },
+                                        "channel": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "modifiedTime": {
+                                            "type": "string"
+                                        },
+                                        "dueDate": {
+                                            "type": "string"
+                                        },
+                                        "resolution": {
+                                            "type": "string"
+                                        },
+                                        "closedTime": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "phone": {
+                                            "type": "string"
+                                        },
+                                        "webUrl": {
+                                            "type": "string"
+                                        },
+                                        "category": {
+                                            "type": "string"
+                                        },
+                                        "subCategory": {
+                                            "type": "string"
+                                        },
+                                        "customFields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "productId": {
+                                            "type": "string"
+                                        },
+                                        "classification": {
+                                            "type": "string"
+                                        },
+                                        "timeEntryCount": {
+                                            "type": "string"
+                                        },
+                                        "commentCount": {
+                                            "type": "string"
+                                        },
+                                        "attachmentCount": {
+                                            "type": "string"
+                                        },
+                                        "taskCount": {
+                                            "type": "string"
+                                        },
+                                        "threadCount": {
+                                            "type": "string"
+                                        },
+                                        "approvalCount": {
+                                            "type": "string"
+                                        },
+                                        "customerResponseTime": {
+                                            "type": "string"
+                                        },
+                                        "isSpam": {
+                                            "type": "boolean"
+                                        },
+                                        "isTrashed": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Send a ticket reply.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_sendticketreply",
+            "name": "send-ticket-reply",
+            "output": ["ActionOutput_zoho_desk_sendticketreply"],
+            "scopes": ["Desk.tickets.UPDATE"],
+            "usedModels": ["ActionInput_zoho_desk_sendticketreply", "ActionOutput_zoho_desk_sendticketreply"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_sendticketreply": {
+                        "type": "object",
+                        "properties": {
+                            "ticket_id": {
+                                "type": "string",
+                                "description": "The ticket ID to reply to. Example: \"1892000000094004\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Content of the reply. Example: \"We have identified the root cause and fixed it.\""
+                            },
+                            "channel": {
+                                "description": "Channel through which the thread originated. Values: EMAIL, FACEBOOK, TWITTER, FORUMS. Default: EMAIL",
+                                "type": "string"
+                            },
+                            "contentType": {
+                                "description": "Formatting type of the content. Values: html, plainText. Default: plainText",
+                                "type": "string"
+                            },
+                            "fromEmailAddress": {
+                                "description": "From email address configured in the help desk portal. Example: \"support@zylker.com\"",
+                                "type": "string"
+                            },
+                            "to": {
+                                "description": "To email address for the reply. Example: \"customer@example.com\"",
+                                "type": "string"
+                            },
+                            "cc": {
+                                "description": "Email addresses to CC. Comma-separated for multiple values.",
+                                "type": "string"
+                            },
+                            "bcc": {
+                                "description": "Email addresses to BCC. Comma-separated for multiple values.",
+                                "type": "string"
+                            },
+                            "isPrivate": {
+                                "description": "Whether the thread is private. Default: false",
+                                "type": "boolean"
+                            },
+                            "isForward": {
+                                "description": "Whether the thread is sent as a forward. Default: false",
+                                "type": "boolean"
+                            },
+                            "inReplyToThreadId": {
+                                "description": "ID of the thread to which this reply is a response.",
+                                "type": "string"
+                            },
+                            "attachmentIds": {
+                                "description": "List of attachment IDs to include in the reply.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "ticketStatus": {
+                                "description": "Ticket status to set after sending the reply. Example: \"Closed\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["ticket_id", "content"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_sendticketreply": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The thread ID of the reply."
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "cc": {
+                                "type": "string"
+                            },
+                            "bcc": {
+                                "type": "string"
+                            },
+                            "isDescriptionThread": {
+                                "type": "boolean"
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "size": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "href": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "canReply": {
+                                "type": "boolean"
+                            },
+                            "visibility": {
+                                "type": "string"
+                            },
+                            "author": {
+                                "type": "object",
+                                "properties": {
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "photoURL": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "channel": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "object",
+                                "properties": {
+                                    "appName": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "extId": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "permalink": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "appPhotoURL": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "isForward": {
+                                "type": "boolean"
+                            },
+                            "hasAttach": {
+                                "type": "boolean"
+                            },
+                            "responderId": {
+                                "type": "string"
+                            },
+                            "channelRelatedInfo": {
+                                "anyOf": [
+                                    {},
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "respondedIn": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "to": {
+                                "type": "string"
+                            },
+                            "fromEmailAddress": {
+                                "type": "string"
+                            },
+                            "actions": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "contentType": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "direction": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a contact.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_updatecontact",
+            "name": "update-contact",
+            "output": ["ActionOutput_zoho_desk_updatecontact"],
+            "scopes": ["Desk.contacts.UPDATE"],
+            "usedModels": ["ActionInput_zoho_desk_updatecontact", "ActionOutput_zoho_desk_updatecontact"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_updatecontact": {
+                        "type": "object",
+                        "properties": {
+                            "contactId": {
+                                "type": "string",
+                                "description": "The ID of the contact to update. Example: \"1329983000000410184\""
+                            },
+                            "firstName": {
+                                "description": "First name of the contact.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Last name of the contact.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Email address of the contact.",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "Phone number of the contact.",
+                                "type": "string"
+                            },
+                            "mobile": {
+                                "description": "Mobile number of the contact.",
+                                "type": "string"
+                            },
+                            "secondaryEmail": {
+                                "description": "Secondary email address of the contact.",
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "description": "ID of the account associated with the contact.",
+                                "type": "string"
+                            },
+                            "ownerId": {
+                                "description": "ID of the agent who owns the contact.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["contactId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_updatecontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "mobile": {
+                                "type": "string"
+                            },
+                            "secondaryEmail": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "ownerId": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "isAnonymous": {
+                                "type": "boolean"
+                            },
+                            "isSpam": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a ticket.",
+            "endpoint": null,
+            "input": "ActionInput_zoho_desk_updateticket",
+            "name": "update-ticket",
+            "output": ["ActionOutput_zoho_desk_updateticket"],
+            "scopes": ["Desk.tickets.UPDATE"],
+            "usedModels": ["ActionInput_zoho_desk_updateticket", "ActionOutput_zoho_desk_updateticket"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoho_desk_updateticket": {
+                        "type": "object",
+                        "properties": {
+                            "ticketId": {
+                                "type": "string",
+                                "description": "The unique ID of the ticket to update. Example: \"18920000000054003\""
+                            },
+                            "subject": {
+                                "description": "Subject of the ticket.",
+                                "type": "string"
+                            },
+                            "departmentId": {
+                                "description": "ID of the department to which the ticket belongs.",
+                                "type": "string"
+                            },
+                            "contactId": {
+                                "description": "ID of the contact who raised the ticket.",
+                                "type": "string"
+                            },
+                            "productId": {
+                                "description": "ID of the product to which the ticket is mapped.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Email address of the contact.",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "Phone number of the contact.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Description of the ticket.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Status of the ticket. Example: \"Open\" or \"Closed\"",
+                                "type": "string"
+                            },
+                            "assigneeId": {
+                                "description": "ID of the agent to whom the ticket is assigned.",
+                                "type": "string"
+                            },
+                            "category": {
+                                "description": "Category of the ticket.",
+                                "type": "string"
+                            },
+                            "subCategory": {
+                                "description": "Subcategory of the ticket.",
+                                "type": "string"
+                            },
+                            "resolution": {
+                                "description": "Resolution provided for the ticket.",
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "description": "Due date of the ticket in ISO 8601 format.",
+                                "type": "string"
+                            },
+                            "priority": {
+                                "description": "Priority of the ticket. Example: \"High\", \"Medium\", \"Low\"",
+                                "type": "string"
+                            },
+                            "language": {
+                                "description": "Language of the ticket.",
+                                "type": "string"
+                            },
+                            "channel": {
+                                "description": "Channel through which the ticket was created. Example: \"Email\", \"Phone\"",
+                                "type": "string"
+                            },
+                            "classification": {
+                                "description": "Classification of the ticket.",
+                                "type": "string"
+                            },
+                            "customFields": {
+                                "description": "Custom field values for the ticket.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["ticketId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoho_desk_updateticket": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "ticketNumber": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "subCategory": {
+                                "type": "string"
+                            },
+                            "statusType": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "customFields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "departmentId": {
+                                "type": "string"
+                            },
+                            "channel": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "resolution": {
+                                "type": "string"
+                            },
+                            "closedTime": {
+                                "type": "string"
+                            },
+                            "approvalCount": {
+                                "type": "string"
+                            },
+                            "timeEntryCount": {
+                                "type": "string"
+                            },
+                            "channelRelatedInfo": {},
+                            "responseDueDate": {
+                                "type": "string"
+                            },
+                            "isDeleted": {
+                                "type": "boolean"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedBy": {
+                                "type": "string"
+                            },
+                            "isResponseOverdue": {
+                                "type": "boolean"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "customerResponseTime": {
+                                "type": "string"
+                            },
+                            "productId": {
+                                "type": "string"
+                            },
+                            "contactId": {
+                                "type": "string"
+                            },
+                            "threadCount": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": "string"
+                            },
+                            "classification": {
+                                "type": "string"
+                            },
+                            "assigneeId": {
+                                "type": "string"
+                            },
+                            "commentCount": {
+                                "type": "string"
+                            },
+                            "taskCount": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "attachmentCount": {
+                                "type": "string"
+                            },
+                            "category": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync accounts",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/accounts",
+                    "group": "Accounts"
+                }
+            ],
+            "input": null,
+            "name": "accounts",
+            "output": ["Account"],
+            "runs": "every hour",
+            "scopes": ["Desk.basic.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Account"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Account": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the account"
+                            },
+                            "accountName": {
+                                "type": "string",
+                                "description": "The name of the account"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "website": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "industry": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "ownerId": {
+                                "type": "string"
+                            },
+                            "crmAccountId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "accountName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync agents.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/agents",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "agents",
+            "output": ["Agent"],
+            "runs": "every hour",
+            "scopes": ["Desk.basic.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Agent"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Agent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "emailId": {
+                                "type": "string"
+                            },
+                            "roleId": {
+                                "type": "string"
+                            },
+                            "profileId": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "isActive": {
+                                "type": "boolean"
+                            },
+                            "isConfirmed": {
+                                "type": "boolean"
+                            },
+                            "photoURL": {
+                                "type": "string"
+                            },
+                            "zuid": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync articles.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/articles"
+                }
+            ],
+            "input": null,
+            "name": "articles",
+            "output": ["Article"],
+            "runs": "every hour",
+            "scopes": ["Desk.articles.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Article"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Article": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "categoryId": {
+                                "type": "string"
+                            },
+                            "authorId": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "permalink": {
+                                "type": "string"
+                            },
+                            "viewCount": {
+                                "type": "number"
+                            },
+                            "likeCount": {
+                                "type": "number"
+                            },
+                            "dislikeCount": {
+                                "type": "number"
+                            },
+                            "feedbackCount": {
+                                "type": "number"
+                            },
+                            "commentCount": {
+                                "type": "number"
+                            },
+                            "attachmentCount": {
+                                "type": "number"
+                            },
+                            "departmentId": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync contacts.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/contacts"
+                }
+            ],
+            "input": null,
+            "name": "contacts",
+            "output": ["Contact"],
+            "runs": "every hour",
+            "scopes": ["Desk.contacts.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Contact"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Contact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "mobile": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "photoURL": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "isDeleted": {
+                                "type": "boolean"
+                            },
+                            "isTrashed": {
+                                "type": "boolean"
+                            },
+                            "isSpam": {
+                                "type": "boolean"
+                            },
+                            "isAnonymous": {
+                                "type": "boolean"
+                            },
+                            "isEndUser": {
+                                "type": "boolean"
+                            },
+                            "ownerId": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "street": {
+                                "type": "string"
+                            },
+                            "zip": {
+                                "type": "string"
+                            },
+                            "twitter": {
+                                "type": "string"
+                            },
+                            "facebook": {
+                                "type": "string"
+                            },
+                            "secondaryEmail": {
+                                "type": "string"
+                            },
+                            "customerHappiness": {
+                                "type": "object",
+                                "properties": {
+                                    "badPercentage": {
+                                        "type": "string"
+                                    },
+                                    "okPercentage": {
+                                        "type": "string"
+                                    },
+                                    "goodPercentage": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "zohoCRMContact": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync departments.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/departments"
+                }
+            ],
+            "input": null,
+            "name": "departments",
+            "output": ["Department"],
+            "runs": "every hour",
+            "scopes": ["Desk.settings.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Department"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Department": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "chatStatus": {
+                                "type": "string"
+                            },
+                            "isEnabled": {
+                                "type": "boolean"
+                            },
+                            "isDefault": {
+                                "type": "boolean"
+                            },
+                            "hasLogo": {
+                                "type": "boolean"
+                            },
+                            "creatorId": {
+                                "type": "string"
+                            },
+                            "isAssignToTeamEnabled": {
+                                "type": "boolean"
+                            },
+                            "isVisibleInCustomerPortal": {
+                                "type": "boolean"
+                            },
+                            "nameInCustomerPortal": {
+                                "type": "string"
+                            },
+                            "sanitizedName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync tickets.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/tickets"
+                }
+            ],
+            "input": null,
+            "name": "tickets",
+            "output": ["Ticket"],
+            "runs": "every hour",
+            "scopes": ["Desk.tickets.READ"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Ticket"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Ticket": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "ticketNumber": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "statusType": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": "string"
+                            },
+                            "channel": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "contactId": {
+                                "type": "string"
+                            },
+                            "accountId": {
+                                "type": "string"
+                            },
+                            "departmentId": {
+                                "type": "string"
+                            },
+                            "assigneeId": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "closedTime": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "isSpam": {
+                                "type": "boolean"
+                            },
+                            "isTrashed": {
+                                "type": "boolean"
+                            },
+                            "isDeleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

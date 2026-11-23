@@ -1,0 +1,188 @@
+{
+    "providerConfigKey": "luma",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "This sync will be used to sync all of the events managed by your Calendar. See https://docs.luma.com/reference/get_v1-calendars-events-list for more details.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/luma/list-events"
+                }
+            ],
+            "input": "SyncMetadata_luma_listevents",
+            "name": "list-events",
+            "output": ["Event"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Event", "SyncMetadata_luma_listevents"],
+            "version": "1.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Event": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "start_at": {
+                                "type": "string"
+                            },
+                            "end_at": {
+                                "type": "string"
+                            },
+                            "cover_url": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "description_md": {
+                                "type": "string"
+                            },
+                            "series_api_id": {
+                                "type": ["string", "null"]
+                            },
+                            "duration_interval_iso8601": {
+                                "type": "string"
+                            },
+                            "geo_latitude": {
+                                "type": ["string", "null"]
+                            },
+                            "geo_longitude": {
+                                "type": ["string", "null"]
+                            },
+                            "geo_address_json": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "region": {
+                                                "type": "string"
+                                            },
+                                            "address": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "latitude": {
+                                                "type": "string"
+                                            },
+                                            "place_id": {
+                                                "type": "string"
+                                            },
+                                            "longitude": {
+                                                "type": "string"
+                                            },
+                                            "city_state": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "full_address": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "city",
+                                            "type",
+                                            "region",
+                                            "address",
+                                            "country",
+                                            "latitude",
+                                            "place_id",
+                                            "longitude",
+                                            "city_state",
+                                            "description",
+                                            "full_address"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "event_type": {
+                                "type": "string"
+                            },
+                            "user_api_id": {
+                                "type": "string"
+                            },
+                            "visibility": {
+                                "type": "string"
+                            },
+                            "meeting_url": {
+                                "type": ["string", "null"]
+                            },
+                            "zoom_meeting_url": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "created_at",
+                            "start_at",
+                            "end_at",
+                            "cover_url",
+                            "name",
+                            "description",
+                            "description_md",
+                            "series_api_id",
+                            "duration_interval_iso8601",
+                            "geo_latitude",
+                            "geo_longitude",
+                            "geo_address_json",
+                            "url",
+                            "timezone",
+                            "event_type",
+                            "user_api_id",
+                            "visibility",
+                            "meeting_url",
+                            "zoom_meeting_url"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_luma_listevents": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

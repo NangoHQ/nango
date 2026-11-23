@@ -1,0 +1,3366 @@
+{
+    "providerConfigKey": "mailgun",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add a member (subscriber) to a Mailgun mailing list.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_addlistmember",
+            "name": "add-list-member",
+            "output": ["ActionOutput_mailgun_addlistmember"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_addlistmember", "ActionOutput_mailgun_addlistmember"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_addlistmember": {
+                        "type": "object",
+                        "properties": {
+                            "list_address": {
+                                "type": "string",
+                                "description": "Email address of the mailing list to add the member to. Example: \"developers@mg.example.com\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Email address of the member to add to the mailing list. Example: \"jane.doe@example.com\""
+                            },
+                            "name": {
+                                "description": "Display name of the member. Example: \"Jane Doe\"",
+                                "type": "string"
+                            },
+                            "vars": {
+                                "description": "Custom variables to attach to the member. Sent to Mailgun as a JSON-encoded string. Example: {\"plan\": \"pro\"}",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "subscribed": {
+                                "description": "Whether the member is subscribed to the list. Maps to Mailgun's yes/no flag. Defaults to true when omitted.",
+                                "type": "boolean"
+                            },
+                            "upsert": {
+                                "description": "When true, an existing member with the same address is updated instead of returning an error. Maps to Mailgun's yes/no flag.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["list_address", "address"],
+                        "additionalProperties": false,
+                        "description": "Input for adding a member to a Mailgun mailing list."
+                    },
+                    "ActionOutput_mailgun_addlistmember": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "Email address of the added list member."
+                            },
+                            "name": {
+                                "description": "Display name of the member, when set.",
+                                "type": "string"
+                            },
+                            "subscribed": {
+                                "description": "Whether the member is subscribed to the list.",
+                                "type": "boolean"
+                            },
+                            "vars": {
+                                "description": "Custom variables attached to the member.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "message": {
+                                "description": "Confirmation message returned by Mailgun.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["address"],
+                        "additionalProperties": false,
+                        "description": "The added mailing list member and Mailgun's confirmation message."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Manually add an address to a domain's bounce suppression list.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_createbounce",
+            "name": "create-bounce",
+            "output": ["ActionOutput_mailgun_createbounce"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_createbounce", "ActionOutput_mailgun_createbounce"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_createbounce": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The domain whose bounce suppression list to add the address to. Example: \"sandbox1234abcd.mailgun.org\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "The email address to add to the bounce suppression list. Example: \"user@example.com\""
+                            },
+                            "code": {
+                                "description": "The SMTP error code to record for the bounce. Defaults to \"550\" on Mailgun's side when omitted. Example: \"550\"",
+                                "type": "string"
+                            },
+                            "error": {
+                                "description": "A human-readable description of the bounce reason. Example: \"Mailbox does not exist\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["domain", "address"],
+                        "additionalProperties": false,
+                        "description": "Input for manually adding an address to a Mailgun domain's bounce suppression list."
+                    },
+                    "ActionOutput_mailgun_createbounce": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Mailgun. Example: \"Address has been added to the bounces table\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The email address that was added to the bounce suppression list. Example: \"user@example.com\""
+                            }
+                        },
+                        "required": ["message", "address"],
+                        "additionalProperties": false,
+                        "description": "Result of adding an address to the bounce suppression list."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Manually add an address to a domain's spam-complaint suppression list",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_createcomplaint",
+            "name": "create-complaint",
+            "output": ["ActionOutput_mailgun_createcomplaint"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_createcomplaint", "ActionOutput_mailgun_createcomplaint"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_createcomplaint": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "Mailgun domain that owns the spam-complaint suppression list. Example: \"mg.example.com\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Email address to add to the spam-complaint suppression list. Example: \"user@example.com\""
+                            }
+                        },
+                        "required": ["domain", "address"],
+                        "additionalProperties": false,
+                        "description": "Input for manually adding an address to a domain's spam-complaint suppression list"
+                    },
+                    "ActionOutput_mailgun_createcomplaint": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "Email address that was added to the spam-complaint suppression list"
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Mailgun. Example: \"Address has been added to the complaints table\""
+                            }
+                        },
+                        "required": ["address", "message"],
+                        "additionalProperties": false,
+                        "description": "Result of adding an address to a domain's spam-complaint suppression list"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new mailing list",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_createlist",
+            "name": "create-list",
+            "output": ["ActionOutput_mailgun_createlist"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_createlist", "ActionOutput_mailgun_createlist"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_createlist": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "Email address of the mailing list to create. The domain must already exist in the Mailgun account. Example: \"announcements@sandbox123.mailgun.org\""
+                            },
+                            "name": {
+                                "description": "Human-readable name of the mailing list. Example: \"Product announcements\"",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Description of the mailing list.",
+                                "type": "string"
+                            },
+                            "access_level": {
+                                "description": "Who can post to the list: \"readonly\" (only the account, the Mailgun default), \"members\" (list members), or \"everyone\".",
+                                "type": "string",
+                                "enum": ["readonly", "members", "everyone"]
+                            },
+                            "reply_preference": {
+                                "description": "Where replies to list messages go: \"list\" (the whole list) or \"sender\" (the original author). Omit to use the Mailgun default.",
+                                "type": "string",
+                                "enum": ["list", "sender"]
+                            }
+                        },
+                        "required": ["address"],
+                        "additionalProperties": false,
+                        "description": "Input for creating a Mailgun mailing list"
+                    },
+                    "ActionOutput_mailgun_createlist": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "Email address of the created mailing list."
+                            },
+                            "name": {
+                                "description": "Human-readable name of the created mailing list.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Description of the created mailing list.",
+                                "type": "string"
+                            },
+                            "access_level": {
+                                "description": "Access level of the created list: \"readonly\", \"members\", or \"everyone\".",
+                                "type": "string"
+                            },
+                            "reply_preference": {
+                                "description": "Reply preference of the created list: \"list\" or \"sender\". Omitted when Mailgun returns no value.",
+                                "type": "string"
+                            },
+                            "members_count": {
+                                "description": "Number of members subscribed to the list after creation.",
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "description": "Timestamp when the list was created. Example: \"Wed, 30 Sep 2026 14:22:44 -0000\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["address"],
+                        "additionalProperties": false,
+                        "description": "The created Mailgun mailing list"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new message template (with its initial version).",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_createtemplate",
+            "name": "create-template",
+            "output": ["ActionOutput_mailgun_createtemplate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_createtemplate", "ActionOutput_mailgun_createtemplate"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_createtemplate": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun domain to create the template on. Example: \"sandbox1234abcd.mailgun.org\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the template to create. Must be unique within the domain. Example: \"welcome-email\""
+                            },
+                            "description": {
+                                "description": "Human-readable description of the template.",
+                                "type": "string"
+                            },
+                            "template": {
+                                "description": "Content of the template's initial version. Uses handlebars syntax by default. Example: \"Hello {{name}}\"",
+                                "type": "string"
+                            },
+                            "tag": {
+                                "description": "Tag for the initial version. Defaults to \"initial\" when omitted. Example: \"v1\"",
+                                "type": "string"
+                            },
+                            "comment": {
+                                "description": "Comment recorded with the initial version.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["domain", "name"],
+                        "additionalProperties": false,
+                        "description": "Input for creating a Mailgun message template with its initial version."
+                    },
+                    "ActionOutput_mailgun_createtemplate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique ID of the created template."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the created template."
+                            },
+                            "description": {
+                                "description": "Description of the template, present when one was set.",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "description": "Timestamp when the template was created, in RFC 2822 format. Example: \"Wed, 01 Oct 2026 12:00:00 GMT\"",
+                                "type": "string"
+                            },
+                            "domain": {
+                                "description": "Domain the template belongs to.",
+                                "type": "string"
+                            },
+                            "version": {
+                                "description": "The template's initial version, including its content.",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "description": "Unique ID of the template version.",
+                                        "type": "string"
+                                    },
+                                    "tag": {
+                                        "description": "Tag of the version. Example: \"initial\"",
+                                        "type": "string"
+                                    },
+                                    "template": {
+                                        "description": "Content of this version (handlebars syntax by default).",
+                                        "type": "string"
+                                    },
+                                    "engine": {
+                                        "description": "Template engine of this version. Example: \"handlebars\"",
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "description": "Whether this version is currently the active one.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false,
+                        "description": "The created Mailgun template with its initial version."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Manually add an address to a domain's unsubscribe suppression list.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_createunsubscribe",
+            "name": "create-unsubscribe",
+            "output": ["ActionOutput_mailgun_createunsubscribe"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_createunsubscribe", "ActionOutput_mailgun_createunsubscribe"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_createunsubscribe": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun domain whose unsubscribe suppression list the address is added to. Use the domain exactly as it appears on the account, e.g. \"sandboxfa9654b57ed14d40a9460717cf55de03.mailgun.org\" or \"mg.example.com\"."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The email address to add to the unsubscribes table, e.g. \"user@example.com\"."
+                            },
+                            "tag": {
+                                "description": "Optional tag to unsubscribe the address from, limiting the suppression to messages sent with that tag. Omit to unsubscribe from all tags (Mailgun defaults to \"*\").",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["domain", "address"],
+                        "additionalProperties": false,
+                        "description": "Input for adding an address to a Mailgun domain unsubscribe suppression list."
+                    },
+                    "ActionOutput_mailgun_createunsubscribe": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "The email address that was added to the unsubscribes table."
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Mailgun, e.g. \"Address has been added to the unsubscribes table\"."
+                            }
+                        },
+                        "required": ["address", "message"],
+                        "additionalProperties": false,
+                        "description": "Result of adding the address to the unsubscribe suppression list."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add an address or domain to a domain's sending allowlist, bypassing spam filtering for it.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_createwhitelistentry",
+            "name": "create-whitelist-entry",
+            "output": ["ActionOutput_mailgun_createwhitelistentry"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_createwhitelistentry", "ActionOutput_mailgun_createwhitelistentry"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_createwhitelistentry": {
+                        "type": "object",
+                        "properties": {
+                            "domain_name": {
+                                "type": "string",
+                                "description": "Mailgun sending domain that owns the allowlist. Example: \"mg.example.com\""
+                            },
+                            "address": {
+                                "description": "Email address to add to the allowlist. Required unless \"domain\" is provided; takes priority over \"domain\" when both are sent. Example: \"user@example.com\"",
+                                "type": "string"
+                            },
+                            "domain": {
+                                "description": "Entire domain to add to the allowlist. Required unless \"address\" is provided; ignored when \"address\" is also sent. Example: \"example.com\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["domain_name"],
+                        "additionalProperties": false,
+                        "description": "Input for adding an entry to a sending domain allowlist. Provide either \"address\" or \"domain\"."
+                    },
+                    "ActionOutput_mailgun_createwhitelistentry": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Provider confirmation message. Example: \"Address/Domain has been added to the allowlists table\""
+                            },
+                            "type": {
+                                "type": "string",
+                                "description": "Type of allowlist entry created, either \"address\" or \"domain\""
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "The address or domain that was added to the allowlist"
+                            }
+                        },
+                        "required": ["message", "type", "value"],
+                        "additionalProperties": false,
+                        "description": "Result of adding an entry to the sending domain allowlist"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove an address from a domain's bounce suppression list.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_deletebounce",
+            "name": "delete-bounce",
+            "output": ["ActionOutput_mailgun_deletebounce"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_deletebounce", "ActionOutput_mailgun_deletebounce"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_deletebounce": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun domain whose bounce suppression list to modify. Example: \"mg.example.com\"."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Email address to remove from the bounce suppression list. Example: \"user@example.com\"."
+                            }
+                        },
+                        "required": ["domain", "address"],
+                        "additionalProperties": false,
+                        "description": "Domain and address identifying the bounce suppression entry to delete."
+                    },
+                    "ActionOutput_mailgun_deletebounce": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "The email address that was removed from the bounce suppression list."
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Mailgun, e.g. \"Bounced address has been removed\"."
+                            }
+                        },
+                        "required": ["address", "message"],
+                        "additionalProperties": false,
+                        "description": "Confirmation that the address was removed from the domain's bounce suppression list."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove an address from a domain's spam-complaint suppression list",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_deletecomplaint",
+            "name": "delete-complaint",
+            "output": ["ActionOutput_mailgun_deletecomplaint"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_deletecomplaint", "ActionOutput_mailgun_deletecomplaint"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_deletecomplaint": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "Mailgun domain whose spam-complaint suppression list is modified. Example: \"sandbox123abc.mailgun.org\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Email address to remove from the spam-complaint suppression list. Example: \"user@example.com\""
+                            }
+                        },
+                        "required": ["domain", "address"],
+                        "additionalProperties": false,
+                        "description": "Input for removing an address from a domain's spam-complaint suppression list"
+                    },
+                    "ActionOutput_mailgun_deletecomplaint": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "Email address that was removed from the spam-complaint suppression list"
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Mailgun"
+                            }
+                        },
+                        "required": ["address", "message"],
+                        "additionalProperties": false,
+                        "description": "Confirmation that the address was removed from the spam-complaint suppression list"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a mailing list.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_deletelist",
+            "name": "delete-list",
+            "output": ["ActionOutput_mailgun_deletelist"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_deletelist", "ActionOutput_mailgun_deletelist"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_deletelist": {
+                        "type": "object",
+                        "properties": {
+                            "list_address": {
+                                "type": "string",
+                                "description": "Full address of the mailing list to delete. Example: \"dev@mg.example.com\""
+                            }
+                        },
+                        "required": ["list_address"],
+                        "additionalProperties": false,
+                        "description": "Input for deleting a Mailgun mailing list"
+                    },
+                    "ActionOutput_mailgun_deletelist": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "Address of the deleted mailing list."
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Mailgun, e.g. \"Mailing list has been removed\"."
+                            }
+                        },
+                        "required": ["address", "message"],
+                        "additionalProperties": false,
+                        "description": "Result of deleting a Mailgun mailing list"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a template and all its versions.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_deletetemplate",
+            "name": "delete-template",
+            "output": ["ActionOutput_mailgun_deletetemplate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_deletetemplate", "ActionOutput_mailgun_deletetemplate"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_deletetemplate": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun domain that owns the template. Example: \"mg.example.com\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the template to delete. Example: \"welcome-email\""
+                            }
+                        },
+                        "required": ["domain", "name"],
+                        "additionalProperties": false,
+                        "description": "Input for deleting a Mailgun template."
+                    },
+                    "ActionOutput_mailgun_deletetemplate": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Mailgun for the deletion."
+                            },
+                            "template": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "The name of the template that was deleted."
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false,
+                                "description": "The template that was deleted."
+                            }
+                        },
+                        "required": ["message", "template"],
+                        "additionalProperties": false,
+                        "description": "Confirmation of the deleted Mailgun template."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove an address from a domain unsubscribe suppression list.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_deleteunsubscribe",
+            "name": "delete-unsubscribe",
+            "output": ["ActionOutput_mailgun_deleteunsubscribe"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_deleteunsubscribe", "ActionOutput_mailgun_deleteunsubscribe"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_deleteunsubscribe": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun domain whose unsubscribe suppression list is modified. Example: \"mg.example.com\"."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Email address to remove from the unsubscribe suppression list. Example: \"user@example.com\"."
+                            }
+                        },
+                        "required": ["domain", "address"],
+                        "additionalProperties": false,
+                        "description": "Input for removing an address from a Mailgun domain unsubscribe suppression list."
+                    },
+                    "ActionOutput_mailgun_deleteunsubscribe": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "The email address that was removed from the unsubscribe suppression list."
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Mailgun. Example: \"Unsubscribe event has been removed\"."
+                            }
+                        },
+                        "required": ["address", "message"],
+                        "additionalProperties": false,
+                        "description": "Result of removing an address from the unsubscribe suppression list."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove an address or domain from the sending allowlist of a Mailgun domain.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_deletewhitelistentry",
+            "name": "delete-whitelist-entry",
+            "output": ["ActionOutput_mailgun_deletewhitelistentry"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_deletewhitelistentry", "ActionOutput_mailgun_deletewhitelistentry"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_deletewhitelistentry": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun sending domain whose allowlist the entry is removed from. Example: \"mg.example.com\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The email address or domain to remove from the allowlist. Example: \"user@example.com\""
+                            }
+                        },
+                        "required": ["domain", "address"],
+                        "additionalProperties": false,
+                        "description": "Input for deleting a single entry from a Mailgun domain allowlist."
+                    },
+                    "ActionOutput_mailgun_deletewhitelistentry": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Mailgun. Example: \"Allowlist address/domain has been removed\""
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "The address or domain that was removed from the allowlist. Example: \"user@example.com\""
+                            }
+                        },
+                        "required": ["message", "value"],
+                        "additionalProperties": false,
+                        "description": "Result of deleting a single entry from a Mailgun domain allowlist."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check whether a specific address is on a domain bounce suppression list",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_getbounce",
+            "name": "get-bounce",
+            "output": ["ActionOutput_mailgun_getbounce"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_getbounce", "ActionOutput_mailgun_getbounce"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_getbounce": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun domain whose bounce suppression list is checked. Example: \"mg.example.com\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The email address to look up on the bounce list. Example: \"user@example.com\""
+                            }
+                        },
+                        "required": ["domain", "address"],
+                        "additionalProperties": false,
+                        "description": "Lookup parameters for checking one address against a domain bounce suppression list."
+                    },
+                    "ActionOutput_mailgun_getbounce": {
+                        "type": "object",
+                        "properties": {
+                            "bounced": {
+                                "type": "boolean",
+                                "description": "Whether the address is currently on the domain bounce suppression list."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The email address that was checked. Example: \"user@example.com\""
+                            },
+                            "code": {
+                                "description": "The SMTP error code recorded for the bounce. Only present when the address is on the list. Example: \"550\"",
+                                "type": "string"
+                            },
+                            "error": {
+                                "description": "The error description recorded for the bounce. Only present when the address is on the list.",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "description": "RFC 2822 timestamp of when the bounce was recorded. Only present when the address is on the list. Example: \"Fri, 02 Oct 2026 00:22:36 UTC\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["bounced", "address"],
+                        "additionalProperties": false,
+                        "description": "Result of checking an address against a domain bounce suppression list."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check whether a specific address is on a domain's spam-complaint suppression list.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_getcomplaint",
+            "name": "get-complaint",
+            "output": ["ActionOutput_mailgun_getcomplaint"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_getcomplaint", "ActionOutput_mailgun_getcomplaint"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_getcomplaint": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun sending domain whose spam-complaint suppression list should be checked. Example: \"mg.example.com\"."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The email address to look up on the domain's spam-complaint suppression list. Example: \"user@example.com\"."
+                            }
+                        },
+                        "required": ["domain", "address"],
+                        "additionalProperties": false,
+                        "description": "Input for checking whether an address is on a domain's spam-complaint suppression list."
+                    },
+                    "ActionOutput_mailgun_getcomplaint": {
+                        "type": "object",
+                        "properties": {
+                            "on_complaint_list": {
+                                "type": "boolean",
+                                "description": "True when the address is present on the domain's spam-complaint suppression list."
+                            },
+                            "address": {
+                                "description": "The address as recorded on the complaints list. Present only when on_complaint_list is true.",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "description": "RFC 2822 timestamp of when the spam complaint was recorded, e.g. \"Fri, 02 Oct 2026 00:21:11 UTC\". Present only when on_complaint_list is true.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["on_complaint_list"],
+                        "additionalProperties": false,
+                        "description": "Result of checking an address against a domain's spam-complaint suppression list."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single sending domain's details, including DNS records.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_getdomain",
+            "name": "get-domain",
+            "output": ["ActionOutput_mailgun_getdomain"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_getdomain", "ActionOutput_mailgun_getdomain"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_getdomain": {
+                        "type": "object",
+                        "properties": {
+                            "domain_name": {
+                                "type": "string",
+                                "description": "Name of the sending domain to retrieve. Example: \"mg.example.com\""
+                            }
+                        },
+                        "required": ["domain_name"],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a single Mailgun sending domain."
+                    },
+                    "ActionOutput_mailgun_getdomain": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Unique identifier of the domain. Example: \"65d8822c5c899f9accba6155\""
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Fully qualified name of the domain. Example: \"mg.example.com\""
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "description": "Domain type: \"custom\" or \"sandbox\"."
+                                    },
+                                    "state": {
+                                        "type": "string",
+                                        "description": "Domain state. Example: \"active\""
+                                    },
+                                    "created_at": {
+                                        "type": "string",
+                                        "description": "RFC 2822 timestamp of when the domain was created. Example: \"Fri, 23 Feb 2024 11:31:56 GMT\""
+                                    },
+                                    "smtp_login": {
+                                        "type": "string",
+                                        "description": "Default SMTP login for the domain."
+                                    },
+                                    "spam_action": {
+                                        "type": "string",
+                                        "description": "Spam filter behavior: \"disabled\", \"block\", or \"tag\"."
+                                    },
+                                    "wildcard": {
+                                        "type": "boolean",
+                                        "description": "Whether the domain accepts mail for all of its subdomains."
+                                    },
+                                    "require_tls": {
+                                        "type": "boolean",
+                                        "description": "Whether TLS is required when delivering messages."
+                                    },
+                                    "skip_verification": {
+                                        "type": "boolean",
+                                        "description": "Whether DNS verification was skipped for the domain."
+                                    },
+                                    "is_disabled": {
+                                        "type": "boolean",
+                                        "description": "Whether the domain is disabled."
+                                    },
+                                    "use_automatic_sender_security": {
+                                        "type": "boolean",
+                                        "description": "Whether Mailgun manages DKIM key generation and DNS record configuration automatically."
+                                    },
+                                    "web_prefix": {
+                                        "type": "string",
+                                        "description": "Tracking hostname prefix. Example: \"email\""
+                                    },
+                                    "web_scheme": {
+                                        "type": "string",
+                                        "description": "Tracking URL scheme: \"http\" or \"https\"."
+                                    },
+                                    "encrypt_incoming_message": {
+                                        "type": "boolean",
+                                        "description": "Whether incoming messages are encrypted at rest."
+                                    },
+                                    "message_ttl": {
+                                        "type": "number",
+                                        "description": "Message retention period in seconds; 0 means the account default."
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "type",
+                                    "state",
+                                    "created_at",
+                                    "smtp_login",
+                                    "spam_action",
+                                    "wildcard",
+                                    "require_tls",
+                                    "skip_verification",
+                                    "is_disabled",
+                                    "use_automatic_sender_security",
+                                    "web_prefix",
+                                    "web_scheme",
+                                    "encrypt_incoming_message",
+                                    "message_ttl"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Details of the requested sending domain."
+                            },
+                            "receiving_dns_records": {
+                                "description": "Inbound (MX) DNS records required for receiving email. Only present for custom domains; omitted for sandbox domains.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "is_active": {
+                                            "type": "boolean",
+                                            "description": "Whether this record is currently active for the domain."
+                                        },
+                                        "cached": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "Record values currently observed in public DNS."
+                                        },
+                                        "priority": {
+                                            "type": "string",
+                                            "description": "MX record priority. Example: \"10\""
+                                        },
+                                        "record_type": {
+                                            "type": "string",
+                                            "description": "DNS record type. Example: \"MX\""
+                                        },
+                                        "valid": {
+                                            "type": "string",
+                                            "description": "DNS verification status: \"valid\", \"invalid\", or \"unknown\"."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Expected DNS record value. Example: \"mxa.mailgun.org\""
+                                        }
+                                    },
+                                    "required": ["is_active", "cached", "priority", "record_type", "valid", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "sending_dns_records": {
+                                "description": "Outbound (SPF, DKIM, tracking) DNS records required for sending email. Only present for custom domains; omitted for sandbox domains.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "is_active": {
+                                            "type": "boolean",
+                                            "description": "Whether this record is currently active for the domain."
+                                        },
+                                        "cached": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "Record values currently observed in public DNS."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Hostname the record must be published on. Example: \"mg.example.com\""
+                                        },
+                                        "record_type": {
+                                            "type": "string",
+                                            "description": "DNS record type: \"TXT\" or \"CNAME\"."
+                                        },
+                                        "valid": {
+                                            "type": "string",
+                                            "description": "DNS verification status: \"valid\", \"invalid\", or \"unknown\"."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Expected DNS record value."
+                                        }
+                                    },
+                                    "required": ["is_active", "cached", "name", "record_type", "valid", "value"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["domain"],
+                        "additionalProperties": false,
+                        "description": "The requested Mailgun domain and, for custom domains, its expected DNS records."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single mailing list member by email.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_getlistmember",
+            "name": "get-list-member",
+            "output": ["ActionOutput_mailgun_getlistmember"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_getlistmember", "ActionOutput_mailgun_getlistmember"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_getlistmember": {
+                        "type": "object",
+                        "properties": {
+                            "list_address": {
+                                "type": "string",
+                                "description": "Email address of the mailing list that contains the member. Example: \"qa_list@example.com\""
+                            },
+                            "member_address": {
+                                "type": "string",
+                                "description": "Email address of the mailing list member to retrieve. Example: \"daniel@test.com\""
+                            }
+                        },
+                        "required": ["list_address", "member_address"],
+                        "additionalProperties": false,
+                        "description": "Identifies the mailing list and the member to retrieve, both by email address."
+                    },
+                    "ActionOutput_mailgun_getlistmember": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "Email address of the mailing list member."
+                            },
+                            "name": {
+                                "description": "Display name of the member. Empty string when the member was added without a name.",
+                                "type": "string"
+                            },
+                            "subscribed": {
+                                "description": "Whether the member is subscribed to the mailing list.",
+                                "type": "boolean"
+                            },
+                            "vars": {
+                                "description": "Custom JSON variables stored on the member, keyed by variable name.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["address"],
+                        "additionalProperties": false,
+                        "description": "A single mailing list member."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieves a mailing list's details together with its full member roster in one call.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_getlistwithmembers",
+            "name": "get-list-with-members",
+            "output": ["ActionOutput_mailgun_getlistwithmembers"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_getlistwithmembers", "ActionOutput_mailgun_getlistwithmembers"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_getlistwithmembers": {
+                        "type": "object",
+                        "properties": {
+                            "list_address": {
+                                "type": "string",
+                                "description": "Email-style address of the mailing list to retrieve. Example: \"qa_list@sandbox123.mailgun.org\""
+                            },
+                            "page_limit": {
+                                "description": "Maximum number of member pages to fetch (each page holds up to 100 members). Omit to walk every page until the roster is exhausted.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["list_address"],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a mailing list together with its members."
+                    },
+                    "ActionOutput_mailgun_getlistwithmembers": {
+                        "type": "object",
+                        "properties": {
+                            "list": {
+                                "type": "object",
+                                "properties": {
+                                    "address": {
+                                        "type": "string",
+                                        "description": "Email-style address identifying the mailing list."
+                                    },
+                                    "name": {
+                                        "description": "Human-readable name of the mailing list. Omitted when Mailgun returns none.",
+                                        "type": "string"
+                                    },
+                                    "access_level": {
+                                        "type": "string",
+                                        "description": "Who can read and post to the list (e.g. \"readonly\", \"members\", \"everyone\")."
+                                    },
+                                    "created_at": {
+                                        "type": "string",
+                                        "description": "Creation timestamp of the list in RFC 2822 format."
+                                    },
+                                    "description": {
+                                        "description": "Description of the mailing list, or null when unset.",
+                                        "type": ["string", "null"]
+                                    },
+                                    "members_count": {
+                                        "type": "number",
+                                        "description": "Total number of members on the list."
+                                    },
+                                    "reply_preference": {
+                                        "description": "Where replies to list messages should be directed (e.g. \"list\", \"sender\"), or null when unset.",
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "required": ["address", "access_level", "created_at", "members_count"],
+                                "additionalProperties": false,
+                                "description": "Details of the mailing list."
+                            },
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Email address of the list member."
+                                        },
+                                        "name": {
+                                            "description": "Full name of the member, when set.",
+                                            "type": "string"
+                                        },
+                                        "subscribed": {
+                                            "type": "boolean",
+                                            "description": "Whether the member is subscribed to the list."
+                                        },
+                                        "vars": {
+                                            "description": "Custom JSON variables attached to the member.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["address", "subscribed"],
+                                    "additionalProperties": false,
+                                    "description": "A single member of the mailing list."
+                                },
+                                "description": "Roster of the mailing list, assembled across all fetched member pages."
+                            },
+                            "truncated": {
+                                "description": "True when more members exist beyond the returned roster because the default page cap was reached without an explicit page_limit. Present only when truncated.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["list", "members"],
+                        "additionalProperties": false,
+                        "description": "A mailing list combined with its member roster."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single mailing list by its address",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_getlist",
+            "name": "get-list",
+            "output": ["ActionOutput_mailgun_getlist"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_getlist", "ActionOutput_mailgun_getlist"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_getlist": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "The mailing list address to retrieve. Example: \"dev@samples.mailgun.org\""
+                            }
+                        },
+                        "required": ["address"],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a single mailing list"
+                    },
+                    "ActionOutput_mailgun_getlist": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "The email address of the mailing list. Example: \"dev@samples.mailgun.org\""
+                            },
+                            "name": {
+                                "description": "The name of the mailing list. Example: \"Developers\"",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "A description of the mailing list. Example: \"Mailgun developers list\"",
+                                "type": "string"
+                            },
+                            "access_level": {
+                                "type": "string",
+                                "description": "List access level, one of: readonly, members, everyone. Example: \"readonly\""
+                            },
+                            "reply_preference": {
+                                "description": "Where replies should go, one of: list, sender. Example: \"list\"",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "Timestamp indicating the mailing list creation time in RFC 5322 format. Example: \"Tue, 26 Feb 2019 22:13:59 -0000\""
+                            },
+                            "members_count": {
+                                "type": "number",
+                                "description": "The number of members on the mailing list. Example: 3"
+                            }
+                        },
+                        "required": ["address", "access_level", "created_at", "members_count"],
+                        "additionalProperties": false,
+                        "description": "The retrieved mailing list"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single template's details by name",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_gettemplate",
+            "name": "get-template",
+            "output": ["ActionOutput_mailgun_gettemplate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_gettemplate", "ActionOutput_mailgun_gettemplate"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_gettemplate": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun domain that owns the template. Example: \"mg.example.com\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the template to retrieve. Example: \"welcome-email\""
+                            }
+                        },
+                        "required": ["domain", "name"],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a single Mailgun template by domain and name"
+                    },
+                    "ActionOutput_mailgun_gettemplate": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The template name"
+                            },
+                            "description": {
+                                "description": "The template description. Omitted when the template has no description",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "description": "Creation timestamp in RFC 2822 format. Example: \"Fri, 02 Oct 2026 00:18:59 UTC\""
+                            },
+                            "id": {
+                                "type": "string",
+                                "description": "Mailgun's internal template ID"
+                            },
+                            "domain": {
+                                "type": "string",
+                                "description": "The domain that owns the template"
+                            }
+                        },
+                        "required": ["name", "createdAt", "id", "domain"],
+                        "additionalProperties": false,
+                        "description": "Template metadata returned by Mailgun for a single template"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check whether a specific address is on a domain's unsubscribe suppression list.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_getunsubscribe",
+            "name": "get-unsubscribe",
+            "output": ["ActionOutput_mailgun_getunsubscribe"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_getunsubscribe", "ActionOutput_mailgun_getunsubscribe"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_getunsubscribe": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun domain whose unsubscribe suppression list to check. Example: \"mg.example.com\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The email address to look up in the unsubscribe suppression list. Example: \"user@example.com\""
+                            }
+                        },
+                        "required": ["domain", "address"],
+                        "additionalProperties": false,
+                        "description": "Input for checking whether an email address is on a Mailgun domain's unsubscribe suppression list."
+                    },
+                    "ActionOutput_mailgun_getunsubscribe": {
+                        "type": "object",
+                        "properties": {
+                            "on_unsubscribe_list": {
+                                "type": "boolean",
+                                "description": "Whether the address currently has an unsubscribe suppression record on the domain."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The email address that was checked."
+                            },
+                            "tags": {
+                                "description": "The tags the address unsubscribed from. Only present when the address is on the unsubscribe list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "created_at": {
+                                "description": "When the unsubscribe record was created, in RFC 2822 format. Only present when the address is on the unsubscribe list.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["on_unsubscribe_list", "address"],
+                        "additionalProperties": false,
+                        "description": "Result of checking an email address against a Mailgun domain's unsubscribe suppression list."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single allowlist (whitelist) entry by address.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_getwhitelistentry",
+            "name": "get-whitelist-entry",
+            "output": ["ActionOutput_mailgun_getwhitelistentry"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_getwhitelistentry", "ActionOutput_mailgun_getwhitelistentry"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_getwhitelistentry": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun sending domain that owns the allowlist. Example: \"mg.example.com\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The allowlisted address or domain to look up. Example: \"alice@example.com\""
+                            }
+                        },
+                        "required": ["domain", "address"],
+                        "additionalProperties": false,
+                        "description": "Parameters for looking up a single allowlist entry."
+                    },
+                    "ActionOutput_mailgun_getwhitelistentry": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "description": "Type of the allowlist entry, either \"address\" or \"domain\"."
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "The allowlisted address or domain."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "description": "Timestamp for when the entry was created, in RFC 2822 format. Example: \"Fri, 02 Oct 2026 00:20:01 UTC\""
+                            },
+                            "reason": {
+                                "type": "string",
+                                "description": "User-provided reason recorded when the entry was allowlisted. Empty string when none was given."
+                            }
+                        },
+                        "required": ["type", "value", "createdAt", "reason"],
+                        "additionalProperties": false,
+                        "description": "The allowlist entry found for the requested address or domain."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List hard-bounce suppression entries for a domain.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_listbounces",
+            "name": "list-bounces",
+            "output": ["ActionOutput_mailgun_listbounces"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_listbounces", "ActionOutput_mailgun_listbounces"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_listbounces": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "Domain to list bounce suppression entries for. Example: \"mg.example.com\"."
+                            },
+                            "limit": {
+                                "description": "Maximum number of bounce entries to return per page. Mailgun defaults to 100 and caps at 1000.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 1000
+                            },
+                            "term": {
+                                "description": "Only return bounce entries whose address starts with this substring.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination URL from a previous response next_cursor (a full provider URL or a /v3/... path). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["domain"],
+                        "additionalProperties": false,
+                        "description": "Filters for listing the bounce suppression entries of a domain."
+                    },
+                    "ActionOutput_mailgun_listbounces": {
+                        "type": "object",
+                        "properties": {
+                            "bounces": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Recipient address that bounced. Example: \"alice@example.com\"."
+                                        },
+                                        "code": {
+                                            "description": "SMTP error code returned by the receiving server. Example: \"550\".",
+                                            "type": "string"
+                                        },
+                                        "error": {
+                                            "description": "Bounce error message returned by the receiving server.",
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "description": "When the bounce was recorded, in RFC 2822 format. Example: \"Fri, 21 Oct 2011 11:02:55 GMT\".",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["address"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Bounce suppression entries for the requested page."
+                            },
+                            "next_cursor": {
+                                "description": "Provider URL of the next results page. Present when more pages exist; pass it back as cursor to continue.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["bounces"],
+                        "additionalProperties": false,
+                        "description": "One page of bounce suppression entries for a domain."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List spam-complaint suppression entries for a domain.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_listcomplaints",
+            "name": "list-complaints",
+            "output": ["ActionOutput_mailgun_listcomplaints"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_listcomplaints", "ActionOutput_mailgun_listcomplaints"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_listcomplaints": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The sending domain to list spam-complaint suppression entries for. Example: \"mg.example.com\""
+                            },
+                            "limit": {
+                                "description": "Maximum number of complaint entries to return in a single page (1-1000). The provider defaults to 100 when omitted.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "cursor": {
+                                "description": "Full `next` page URL returned by a previous call for this same domain, used to fetch the following page. Must be a complaints pagination URL for `domain`; `limit` is ignored because the URL already encodes it. Omit for the first page.",
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        },
+                        "required": ["domain"],
+                        "additionalProperties": false,
+                        "description": "Input for listing spam-complaint suppression entries of a Mailgun domain"
+                    },
+                    "ActionOutput_mailgun_listcomplaints": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Email address of the recipient that reported the message as spam. Example: \"alice@example.com\""
+                                        },
+                                        "code": {
+                                            "description": "Error code returned by the recipient mail server. Example: \"550\"",
+                                            "type": "string"
+                                        },
+                                        "error": {
+                                            "description": "Human-readable error message returned by the recipient mail server",
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "description": "Timestamp of when the complaint was recorded, in RFC 2822 format. Example: \"Mon, 26 Sep 2016 10:00:00 GMT\"",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["address"],
+                                    "additionalProperties": false,
+                                    "description": "A single spam-complaint suppression entry"
+                                },
+                                "description": "Spam-complaint suppression entries for the domain"
+                            },
+                            "next": {
+                                "description": "URL of the next results page, present only when more entries exist. Pass it back as `cursor` to fetch the following page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false,
+                        "description": "Page of spam-complaint suppression entries for a Mailgun domain"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List sending domains on the account.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_listdomains",
+            "name": "list-domains",
+            "output": ["ActionOutput_mailgun_listdomains"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_listdomains", "ActionOutput_mailgun_listdomains"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_listdomains": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum number of domains to return. Example: 100",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "skip": {
+                                "description": "Number of domains to skip (offset) before returning results. Use with limit to page through domains. Defaults to 0.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Pagination options for listing domains."
+                    },
+                    "ActionOutput_mailgun_listdomains": {
+                        "type": "object",
+                        "properties": {
+                            "domains": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Unique Mailgun identifier of the domain."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Fully qualified domain name. Example: \"mg.example.com\""
+                                        },
+                                        "type": {
+                                            "description": "Domain type as reported by Mailgun (\"custom\" or \"sandbox\").",
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "description": "Domain state as reported by Mailgun (e.g. \"active\").",
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "description": "Creation timestamp in RFC 2822 format. Example: \"Fri, 23 Feb 2024 11:31:56 GMT\"",
+                                            "type": "string"
+                                        },
+                                        "is_disabled": {
+                                            "description": "Whether the domain is disabled.",
+                                            "type": "boolean"
+                                        },
+                                        "require_tls": {
+                                            "description": "Whether Mailgun requires TLS for messages sent via this domain.",
+                                            "type": "boolean"
+                                        },
+                                        "skip_verification": {
+                                            "description": "Whether Mailgun skips DNS verification for this domain.",
+                                            "type": "boolean"
+                                        },
+                                        "smtp_login": {
+                                            "description": "SMTP login for the domain.",
+                                            "type": "string"
+                                        },
+                                        "spam_action": {
+                                            "description": "Spam action for the domain (\"disabled\" or \"tag\").",
+                                            "type": "string"
+                                        },
+                                        "use_automatic_sender_security": {
+                                            "description": "Whether Mailgun manages DKIM/SPF records automatically for the domain.",
+                                            "type": "boolean"
+                                        },
+                                        "web_prefix": {
+                                            "description": "Web prefix used for Mailgun tracking URLs on the domain.",
+                                            "type": "string"
+                                        },
+                                        "web_scheme": {
+                                            "description": "URL scheme used for Mailgun tracking URLs (\"http\" or \"https\").",
+                                            "type": "string"
+                                        },
+                                        "wildcard": {
+                                            "description": "Whether the domain is a wildcard domain.",
+                                            "type": "boolean"
+                                        },
+                                        "encrypt_incoming_message": {
+                                            "description": "Whether incoming messages are encrypted for the domain.",
+                                            "type": "boolean"
+                                        },
+                                        "message_ttl": {
+                                            "description": "Time-to-live in seconds for stored messages on the domain.",
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false,
+                                    "description": "A sending domain on the Mailgun account."
+                                },
+                                "description": "Sending domains on the account for the requested page."
+                            },
+                            "total_count": {
+                                "type": "number",
+                                "description": "Total number of domains on the account across all pages."
+                            }
+                        },
+                        "required": ["domains", "total_count"],
+                        "additionalProperties": false,
+                        "description": "Result of listing the sending domains on the Mailgun account."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List delivery/open/click/bounce/complaint event log entries for a domain",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_listevents",
+            "name": "list-events",
+            "output": ["ActionOutput_mailgun_listevents"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_listevents", "ActionOutput_mailgun_listevents"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_listevents": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun domain to list events for. Example: \"mg.example.com\""
+                            },
+                            "event": {
+                                "description": "Filter by event type, e.g. \"delivered\", \"rejected\", \"bounced\", \"complained\", \"unsubscribed\", \"opened\", \"clicked\", \"accepted\", \"failed\", \"stored\". Omit to return all event types.",
+                                "type": "string"
+                            },
+                            "begin": {
+                                "description": "Start of the time window as an RFC 2822 date string or unix epoch timestamp. Example: \"Fri, 26 Sep 2026 00:00:00 GMT\"",
+                                "type": "string"
+                            },
+                            "end": {
+                                "description": "End of the time window as an RFC 2822 date string or unix epoch timestamp. Defaults to the current time.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of events to return per page (1-300). Defaults to the provider default.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 300
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor: the full \"next_cursor\" URL returned by a previous call. When provided, all other filter inputs are ignored because they are embedded in the cursor URL.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["domain"],
+                        "additionalProperties": false,
+                        "description": "Input for listing Mailgun event log entries of a domain"
+                    },
+                    "ActionOutput_mailgun_listevents": {
+                        "type": "object",
+                        "properties": {
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Unique identifier of the event. Example: \"CPgfbmQMTCKtHW6uIWtuVe\""
+                                        },
+                                        "event": {
+                                            "type": "string",
+                                            "description": "The type of the event. Example: \"delivered\""
+                                        },
+                                        "timestamp": {
+                                            "type": "number",
+                                            "description": "Unix epoch timestamp of the event in seconds (may include a fractional part). Example: 1759420800.123456"
+                                        },
+                                        "recipient": {
+                                            "description": "Email address of the recipient the event relates to. Example: \"user@example.com\"",
+                                            "type": "string"
+                                        },
+                                        "reason": {
+                                            "description": "Short reason code attached to failed or rejected events. Example: \"suppress-bounce\"",
+                                            "type": "string"
+                                        },
+                                        "tags": {
+                                            "description": "Tags attached to the message that generated the event",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "message": {
+                                            "description": "Message details, including headers, when present on the event",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "delivery-status": {
+                                            "description": "SMTP delivery details (mx host, response code, description, TLS) when present on the event",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "event", "timestamp"],
+                                    "additionalProperties": {}
+                                },
+                                "description": "Event log entries for the domain, newest first unless an ascending cursor is used"
+                            },
+                            "next_cursor": {
+                                "description": "URL of the next page of events. Pass it back as the \"cursor\" input to fetch the next page. Omitted when the provider returned no next link.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["events"],
+                        "additionalProperties": false,
+                        "description": "A page of Mailgun event log entries with a cursor to the next page"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List members of a mailing list.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_listlistmembers",
+            "name": "list-list-members",
+            "output": ["ActionOutput_mailgun_listlistmembers"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_listlistmembers", "ActionOutput_mailgun_listlistmembers"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_listlistmembers": {
+                        "type": "object",
+                        "properties": {
+                            "list_address": {
+                                "type": "string",
+                                "description": "Email address of the mailing list whose members should be returned. Example: \"dev-list@samples.mailgun.org\""
+                            },
+                            "limit": {
+                                "description": "Maximum number of members to return per page. Mailgun defaults to 100 when omitted.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "subscribed": {
+                                "description": "Filter members by subscription status: true returns only subscribed members, false returns only unsubscribed members. Omit to return all members.",
+                                "type": "boolean"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor returned as next_cursor by a previous call. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["list_address"],
+                        "additionalProperties": false,
+                        "description": "Input for listing the members of a Mailgun mailing list."
+                    },
+                    "ActionOutput_mailgun_listlistmembers": {
+                        "type": "object",
+                        "properties": {
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Email address of the list member."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Display name of the member. Empty string when the member was added without a name."
+                                        },
+                                        "subscribed": {
+                                            "type": "boolean",
+                                            "description": "Whether the member is currently subscribed to the mailing list."
+                                        },
+                                        "vars": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {},
+                                            "description": "Custom variables stored on the member. Empty object when none were set."
+                                        }
+                                    },
+                                    "required": ["address", "name", "subscribed", "vars"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Members of the mailing list for the requested page, in ascending alphabetical order by address."
+                            },
+                            "next_cursor": {
+                                "description": "Cursor to pass as cursor to fetch the next page. Omitted when this page contains fewer than limit members, meaning the end of the list has been reached.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["members"],
+                        "additionalProperties": false,
+                        "description": "A page of mailing list members with an optional cursor for fetching the next page."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List mailing lists on the account.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_listlists",
+            "name": "list-lists",
+            "output": ["ActionOutput_mailgun_listlists"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_listlists", "ActionOutput_mailgun_listlists"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_listlists": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum number of mailing lists to return in one page. The provider applies its own default when omitted. Example: 100",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "address": {
+                                "description": "Filter to a single mailing list by its full address. Ignored when `cursor` is set. Example: \"dev@samples.mailgun.org\"",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Paging URL from the `next_cursor` field of a previous response, used to fetch the next page. Omit for the first page. When set, only its paging parameters are forwarded, so it is region-agnostic.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Input for listing mailing lists on the account."
+                    },
+                    "ActionOutput_mailgun_listlists": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Full email-style address of the mailing list. Example: \"dev@samples.mailgun.org\""
+                                        },
+                                        "name": {
+                                            "description": "Human-readable name of the mailing list. Example: \"dev\"",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Description of the mailing list.",
+                                            "type": "string"
+                                        },
+                                        "access_level": {
+                                            "description": "Who can read or post to the list: \"readonly\", \"members\", or \"everyone\". Note: the provider defaults this to \"readonly\" at creation time.",
+                                            "type": "string"
+                                        },
+                                        "reply_preference": {
+                                            "description": "Where replies are directed: \"list\" or \"sender\". Omitted when the provider returns null.",
+                                            "type": "string"
+                                        },
+                                        "members_count": {
+                                            "description": "Number of subscribed members currently on the list.",
+                                            "type": "number"
+                                        },
+                                        "created_at": {
+                                            "description": "Creation timestamp of the list in RFC 2822 format. Example: \"Tue, 12 Feb 2013 20:47:40 -0000\"",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["address"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Mailing lists on the account for the requested page."
+                            },
+                            "next_cursor": {
+                                "description": "Provider paging URL for the next page. Pass it back as `cursor` to continue. The provider can keep returning a cursor past the final page, so stop paging when `items` comes back empty.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false,
+                        "description": "A page of mailing lists plus a cursor for the next page."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List stored message templates for a domain",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_listtemplates",
+            "name": "list-templates",
+            "output": ["ActionOutput_mailgun_listtemplates"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_listtemplates", "ActionOutput_mailgun_listtemplates"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_listtemplates": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun domain to list templates for. Example: \"mg.example.com\"."
+                            },
+                            "limit": {
+                                "description": "Maximum number of templates to return per page, between 1 and 100. Omit to use the Mailgun default.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Pagination pivot from the nextCursor field of a previous response. Omit to fetch the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["domain"],
+                        "additionalProperties": false,
+                        "description": "Input for listing the stored message templates of a Mailgun domain."
+                    },
+                    "ActionOutput_mailgun_listtemplates": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of the template."
+                                        },
+                                        "description": {
+                                            "description": "Description of the template.",
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "description": "Creation date of the template in RFC 2822 format. Example: \"Wed, 29 Aug 2018 23:31:13 UTC\".",
+                                            "type": "string"
+                                        },
+                                        "createdBy": {
+                                            "description": "Identity of the user who created the template, when provided by Mailgun.",
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "description": "Unique identifier of the template.",
+                                            "type": "string"
+                                        },
+                                        "domain": {
+                                            "description": "Domain the template belongs to.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Stored templates of the domain for the requested page."
+                            },
+                            "nextCursor": {
+                                "description": "Pagination pivot for the next page, taken from the provider paging.next link. Pass it back as the cursor input; an empty items array marks the end of the list.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false,
+                        "description": "A page of stored Mailgun templates for a domain."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List unsubscribe suppression entries for a Mailgun domain.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_listunsubscribes",
+            "name": "list-unsubscribes",
+            "output": ["ActionOutput_mailgun_listunsubscribes"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_listunsubscribes", "ActionOutput_mailgun_listunsubscribes"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_listunsubscribes": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Domain to list unsubscribe suppressions for. Example: \"mg.example.com\""
+                            },
+                            "limit": {
+                                "description": "Maximum number of entries to return per page. Mailgun defaults to 100 and caps at 1000. Example: 100",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor for the next page, taken from next_cursor of a previous response. Omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": ["domain"],
+                        "additionalProperties": false,
+                        "description": "Input for listing unsubscribe suppression entries of a Mailgun domain."
+                    },
+                    "ActionOutput_mailgun_listunsubscribes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "type": "string",
+                                            "description": "Email address that is unsubscribed. Example: \"alice@example.com\""
+                                        },
+                                        "tags": {
+                                            "description": "Tags of the message the recipient unsubscribed from. [\"*\"] means unsubscribed from all mail for the domain.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "created_at": {
+                                            "description": "Timestamp of when the unsubscribe was recorded, in RFC 2822 format. Example: \"Fri, 21 Oct 2011 06:02:36 GMT\"",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["address"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Unsubscribe suppression entries for the requested page. Empty when no (further) entries exist."
+                            },
+                            "next_cursor": {
+                                "description": "Cursor to pass as cursor input to fetch the next page. Absent when there is no next page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false,
+                        "description": "A page of unsubscribe suppression entries for a Mailgun domain."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List a domain's sending allowlist (whitelist) entries",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_listwhitelistentries",
+            "name": "list-whitelist-entries",
+            "output": ["ActionOutput_mailgun_listwhitelistentries"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_listwhitelistentries", "ActionOutput_mailgun_listwhitelistentries"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_listwhitelistentries": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "The domain whose sending allowlist should be listed. Example: \"mg.example.com\""
+                            },
+                            "limit": {
+                                "description": "Maximum number of entries to return (1-1000). Defaults to 100 when omitted",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "term": {
+                                "description": "Optional prefix filter. Only entries whose address starts with this substring are returned",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Full pagination URL returned as nextCursor by a previous call. When provided, domain, limit and term are ignored",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["domain"],
+                        "additionalProperties": false,
+                        "description": "Input for listing a domain's sending allowlist entries"
+                    },
+                    "ActionOutput_mailgun_listwhitelistentries": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string",
+                                            "description": "The allowlisted address or domain. Example: \"user@example.com\""
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Entry type: \"address\" for a single address or \"domain\" for an entire domain"
+                                        },
+                                        "reason": {
+                                            "description": "User-provided reason recorded when the entry was added. Omitted when no reason was given",
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "description": "Timestamp for when the entry was created, in RFC 822 format. Example: \"Tue, 12 Aug 2025 20:00:06 UTC\""
+                                        }
+                                    },
+                                    "required": ["value", "type", "createdAt"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Allowlist entries for the requested page. Empty when the domain has no allowlist entries"
+                            },
+                            "nextCursor": {
+                                "description": "URL to pass as cursor to fetch the next page. Absent when there are no more pages",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false,
+                        "description": "The domain's sending allowlist entries and pagination state"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a member from a mailing list.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_removelistmember",
+            "name": "remove-list-member",
+            "output": ["ActionOutput_mailgun_removelistmember"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_removelistmember", "ActionOutput_mailgun_removelistmember"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_removelistmember": {
+                        "type": "object",
+                        "properties": {
+                            "list_address": {
+                                "type": "string",
+                                "description": "Email address of the mailing list the member belongs to. Example: \"newsletter@mg.example.com\"."
+                            },
+                            "member_address": {
+                                "type": "string",
+                                "description": "Email address of the member to remove from the mailing list. Example: \"jane.doe@example.com\"."
+                            }
+                        },
+                        "required": ["list_address", "member_address"],
+                        "additionalProperties": false,
+                        "description": "Input for removing a member from a Mailgun mailing list."
+                    },
+                    "ActionOutput_mailgun_removelistmember": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "Email address of the member that was removed from the mailing list."
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Mailgun. Example: \"Mailing list member has been deleted\"."
+                            }
+                        },
+                        "required": ["address", "message"],
+                        "additionalProperties": false,
+                        "description": "Result of removing a member from a Mailgun mailing list."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Checks a recipient against the domain's bounce, complaint, and unsubscribe suppression lists and only sends the message if the address is not suppressed.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_sendemailsafely",
+            "name": "send-email-safely",
+            "output": ["ActionOutput_mailgun_sendemailsafely"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_sendemailsafely", "ActionOutput_mailgun_sendemailsafely"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_sendemailsafely": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "Mailgun domain whose suppression lists are checked and from which the message is sent. Example: \"mg.example.com\""
+                            },
+                            "from": {
+                                "type": "string",
+                                "description": "Sender address for the From header. Supports a friendly name. Example: \"Alice <alice@mg.example.com>\""
+                            },
+                            "to": {
+                                "type": "string",
+                                "description": "Recipient email address. This address is looked up on the domain's bounce, complaint, and unsubscribe suppression lists before any send is attempted. Example: \"bob@example.com\""
+                            },
+                            "subject": {
+                                "type": "string",
+                                "description": "Subject line of the message"
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "Plain-text body of the message"
+                            }
+                        },
+                        "required": ["domain", "from", "to", "subject", "text"],
+                        "additionalProperties": false,
+                        "description": "Recipient, sender, and content for an email that is only sent after checking the recipient against the domain's suppression lists."
+                    },
+                    "ActionOutput_mailgun_sendemailsafely": {
+                        "type": "object",
+                        "properties": {
+                            "sent": {
+                                "type": "boolean",
+                                "description": "True when Mailgun accepted the message and queued it for delivery"
+                            },
+                            "suppressed": {
+                                "type": "boolean",
+                                "description": "True when the recipient was found on a suppression list, in which case no send was attempted"
+                            },
+                            "reason": {
+                                "description": "Which suppression list the recipient was found on. Present only when suppressed is true",
+                                "type": "string",
+                                "enum": ["bounced", "complained", "unsubscribed"]
+                            },
+                            "details": {
+                                "description": "The suppression record that matched the recipient. Present only when suppressed is true",
+                                "type": "object",
+                                "properties": {
+                                    "address": {
+                                        "type": "string",
+                                        "description": "The suppressed email address. Example: \"bob@example.com\""
+                                    },
+                                    "created_at": {
+                                        "description": "When the suppression record was created, in RFC 2822 format. Example: \"Mon, 26 Oct 2020 10:00:00 GMT\"",
+                                        "type": "string"
+                                    },
+                                    "code": {
+                                        "description": "SMTP error code. Present on bounce records only. Example: \"550\"",
+                                        "type": "string"
+                                    },
+                                    "error": {
+                                        "description": "SMTP error message. Present on bounce records only",
+                                        "type": "string"
+                                    },
+                                    "tags": {
+                                        "description": "Tags of the message the recipient unsubscribed from. Present on unsubscribe records only",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": ["address"],
+                                "additionalProperties": false
+                            },
+                            "message_id": {
+                                "description": "Mailgun message ID. Present only when sent is true. Example: \"<20201016000000.1.abcdef@mg.example.com>\"",
+                                "type": "string"
+                            },
+                            "message": {
+                                "description": "Mailgun response message, e.g. \"Queued. Thank you.\". Present only when sent is true",
+                                "type": "string"
+                            },
+                            "error": {
+                                "description": "Provider error when the send was attempted but Mailgun rejected it. Present only when sent is false and suppressed is false",
+                                "type": "object",
+                                "properties": {
+                                    "status": {
+                                        "type": "number",
+                                        "description": "HTTP status code returned by Mailgun for the rejected send. Example: 403"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "description": "Error message returned by Mailgun for the rejected send"
+                                    }
+                                },
+                                "required": ["status", "message"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["sent", "suppressed"],
+                        "additionalProperties": false,
+                        "description": "Outcome of the suppression check and, when the recipient is not suppressed, of the send attempt."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Send an email message through a domain.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_sendmessage",
+            "name": "send-message",
+            "output": ["ActionOutput_mailgun_sendmessage"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_sendmessage", "ActionOutput_mailgun_sendmessage"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_sendmessage": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "Mailgun domain used to send the message. Example: \"mg.example.com\". Sandbox domains reject every send with a 403; use a verified custom domain."
+                            },
+                            "from": {
+                                "type": "string",
+                                "description": "Email address of the From header. Supports a friendly name. Example: \"Acme Billing <postmaster@mg.example.com>\"."
+                            },
+                            "to": {
+                                "type": "string",
+                                "description": "Email address of the recipient(s). Supports friendly names and comma-separated multiple recipients. Example: \"Bob <bob@example.com>, alice@example.com\"."
+                            },
+                            "subject": {
+                                "type": "string",
+                                "description": "Subject line of the message."
+                            },
+                            "text": {
+                                "description": "Body of the message (text version). At least one of text or html must be provided.",
+                                "type": "string"
+                            },
+                            "html": {
+                                "description": "Body of the message (HTML version). At least one of text or html must be provided.",
+                                "type": "string"
+                            },
+                            "cc": {
+                                "description": "CC recipient address(es). Supports friendly names and comma-separated multiple recipients.",
+                                "type": "string"
+                            },
+                            "bcc": {
+                                "description": "BCC recipient address(es). Supports friendly names and comma-separated multiple recipients.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["domain", "from", "to", "subject"],
+                        "additionalProperties": false,
+                        "description": "Input for sending an email message through a Mailgun domain."
+                    },
+                    "ActionOutput_mailgun_sendmessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique provider-assigned identifier of the queued message, in RFC-2392 format. Example: \"<20261001.1.ABCDEF@mg.example.com>\"."
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Provider status message for the send request. Example: \"Queued. Thank you.\"."
+                            }
+                        },
+                        "required": ["id", "message"],
+                        "additionalProperties": false,
+                        "description": "Result returned by Mailgun once the message has been accepted and queued for delivery."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a member to a mailing list, automatically creating the list first if it does not exist yet.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_subscribeemailtolist",
+            "name": "subscribe-email-to-list",
+            "output": ["ActionOutput_mailgun_subscribeemailtolist"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_subscribeemailtolist", "ActionOutput_mailgun_subscribeemailtolist"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_subscribeemailtolist": {
+                        "type": "object",
+                        "properties": {
+                            "list_address": {
+                                "type": "string",
+                                "description": "Email address of the mailing list to subscribe to, e.g. \"newsletter@mg.example.com\". The list is created automatically if it does not exist yet."
+                            },
+                            "list_name": {
+                                "description": "Name for the mailing list, used only when this call creates it. Defaults to the part of list_address before the \"@\".",
+                                "type": "string"
+                            },
+                            "access_level": {
+                                "description": "Access level for the mailing list, used only when this call creates it. Defaults to \"members\" instead of Mailgun's own \"readonly\" default. Ignored when the list already exists.",
+                                "type": "string",
+                                "enum": ["readonly", "members", "everyone"]
+                            },
+                            "member_address": {
+                                "type": "string",
+                                "description": "Email address of the member to add to the list, e.g. \"jane@example.com\"."
+                            },
+                            "member_name": {
+                                "description": "Display name of the member.",
+                                "type": "string"
+                            },
+                            "member_vars": {
+                                "description": "Arbitrary JSON key/value data to store on the member, e.g. {\"plan\": \"pro\"}.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["list_address", "member_address"],
+                        "additionalProperties": false,
+                        "description": "Input for subscribing an email address to a Mailgun mailing list, creating the list first when it does not exist."
+                    },
+                    "ActionOutput_mailgun_subscribeemailtolist": {
+                        "type": "object",
+                        "properties": {
+                            "list_created": {
+                                "type": "boolean",
+                                "description": "True when this call created the mailing list because it did not exist yet; false when the list already existed."
+                            },
+                            "member": {
+                                "type": "object",
+                                "properties": {
+                                    "address": {
+                                        "type": "string",
+                                        "description": "Email address of the member."
+                                    },
+                                    "name": {
+                                        "description": "Display name of the member.",
+                                        "type": "string"
+                                    },
+                                    "vars": {
+                                        "description": "Arbitrary JSON key/value data stored on the member.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    "subscribed": {
+                                        "description": "Whether the member is subscribed to the list.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["address"],
+                                "additionalProperties": false,
+                                "description": "The resulting mailing list member after the upsert."
+                            }
+                        },
+                        "required": ["list_created", "member"],
+                        "additionalProperties": false,
+                        "description": "Result of subscribing the email address: whether the list was created by this call, plus the final member."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a mailing list member's subscription status, name, or custom variables.",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_updatelistmember",
+            "name": "update-list-member",
+            "output": ["ActionOutput_mailgun_updatelistmember"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_updatelistmember", "ActionOutput_mailgun_updatelistmember"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_updatelistmember": {
+                        "type": "object",
+                        "properties": {
+                            "list_address": {
+                                "type": "string",
+                                "description": "Email address of the mailing list containing the member. Example: \"dev@samples.mailgun.org\""
+                            },
+                            "member_address": {
+                                "type": "string",
+                                "description": "Email address of the list member to update. Example: \"jane.doe@example.com\""
+                            },
+                            "name": {
+                                "description": "New full name for the member. Omit to leave the current name unchanged.",
+                                "type": "string"
+                            },
+                            "subscribed": {
+                                "description": "New subscription status for the member. Unsubscribed members remain on the list but are skipped when mail is sent to it. Omit to leave the current status unchanged.",
+                                "type": "boolean"
+                            },
+                            "vars": {
+                                "description": "Custom variables to store on the member as a JSON object. Example: {\"role\": \"admin\"}. Omit to leave the current variables unchanged.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["list_address", "member_address"],
+                        "additionalProperties": false,
+                        "description": "Fields identifying the mailing list member to update and the new values to apply. Only the provided fields are changed; omitted fields keep their current values."
+                    },
+                    "ActionOutput_mailgun_updatelistmember": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "Email address of the updated member."
+                            },
+                            "name": {
+                                "description": "Full name of the member. Omitted when the member has no name set.",
+                                "type": "string"
+                            },
+                            "subscribed": {
+                                "type": "boolean",
+                                "description": "Whether the member is currently subscribed to the mailing list."
+                            },
+                            "vars": {
+                                "description": "Custom variables stored on the member. Omitted when the member has none.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["address", "subscribed"],
+                        "additionalProperties": false,
+                        "description": "The mailing list member as stored on the provider after the update was applied."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a template's metadata (description and/or name).",
+            "endpoint": null,
+            "input": "ActionInput_mailgun_updatetemplate",
+            "name": "update-template",
+            "output": ["ActionOutput_mailgun_updatetemplate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mailgun_updatetemplate", "ActionOutput_mailgun_updatetemplate"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mailgun_updatetemplate": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "description": "Domain the template belongs to. Example: \"mg.example.com\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Current name of the template to update. Example: \"welcome-email\""
+                            },
+                            "description": {
+                                "description": "New description for the template. Example: \"Welcome email for new signups\"",
+                                "type": "string"
+                            },
+                            "new_name": {
+                                "description": "New name for the template. When provided, the template is renamed. Example: \"welcome-email-v2\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["domain", "name"],
+                        "additionalProperties": false,
+                        "description": "Input for updating a Mailgun template's metadata. Provide at least one of description or new_name."
+                    },
+                    "ActionOutput_mailgun_updatetemplate": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the template after the update. Differs from the input name when new_name was provided."
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Mailgun, e.g. \"template has been updated\" or \"Template has been renamed\"."
+                            }
+                        },
+                        "required": ["name", "message"],
+                        "additionalProperties": false,
+                        "description": "Result of the template metadata update."
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync hard-bounce suppression entries, fanned out across all domains on the Mailgun account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "bounces",
+            "output": ["Bounce"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Bounce"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Bounce": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier for the bounce suppression, composed as `{domain}/{address}` because the same address can be suppressed on multiple domains."
+                            },
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun sending domain this bounce suppression belongs to, e.g. \"mg.example.com\"."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The recipient email address that hard-bounced and is now suppressed from further sending."
+                            },
+                            "code": {
+                                "description": "The SMTP error code returned by the recipient mail server, e.g. \"550\".",
+                                "type": "string"
+                            },
+                            "error": {
+                                "description": "The human-readable error message returned by the recipient mail server, e.g. \"5.1.1 The email account that you tried to reach does not exist\".",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "When Mailgun recorded the bounce, in RFC 2822 format, e.g. \"Fri, 02 Oct 2026 00:31:24 UTC\"."
+                            }
+                        },
+                        "required": ["id", "domain", "address", "created_at"],
+                        "additionalProperties": false,
+                        "description": "A Mailgun hard-bounce suppression entry for a single recipient address on a single sending domain."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync spam-complaint suppression entries, fanned out across all Mailgun domains on the connection",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "complaints",
+            "output": ["Complaint"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Complaint"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Complaint": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable record id scoped by domain in the form '{domain}/{address}'. The same address can be suppressed on multiple domains, so the domain prefix keeps ids unique."
+                            },
+                            "domain": {
+                                "type": "string",
+                                "description": "Mailgun domain this spam-complaint suppression belongs to (e.g. mg.example.com or a sandbox domain)."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Email address that filed the spam complaint. Delivery to this address is suppressed for the domain."
+                            },
+                            "created_at": {
+                                "description": "When the complaint was recorded, in Mailgun's RFC 2822 timestamp format (e.g. 'Tue, 12 Aug 2025 20:00:06 UTC'). Omitted when Mailgun returns none.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "domain", "address"],
+                        "additionalProperties": false,
+                        "description": "A Mailgun spam-complaint suppression entry for a single email address on a single domain."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync all sending domains on the Mailgun account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "domains",
+            "output": ["Domain"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Domain"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Domain": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique Mailgun identifier of the domain. Example: \"69aeedd584d39943e1a587f1\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Fully qualified domain name. Example: \"mg.example.com\""
+                            },
+                            "type": {
+                                "description": "Domain type: \"custom\" for a customer-added domain or \"sandbox\" for the Mailgun-provided test domain",
+                                "type": "string"
+                            },
+                            "state": {
+                                "description": "Domain state, e.g. \"active\", \"unverified\" or \"disabled\"",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "description": "Creation date of the domain as an RFC 2822 string. Example: \"Mon, 09 Mar 2026 15:57:09 GMT\"",
+                                "type": "string"
+                            },
+                            "smtp_login": {
+                                "description": "Default SMTP login of the domain. Example: \"postmaster@mg.example.com\"",
+                                "type": "string"
+                            },
+                            "spam_action": {
+                                "description": "How spam-filtered inbound mail is handled: \"disabled\", \"block\" or \"tag\"",
+                                "type": "string"
+                            },
+                            "wildcard": {
+                                "description": "Whether wildcard subdomain sending is enabled for the domain",
+                                "type": "boolean"
+                            },
+                            "require_tls": {
+                                "description": "Whether TLS is required when delivering messages for the domain",
+                                "type": "boolean"
+                            },
+                            "skip_verification": {
+                                "description": "Whether DNS verification was skipped when the domain was added",
+                                "type": "boolean"
+                            },
+                            "is_disabled": {
+                                "description": "Whether the domain is currently disabled",
+                                "type": "boolean"
+                            },
+                            "use_automatic_sender_security": {
+                                "description": "Whether automatic sender security (managed DKIM/SPF keys) is enabled",
+                                "type": "boolean"
+                            },
+                            "web_prefix": {
+                                "description": "Subdomain prefix used for open/click tracking links. Example: \"email\"",
+                                "type": "string"
+                            },
+                            "web_scheme": {
+                                "description": "URL scheme used for tracking links: \"http\" or \"https\"",
+                                "type": "string"
+                            },
+                            "encrypt_incoming_message": {
+                                "description": "Whether incoming messages are encrypted at rest",
+                                "type": "boolean"
+                            },
+                            "message_ttl": {
+                                "description": "Time in seconds a stored message is retained before expiry. Example: 86400",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false,
+                        "description": "A sending domain configured on the Mailgun account"
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Syncs Mailgun event log entries (accepted, delivered, failed, rejected, opened, clicked, complained, etc.) across all domains on the connection. Incremental via a per-domain timestamp high-watermark; only covers the Mailgun event retention window, not a permanent archive.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "events",
+            "output": ["Event"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Event"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Event": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique record id in the form `${domain}:${event_id}` so ids cannot collide across domains."
+                            },
+                            "event_id": {
+                                "type": "string",
+                                "description": "Mailgun event GUID, unique within its domain, e.g. \"0_j20QZ_TJ2iOoRwo0TK1A\"."
+                            },
+                            "domain": {
+                                "type": "string",
+                                "description": "The Mailgun sending domain this event belongs to, e.g. \"mg.example.com\"."
+                            },
+                            "event": {
+                                "type": "string",
+                                "description": "Event type, e.g. accepted, delivered, failed, rejected, opened, clicked, complained, unsubscribed or stored."
+                            },
+                            "timestamp": {
+                                "type": "number",
+                                "description": "Unix epoch timestamp in seconds (float) when the event occurred, e.g. 1790875136.2817214."
+                            },
+                            "recipient": {
+                                "description": "Recipient email address the event relates to. Can be an empty string on some rejected events.",
+                                "type": "string"
+                            },
+                            "recipient_domain": {
+                                "description": "Domain part of the recipient address, e.g. \"example.com\".",
+                                "type": "string"
+                            },
+                            "from": {
+                                "description": "Sender address: the message From header when present, otherwise the envelope sender.",
+                                "type": "string"
+                            },
+                            "subject": {
+                                "description": "Subject line of the message, when present on the event.",
+                                "type": "string"
+                            },
+                            "message_id": {
+                                "description": "Mailgun message id from the Message-Id header, e.g. \"20261001171855.a0270cd53d7ce72c@mg.example.com\".",
+                                "type": "string"
+                            },
+                            "severity": {
+                                "description": "Event severity for failed events, e.g. \"permanent\" or \"temporary\".",
+                                "type": "string"
+                            },
+                            "reason": {
+                                "description": "Human-readable reason for failed or rejected events, when provided.",
+                                "type": "string"
+                            },
+                            "log_level": {
+                                "description": "Mailgun log level for the event, e.g. \"info\", \"warn\" or \"error\".",
+                                "type": "string"
+                            },
+                            "method": {
+                                "description": "How the message was submitted to Mailgun, e.g. \"HTTP\" or \"SMTP\"; can be empty.",
+                                "type": "string"
+                            },
+                            "ip": {
+                                "description": "IP address that triggered an engagement event (opened/clicked), when present.",
+                                "type": "string"
+                            },
+                            "originating_ip": {
+                                "description": "IP address of the sender that submitted the message to Mailgun, when present.",
+                                "type": "string"
+                            },
+                            "sending_ip": {
+                                "description": "Mailgun IP address used to deliver the message, when present.",
+                                "type": "string"
+                            },
+                            "tags": {
+                                "description": "User-defined tags attached to the message.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A user-defined tag attached to the message."
+                                }
+                            },
+                            "storage_url": {
+                                "description": "URL of the stored message in Mailgun storage, when the message was stored.",
+                                "type": "string"
+                            },
+                            "delivery_status": {
+                                "description": "Delivery status details; present mainly on delivered and failed events.",
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "description": "SMTP response code returned by the receiving server, e.g. 250.",
+                                        "type": "number"
+                                    },
+                                    "message": {
+                                        "description": "Full SMTP response message returned by the receiving server.",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "Short human-readable delivery status description.",
+                                        "type": "string"
+                                    },
+                                    "enhanced_code": {
+                                        "description": "Enhanced SMTP status code, e.g. \"2.0.0\".",
+                                        "type": "string"
+                                    },
+                                    "mx_host": {
+                                        "description": "Hostname of the receiving MX server, e.g. \"aspmx.l.google.com\".",
+                                        "type": "string"
+                                    },
+                                    "mx_host_ip": {
+                                        "description": "IP address of the receiving MX server.",
+                                        "type": "string"
+                                    },
+                                    "attempt_no": {
+                                        "description": "Delivery attempt number, starting at 1.",
+                                        "type": "number"
+                                    },
+                                    "session_seconds": {
+                                        "description": "Duration of the SMTP delivery session in seconds (float).",
+                                        "type": "number"
+                                    },
+                                    "first_delivery_attempt_seconds": {
+                                        "description": "Seconds between message acceptance and the first delivery attempt (float).",
+                                        "type": "number"
+                                    },
+                                    "tls": {
+                                        "description": "Whether TLS was negotiated with the receiving server.",
+                                        "type": "boolean"
+                                    },
+                                    "certificate_verified": {
+                                        "description": "Whether the receiving server certificate was verified.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "event_id", "domain", "event", "timestamp"],
+                        "additionalProperties": false,
+                        "description": "A Mailgun event log entry (delivery, engagement or suppression event) for a message, normalized across all domains on the connection."
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync members across all Mailgun mailing lists: enumerate every mailing list, then fetch every member of each list tagged with its parent list address",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "list-members",
+            "output": ["ListMember"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ListMember"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ListMember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable unique record id composed as \"<list_address>/<member_address>\", because a member address is only unique within its parent mailing list"
+                            },
+                            "list_address": {
+                                "type": "string",
+                                "description": "Address of the parent mailing list this member belongs to, e.g. \"announce@example.com\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Email address of the mailing list member, e.g. \"jane@example.com\""
+                            },
+                            "name": {
+                                "description": "Display name of the member as stored by Mailgun (empty string when never provided)",
+                                "type": "string"
+                            },
+                            "subscribed": {
+                                "description": "Whether the member is currently subscribed to the mailing list; false means unsubscribed but still on the list",
+                                "type": "boolean"
+                            },
+                            "vars": {
+                                "description": "Custom JSON variables attached to the member, keyed by variable name, e.g. { \"phone\": \"+972559221288\" }",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "list_address", "address"],
+                        "additionalProperties": false,
+                        "description": "A member of a Mailgun mailing list, tagged with the address of its parent list"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync mailing lists on the account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "lists",
+            "output": ["MailingList"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["MailingList"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MailingList": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique record identifier. Same value as the mailing list address, which Mailgun uses as the list ID (e.g. \"newsletter@example.com\")."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Email address that identifies the mailing list (e.g. \"newsletter@example.com\")."
+                            },
+                            "name": {
+                                "description": "Human-readable name of the mailing list.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Description of the mailing list. Empty string when none is set.",
+                                "type": "string"
+                            },
+                            "access_level": {
+                                "description": "Who can post to the list: \"readonly\", \"members\", or \"everyone\".",
+                                "type": "string"
+                            },
+                            "reply_preference": {
+                                "description": "Where replies to list messages are sent: \"list\" or \"sender\". Omitted when the list has no explicit preference stored.",
+                                "type": "string"
+                            },
+                            "members_count": {
+                                "description": "Number of subscribed members on the mailing list.",
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "description": "List creation timestamp in RFC 5322 format as returned by Mailgun (e.g. \"Tue, 15 Sep 2026 16:29:03 -0000\").",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "address"],
+                        "additionalProperties": false,
+                        "description": "A Mailgun mailing list on the account."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Syncs stored message templates, fanned out across all Mailgun domains on the account",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "templates",
+            "output": ["Template"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Template"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Template": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable record ID scoped across the domain fan-out: \"{domain}/{Mailgun template ID}\". Example: \"mg.example.com/01a0f9ff-cdfb-764d-97d6-483199890cb4\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Template name, unique within its domain and used to address the template in the Mailgun API. Example: \"welcome-email\""
+                            },
+                            "description": {
+                                "description": "Human-readable template description. Omitted when Mailgun returns none or null.",
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "description": "Template creation date in RFC 2822 format as returned by Mailgun. Example: \"Fri, 02 Oct 2026 00:24:46 UTC\""
+                            },
+                            "domain": {
+                                "type": "string",
+                                "description": "Mailgun sending domain that owns the template. Example: \"mg.example.com\""
+                            }
+                        },
+                        "required": ["id", "name", "createdAt", "domain"],
+                        "additionalProperties": false,
+                        "description": "A stored Mailgun message template. The list endpoint returns metadata only - version/body content is not included."
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync domain-wide unsubscribe suppression entries, fanned out across all Mailgun domains",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "unsubscribes",
+            "output": ["Unsubscribe"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Unsubscribe"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Unsubscribe": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable record id scoped to the sending domain, formatted as `{domain}/{address}` (e.g. `mg.example.com/user@example.com`). The same address can be unsubscribed in multiple domains, so the domain is part of the id."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Email address that is suppressed from receiving email, e.g. `user@example.com`"
+                            },
+                            "domain": {
+                                "type": "string",
+                                "description": "Sending domain this unsubscribe entry belongs to, e.g. `mg.example.com`"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Tags the unsubscribe applies to. The default `[\"*\"]` means the address is unsubscribed from all tags/campaigns of the domain."
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "RFC 2822 timestamp of when the address was unsubscribed, e.g. `Fri, 02 Oct 2026 01:07:33 UTC`"
+                            }
+                        },
+                        "required": ["id", "address", "domain", "tags", "created_at"],
+                        "additionalProperties": false,
+                        "description": "A Mailgun unsubscribe suppression entry for a sending domain"
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

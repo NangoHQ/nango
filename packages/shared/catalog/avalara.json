@@ -1,0 +1,1187 @@
+{
+    "providerConfigKey": "avalara",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Marks a transaction by changing its status to Committed",
+            "endpoint": null,
+            "input": "ActionInput_avalara_committransaction",
+            "name": "commit-transaction",
+            "output": ["ActionOutput_avalara_committransaction"],
+            "scopes": [
+                "AccountAdmin",
+                " AccountOperator",
+                " AccountUser",
+                " BatchServiceAdmin",
+                " CompanyAdmin",
+                " CompanyUser",
+                " CSPTester",
+                " ProStoresOperator",
+                " SSTAdmin",
+                " TechnicalSupportAdmin"
+            ],
+            "usedModels": ["ActionInput_avalara_committransaction", "ActionOutput_avalara_committransaction"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_avalara_committransaction": {
+                        "type": "object",
+                        "properties": {
+                            "transactionCode": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["transactionCode"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_avalara_committransaction": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Creates a new transaction",
+            "endpoint": null,
+            "input": "ActionInput_avalara_createtransaction",
+            "name": "create-transaction",
+            "output": ["ActionOutput_avalara_createtransaction"],
+            "scopes": [
+                "AccountAdmin",
+                " AccountOperator",
+                " AccountUser",
+                " BatchServiceAdmin",
+                " CompanyAdmin",
+                " CompanyUser",
+                " CSPTester",
+                " SSTAdmin",
+                " TechnicalSupportAdmin",
+                " TechnicalSupportUser"
+            ],
+            "usedModels": ["ActionInput_avalara_createtransaction", "ActionOutput_avalara_createtransaction"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_avalara_createtransaction": {
+                        "type": "object",
+                        "properties": {
+                            "invoice": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "invoiceNumber": {
+                                        "type": "string"
+                                    },
+                                    "emissionDate": {
+                                        "type": "string"
+                                    },
+                                    "dueDate": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "const": "to_pay"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "partially_paid"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "paid"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "late"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "grace_period"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "to_pay_batch"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "voided"
+                                            }
+                                        ]
+                                    },
+                                    "taxRate": {
+                                        "type": "string"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "invoiceLineItems": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "billingItemId": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "unitsCount": {
+                                                    "type": "number"
+                                                },
+                                                "unitAmount": {
+                                                    "type": "string"
+                                                },
+                                                "taxAmount": {
+                                                    "type": "number"
+                                                },
+                                                "taxRate": {
+                                                    "type": "string"
+                                                },
+                                                "amount": {
+                                                    "type": "number"
+                                                },
+                                                "amountExcludingTax": {
+                                                    "type": "number"
+                                                },
+                                                "periodStart": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "periodEnd": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "invoiceLineItemTiers": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "unitCount": {
+                                                                "type": "string"
+                                                            },
+                                                            "unitAmount": {
+                                                                "type": "string"
+                                                            },
+                                                            "totalAmount": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "required": ["unitCount", "unitAmount", "totalAmount"],
+                                                        "additionalProperties": false
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "description",
+                                                "unitsCount",
+                                                "unitAmount",
+                                                "taxAmount",
+                                                "taxRate",
+                                                "amountExcludingTax",
+                                                "periodStart",
+                                                "periodEnd",
+                                                "invoiceLineItemTiers"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "coupons": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "discountAmount": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": ["name", "discountAmount"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "type": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "const": "invoice"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "refund"
+                                            }
+                                        ]
+                                    },
+                                    "discountAmount": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "invoiceNumber",
+                                    "emissionDate",
+                                    "dueDate",
+                                    "status",
+                                    "taxRate",
+                                    "currency",
+                                    "invoiceLineItems",
+                                    "coupons",
+                                    "type",
+                                    "discountAmount"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "externalCustomerId": {
+                                "type": "string"
+                            },
+                            "companyCode": {
+                                "type": "string"
+                            },
+                            "addresses": {
+                                "type": "object",
+                                "properties": {
+                                    "singleLocation": {
+                                        "type": "object",
+                                        "properties": {
+                                            "line1": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "region": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "shipFrom": {
+                                        "type": "object",
+                                        "properties": {
+                                            "line1": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "region": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "shipTo": {
+                                        "type": "object",
+                                        "properties": {
+                                            "line1": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "region": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "pointOfOrderOrigin": {
+                                        "type": "object",
+                                        "properties": {
+                                            "line1": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "region": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "pointOfOrderAcceptance": {
+                                        "type": "object",
+                                        "properties": {
+                                            "line1": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "region": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "goodsPlaceOrServiceRendered": {
+                                        "type": "object",
+                                        "properties": {
+                                            "line1": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "region": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "import": {
+                                        "type": "object",
+                                        "properties": {
+                                            "line1": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "region": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "billTo": {
+                                        "type": "object",
+                                        "properties": {
+                                            "line1": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "region": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "postalCode": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": [
+                                    "singleLocation",
+                                    "shipFrom",
+                                    "shipTo",
+                                    "pointOfOrderOrigin",
+                                    "pointOfOrderAcceptance",
+                                    "goodsPlaceOrServiceRendered",
+                                    "import",
+                                    "billTo"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["invoice", "externalCustomerId", "addresses"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_avalara_createtransaction": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Voids the current transaction uniquely identified by the transactionCode",
+            "endpoint": null,
+            "input": "ActionInput_avalara_voidtransaction",
+            "name": "void-transaction",
+            "output": ["ActionOutput_avalara_voidtransaction"],
+            "scopes": [
+                "AccountAdmin",
+                " AccountOperator",
+                " BatchServiceAdmin",
+                " CompanyAdmin",
+                " CSPTester",
+                " ProStoresOperator",
+                " SSTAdmin",
+                " TechnicalSupportAdmin"
+            ],
+            "usedModels": ["ActionInput_avalara_voidtransaction", "ActionOutput_avalara_voidtransaction"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_avalara_voidtransaction": {
+                        "type": "object",
+                        "properties": {
+                            "transactionCode": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["transactionCode"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_avalara_voidtransaction": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "List all transactions with a default backfill date of one year.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/transactions",
+                    "group": "Transactions"
+                }
+            ],
+            "input": "SyncMetadata_avalara_transactions",
+            "name": "transactions",
+            "output": ["Transaction"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Transaction", "SyncMetadata_avalara_transactions"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Transaction": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "number"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "paymentDate": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "batchCode": {
+                                "type": "string"
+                            },
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "exchangeRateCurrencyCode": {
+                                "type": "string"
+                            },
+                            "customerUsageType": {
+                                "type": "string"
+                            },
+                            "entityUseCode": {
+                                "type": "string"
+                            },
+                            "customerVendorCode": {
+                                "type": "string"
+                            },
+                            "customerCode": {
+                                "type": "string"
+                            },
+                            "exemptNo": {
+                                "type": "string"
+                            },
+                            "reconciled": {
+                                "type": "boolean"
+                            },
+                            "locationCode": {
+                                "type": "string"
+                            },
+                            "reportingLocationCode": {
+                                "type": "string"
+                            },
+                            "purchaseOrderNo": {
+                                "type": "string"
+                            },
+                            "referenceCode": {
+                                "type": "string"
+                            },
+                            "salespersonCode": {
+                                "type": "string"
+                            },
+                            "taxOverrideType": {
+                                "type": "string"
+                            },
+                            "taxOverrideAmount": {
+                                "type": "number"
+                            },
+                            "taxOverrideReason": {
+                                "type": "string"
+                            },
+                            "totalAmount": {
+                                "type": "number"
+                            },
+                            "totalExempt": {
+                                "type": "number"
+                            },
+                            "totalDiscount": {
+                                "type": "number"
+                            },
+                            "totalTax": {
+                                "type": "number"
+                            },
+                            "totalTaxable": {
+                                "type": "number"
+                            },
+                            "totalTaxCalculated": {
+                                "type": "number"
+                            },
+                            "adjustmentReason": {
+                                "type": "string"
+                            },
+                            "adjustmentDescription": {
+                                "type": "string"
+                            },
+                            "locked": {
+                                "type": "boolean"
+                            },
+                            "region": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "version": {
+                                "type": "number"
+                            },
+                            "softwareVersion": {
+                                "type": "string"
+                            },
+                            "originAddressId": {
+                                "type": "number"
+                            },
+                            "destinationAddressId": {
+                                "type": "number"
+                            },
+                            "exchangeRateEffectiveDate": {
+                                "type": "string"
+                            },
+                            "exchangeRate": {
+                                "type": "number"
+                            },
+                            "isSellerImporterOfRecord": {
+                                "type": "boolean"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "businessIdentificationNo": {
+                                "type": "string"
+                            },
+                            "modifiedDate": {
+                                "type": "string"
+                            },
+                            "modifiedUserId": {
+                                "type": "number"
+                            },
+                            "taxDate": {
+                                "type": "string"
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "transactionId": {
+                                            "type": "number"
+                                        },
+                                        "lineNumber": {
+                                            "type": "string"
+                                        },
+                                        "boundaryOverrideId": {
+                                            "type": "number"
+                                        },
+                                        "entityUseCode": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "destinationAddressId": {
+                                            "type": "number"
+                                        },
+                                        "originAddressId": {
+                                            "type": "number"
+                                        },
+                                        "discountAmount": {
+                                            "type": "number"
+                                        },
+                                        "discountTypeId": {
+                                            "type": "number"
+                                        },
+                                        "exemptAmount": {
+                                            "type": "number"
+                                        },
+                                        "exemptCertId": {
+                                            "type": "number"
+                                        },
+                                        "exemptNo": {
+                                            "type": "string"
+                                        },
+                                        "isItemTaxable": {
+                                            "type": "boolean"
+                                        },
+                                        "isSSTP": {
+                                            "type": "boolean"
+                                        },
+                                        "itemCode": {
+                                            "type": "string"
+                                        },
+                                        "lineAmount": {
+                                            "type": "number"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "ref1": {
+                                            "type": "string"
+                                        },
+                                        "reportingDate": {
+                                            "type": "string"
+                                        },
+                                        "revAccount": {
+                                            "type": "string"
+                                        },
+                                        "sourcing": {
+                                            "type": "string"
+                                        },
+                                        "tax": {
+                                            "type": "number"
+                                        },
+                                        "taxableAmount": {
+                                            "type": "number"
+                                        },
+                                        "taxCalculated": {
+                                            "type": "number"
+                                        },
+                                        "taxCode": {
+                                            "type": "string"
+                                        },
+                                        "taxDate": {
+                                            "type": "string"
+                                        },
+                                        "taxEngine": {
+                                            "type": "string"
+                                        },
+                                        "taxOverrideType": {
+                                            "type": "string"
+                                        },
+                                        "taxOverrideAmount": {
+                                            "type": "number"
+                                        },
+                                        "taxOverrideReason": {
+                                            "type": "string"
+                                        },
+                                        "taxIncluded": {
+                                            "type": "boolean"
+                                        },
+                                        "details": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "number"
+                                                    },
+                                                    "transactionLineId": {
+                                                        "type": "number"
+                                                    },
+                                                    "transactionId": {
+                                                        "type": "number"
+                                                    },
+                                                    "addressId": {
+                                                        "type": "number"
+                                                    },
+                                                    "country": {
+                                                        "type": "string"
+                                                    },
+                                                    "region": {
+                                                        "type": "string"
+                                                    },
+                                                    "stateFIPS": {
+                                                        "type": "string"
+                                                    },
+                                                    "exemptAmount": {
+                                                        "type": "number"
+                                                    },
+                                                    "exemptReasonId": {
+                                                        "type": "number"
+                                                    },
+                                                    "exemptRuleId": {
+                                                        "type": "number"
+                                                    },
+                                                    "inState": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "jurisCode": {
+                                                        "type": "string"
+                                                    },
+                                                    "jurisName": {
+                                                        "type": "string"
+                                                    },
+                                                    "jurisdictionId": {
+                                                        "type": "number"
+                                                    },
+                                                    "signatureCode": {
+                                                        "type": "string"
+                                                    },
+                                                    "stateAssignedNo": {
+                                                        "type": "string"
+                                                    },
+                                                    "jurisType": {
+                                                        "type": "string"
+                                                    },
+                                                    "nonTaxableAmount": {
+                                                        "type": "number"
+                                                    },
+                                                    "nonTaxableRuleId": {
+                                                        "type": "number"
+                                                    },
+                                                    "nonTaxableType": {
+                                                        "type": "string"
+                                                    },
+                                                    "rate": {
+                                                        "type": "number"
+                                                    },
+                                                    "rateRuleId": {
+                                                        "type": "number"
+                                                    },
+                                                    "rateSourceId": {
+                                                        "type": "number"
+                                                    },
+                                                    "serCode": {
+                                                        "type": "string"
+                                                    },
+                                                    "sourcing": {
+                                                        "type": "string"
+                                                    },
+                                                    "tax": {
+                                                        "type": "number"
+                                                    },
+                                                    "taxableAmount": {
+                                                        "type": "number"
+                                                    },
+                                                    "taxType": {
+                                                        "type": "string"
+                                                    },
+                                                    "taxName": {
+                                                        "type": "string"
+                                                    },
+                                                    "taxAuthorityTypeId": {
+                                                        "type": "number"
+                                                    },
+                                                    "taxRegionId": {
+                                                        "type": "number"
+                                                    },
+                                                    "taxCalculated": {
+                                                        "type": "number"
+                                                    },
+                                                    "taxOverride": {
+                                                        "type": "number"
+                                                    },
+                                                    "rateType": {
+                                                        "type": "string"
+                                                    },
+                                                    "taxableUnits": {
+                                                        "type": "number"
+                                                    },
+                                                    "nonTaxableUnits": {
+                                                        "type": "number"
+                                                    },
+                                                    "exemptUnits": {
+                                                        "type": "number"
+                                                    },
+                                                    "reportingTaxableUnits": {
+                                                        "type": "number"
+                                                    },
+                                                    "reportingNonTaxableUnits": {
+                                                        "type": "number"
+                                                    },
+                                                    "reportingExemptUnits": {
+                                                        "type": "number"
+                                                    },
+                                                    "reportingTax": {
+                                                        "type": "number"
+                                                    },
+                                                    "reportingTaxCalculated": {
+                                                        "type": "number"
+                                                    },
+                                                    "recoverabilityPercentage": {
+                                                        "type": "number"
+                                                    },
+                                                    "recoverableAmount": {
+                                                        "type": "number"
+                                                    },
+                                                    "nonRecoverableAmount": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "transactionLineId",
+                                                    "transactionId",
+                                                    "addressId",
+                                                    "country",
+                                                    "region",
+                                                    "stateFIPS",
+                                                    "exemptAmount",
+                                                    "exemptReasonId",
+                                                    "exemptRuleId",
+                                                    "inState",
+                                                    "jurisCode",
+                                                    "jurisName",
+                                                    "jurisdictionId",
+                                                    "signatureCode",
+                                                    "stateAssignedNo",
+                                                    "jurisType",
+                                                    "nonTaxableAmount",
+                                                    "nonTaxableRuleId",
+                                                    "nonTaxableType",
+                                                    "rate",
+                                                    "rateRuleId",
+                                                    "rateSourceId",
+                                                    "serCode",
+                                                    "sourcing",
+                                                    "tax",
+                                                    "taxableAmount",
+                                                    "taxType",
+                                                    "taxName",
+                                                    "taxAuthorityTypeId",
+                                                    "taxRegionId",
+                                                    "taxCalculated",
+                                                    "taxOverride",
+                                                    "rateType",
+                                                    "taxableUnits",
+                                                    "nonTaxableUnits",
+                                                    "exemptUnits",
+                                                    "reportingTaxableUnits",
+                                                    "reportingNonTaxableUnits",
+                                                    "reportingExemptUnits",
+                                                    "reportingTax",
+                                                    "reportingTaxCalculated",
+                                                    "recoverabilityPercentage",
+                                                    "recoverableAmount",
+                                                    "nonRecoverableAmount"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "vatNumberTypeId": {
+                                            "type": "number"
+                                        },
+                                        "recoverabilityPercentage": {
+                                            "type": "number"
+                                        },
+                                        "recoverableAmount": {
+                                            "type": "number"
+                                        },
+                                        "nonRecoverableAmount": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "transactionId",
+                                        "lineNumber",
+                                        "boundaryOverrideId",
+                                        "entityUseCode",
+                                        "description",
+                                        "destinationAddressId",
+                                        "originAddressId",
+                                        "discountAmount",
+                                        "discountTypeId",
+                                        "exemptAmount",
+                                        "exemptCertId",
+                                        "exemptNo",
+                                        "isItemTaxable",
+                                        "isSSTP",
+                                        "itemCode",
+                                        "lineAmount",
+                                        "quantity",
+                                        "ref1",
+                                        "reportingDate",
+                                        "revAccount",
+                                        "sourcing",
+                                        "tax",
+                                        "taxableAmount",
+                                        "taxCalculated",
+                                        "taxCode",
+                                        "taxDate",
+                                        "taxEngine",
+                                        "taxOverrideType",
+                                        "taxOverrideAmount",
+                                        "taxOverrideReason",
+                                        "taxIncluded",
+                                        "details",
+                                        "vatNumberTypeId",
+                                        "recoverabilityPercentage",
+                                        "recoverableAmount",
+                                        "nonRecoverableAmount"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "locationTypes": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "summary": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "transactionId": {
+                                            "type": "number"
+                                        },
+                                        "boundaryLevel": {
+                                            "type": "string"
+                                        },
+                                        "line1": {
+                                            "type": "string"
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "region": {
+                                            "type": "string"
+                                        },
+                                        "postalCode": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "taxRegionId": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["id", "transactionId", "boundaryLevel", "line1", "city", "region", "postalCode", "country", "taxRegionId"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "taxDetailsByTaxType": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "taxType": {
+                                            "type": "string"
+                                        },
+                                        "totalTaxable": {
+                                            "type": "number"
+                                        },
+                                        "totalExempt": {
+                                            "type": "number"
+                                        },
+                                        "totalNonTaxable": {
+                                            "type": "number"
+                                        },
+                                        "totalTax": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["taxType", "totalTaxable", "totalExempt", "totalNonTaxable", "totalTax"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "code",
+                            "companyId",
+                            "date",
+                            "paymentDate",
+                            "status",
+                            "type",
+                            "batchCode",
+                            "currencyCode",
+                            "exchangeRateCurrencyCode",
+                            "customerUsageType",
+                            "entityUseCode",
+                            "customerVendorCode",
+                            "customerCode",
+                            "exemptNo",
+                            "reconciled",
+                            "locationCode",
+                            "reportingLocationCode",
+                            "purchaseOrderNo",
+                            "referenceCode",
+                            "salespersonCode",
+                            "taxOverrideType",
+                            "taxOverrideAmount",
+                            "taxOverrideReason",
+                            "totalAmount",
+                            "totalExempt",
+                            "totalDiscount",
+                            "totalTax",
+                            "totalTaxable",
+                            "totalTaxCalculated",
+                            "adjustmentReason",
+                            "adjustmentDescription",
+                            "locked",
+                            "region",
+                            "country",
+                            "version",
+                            "softwareVersion",
+                            "originAddressId",
+                            "destinationAddressId",
+                            "exchangeRateEffectiveDate",
+                            "exchangeRate",
+                            "isSellerImporterOfRecord",
+                            "description",
+                            "email",
+                            "businessIdentificationNo",
+                            "modifiedDate",
+                            "modifiedUserId",
+                            "taxDate",
+                            "lines",
+                            "locationTypes",
+                            "messages",
+                            "summary",
+                            "addresses",
+                            "taxDetailsByTaxType"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_avalara_transactions": {
+                        "type": "object",
+                        "properties": {
+                            "company": {
+                                "type": "string"
+                            },
+                            "backfillPeriodMs": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["company"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

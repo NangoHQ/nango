@@ -1,0 +1,207 @@
+{
+    "providerConfigKey": "jira-basic",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates a user in Jira. Note that this endpoint is marked as experimental and could \nbe deprecated in the future. Products are optional and allowed params are\njira-core, jira-servicedesk, jira-product-discovery, jira-software. Defaults to \njira-software. Note that the last name isn't able to be set via the API and \nthe first name defaults to the email address.",
+            "endpoint": null,
+            "input": "ActionInput_jira_basic_createuser",
+            "name": "create-user",
+            "output": ["ActionOutput_jira_basic_createuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_jira_basic_createuser", "ActionOutput_jira_basic_createuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_basic_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "products": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["firstName", "lastName", "email", "products"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_basic_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "firstName", "lastName", "email"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Deletes a user in Jira. Note that this endpoint is marked as experimental and could \nbe deprecated in the future.",
+            "endpoint": null,
+            "input": "ActionInput_jira_basic_deleteuser",
+            "name": "delete-user",
+            "output": ["ActionOutput_jira_basic_deleteuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_jira_basic_deleteuser", "ActionOutput_jira_basic_deleteuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_basic_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_basic_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch teams in an organisation in Jira",
+            "endpoint": null,
+            "input": "ActionInput_jira_basic_fetchteams",
+            "name": "fetch-teams",
+            "output": ["ActionOutput_jira_basic_fetchteams"],
+            "scopes": [],
+            "usedModels": ["ActionInput_jira_basic_fetchteams", "ActionOutput_jira_basic_fetchteams"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jira_basic_fetchteams": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_jira_basic_fetchteams": {
+                        "type": "object",
+                        "properties": {
+                            "teams": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["teams"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from Jira",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_jira_basic_users",
+            "name": "users",
+            "output": ["User"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User", "SyncMetadata_jira_basic_users"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "firstName", "lastName", "email"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_jira_basic_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

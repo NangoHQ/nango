@@ -1,0 +1,1041 @@
+{
+    "providerConfigKey": "hackerrank-work",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Action to create an interview on hackerrank work",
+            "endpoint": null,
+            "input": "ActionInput_hackerrank_work_createinterview",
+            "name": "create-interview",
+            "output": ["ActionOutput_hackerrank_work_createinterview"],
+            "scopes": [],
+            "usedModels": ["ActionInput_hackerrank_work_createinterview", "ActionOutput_hackerrank_work_createinterview"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hackerrank_work_createinterview": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "feedback": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "quickpad": {
+                                "type": "boolean"
+                            },
+                            "ended_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "interview_template_id": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "to": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "user": {
+                                "type": "string"
+                            },
+                            "thumbs_up": {
+                                "type": "boolean"
+                            },
+                            "resume_url": {
+                                "type": "string"
+                            },
+                            "interviewers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "candidate": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["name", "email"],
+                                "additionalProperties": false
+                            },
+                            "result_url": {
+                                "type": "string"
+                            },
+                            "report_url": {
+                                "type": "string"
+                            },
+                            "send_email": {
+                                "type": "boolean"
+                            },
+                            "interview_metadata": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "created_at",
+                            "updated_at",
+                            "title",
+                            "feedback",
+                            "notes",
+                            "metadata",
+                            "quickpad",
+                            "ended_at",
+                            "timezone",
+                            "interview_template_id",
+                            "from",
+                            "to",
+                            "url",
+                            "user",
+                            "thumbs_up",
+                            "resume_url",
+                            "interviewers",
+                            "candidate",
+                            "result_url",
+                            "report_url",
+                            "send_email",
+                            "interview_metadata"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hackerrank_work_createinterview": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "feedback": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "quickpad": {
+                                "type": "boolean"
+                            },
+                            "ended_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "interview_template_id": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "to": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "user": {
+                                "type": "string"
+                            },
+                            "thumbs_up": {
+                                "type": "boolean"
+                            },
+                            "resume_url": {
+                                "type": "string"
+                            },
+                            "interviewers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "candidate": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["name", "email"],
+                                "additionalProperties": false
+                            },
+                            "result_url": {
+                                "type": "string"
+                            },
+                            "report_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "created_at",
+                            "updated_at",
+                            "title",
+                            "feedback",
+                            "notes",
+                            "metadata",
+                            "quickpad",
+                            "ended_at",
+                            "timezone",
+                            "interview_template_id",
+                            "from",
+                            "to",
+                            "url",
+                            "user",
+                            "thumbs_up",
+                            "resume_url",
+                            "interviewers",
+                            "candidate",
+                            "result_url",
+                            "report_url"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Action to create a test on hackerrank work",
+            "endpoint": null,
+            "input": "ActionInput_hackerrank_work_createtest",
+            "name": "create-test",
+            "output": ["ActionOutput_hackerrank_work_createtest"],
+            "scopes": [],
+            "usedModels": ["ActionInput_hackerrank_work_createtest", "ActionOutput_hackerrank_work_createtest"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_hackerrank_work_createtest": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "starttime": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "endtime": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "instructions": {
+                                "type": "string"
+                            },
+                            "locked": {
+                                "type": "boolean"
+                            },
+                            "draft": {
+                                "type": "string"
+                            },
+                            "languages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "candidate_details": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "custom_acknowledge_text": {
+                                "type": "string"
+                            },
+                            "cutoff_score": {
+                                "type": "number"
+                            },
+                            "master_password": {
+                                "type": "string"
+                            },
+                            "hide_compile_test": {
+                                "type": "boolean"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "role_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "experience": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "mcq_incorrect_score": {
+                                "type": "number"
+                            },
+                            "mcq_correct_score": {
+                                "type": "number"
+                            },
+                            "secure": {
+                                "type": "boolean"
+                            },
+                            "shuffle_questions": {
+                                "type": "boolean"
+                            },
+                            "test_admins": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "hide_template": {
+                                "type": "boolean"
+                            },
+                            "enable_acknowledgement": {
+                                "type": "boolean"
+                            },
+                            "enable_proctoring": {
+                                "type": "boolean"
+                            },
+                            "candidate_tab_switch": {
+                                "type": "boolean"
+                            },
+                            "track_editor_paste": {
+                                "type": "boolean"
+                            },
+                            "show_copy_paste_prompt": {
+                                "type": "boolean"
+                            },
+                            "ide_config": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "starttime",
+                            "endtime",
+                            "duration",
+                            "instructions",
+                            "locked",
+                            "draft",
+                            "languages",
+                            "candidate_details",
+                            "custom_acknowledge_text",
+                            "cutoff_score",
+                            "master_password",
+                            "hide_compile_test",
+                            "tags",
+                            "role_ids",
+                            "experience",
+                            "questions",
+                            "mcq_incorrect_score",
+                            "mcq_correct_score",
+                            "secure",
+                            "shuffle_questions",
+                            "test_admins",
+                            "hide_template",
+                            "enable_acknowledgement",
+                            "enable_proctoring",
+                            "candidate_tab_switch",
+                            "track_editor_paste",
+                            "show_copy_paste_prompt",
+                            "ide_config"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_hackerrank_work_createtest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "unique_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "instructions": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "locked": {
+                                "type": "boolean"
+                            },
+                            "test_type": {
+                                "type": "string"
+                            },
+                            "starred": {
+                                "type": "boolean"
+                            },
+                            "start_time": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "end_time": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "draft": {
+                                "type": "boolean"
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "sections": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "permission": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "unique_id",
+                            "name",
+                            "duration",
+                            "owner",
+                            "instructions",
+                            "created_at",
+                            "state",
+                            "locked",
+                            "test_type",
+                            "starred",
+                            "start_time",
+                            "end_time",
+                            "draft",
+                            "questions",
+                            "sections",
+                            "tags",
+                            "permission"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of interviews from hackerrank work",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/interviews",
+                    "group": "Interviews"
+                }
+            ],
+            "input": "SyncMetadata_hackerrank_work_interviews",
+            "name": "interviews",
+            "output": ["HackerRankWorkInterview"],
+            "runs": "every 6 hours",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["HackerRankWorkInterview", "SyncMetadata_hackerrank_work_interviews"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "HackerRankWorkInterview": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "feedback": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "quickpad": {
+                                "type": "boolean"
+                            },
+                            "ended_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "interview_template_id": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "to": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "user": {
+                                "type": "string"
+                            },
+                            "thumbs_up": {
+                                "type": "boolean"
+                            },
+                            "resume_url": {
+                                "type": "string"
+                            },
+                            "interviewers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "candidate": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["name", "email"],
+                                "additionalProperties": false
+                            },
+                            "result_url": {
+                                "type": "string"
+                            },
+                            "report_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "created_at",
+                            "updated_at",
+                            "title",
+                            "feedback",
+                            "notes",
+                            "metadata",
+                            "quickpad",
+                            "ended_at",
+                            "timezone",
+                            "interview_template_id",
+                            "from",
+                            "to",
+                            "url",
+                            "user",
+                            "thumbs_up",
+                            "resume_url",
+                            "interviewers",
+                            "candidate",
+                            "result_url",
+                            "report_url"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_hackerrank_work_interviews": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of teams from hackerrank work",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/teams"
+                }
+            ],
+            "input": "SyncMetadata_hackerrank_work_teams",
+            "name": "teams",
+            "output": ["HackerRankWorkTeam"],
+            "runs": "every 6 hours",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["HackerRankWorkTeam", "SyncMetadata_hackerrank_work_teams"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "HackerRankWorkTeam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "recruiter_count": {
+                                "type": "number"
+                            },
+                            "developer_count": {
+                                "type": "number"
+                            },
+                            "interviewer_count": {
+                                "type": "number"
+                            },
+                            "recruiter_cap": {
+                                "type": "number"
+                            },
+                            "developer_cap": {
+                                "type": "number"
+                            },
+                            "interviewer_cap": {
+                                "type": "number"
+                            },
+                            "logo_id": {
+                                "type": "string"
+                            },
+                            "library_access": {
+                                "type": "boolean"
+                            },
+                            "invite_as": {
+                                "type": "string"
+                            },
+                            "locations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "departments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "owner",
+                            "created_at",
+                            "recruiter_count",
+                            "developer_count",
+                            "interviewer_count",
+                            "recruiter_cap",
+                            "developer_cap",
+                            "interviewer_cap",
+                            "logo_id",
+                            "library_access",
+                            "invite_as",
+                            "locations",
+                            "departments"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_hackerrank_work_teams": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of tests from hackerrank work",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/tests",
+                    "group": "Tests"
+                }
+            ],
+            "input": "SyncMetadata_hackerrank_work_tests",
+            "name": "tests",
+            "output": ["HackerRankWorkTest"],
+            "runs": "every 6 hours",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["HackerRankWorkTest", "SyncMetadata_hackerrank_work_tests"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "HackerRankWorkTest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "unique_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "instructions": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "locked": {
+                                "type": "boolean"
+                            },
+                            "test_type": {
+                                "type": "string"
+                            },
+                            "starred": {
+                                "type": "boolean"
+                            },
+                            "start_time": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "end_time": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "draft": {
+                                "type": "boolean"
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "sections": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "permission": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "unique_id",
+                            "name",
+                            "duration",
+                            "owner",
+                            "instructions",
+                            "created_at",
+                            "state",
+                            "locked",
+                            "test_type",
+                            "starred",
+                            "start_time",
+                            "end_time",
+                            "draft",
+                            "questions",
+                            "sections",
+                            "tags",
+                            "permission"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_hackerrank_work_tests": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from hackerrank work",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users"
+                }
+            ],
+            "input": "SyncMetadata_hackerrank_work_users",
+            "name": "users",
+            "output": ["HackerRankWorkUser"],
+            "runs": "every 6 hours",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["HackerRankWorkUser", "SyncMetadata_hackerrank_work_users"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "HackerRankWorkUser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstname": {
+                                "type": "string"
+                            },
+                            "lastname": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "questions_permission": {
+                                "type": "number"
+                            },
+                            "tests_permission": {
+                                "type": "number"
+                            },
+                            "interviews_permission": {
+                                "type": "number"
+                            },
+                            "candidates_permission": {
+                                "type": "number"
+                            },
+                            "shared_questions_permission": {
+                                "type": "number"
+                            },
+                            "shared_tests_permission": {
+                                "type": "number"
+                            },
+                            "shared_interviews_permission": {
+                                "type": "number"
+                            },
+                            "shared_candidates_permission": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "company_admin": {
+                                "type": "boolean"
+                            },
+                            "team_admin": {
+                                "type": "boolean"
+                            },
+                            "company_id": {
+                                "type": "string"
+                            },
+                            "teams": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "activated": {
+                                "type": "boolean"
+                            },
+                            "last_activity_time": {
+                                "type": "string",
+                                "format": "date-time"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstname",
+                            "lastname",
+                            "country",
+                            "role",
+                            "status",
+                            "phone",
+                            "timezone",
+                            "questions_permission",
+                            "tests_permission",
+                            "interviews_permission",
+                            "candidates_permission",
+                            "shared_questions_permission",
+                            "shared_tests_permission",
+                            "shared_interviews_permission",
+                            "shared_candidates_permission",
+                            "created_at",
+                            "company_admin",
+                            "team_admin",
+                            "company_id",
+                            "teams",
+                            "activated",
+                            "last_activity_time"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_hackerrank_work_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -243,7 +243,8 @@ function countTemplates(entry: FlowZeroJson): CatalogCounts {
 // The `catalog-index-file` flag is global and only changes how the catalog is read, so its value is kept
 // here and refreshed in the background: lookups stay synchronous, and turning the flag on or off takes
 // effect within the refresh interval, without restarting pods.
-let indexFileEnabled = false;
+// Dev test build: on unless the flag says otherwise (cloud dev's Unleash doesn't define catalog-index-file).
+let indexFileEnabled = true;
 let refreshTimer: NodeJS.Timeout | undefined;
 
 async function refreshIndexFileFlag(): Promise<void> {

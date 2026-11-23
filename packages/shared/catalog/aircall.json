@@ -1,0 +1,3635 @@
+{
+    "providerConfigKey": "aircall",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add a user to an Aircall team.",
+            "endpoint": null,
+            "input": "ActionInput_aircall_addteammember",
+            "name": "add-team-member",
+            "output": ["ActionOutput_aircall_addteammember"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_addteammember", "ActionOutput_aircall_addteammember"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_addteammember": {
+                        "type": "object",
+                        "properties": {
+                            "team_id": {
+                                "type": "number",
+                                "description": "Team ID. Example: 244844"
+                            },
+                            "user_id": {
+                                "type": "number",
+                                "description": "User ID. Example: 1981305"
+                            }
+                        },
+                        "required": ["team_id", "user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_addteammember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "direct_link": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "time_zone": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "direct_link", "name", "email", "created_at", "time_zone"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "name", "direct_link", "created_at", "users"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a contact in Aircall.",
+            "endpoint": {
+                "path": "/actions/create-contact",
+                "method": "POST"
+            },
+            "input": "ActionInput_aircall_createcontact",
+            "name": "create-contact",
+            "output": ["ActionOutput_aircall_createcontact"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_createcontact", "ActionOutput_aircall_createcontact"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_createcontact": {
+                        "type": "object",
+                        "properties": {
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "company_name": {
+                                "type": "string"
+                            },
+                            "information": {
+                                "type": "string"
+                            },
+                            "phone_numbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "label": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["label", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "label": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["label", "value"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_createcontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "company_name": {
+                                "type": "string"
+                            },
+                            "information": {
+                                "type": "string"
+                            },
+                            "is_shared": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "label": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "label", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "phone_numbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "label": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "label", "value"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "direct_link", "is_shared", "created_at", "updated_at", "emails", "phone_numbers"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a tag in Aircall.",
+            "endpoint": null,
+            "input": "ActionInput_aircall_createtag",
+            "name": "create-tag",
+            "output": ["ActionOutput_aircall_createtag"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_createtag", "ActionOutput_aircall_createtag"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_createtag": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the tag. Example: \"Priority\""
+                            },
+                            "color": {
+                                "description": "The hex color of the tag. Example: \"#FF5733\"",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "The description of the tag.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_createtag": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a team in Aircall.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/create-team"
+            },
+            "input": "ActionInput_aircall_createteam",
+            "name": "create-team",
+            "output": ["ActionOutput_aircall_createteam"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_createteam", "ActionOutput_aircall_createteam"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_createteam": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the team to create. Example: \"Support USA\""
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_createteam": {
+                        "type": "object",
+                        "properties": {
+                            "team": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "direct_link": {
+                                        "type": "string"
+                                    },
+                                    "created_at": {
+                                        "type": "string"
+                                    },
+                                    "users": {
+                                        "type": "array",
+                                        "items": {}
+                                    }
+                                },
+                                "required": ["id", "name", "direct_link", "created_at", "users"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["team"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a user in Aircall.",
+            "endpoint": {
+                "path": "/actions/create-user",
+                "method": "POST"
+            },
+            "input": "ActionInput_aircall_createuser",
+            "name": "create-user",
+            "output": ["ActionOutput_aircall_createuser"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_createuser", "ActionOutput_aircall_createuser"],
+            "version": "3.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "User email. Must be valid and unique. Example: \"john.doe@aircall.io\""
+                            },
+                            "first_name": {
+                                "type": "string",
+                                "description": "User first name. Example: \"John\""
+                            },
+                            "last_name": {
+                                "type": "string",
+                                "description": "User last name. Example: \"Doe\""
+                            },
+                            "language": {
+                                "description": "User preferred language in IETF format. Example: \"en-US\"",
+                                "type": "string"
+                            },
+                            "time_zone": {
+                                "description": "User timezone. Example: \"America/New_York\"",
+                                "type": "string"
+                            },
+                            "wrap_up_time": {
+                                "description": "Wrap-up time in whole seconds after a call. Example: 30",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "extension": {
+                                "description": "User extension. Example: \"001\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["email", "first_name", "last_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "available": {
+                                "type": "boolean"
+                            },
+                            "availability_status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "time_zone": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "substatus": {
+                                "type": "string"
+                            },
+                            "wrap_up_time": {
+                                "type": "number"
+                            },
+                            "extension": {
+                                "type": "string"
+                            },
+                            "default_number_id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "direct_link", "name", "email", "available", "availability_status", "created_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a webhook subscription in Aircall.",
+            "endpoint": null,
+            "input": "ActionInput_aircall_createwebhook",
+            "name": "create-webhook",
+            "output": ["ActionOutput_aircall_createwebhook"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_createwebhook", "ActionOutput_aircall_createwebhook"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_createwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "description": "Webhook URL to receive events. Example: \"https://example.com/webhook\""
+                            },
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string",
+                                            "const": "call.created"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "call.answered"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "call.ended"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "call.hungup"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "call.archived"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "contact.created"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "contact.updated"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "contact.deleted"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "number.opened"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "number.closed"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "tag.created"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "tag.updated"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "tag.deleted"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "user.created"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "user.updated"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "const": "user.deleted"
+                                        }
+                                    ]
+                                },
+                                "description": "List of events to subscribe to. Example: [\"call.created\", \"contact.updated\"]"
+                            }
+                        },
+                        "required": ["url", "events"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_createwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "webhook": {
+                                "type": "object",
+                                "properties": {
+                                    "webhook_id": {
+                                        "type": "string",
+                                        "description": "UUID string identifier. Example: \"13f9cf11-cc5b-4e6d-830c-a858f45cf792\""
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "description": "Webhook URL. Example: \"https://example.com/webhook\""
+                                    },
+                                    "active": {
+                                        "type": "boolean",
+                                        "description": "Whether the webhook is active."
+                                    },
+                                    "events": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Subscribed events. Example: [\"call.created\", \"contact.updated\"]"
+                                    },
+                                    "token": {
+                                        "type": "string",
+                                        "description": "Webhook token for verification."
+                                    },
+                                    "created_at": {
+                                        "type": "string",
+                                        "description": "ISO timestamp when the webhook was created."
+                                    },
+                                    "direct_link": {
+                                        "type": "string",
+                                        "description": "Direct API URL for the webhook."
+                                    }
+                                },
+                                "required": ["webhook_id", "url", "active", "events", "token", "created_at", "direct_link"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["webhook"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete a contact in Aircall.",
+            "endpoint": null,
+            "input": "ActionInput_aircall_deletecontact",
+            "name": "delete-contact",
+            "output": ["ActionOutput_aircall_deletecontact"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_deletecontact", "ActionOutput_aircall_deletecontact"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_deletecontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Contact ID to delete. Example: 482881023"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_deletecontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a tag in Aircall.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/delete-tag"
+            },
+            "input": "ActionInput_aircall_deletetag",
+            "name": "delete-tag",
+            "output": ["ActionOutput_aircall_deletetag"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_deletetag", "ActionOutput_aircall_deletetag"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_deletetag": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Unique identifier of the tag to delete. Example: 2733978"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_deletetag": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Unique identifier of the deleted tag."
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a team in Aircall.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/delete-team"
+            },
+            "input": "ActionInput_aircall_deleteteam",
+            "name": "delete-team",
+            "output": ["ActionOutput_aircall_deleteteam"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_deleteteam", "ActionOutput_aircall_deleteteam"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_deleteteam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Team ID. Example: 244844"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_deleteteam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a user in Aircall.",
+            "endpoint": {
+                "path": "/actions/delete-user",
+                "method": "POST"
+            },
+            "input": "ActionInput_aircall_deleteuser",
+            "name": "delete-user",
+            "output": ["ActionOutput_aircall_deleteuser"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_deleteuser", "ActionOutput_aircall_deleteuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "User ID. Example: \"123\"",
+                                "type": ["string", "number"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": ["string", "number"]
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a webhook subscription in Aircall.",
+            "endpoint": {
+                "path": "/actions/delete-webhook",
+                "method": "POST"
+            },
+            "input": "ActionInput_aircall_deletewebhook",
+            "name": "delete-webhook",
+            "output": ["ActionOutput_aircall_deletewebhook"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_deletewebhook", "ActionOutput_aircall_deletewebhook"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_deletewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "webhookId": {
+                                "type": "string",
+                                "description": "The UUID webhook_id of the webhook to delete. Example: \"13f9cf11-cc5b-4e6d-830c-a858f45cf792\""
+                            }
+                        },
+                        "required": ["webhookId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_deletewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the Aircall company/account information.",
+            "endpoint": null,
+            "input": "ActionInput_aircall_getcompany",
+            "name": "get-company",
+            "output": ["ActionOutput_aircall_getcompany"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_getcompany", "ActionOutput_aircall_getcompany"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_getcompany": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_getcompany": {
+                        "type": "object",
+                        "properties": {
+                            "company": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "users_count": {
+                                        "type": "number"
+                                    },
+                                    "numbers_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["name", "users_count", "numbers_count"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["company"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single contact from Aircall.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-contact"
+            },
+            "input": "ActionInput_aircall_getcontact",
+            "name": "get-contact",
+            "output": ["ActionOutput_aircall_getcontact"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_getcontact", "ActionOutput_aircall_getcontact"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_getcontact": {
+                        "type": "object",
+                        "properties": {
+                            "contact_id": {
+                                "type": "string",
+                                "description": "Contact ID. Example: \"482393544\""
+                            }
+                        },
+                        "required": ["contact_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_getcontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "company_name": {
+                                "type": "string"
+                            },
+                            "information": {
+                                "type": "string"
+                            },
+                            "is_shared": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "label": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "label", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "phone_numbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "label": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "label", "value"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "direct_link", "is_shared", "created_at", "updated_at", "emails", "phone_numbers"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single tag from Aircall.",
+            "endpoint": {
+                "path": "/actions/get-tag",
+                "method": "GET"
+            },
+            "input": "ActionInput_aircall_gettag",
+            "name": "get-tag",
+            "output": ["ActionOutput_aircall_gettag"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_gettag", "ActionOutput_aircall_gettag"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_gettag": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Tag ID. Example: 2733978"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_gettag": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single team from Aircall.",
+            "endpoint": null,
+            "input": "ActionInput_aircall_getteam",
+            "name": "get-team",
+            "output": ["ActionOutput_aircall_getteam"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_getteam", "ActionOutput_aircall_getteam"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "team_id": {
+                                "type": "number",
+                                "description": "Team ID. Example: 244844"
+                            }
+                        },
+                        "required": ["team_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "direct_link": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "time_zone": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the availability status of a single Aircall user.",
+            "endpoint": {
+                "path": "/actions/get-user-availability",
+                "method": "GET"
+            },
+            "input": "ActionInput_aircall_getuseravailability",
+            "name": "get-user-availability",
+            "output": ["ActionOutput_aircall_getuseravailability"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_getuseravailability", "ActionOutput_aircall_getuseravailability"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_getuseravailability": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "number",
+                                "description": "User ID. Example: 1981305"
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_getuseravailability": {
+                        "type": "object",
+                        "properties": {
+                            "availability": {
+                                "type": "string",
+                                "description": "Availability status. One of: available, unavailable, offline, custom"
+                            }
+                        },
+                        "required": ["availability"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single user from Aircall.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-user"
+            },
+            "input": "ActionInput_aircall_getuser",
+            "name": "get-user",
+            "output": ["ActionOutput_aircall_getuser"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_getuser", "ActionOutput_aircall_getuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "User ID or email address. Example: 1981305",
+                                "type": ["number", "string"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "available": {
+                                "type": "boolean"
+                            },
+                            "availability_status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "time_zone": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "substatus": {
+                                "type": "string"
+                            },
+                            "wrap_up_time": {
+                                "type": "number"
+                            },
+                            "extension": {
+                                "type": "string"
+                            },
+                            "default_number_id": {
+                                "type": "number"
+                            },
+                            "state": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "direct_link",
+                            "name",
+                            "email",
+                            "available",
+                            "availability_status",
+                            "created_at",
+                            "time_zone",
+                            "language",
+                            "wrap_up_time"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single webhook from Aircall.",
+            "endpoint": null,
+            "input": "ActionInput_aircall_getwebhook",
+            "name": "get-webhook",
+            "output": ["ActionOutput_aircall_getwebhook"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_getwebhook", "ActionOutput_aircall_getwebhook"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_getwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The webhook UUID string. Example: \"13f9cf11-cc5b-4e6d-830c-a858f45cf792\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_getwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "webhook_id": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "token": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "webhook_id", "url", "active", "events"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List calls from Aircall with optional filters.",
+            "endpoint": {
+                "path": "/actions/list-calls",
+                "method": "GET"
+            },
+            "input": "ActionInput_aircall_listcalls",
+            "name": "list-calls",
+            "output": ["ActionOutput_aircall_listcalls"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_listcalls", "ActionOutput_aircall_listcalls"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_listcalls": {
+                        "type": "object",
+                        "properties": {
+                            "from": {
+                                "description": "Minimal creation date for Calls (Unix timestamp).",
+                                "type": "number"
+                            },
+                            "to": {
+                                "description": "Maximal creation date for Calls (Unix timestamp).",
+                                "type": "number"
+                            },
+                            "direction": {
+                                "description": "Direction of the Call.",
+                                "type": "string",
+                                "enum": ["inbound", "outbound"]
+                            },
+                            "qualified": {
+                                "description": "Whether to return only qualified calls.",
+                                "type": "boolean"
+                            },
+                            "per_page": {
+                                "description": "Number of results per page. Max 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_listcalls": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "sid": {
+                                            "type": "string"
+                                        },
+                                        "direct_link": {
+                                            "type": "string"
+                                        },
+                                        "direction": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "missed_call_reason": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "started_at": {
+                                            "type": "number"
+                                        },
+                                        "answered_at": {
+                                            "type": "number"
+                                        },
+                                        "ended_at": {
+                                            "type": "number"
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "voicemail": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "recording": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "asset": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "raw_digits": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "contact": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "archived": {
+                                            "type": "boolean"
+                                        },
+                                        "assigned_to": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "transferred_by": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "transferred_to": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "cost": {
+                                            "type": "string"
+                                        },
+                                        "number": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "comments": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "teams": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "participants": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "ivr_options_selected": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "direction", "status"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_page": {
+                                "type": "number"
+                            },
+                            "meta": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "total": {
+                                        "type": "number"
+                                    },
+                                    "current_page": {
+                                        "type": "number"
+                                    },
+                                    "per_page": {
+                                        "type": "number"
+                                    },
+                                    "next_page_link": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "previous_page_link": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "required": ["count", "total", "current_page", "per_page", "next_page_link", "previous_page_link"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["items", "meta"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List contacts from Aircall.",
+            "endpoint": null,
+            "input": "ActionInput_aircall_listcontacts",
+            "name": "list-contacts",
+            "output": ["ActionOutput_aircall_listcontacts"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_listcontacts", "ActionOutput_aircall_listcontacts"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_listcontacts": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "description": "Number of results per page. Default is 20, maximum is 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_listcontacts": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "direct_link": {
+                                            "type": "string"
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": "string"
+                                        },
+                                        "company_name": {
+                                            "type": "string"
+                                        },
+                                        "information": {
+                                            "type": "string"
+                                        },
+                                        "is_shared": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": "number"
+                                        },
+                                        "updated_at": {
+                                            "type": "number"
+                                        },
+                                        "emails": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "number"
+                                                    },
+                                                    "label": {
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "label", "value"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "phone_numbers": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "number"
+                                                    },
+                                                    "label": {
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "label", "value"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "direct_link", "is_shared", "created_at", "updated_at"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Pagination cursor for the next page. Omitted when there are no more pages.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List numbers from Aircall.",
+            "endpoint": {
+                "path": "/actions/list-numbers",
+                "method": "GET"
+            },
+            "input": "ActionInput_aircall_listnumbers",
+            "name": "list-numbers",
+            "output": ["ActionOutput_aircall_listnumbers"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_listnumbers", "ActionOutput_aircall_listnumbers"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_listnumbers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_listnumbers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "direct_link": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "digits": {
+                                            "type": "string"
+                                        },
+                                        "e164_digits": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "time_zone": {
+                                            "type": "string"
+                                        },
+                                        "open": {
+                                            "type": "boolean"
+                                        },
+                                        "availability_status": {
+                                            "type": "string"
+                                        },
+                                        "is_ivr": {
+                                            "type": "boolean"
+                                        },
+                                        "live_recording_activated": {
+                                            "type": "boolean"
+                                        },
+                                        "users": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "priority": {
+                                            "type": "number"
+                                        },
+                                        "messages": {
+                                            "type": "object",
+                                            "properties": {
+                                                "welcome": {
+                                                    "type": "string"
+                                                },
+                                                "waiting": {
+                                                    "type": "string"
+                                                },
+                                                "ringing_tone": {
+                                                    "type": "string"
+                                                },
+                                                "unanswered_call": {
+                                                    "type": "string"
+                                                },
+                                                "after_hours": {
+                                                    "type": "string"
+                                                },
+                                                "ivr": {
+                                                    "type": "string"
+                                                },
+                                                "voicemail": {
+                                                    "type": "string"
+                                                },
+                                                "closed": {
+                                                    "type": "string"
+                                                },
+                                                "callback_later": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "voicemail": {
+                                            "type": "string"
+                                        },
+                                        "closed": {
+                                            "type": "string"
+                                        },
+                                        "callback_later": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "direct_link",
+                                        "name",
+                                        "digits",
+                                        "created_at",
+                                        "country",
+                                        "time_zone",
+                                        "open",
+                                        "availability_status",
+                                        "is_ivr",
+                                        "live_recording_activated"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Next page cursor (page number string). Pass as cursor on the next call.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List tags from Aircall.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-tags"
+            },
+            "input": "ActionInput_aircall_listtags",
+            "name": "list-tags",
+            "output": ["ActionOutput_aircall_listtags"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_listtags", "ActionOutput_aircall_listtags"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_listtags": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "description": "Page number. Default is 1.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "per_page": {
+                                "description": "Number of results per page. Default is 20, maximum is 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_listtags": {
+                        "type": "object",
+                        "properties": {
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "direct_link": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["id", "name", "color"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "meta": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "total": {
+                                        "type": "number"
+                                    },
+                                    "current_page": {
+                                        "type": "number"
+                                    },
+                                    "per_page": {
+                                        "type": "number"
+                                    },
+                                    "next_page_link": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "previous_page_link": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "required": ["count", "total", "current_page", "per_page"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["tags", "meta"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List teams from Aircall.",
+            "endpoint": {
+                "path": "/actions/list-teams",
+                "method": "GET"
+            },
+            "input": "ActionInput_aircall_listteams",
+            "name": "list-teams",
+            "output": ["ActionOutput_aircall_listteams"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_listteams", "ActionOutput_aircall_listteams"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "description": "Number of results per page. Max 50.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "teams": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "direct_link": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "number"
+                                                    },
+                                                    "direct_link": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "email": {
+                                                        "type": "string"
+                                                    },
+                                                    "availability_status": {
+                                                        "type": "string"
+                                                    },
+                                                    "default_number_id": {
+                                                        "type": "number"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string"
+                                                    },
+                                                    "time_zone": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "direct_link", "name", "email", "created_at", "time_zone"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "name", "direct_link", "created_at", "users"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["teams"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List availability status for all Aircall users.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-user-availabilities"
+            },
+            "input": "ActionInput_aircall_listuseravailabilities",
+            "name": "list-user-availabilities",
+            "output": ["ActionOutput_aircall_listuseravailabilities"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_listuseravailabilities", "ActionOutput_aircall_listuseravailabilities"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_listuseravailabilities": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_listuseravailabilities": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "User ID. Example: 1981305"
+                                        },
+                                        "availability": {
+                                            "type": "string",
+                                            "description": "Availability status. Values: available, unavailable, offline, custom"
+                                        }
+                                    },
+                                    "required": ["id", "availability"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Cursor for the next page. Omit if there are no more pages.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List users from Aircall.",
+            "endpoint": {
+                "path": "/actions/list-users",
+                "method": "GET"
+            },
+            "input": "ActionInput_aircall_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_aircall_listusers"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_listusers", "ActionOutput_aircall_listusers"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "description": "Number of results per page. Maximum is 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "direct_link": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "available": {
+                                            "type": "boolean"
+                                        },
+                                        "availability_status": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "time_zone": {
+                                            "type": "string"
+                                        },
+                                        "language": {
+                                            "type": "string"
+                                        },
+                                        "substatus": {
+                                            "type": "string"
+                                        },
+                                        "wrap_up_time": {
+                                            "type": "number"
+                                        },
+                                        "extension": {
+                                            "type": "string"
+                                        },
+                                        "default_number_id": {
+                                            "type": ["number", "null"]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "direct_link",
+                                        "name",
+                                        "email",
+                                        "available",
+                                        "availability_status",
+                                        "created_at",
+                                        "time_zone",
+                                        "language",
+                                        "substatus",
+                                        "wrap_up_time"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all webhook subscriptions in Aircall.",
+            "endpoint": {
+                "path": "/actions/list-webhooks",
+                "method": "GET"
+            },
+            "input": "ActionInput_aircall_listwebhooks",
+            "name": "list-webhooks",
+            "output": ["ActionOutput_aircall_listwebhooks"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_listwebhooks", "ActionOutput_aircall_listwebhooks"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_listwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_listwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "webhook_id": {
+                                            "type": "string"
+                                        },
+                                        "direct_link": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "active": {
+                                            "type": "boolean"
+                                        },
+                                        "token": {
+                                            "type": "string"
+                                        },
+                                        "events": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "webhook_id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a user from an Aircall team",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/remove-team-member"
+            },
+            "input": "ActionInput_aircall_removeteammember",
+            "name": "remove-team-member",
+            "output": ["ActionOutput_aircall_removeteammember"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_removeteammember", "ActionOutput_aircall_removeteammember"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_removeteammember": {
+                        "type": "object",
+                        "properties": {
+                            "team_id": {
+                                "type": "number",
+                                "description": "Team ID. Example: 244844"
+                            },
+                            "user_id": {
+                                "type": "number",
+                                "description": "User ID. Example: 1981305"
+                            }
+                        },
+                        "required": ["team_id", "user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_removeteammember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {}
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search calls in Aircall by phone number, contact name, or other criteria.",
+            "endpoint": {
+                "path": "/actions/search-calls",
+                "method": "GET"
+            },
+            "input": "ActionInput_aircall_searchcalls",
+            "name": "search-calls",
+            "output": ["ActionOutput_aircall_searchcalls"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_searchcalls", "ActionOutput_aircall_searchcalls"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_searchcalls": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "description": "Search string to filter calls by phone number, contact name, or other criteria.",
+                                "type": "string"
+                            },
+                            "from": {
+                                "description": "Minimum call creation date as a Unix timestamp.",
+                                "type": "number"
+                            },
+                            "to": {
+                                "description": "Maximum call creation date as a Unix timestamp.",
+                                "type": "number"
+                            },
+                            "page": {
+                                "description": "Page number for pagination. Defaults to 1.",
+                                "type": "number"
+                            },
+                            "per_page": {
+                                "description": "Number of results per page. Maximum is 50.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_searchcalls": {
+                        "type": "object",
+                        "properties": {
+                            "calls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "sid": {
+                                            "type": "string"
+                                        },
+                                        "direct_link": {
+                                            "type": "string"
+                                        },
+                                        "direction": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "missed_call_reason": {
+                                            "type": "string"
+                                        },
+                                        "started_at": {
+                                            "type": "number"
+                                        },
+                                        "answered_at": {
+                                            "type": "number"
+                                        },
+                                        "ended_at": {
+                                            "type": "number"
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "voicemail": {},
+                                        "recording": {},
+                                        "asset": {},
+                                        "raw_digits": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "direct_link": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "available": {
+                                                    "type": "boolean"
+                                                },
+                                                "availability_status": {
+                                                    "type": "string"
+                                                },
+                                                "created_at": {
+                                                    "type": "string"
+                                                },
+                                                "time_zone": {
+                                                    "type": "string"
+                                                },
+                                                "language": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        },
+                                        "contact": {},
+                                        "archived": {
+                                            "type": "boolean"
+                                        },
+                                        "assigned_to": {},
+                                        "transferred_by": {},
+                                        "transferred_to": {},
+                                        "cost": {
+                                            "type": "string"
+                                        },
+                                        "number": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "direct_link": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "digits": {
+                                                    "type": "string"
+                                                },
+                                                "created_at": {
+                                                    "type": "string"
+                                                },
+                                                "country": {
+                                                    "type": "string"
+                                                },
+                                                "time_zone": {
+                                                    "type": "string"
+                                                },
+                                                "open": {
+                                                    "type": "boolean"
+                                                },
+                                                "availability_status": {
+                                                    "type": "string"
+                                                },
+                                                "is_ivr": {
+                                                    "type": "boolean"
+                                                },
+                                                "live_recording_activated": {
+                                                    "type": "boolean"
+                                                },
+                                                "priority": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        },
+                                        "comments": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "teams": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "ivr_options_selected": {
+                                            "type": "array",
+                                            "items": {}
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page": {
+                                "type": "number"
+                            },
+                            "total": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["calls"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search contacts in Aircall by name, phone, or email.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/search-contacts"
+            },
+            "input": "ActionInput_aircall_searchcontacts",
+            "name": "search-contacts",
+            "output": ["ActionOutput_aircall_searchcontacts"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_searchcontacts", "ActionOutput_aircall_searchcontacts"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_searchcontacts": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "Search string to filter contacts by name, phone, or email."
+                            },
+                            "per_page": {
+                                "description": "Number of results per page (max 50).",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 50
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["query"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_searchcontacts": {
+                        "type": "object",
+                        "properties": {
+                            "contacts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Contact ID. Example: 711"
+                                        },
+                                        "direct_link": {
+                                            "description": "Direct API URL. Example: https://api.aircall.io/v1/contacts/711",
+                                            "type": "string"
+                                        },
+                                        "first_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "last_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "company_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "information": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "is_shared": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "description": "Unix timestamp when the contact was created. Example: 1781777463",
+                                            "type": "number"
+                                        },
+                                        "updated_at": {
+                                            "description": "Unix timestamp when the contact was last updated. Example: 1781777463",
+                                            "type": "number"
+                                        },
+                                        "phone_numbers": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "label": {
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["label", "value"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "emails": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "label": {
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["label", "value"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "meta": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "total": {
+                                        "type": "number"
+                                    },
+                                    "current_page": {
+                                        "type": "number"
+                                    },
+                                    "per_page": {
+                                        "type": "number"
+                                    },
+                                    "next_page_link": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "previous_page_link": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "required": ["count", "total", "current_page", "per_page", "next_page_link", "previous_page_link"],
+                                "additionalProperties": false
+                            },
+                            "next_page": {
+                                "description": "Next page number for pagination.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["contacts", "meta"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a contact in Aircall.",
+            "endpoint": {
+                "path": "/actions/update-contact",
+                "method": "POST"
+            },
+            "input": "ActionInput_aircall_updatecontact",
+            "name": "update-contact",
+            "output": ["ActionOutput_aircall_updatecontact"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_updatecontact", "ActionOutput_aircall_updatecontact"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_updatecontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Contact ID. Example: 482393544"
+                            },
+                            "first_name": {
+                                "description": "Contact first name.",
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "description": "Contact last name.",
+                                "type": "string"
+                            },
+                            "company_name": {
+                                "description": "Contact company name.",
+                                "type": "string"
+                            },
+                            "information": {
+                                "description": "Extra information about the contact.",
+                                "type": "string"
+                            },
+                            "phone_numbers": {
+                                "description": "Phone numbers for the contact.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "label": {
+                                            "type": "string",
+                                            "description": "Label for the phone number. Example: \"Work\""
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "The raw phone number. Example: \"+19001112222\""
+                                        }
+                                    },
+                                    "required": ["label", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "emails": {
+                                "description": "Email addresses for the contact.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "label": {
+                                            "type": "string",
+                                            "description": "Label for the email. Example: \"Office\""
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "The email address. Example: \"gary.jennings@acme.com\""
+                                        }
+                                    },
+                                    "required": ["label", "value"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_updatecontact": {
+                        "type": "object",
+                        "properties": {
+                            "contact": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "direct_link": {
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "last_name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "company_name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "information": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "is_shared": {
+                                        "type": "boolean"
+                                    },
+                                    "created_at": {
+                                        "type": "number"
+                                    },
+                                    "updated_at": {
+                                        "type": "number"
+                                    },
+                                    "phone_numbers": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "label": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["value"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "emails": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "number"
+                                                },
+                                                "label": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["value"],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["contact"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a user-created tag in Aircall.",
+            "endpoint": null,
+            "input": "ActionInput_aircall_updatetag",
+            "name": "update-tag",
+            "output": ["ActionOutput_aircall_updatetag"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_updatetag", "ActionOutput_aircall_updatetag"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_updatetag": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Unique identifier for the Tag. Example: 2733978"
+                            },
+                            "name": {
+                                "description": "Name of the tag. Must be unique. Example: \"Tier 2 Customer\"",
+                                "type": "string"
+                            },
+                            "color": {
+                                "description": "Color of the tag in hexadecimal format. Example: \"#00B388\"",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Description of the tag. Set to null to clear. Example: \"High priority clients\"",
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_updatetag": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "color"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a user in Aircall.",
+            "endpoint": null,
+            "input": "ActionInput_aircall_updateuser",
+            "name": "update-user",
+            "output": ["ActionOutput_aircall_updateuser"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_updateuser", "ActionOutput_aircall_updateuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number",
+                                "description": "Aircall user ID. Example: 1981305"
+                            },
+                            "first_name": {
+                                "description": "First name of the user. Example: \"John\"",
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "description": "Last name of the user. Example: \"Doe\"",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Email of the user.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "language": {
+                                "description": "User preferred language (IETF tag). Example: en-US",
+                                "type": "string"
+                            },
+                            "time_zone": {
+                                "description": "User timezone. Example: America/New_York",
+                                "type": "string"
+                            },
+                            "wrap_up_time": {
+                                "description": "Wrap-up time in seconds after a call.",
+                                "type": "number"
+                            },
+                            "extension": {
+                                "description": "User extension.",
+                                "type": "string"
+                            },
+                            "default_number_id": {
+                                "description": "Default number ID for the user.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "available": {
+                                "type": "boolean"
+                            },
+                            "availability_status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "time_zone": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "wrap_up_time": {
+                                "type": "number"
+                            },
+                            "extension": {
+                                "type": "string"
+                            },
+                            "substatus": {
+                                "type": "string"
+                            },
+                            "default_number_id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "direct_link",
+                            "name",
+                            "email",
+                            "available",
+                            "availability_status",
+                            "created_at",
+                            "time_zone",
+                            "language",
+                            "wrap_up_time"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a webhook subscription in Aircall.",
+            "endpoint": {
+                "path": "/actions/update-webhook",
+                "method": "POST"
+            },
+            "input": "ActionInput_aircall_updatewebhook",
+            "name": "update-webhook",
+            "output": ["ActionOutput_aircall_updatewebhook"],
+            "scopes": ["public_api"],
+            "usedModels": ["ActionInput_aircall_updatewebhook", "ActionOutput_aircall_updatewebhook"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_aircall_updatewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "webhook_id": {
+                                "type": "string",
+                                "description": "Webhook UUID. Example: \"c2501111-8a69-4342-bb34-bcd6cfe564ac\""
+                            },
+                            "url": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Webhook URL. Must be a valid HTTPS URL. Example: \"https://example.com/webhook\""
+                            },
+                            "events": {
+                                "description": "List of events to subscribe to. Example: [\"contact.created\", \"contact.updated\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "active": {
+                                "description": "Whether the webhook is active.",
+                                "type": "boolean"
+                            },
+                            "custom_name": {
+                                "description": "Custom name for the webhook. Default is \"Webhook\".",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["webhook_id", "url"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_aircall_updatewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "webhook_id": {
+                                "type": "string"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "token": {
+                                "type": "string"
+                            },
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "custom_name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["webhook_id", "direct_link", "created_at", "url", "active", "token", "events"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync calls from Aircall",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/calls",
+                    "method": "GET"
+                }
+            ],
+            "input": "SyncMetadata_aircall_calls",
+            "name": "calls",
+            "output": ["Call"],
+            "runs": "every hour",
+            "scopes": ["public_api"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Call", "SyncMetadata_aircall_calls"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Call": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "sid": {
+                                "type": "string"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "direction": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "raw_digits": {
+                                "type": "string"
+                            },
+                            "started_at": {
+                                "type": "string"
+                            },
+                            "answered_at": {
+                                "type": "string"
+                            },
+                            "ended_at": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "missed_call_reason": {
+                                "type": "string"
+                            },
+                            "recording": {
+                                "type": "string"
+                            },
+                            "voicemail": {
+                                "type": "string"
+                            },
+                            "asset": {
+                                "type": "string"
+                            },
+                            "number_id": {
+                                "type": "number"
+                            },
+                            "user_id": {
+                                "type": "number"
+                            },
+                            "contact_id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "direction", "status", "duration", "raw_digits", "started_at"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_aircall_calls": {
+                        "type": "object",
+                        "properties": {
+                            "direction": {
+                                "type": "string",
+                                "enum": ["inbound", "outbound"]
+                            },
+                            "qualified": {
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync contacts from Aircall.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/contacts",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "contacts",
+            "output": ["Contact"],
+            "runs": "every hour",
+            "scopes": ["public_api"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Contact"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Contact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "company_name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "information": {
+                                "type": "string"
+                            },
+                            "is_shared": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "updated_at": {
+                                "type": "number"
+                            },
+                            "emails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "label": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "label", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "phone_numbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "label": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "label", "value"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "created_at", "updated_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync phone numbers from Aircall.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/numbers"
+                }
+            ],
+            "input": null,
+            "name": "numbers",
+            "output": ["Number"],
+            "runs": "every hour",
+            "scopes": ["public_api"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Number"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Number": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier for the Number"
+                            },
+                            "direct_link": {
+                                "type": "string",
+                                "description": "Direct API URL"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the Number"
+                            },
+                            "digits": {
+                                "type": "string",
+                                "description": "International format of the Number"
+                            },
+                            "e164_digits": {
+                                "description": "Number in E.164 format",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "Timestamp when the Number was created, in UTC"
+                            },
+                            "country": {
+                                "type": "string",
+                                "description": "ISO 3166-1 alpha-2 country code of the Number"
+                            },
+                            "time_zone": {
+                                "type": "string",
+                                "description": "Number's time zone, set in the Dashboard"
+                            },
+                            "open": {
+                                "description": "Deprecated. Availability status for Smartflows numbers",
+                                "type": "boolean"
+                            },
+                            "availability_status": {
+                                "description": "Returns the availability status based on the first Time Rule widget in the number flow",
+                                "type": "string"
+                            },
+                            "is_ivr": {
+                                "description": "Deprecated. Whether an IVR was configured for this number",
+                                "type": "boolean"
+                            },
+                            "live_recording_activated": {
+                                "type": "boolean",
+                                "description": "Whether a Number has live recording activated or not"
+                            },
+                            "priority": {
+                                "description": "Priority level of the number used during routing of the calls",
+                                "type": ["number", "null"]
+                            },
+                            "messages": {
+                                "description": "URL to Number's music & messages files",
+                                "type": "object",
+                                "properties": {
+                                    "welcome": {
+                                        "type": "string"
+                                    },
+                                    "waiting": {
+                                        "type": "string"
+                                    },
+                                    "ivr": {
+                                        "type": "string"
+                                    },
+                                    "voicemail": {
+                                        "type": "string"
+                                    },
+                                    "closed": {
+                                        "type": "string"
+                                    },
+                                    "callback_later": {
+                                        "type": "string"
+                                    },
+                                    "unanswered_call": {
+                                        "type": "string"
+                                    },
+                                    "after_hours": {
+                                        "type": "string"
+                                    },
+                                    "ringing_tone": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "direct_link", "name", "digits", "created_at", "country", "time_zone", "live_recording_activated"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync tags from Aircall",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "tags",
+            "output": ["Tag"],
+            "runs": "every hour",
+            "scopes": ["public_api"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Tag"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Tag": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync teams from Aircall.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/teams",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "teams",
+            "output": ["Team"],
+            "runs": "every hour",
+            "scopes": ["public_api"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Team"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Team": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "direct_link": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "availability_status": {
+                                            "type": "string"
+                                        },
+                                        "default_number_id": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "time_zone": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync users from Aircall.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/users"
+                }
+            ],
+            "input": null,
+            "name": "users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": ["public_api"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User"],
+            "version": "3.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "direct_link": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "available": {
+                                "type": "boolean"
+                            },
+                            "availability_status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "time_zone": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "substatus": {
+                                "type": "string"
+                            },
+                            "wrap_up_time": {
+                                "type": "number"
+                            },
+                            "extension": {
+                                "type": "string"
+                            },
+                            "default_number_id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync webhook subscriptions from Aircall.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "webhooks",
+            "output": ["Webhook"],
+            "runs": "every hour",
+            "scopes": ["public_api"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Webhook"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Webhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable string ID of the webhook (webhook_id)"
+                            },
+                            "webhook_id": {
+                                "type": "string",
+                                "description": "UUID of the webhook subscription"
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "URL where webhook events are sent"
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "description": "Whether the webhook is active"
+                            },
+                            "events": {
+                                "description": "List of events subscribed to",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "token": {
+                                "description": "Secret token for verifying webhook payloads",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "ISO 8601 timestamp when the webhook was created"
+                            }
+                        },
+                        "required": ["id", "webhook_id", "url", "active", "created_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

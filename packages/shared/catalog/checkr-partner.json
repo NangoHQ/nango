@@ -1,0 +1,518 @@
+{
+    "providerConfigKey": "checkr-partner",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Fetch the parameters required to trigger a background check",
+            "endpoint": null,
+            "input": "ActionInput_checkr_partner_backgroundcheckparameters",
+            "name": "background-check-parameters",
+            "output": ["ActionOutput_checkr_partner_backgroundcheckparameters"],
+            "scopes": ["read_write"],
+            "usedModels": ["ActionInput_checkr_partner_backgroundcheckparameters", "ActionOutput_checkr_partner_backgroundcheckparameters"],
+            "version": "2.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_checkr_partner_backgroundcheckparameters": {
+                        "type": "object",
+                        "properties": {
+                            "service_key": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["service_key"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_checkr_partner_backgroundcheckparameters": {
+                        "type": "object",
+                        "properties": {
+                            "parameters": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "required": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["key", "type", "title", "description", "required"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["parameters"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch the possible services that Checkr offers for a background check",
+            "endpoint": null,
+            "input": "ActionInput_checkr_partner_backgroundcheckservices",
+            "name": "background-check-services",
+            "output": ["ActionOutput_checkr_partner_backgroundcheckservices"],
+            "scopes": ["read_write"],
+            "usedModels": ["ActionInput_checkr_partner_backgroundcheckservices", "ActionOutput_checkr_partner_backgroundcheckservices"],
+            "version": "2.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_checkr_partner_backgroundcheckservices": {
+                        "type": "null"
+                    },
+                    "ActionOutput_checkr_partner_backgroundcheckservices": {
+                        "type": "object",
+                        "properties": {
+                            "services": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "price": {
+                                            "type": "number"
+                                        },
+                                        "drug_screening_price": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "enabled_examples": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "requires_observed_drug_test": {
+                                            "type": "boolean"
+                                        },
+                                        "object": {
+                                            "type": "string"
+                                        },
+                                        "apply_url": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "deleted_at": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "screenings": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "subtype": {
+                                                        "type": ["string", "null"]
+                                                    }
+                                                },
+                                                "required": ["type", "subtype"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "slug": {
+                                            "type": "string"
+                                        },
+                                        "uri": {
+                                            "type": "string"
+                                        },
+                                        "node": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "price",
+                                        "drug_screening_price",
+                                        "enabled_examples",
+                                        "requires_observed_drug_test",
+                                        "object",
+                                        "apply_url",
+                                        "created_at",
+                                        "deleted_at",
+                                        "name",
+                                        "screenings",
+                                        "slug",
+                                        "uri"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["services"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a candidate",
+            "endpoint": null,
+            "input": "ActionInput_checkr_partner_createcandidate",
+            "name": "create-candidate",
+            "output": ["ActionOutput_checkr_partner_createcandidate"],
+            "scopes": ["read_write"],
+            "usedModels": ["ActionInput_checkr_partner_createcandidate", "ActionOutput_checkr_partner_createcandidate"],
+            "version": "2.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_checkr_partner_createcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "city": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "middle_name": {
+                                "type": "string"
+                            },
+                            "no_middle_name": {
+                                "type": "boolean"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "zipcode": {
+                                "type": "string"
+                            },
+                            "dob": {
+                                "type": "string"
+                            },
+                            "ssn": {
+                                "type": "string"
+                            },
+                            "driver_license_number": {
+                                "type": "string"
+                            },
+                            "driver_license_state": {
+                                "type": "string"
+                            },
+                            "work_locations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["country"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "country",
+                            "first_name",
+                            "last_name",
+                            "email",
+                            "phone",
+                            "zipcode",
+                            "dob",
+                            "ssn",
+                            "driver_license_number",
+                            "driver_license_state",
+                            "work_locations"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_checkr_partner_createcandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "object": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "middle_name": {
+                                "type": ["string", "null"]
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "mother_maiden_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "number"
+                            },
+                            "zipcode": {
+                                "type": "number"
+                            },
+                            "dob": {
+                                "type": "string"
+                            },
+                            "ssn": {
+                                "type": "string"
+                            },
+                            "driver_license_number": {
+                                "type": "string"
+                            },
+                            "driver_license_state": {
+                                "type": "string"
+                            },
+                            "previous_driver_license_number": {
+                                "type": "string"
+                            },
+                            "previous_driver_license_state": {
+                                "type": "string"
+                            },
+                            "copy_requested": {
+                                "type": "boolean"
+                            },
+                            "custom_id": {
+                                "type": "string"
+                            },
+                            "report_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "geo_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "adjudication": {
+                                "type": "string"
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "object",
+                            "uri",
+                            "first_name",
+                            "middle_name",
+                            "last_name",
+                            "mother_maiden_name",
+                            "email",
+                            "phone",
+                            "zipcode",
+                            "dob",
+                            "ssn",
+                            "driver_license_number",
+                            "driver_license_state",
+                            "previous_driver_license_number",
+                            "previous_driver_license_state",
+                            "copy_requested",
+                            "custom_id",
+                            "report_ids",
+                            "geo_ids",
+                            "adjudication",
+                            "metadata"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Trigger a background check",
+            "endpoint": null,
+            "input": "ActionInput_checkr_partner_triggerbackgroundcheck",
+            "name": "trigger-background-check",
+            "output": ["ActionOutput_checkr_partner_triggerbackgroundcheck"],
+            "scopes": ["read_write"],
+            "usedModels": ["ActionInput_checkr_partner_triggerbackgroundcheck", "ActionOutput_checkr_partner_triggerbackgroundcheck"],
+            "version": "2.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_checkr_partner_triggerbackgroundcheck": {
+                        "type": "object",
+                        "properties": {
+                            "city": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "service_key": {
+                                "type": "string"
+                            },
+                            "candidate_id": {
+                                "type": "string"
+                            },
+                            "node": {
+                                "type": "string"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["country", "service_key", "candidate_id", "tags"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_checkr_partner_triggerbackgroundcheck": {
+                        "type": "object",
+                        "properties": {
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "applicationId": {},
+                            "url": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "completed_at": {
+                                "type": ["string", "null"]
+                            },
+                            "candidate_id": {
+                                "type": "string"
+                            },
+                            "service_key": {
+                                "type": "string"
+                            },
+                            "deleted_at": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["created_at", "updated_at", "applicationId", "url", "status", "completed_at", "candidate_id", "service_key", "deleted_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetch all the background checks",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/background-checks"
+                }
+            ],
+            "input": "SyncMetadata_checkr_partner_backgroundchecks",
+            "name": "background-checks",
+            "output": ["BackgroundCheck"],
+            "runs": "every hour",
+            "scopes": ["read_write"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["BackgroundCheck", "SyncMetadata_checkr_partner_backgroundchecks"],
+            "version": "2.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "BackgroundCheck": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "service_key": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "candidate_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "expires_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "status", "service_key", "url", "candidate_id", "created_at"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_checkr_partner_backgroundchecks": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

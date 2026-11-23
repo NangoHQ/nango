@@ -1,0 +1,2636 @@
+{
+    "providerConfigKey": "mixpanel",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Assign service accounts to projects.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_addserviceaccountstoprojects",
+            "name": "add-service-accounts-to-projects",
+            "output": ["ActionOutput_mixpanel_addserviceaccountstoprojects"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_addserviceaccountstoprojects", "ActionOutput_mixpanel_addserviceaccountstoprojects"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_addserviceaccountstoprojects": {
+                        "type": "object",
+                        "properties": {
+                            "organization_id": {
+                                "description": "Your organization id (eg: 3108968). If omitted, it will be fetched from /api/app/me.",
+                                "type": "number"
+                            },
+                            "service_account_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                },
+                                "description": "List of service account ids. Example: [194890]"
+                            },
+                            "projects": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "The project id to add the service account to. Example: 4040293"
+                                        },
+                                        "role": {
+                                            "type": "string",
+                                            "enum": ["owner", "admin", "analyst", "consumer"],
+                                            "description": "The service account role for this project. Example: \"analyst\""
+                                        }
+                                    },
+                                    "required": ["id", "role"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of project/roles to assign."
+                            }
+                        },
+                        "required": ["service_account_ids", "projects"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_addserviceaccountstoprojects": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Append values to a user profile list property.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_appendprofilelistproperty",
+            "name": "append-profile-list-property",
+            "output": ["ActionOutput_mixpanel_appendprofilelistproperty"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_appendprofilelistproperty", "ActionOutput_mixpanel_appendprofilelistproperty"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_appendprofilelistproperty": {
+                        "type": "object",
+                        "properties": {
+                            "distinct_id": {
+                                "type": "string",
+                                "description": "User distinct ID. Example: \"13793\""
+                            },
+                            "property": {
+                                "type": "string",
+                                "description": "Property name to append to. Example: \"favorite_colors\""
+                            },
+                            "values": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": ["string", "number", "boolean"]
+                                },
+                                "description": "Values to append to the list. Example: [\"red\", \"blue\"]"
+                            }
+                        },
+                        "required": ["distinct_id", "property", "values"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_appendprofilelistproperty": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Batch update group profiles",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_batchupdategroupprofiles",
+            "name": "batch-update-group-profiles",
+            "output": ["ActionOutput_mixpanel_batchupdategroupprofiles"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_batchupdategroupprofiles", "ActionOutput_mixpanel_batchupdategroupprofiles"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_batchupdategroupprofiles": {
+                        "type": "object",
+                        "properties": {
+                            "updates": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "description": "Project token. Example: \"YOUR_PROJECT_TOKEN\""
+                                        },
+                                        "group_key": {
+                                            "type": "string",
+                                            "description": "Group key. Example: \"Company\""
+                                        },
+                                        "group_id": {
+                                            "type": "string",
+                                            "description": "Group ID. Example: \"Mixpanel\""
+                                        },
+                                        "set": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {},
+                                            "description": "Properties to set or update"
+                                        },
+                                        "set_once": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {},
+                                            "description": "Properties to set only if they do not exist yet"
+                                        },
+                                        "add": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {},
+                                            "description": "Properties to increment"
+                                        },
+                                        "union": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "description": "Properties to union with a list"
+                                        },
+                                        "remove": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "description": "Properties to remove values from a list"
+                                        },
+                                        "unset": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "Properties to remove from the profile"
+                                        },
+                                        "delete": {
+                                            "description": "Delete the group profile. Pass null to delete.",
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["group_key", "group_id"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Array of group profile update objects"
+                            },
+                            "ip": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "description": "Set to 0 to disable geolocation parsing using the request IP"
+                            },
+                            "strict": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "description": "Set to 1 to return validation errors for invalid updates"
+                            },
+                            "verbose": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "description": "Set to 1 for a verbose JSON response"
+                            }
+                        },
+                        "required": ["updates"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_batchupdategroupprofiles": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "number",
+                                "description": "1 on success, 0 on failure"
+                            },
+                            "error": {
+                                "description": "Error message if the request was not successful",
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Batch update user profiles.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_batchupdateprofiles",
+            "name": "batch-update-profiles",
+            "output": ["ActionOutput_mixpanel_batchupdateprofiles"],
+            "scopes": ["profile:write"],
+            "usedModels": ["ActionInput_mixpanel_batchupdateprofiles", "ActionOutput_mixpanel_batchupdateprofiles"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_batchupdateprofiles": {
+                        "type": "object",
+                        "properties": {
+                            "updates": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "$distinct_id": {
+                                            "type": "string",
+                                            "description": "The distinct_id of the user profile to update."
+                                        },
+                                        "$token": {
+                                            "description": "Project token. Will be injected if omitted and projectToken is provided at the top level.",
+                                            "type": "string"
+                                        },
+                                        "$set": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "$set_once": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "$add": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "$append": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "$union": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "$remove": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "$unset": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "$delete": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["$distinct_id"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Array of profile update objects."
+                            },
+                            "projectToken": {
+                                "description": "Project token to inject into each update as $token if not already present.",
+                                "type": "string"
+                            },
+                            "region": {
+                                "description": "Data residency region. Defaults to us.",
+                                "type": "string",
+                                "enum": ["us", "eu", "in"]
+                            },
+                            "ip": {
+                                "description": "Set to 0 to disable IP-based geolocation. Defaults to 1.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "strict": {
+                                "description": "Set to 1 to validate records and return per-record errors.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "verbose": {
+                                "description": "Set to 1 to receive a JSON response with status and error.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1
+                            }
+                        },
+                        "required": ["updates"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_batchupdateprofiles": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "number",
+                                "description": "1 on success, 0 on failure."
+                            },
+                            "error": {
+                                "description": "Error message if the request was not successful.",
+                                "type": "string"
+                            },
+                            "failed_records": {
+                                "description": "Per-record validation errors when strict=1.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an alias.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_createalias",
+            "name": "create-alias",
+            "output": ["ActionOutput_mixpanel_createalias"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_createalias", "ActionOutput_mixpanel_createalias"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_createalias": {
+                        "type": "object",
+                        "properties": {
+                            "alias": {
+                                "type": "string",
+                                "description": "The new alias to map to the distinct_id. Example: \"user-123-alias\""
+                            },
+                            "distinct_id": {
+                                "type": "string",
+                                "description": "The existing distinct_id to alias. Example: \"user-123\""
+                            },
+                            "token": {
+                                "description": "Optional project token. If omitted, the service account secret from the connection is used.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["alias", "distinct_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_createalias": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "alias": {
+                                "type": "string"
+                            },
+                            "distinct_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "alias", "distinct_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a project annotation",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_createannotation",
+            "name": "create-annotation",
+            "output": ["ActionOutput_mixpanel_createannotation"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_createannotation", "ActionOutput_mixpanel_createannotation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_createannotation": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "string",
+                                "description": "Mixpanel project ID. Example: \"4040293\""
+                            },
+                            "date": {
+                                "type": "string",
+                                "description": "Annotation date in YYYY-MM-DD HH:MM:SS format. Example: \"2026-07-03 12:00:00\""
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Annotation description. Example: \"Release v1.2.0\""
+                            }
+                        },
+                        "required": ["project_id", "date", "description"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_createannotation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "project_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an identity mapping.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_createidentity",
+            "name": "create-identity",
+            "output": ["ActionOutput_mixpanel_createidentity"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_createidentity", "ActionOutput_mixpanel_createidentity"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_createidentity": {
+                        "type": "object",
+                        "properties": {
+                            "identified_id": {
+                                "type": "string",
+                                "description": "A distinct_id to merge with the anon_id. Example: \"user@example.com\""
+                            },
+                            "anon_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                                "description": "A distinct_id to merge with the identified_id. Must be UUID v4 format and not already merged to an identified_id. Example: \"e6f4a9de-1c2b-4d3e-9f6a-7b8c9d0e1f2a\""
+                            },
+                            "distinct_id": {
+                                "description": "The distinct ID post-identification (same as identified_id - it will be inferred from identified_id if not included).",
+                                "type": "string"
+                            },
+                            "token": {
+                                "description": "The Mixpanel project token. If omitted, it will be read from connection metadata.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["identified_id", "anon_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_createidentity": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete all Lexicon schemas in a project",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_deleteallschemas",
+            "name": "delete-all-schemas",
+            "output": ["ActionOutput_mixpanel_deleteallschemas"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_deleteallschemas", "ActionOutput_mixpanel_deleteallschemas"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_deleteallschemas": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "number",
+                                "description": "Your project id (eg: 12345)"
+                            }
+                        },
+                        "required": ["project_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_deleteallschemas": {
+                        "type": "object",
+                        "properties": {
+                            "deleted_count": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a project annotation.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_deleteannotation",
+            "name": "delete-annotation",
+            "output": ["ActionOutput_mixpanel_deleteannotation"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_deleteannotation", "ActionOutput_mixpanel_deleteannotation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_deleteannotation": {
+                        "type": "object",
+                        "properties": {
+                            "projectId": {
+                                "type": "string",
+                                "description": "Mixpanel project ID. Example: \"4040293\""
+                            },
+                            "annotationId": {
+                                "type": "string",
+                                "description": "Annotation ID to delete. Example: \"2004052\""
+                            }
+                        },
+                        "required": ["projectId", "annotationId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_deleteannotation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete group profile properties",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_deletegroupproperty",
+            "name": "delete-group-property",
+            "output": ["ActionOutput_mixpanel_deletegroupproperty"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_deletegroupproperty", "ActionOutput_mixpanel_deletegroupproperty"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_deletegroupproperty": {
+                        "type": "object",
+                        "properties": {
+                            "group_key": {
+                                "type": "string",
+                                "description": "Group key. Example: \"company\""
+                            },
+                            "group_id": {
+                                "type": "string",
+                                "description": "Group ID. Example: \"acme\""
+                            },
+                            "properties": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Properties to unset. Example: [\"industry\", \"size\"]"
+                            },
+                            "project_token": {
+                                "description": "Mixpanel project token. Falls back to connection metadata.",
+                                "type": "string"
+                            },
+                            "region": {
+                                "description": "Data residency region. Defaults to api (US).",
+                                "type": "string",
+                                "enum": ["api", "api-eu", "api-in"]
+                            }
+                        },
+                        "required": ["group_key", "group_id", "properties"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_deletegroupproperty": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a group profile.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_deletegroup",
+            "name": "delete-group",
+            "output": ["ActionOutput_mixpanel_deletegroup"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_deletegroup", "ActionOutput_mixpanel_deletegroup"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "group_key": {
+                                "type": "string",
+                                "description": "Group key. Example: \"Company\""
+                            },
+                            "group_id": {
+                                "type": "string",
+                                "description": "Group ID. Example: \"Mixpanel\""
+                            },
+                            "token": {
+                                "description": "Mixpanel project token or API secret. If omitted, falls back to the token stored in connection metadata under the key \"token\", then to the connection Basic Auth password.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["group_key", "group_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete user profile properties.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_deleteprofileproperty",
+            "name": "delete-profile-property",
+            "output": ["ActionOutput_mixpanel_deleteprofileproperty"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_deleteprofileproperty", "ActionOutput_mixpanel_deleteprofileproperty"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_deleteprofileproperty": {
+                        "type": "object",
+                        "properties": {
+                            "distinct_id": {
+                                "type": "string",
+                                "description": "The distinct_id of the user profile to modify. Example: \"13793\""
+                            },
+                            "properties": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of profile property names to remove. Example: [\"plan\", \"company\"]"
+                            },
+                            "project_token": {
+                                "type": "string",
+                                "description": "The Mixpanel project token. Example: \"YOUR_PROJECT_TOKEN\""
+                            },
+                            "region": {
+                                "description": "Data residency region. Defaults to the connection region or us.",
+                                "type": "string",
+                                "enum": ["us", "eu", "in"]
+                            }
+                        },
+                        "required": ["distinct_id", "properties", "project_token"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_deleteprofileproperty": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a profile",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_deleteprofile",
+            "name": "delete-profile",
+            "output": ["ActionOutput_mixpanel_deleteprofile"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_deleteprofile", "ActionOutput_mixpanel_deleteprofile"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_deleteprofile": {
+                        "type": "object",
+                        "properties": {
+                            "distinct_id": {
+                                "type": "string",
+                                "description": "The distinct_id of the profile to delete. Example: \"13793\""
+                            },
+                            "project_token": {
+                                "type": "string",
+                                "description": "The Mixpanel project token. Example: \"YOUR_PROJECT_TOKEN\""
+                            },
+                            "ignore_alias": {
+                                "description": "If true, prevents deleting the original profile when the distinct_id is an alias.",
+                                "type": "boolean"
+                            },
+                            "region": {
+                                "description": "The Mixpanel data residency region. Defaults to \"api\" (US). Use \"api-eu\" for EU or \"api-in\" for India.",
+                                "type": "string",
+                                "enum": ["api", "api-eu", "api-in"]
+                            }
+                        },
+                        "required": ["distinct_id", "project_token"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_deleteprofile": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete one Lexicon schema by entity and name.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_deleteschema",
+            "name": "delete-schema",
+            "output": ["ActionOutput_mixpanel_deleteschema"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_deleteschema", "ActionOutput_mixpanel_deleteschema"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_deleteschema": {
+                        "type": "object",
+                        "properties": {
+                            "projectId": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Your project id. Example: 4040293"
+                            },
+                            "entityType": {
+                                "type": "string",
+                                "enum": ["event", "profile"],
+                                "description": "The entity type. Example: event"
+                            },
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The entity name. Example: nango_seed_event"
+                            }
+                        },
+                        "required": ["projectId", "entityType", "name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_deleteschema": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string"
+                            },
+                            "delete_count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete all Lexicon schemas for an entity type",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_deleteschemasforentity",
+            "name": "delete-schemas-for-entity",
+            "output": ["ActionOutput_mixpanel_deleteschemasforentity"],
+            "scopes": ["project:write"],
+            "usedModels": ["ActionInput_mixpanel_deleteschemasforentity", "ActionOutput_mixpanel_deleteschemasforentity"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_deleteschemasforentity": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "number",
+                                "description": "Mixpanel project ID. Example: 4040293"
+                            },
+                            "entity_type": {
+                                "type": "string",
+                                "enum": ["event", "profile"],
+                                "description": "Entity type. Example: \"event\" or \"profile\""
+                            },
+                            "entity_name": {
+                                "description": "Optional entity name to delete a specific schema. Example: \"Added To Cart\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["project_id", "entity_type"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_deleteschemasforentity": {
+                        "type": "object",
+                        "properties": {
+                            "results": {
+                                "type": "object",
+                                "properties": {
+                                    "delete_count": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["delete_count"],
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["results", "status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Import historical events",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_importevents",
+            "name": "import-events",
+            "output": ["ActionOutput_mixpanel_importevents"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_importevents", "ActionOutput_mixpanel_importevents"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_importevents": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "string",
+                                "description": "Mixpanel project ID. Example: \"4040293\""
+                            },
+                            "region": {
+                                "description": "Data residency region host prefix. Use \"api-eu\" for EU residency or \"api-in\" for India residency. Defaults to \"api\" (US).",
+                                "type": "string",
+                                "pattern": "^api(-eu|-in)?$"
+                            },
+                            "events": {
+                                "minItems": 1,
+                                "maxItems": 2000,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "event": {
+                                            "type": "string",
+                                            "description": "Event name. Example: \"Signed up\""
+                                        },
+                                        "properties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "time": {
+                                                    "type": "number",
+                                                    "description": "Event time in seconds or milliseconds since epoch. Example: 1618716477000"
+                                                },
+                                                "distinct_id": {
+                                                    "type": "string",
+                                                    "description": "User distinct ID. Example: \"91304156-cafc-4673-a237-623d1129c801\""
+                                                },
+                                                "$insert_id": {
+                                                    "type": "string",
+                                                    "description": "Unique insert ID for deduplication. Example: \"29fc2962-6d9c-455d-95ad-95b84f09b9e4\""
+                                                }
+                                            },
+                                            "required": ["time", "distinct_id", "$insert_id"],
+                                            "additionalProperties": {},
+                                            "description": "Event properties. Must include time, distinct_id, and $insert_id. Additional properties are allowed."
+                                        }
+                                    },
+                                    "required": ["event", "properties"],
+                                    "additionalProperties": false,
+                                    "description": "A single Mixpanel event to import"
+                                },
+                                "description": "Events to import. Maximum 2000 events per request."
+                            }
+                        },
+                        "required": ["project_id", "events"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_importevents": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "num_records_imported": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["code", "status", "num_records_imported"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Increment numeric user profile properties",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_incrementprofileproperty",
+            "name": "increment-profile-property",
+            "output": ["ActionOutput_mixpanel_incrementprofileproperty"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_incrementprofileproperty", "ActionOutput_mixpanel_incrementprofileproperty"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_incrementprofileproperty": {
+                        "type": "object",
+                        "properties": {
+                            "distinct_id": {
+                                "type": "string",
+                                "description": "Unique identifier for the user profile. Example: \"user-123\""
+                            },
+                            "properties": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "number"
+                                },
+                                "description": "Numeric properties to increment. Negative values decrement. Example: {\"logins\": 1}"
+                            }
+                        },
+                        "required": ["distinct_id", "properties"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_incrementprofileproperty": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "number"
+                            },
+                            "num_good_events": {
+                                "type": "number"
+                            },
+                            "error": {
+                                "type": ["string", "null"]
+                            },
+                            "errors": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "type": "array",
+                                            "items": {}
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["status", "num_good_events"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List annotation tags.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_listannotationtags",
+            "name": "list-annotation-tags",
+            "output": ["ActionOutput_mixpanel_listannotationtags"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_listannotationtags", "ActionOutput_mixpanel_listannotationtags"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_listannotationtags": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "string",
+                                "description": "Mixpanel project ID. Example: \"4040293\""
+                            },
+                            "limit": {
+                                "description": "Maximum number of tags to return. Default: 100",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["project_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_listannotationtags": {
+                        "type": "object",
+                        "properties": {
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "project_id": {
+                                            "type": "number"
+                                        },
+                                        "has_annotations": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "name", "project_id", "has_annotations"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["tags"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List lookup tables.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_listlookuptables",
+            "name": "list-lookup-tables",
+            "output": ["ActionOutput_mixpanel_listlookuptables"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_listlookuptables", "ActionOutput_mixpanel_listlookuptables"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_listlookuptables": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "string",
+                                "description": "The Mixpanel project_id, used to authenticate service account credentials. Example: \"4040293\""
+                            }
+                        },
+                        "required": ["project_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_listlookuptables": {
+                        "type": "object",
+                        "properties": {
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["results"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Lexicon schemas for an entity type.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_listschemasforentity",
+            "name": "list-schemas-for-entity",
+            "output": ["ActionOutput_mixpanel_listschemasforentity"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_listschemasforentity", "ActionOutput_mixpanel_listschemasforentity"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_listschemasforentity": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Your Mixpanel project ID. Example: 4040293"
+                            },
+                            "entity_type": {
+                                "type": "string",
+                                "enum": ["event", "profile", "group", "lookup"],
+                                "description": "The entity type. Valid values: event, profile, group, lookup."
+                            },
+                            "limit": {
+                                "description": "Maximum number of schemas to return per page. Defaults to 100.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["project_id", "entity_type"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_listschemasforentity": {
+                        "type": "object",
+                        "properties": {
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "entityType": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "schemaJson": {}
+                                    },
+                                    "required": ["entityType", "name", "schemaJson"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["results"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List warehouse imports.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_listwarehouseimports",
+            "name": "list-warehouse-imports",
+            "output": ["ActionOutput_mixpanel_listwarehouseimports"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_listwarehouseimports", "ActionOutput_mixpanel_listwarehouseimports"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_listwarehouseimports": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "number",
+                                "description": "Mixpanel project ID. Example: 4040293"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of results to return per page.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["project_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_listwarehouseimports": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "import_type": {
+                                            "type": "string",
+                                            "enum": ["event_sync", "event_stream", "people", "groups", "lookup_table"]
+                                        },
+                                        "sync_mode": {
+                                            "type": "string",
+                                            "enum": ["time_based", "mirror_mode", "full_sync", "one_time"]
+                                        },
+                                        "created": {
+                                            "type": "string"
+                                        },
+                                        "creator_id": {
+                                            "type": "number"
+                                        },
+                                        "creator_name": {
+                                            "type": "string"
+                                        },
+                                        "creator_email": {
+                                            "type": "string"
+                                        },
+                                        "warehouse_source_id": {
+                                            "type": "number"
+                                        },
+                                        "table_params": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        },
+                                        "paused": {
+                                            "type": "boolean"
+                                        },
+                                        "run_every": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "number",
+                                                    "const": 0
+                                                },
+                                                {
+                                                    "type": "number",
+                                                    "const": 3600000000000
+                                                },
+                                                {
+                                                    "type": "number",
+                                                    "const": 86400000000000
+                                                },
+                                                {
+                                                    "type": "number",
+                                                    "const": 604800000000000
+                                                }
+                                            ]
+                                        },
+                                        "last_dispatch": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "is_deleted": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "import_type", "sync_mode"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Patch a project annotation.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_patchannotation",
+            "name": "patch-annotation",
+            "output": ["ActionOutput_mixpanel_patchannotation"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_patchannotation", "ActionOutput_mixpanel_patchannotation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_patchannotation": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "string",
+                                "description": "Your project id. Example: \"4040293\""
+                            },
+                            "annotation_id": {
+                                "type": "string",
+                                "description": "The id of the annotation. Example: \"2004052\""
+                            },
+                            "description": {
+                                "description": "The text that will be shown when looking at the annotation",
+                                "type": "string"
+                            },
+                            "tags": {
+                                "description": "The ids of the tags to be added to the annotation",
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "required": ["project_id", "annotation_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_patchannotation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Query a profile event activity stream.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_queryprofileactivity",
+            "name": "query-profile-activity",
+            "output": ["ActionOutput_mixpanel_queryprofileactivity"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_queryprofileactivity", "ActionOutput_mixpanel_queryprofileactivity"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_queryprofileactivity": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "number",
+                                "description": "Mixpanel project ID. Required for service account authentication. Example: 4040293"
+                            },
+                            "distinct_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Array of distinct IDs to query activity for. Example: [\"user-123\"]"
+                            },
+                            "from_date": {
+                                "type": "string",
+                                "description": "Start date in yyyy-mm-dd format (inclusive). Example: 2024-01-01"
+                            },
+                            "to_date": {
+                                "type": "string",
+                                "description": "End date in yyyy-mm-dd format (inclusive). Example: 2024-01-31"
+                            },
+                            "workspace_id": {
+                                "description": "Workspace ID if applicable. Example: 4536550",
+                                "type": "number"
+                            },
+                            "limit": {
+                                "description": "Maximum number of events to return. Defaults to 100.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["project_id", "distinct_ids", "from_date", "to_date"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_queryprofileactivity": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string"
+                            },
+                            "results": {
+                                "type": "object",
+                                "properties": {
+                                    "events": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "event": {
+                                                    "type": "string"
+                                                },
+                                                "properties": {}
+                                            },
+                                            "required": ["event"],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": ["events"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["status", "results"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Query user profiles with Engage.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_queryprofiles",
+            "name": "query-profiles",
+            "output": ["ActionOutput_mixpanel_queryprofiles"],
+            "scopes": ["profile-query"],
+            "usedModels": ["ActionInput_mixpanel_queryprofiles", "ActionOutput_mixpanel_queryprofiles"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_queryprofiles": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque pagination cursor from a previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Requested page size. The Mixpanel API uses a fixed page size; this field is reserved for future use.",
+                                "type": "number"
+                            },
+                            "project_id": {
+                                "description": "Mixpanel project id. Required when authenticating with a service account. Falls back to connection metadata if omitted.",
+                                "type": "string"
+                            },
+                            "where": {
+                                "description": "Selector expression to filter profiles. See Mixpanel segmentation expressions docs.",
+                                "type": "string"
+                            },
+                            "output_properties": {
+                                "description": "Property names to include in the response. Example: [\"$last_name\", \"$email\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "distinct_id": {
+                                "description": "A single distinct_id to retrieve.",
+                                "type": "string"
+                            },
+                            "distinct_ids": {
+                                "description": "List of distinct_ids to retrieve.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "data_group_id": {
+                                "description": "Group key id when querying group profiles.",
+                                "type": "string"
+                            },
+                            "filter_by_cohort": {
+                                "description": "JSON string cohort filter object. Example: '{\"id\":12345}'",
+                                "type": "string"
+                            },
+                            "include_all_users": {
+                                "description": "Include all distinct_ids in a cohort query even if they do not have a profile.",
+                                "type": "boolean"
+                            },
+                            "behaviors": {
+                                "description": "Event selector for exporting user profiles with event filters.",
+                                "type": "number"
+                            },
+                            "as_of_timestamp": {
+                                "description": "Timestamp required when behaviors exports more than 1k profiles.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_queryprofiles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "$distinct_id": {
+                                            "type": ["string", "number"]
+                                        },
+                                        "$properties": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["$distinct_id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Cursor to request the next page. Absent when there are no more pages.",
+                                "type": "string"
+                            },
+                            "total": {
+                                "description": "Total number of profiles matching the query.",
+                                "type": "number"
+                            },
+                            "page": {
+                                "description": "Current page number returned by the provider.",
+                                "type": "number"
+                            },
+                            "page_size": {
+                                "description": "Maximum number of results per provider page.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove values from a group profile list property.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_removegrouplistproperty",
+            "name": "remove-group-list-property",
+            "output": ["ActionOutput_mixpanel_removegrouplistproperty"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_removegrouplistproperty", "ActionOutput_mixpanel_removegrouplistproperty"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_removegrouplistproperty": {
+                        "type": "object",
+                        "properties": {
+                            "token": {
+                                "type": "string",
+                                "description": "Mixpanel project token. Example: \"abc123\""
+                            },
+                            "group_key": {
+                                "type": "string",
+                                "description": "Group key. Example: \"company\""
+                            },
+                            "group_id": {
+                                "type": "string",
+                                "description": "Group ID. Example: \"mixpanel\""
+                            },
+                            "property_name": {
+                                "type": "string",
+                                "description": "Name of the list property to remove values from."
+                            },
+                            "values": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": ["string", "number"]
+                                },
+                                "description": "Values to remove from the list property. Example: [\"feature-a\", \"feature-b\"]"
+                            }
+                        },
+                        "required": ["token", "group_key", "group_id", "property_name", "values"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_removegrouplistproperty": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove values from a user profile list property",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_removeprofilelistproperty",
+            "name": "remove-profile-list-property",
+            "output": ["ActionOutput_mixpanel_removeprofilelistproperty"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_removeprofilelistproperty", "ActionOutput_mixpanel_removeprofilelistproperty"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_removeprofilelistproperty": {
+                        "type": "object",
+                        "properties": {
+                            "distinct_id": {
+                                "type": "string",
+                                "description": "The distinct_id of the user profile. Example: \"user-123\""
+                            },
+                            "property_name": {
+                                "type": "string",
+                                "description": "The name of the list property to modify. Example: \"interests\""
+                            },
+                            "values": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Values to remove from the list property. Example: [\"gaming\", \"reading\"]"
+                            },
+                            "project_token": {
+                                "type": "string",
+                                "description": "The Mixpanel project token. Example: \"abc123def456\""
+                            },
+                            "region": {
+                                "description": "Data residency region. Defaults to \"us\".",
+                                "type": "string",
+                                "enum": ["us", "eu", "in"]
+                            }
+                        },
+                        "required": ["distinct_id", "property_name", "values", "project_token"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_removeprofilelistproperty": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Set group profile properties only if absent.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_setgrouppropertyonce",
+            "name": "set-group-property-once",
+            "output": ["ActionOutput_mixpanel_setgrouppropertyonce"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_setgrouppropertyonce", "ActionOutput_mixpanel_setgrouppropertyonce"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_setgrouppropertyonce": {
+                        "type": "object",
+                        "properties": {
+                            "token": {
+                                "type": "string",
+                                "description": "The Mixpanel project token. Example: \"abc123...\""
+                            },
+                            "group_key": {
+                                "type": "string",
+                                "description": "The group key. Example: \"company\""
+                            },
+                            "group_id": {
+                                "type": "string",
+                                "description": "The group ID. Example: \"nango\""
+                            },
+                            "properties": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Properties to set once on the group profile."
+                            },
+                            "region": {
+                                "description": "Data residency region. Defaults to us.",
+                                "type": "string",
+                                "enum": ["us", "eu", "in"]
+                            }
+                        },
+                        "required": ["token", "group_key", "group_id", "properties"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_setgrouppropertyonce": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Set or update group profile properties.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_setgroupproperty",
+            "name": "set-group-property",
+            "output": ["ActionOutput_mixpanel_setgroupproperty"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_setgroupproperty", "ActionOutput_mixpanel_setgroupproperty"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_setgroupproperty": {
+                        "type": "object",
+                        "properties": {
+                            "group_key": {
+                                "type": "string",
+                                "description": "The group key. Example: \"company_id\""
+                            },
+                            "group_id": {
+                                "type": "string",
+                                "description": "The group ID. Example: \"acme-corp\""
+                            },
+                            "properties": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Properties to set on the group profile."
+                            }
+                        },
+                        "required": ["group_key", "group_id", "properties"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_setgroupproperty": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Set user profile properties only if absent.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_setprofilepropertyonce",
+            "name": "set-profile-property-once",
+            "output": ["ActionOutput_mixpanel_setprofilepropertyonce"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_setprofilepropertyonce", "ActionOutput_mixpanel_setprofilepropertyonce"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_setprofilepropertyonce": {
+                        "type": "object",
+                        "properties": {
+                            "distinct_id": {
+                                "type": "string",
+                                "description": "User distinct ID. Example: \"user-123\""
+                            },
+                            "properties": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Properties to set if absent. Example: {\"First login date\": \"2024-01-01\"}"
+                            }
+                        },
+                        "required": ["distinct_id", "properties"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_setprofilepropertyonce": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "number"
+                            },
+                            "error": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create or update an Engage profile.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_setprofile",
+            "name": "set-profile",
+            "output": ["ActionOutput_mixpanel_setprofile"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_setprofile", "ActionOutput_mixpanel_setprofile"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_setprofile": {
+                        "type": "object",
+                        "properties": {
+                            "token": {
+                                "type": "string",
+                                "description": "Mixpanel project token. Example: \"4040293\""
+                            },
+                            "distinct_id": {
+                                "type": "string",
+                                "description": "Unique identifier for the user profile. Example: \"user-123\""
+                            },
+                            "properties": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Profile properties to set"
+                            },
+                            "ip": {
+                                "description": "If 0, Mixpanel will not perform geolocation parsing using the request IP. Defaults to 1.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "strict": {
+                                "description": "If 1, Mixpanel will validate records and return per-record error messages. Defaults to 0.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "verbose": {
+                                "description": "If 1, Mixpanel will respond with a JSON object describing success or failure. Defaults to 0.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1
+                            }
+                        },
+                        "required": ["token", "distinct_id", "properties"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_setprofile": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "anyOf": [
+                                    {
+                                        "type": "number",
+                                        "const": 1
+                                    },
+                                    {
+                                        "type": "number",
+                                        "const": 0
+                                    }
+                                ]
+                            },
+                            "error": {
+                                "type": "string"
+                            },
+                            "num_good_events": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Track an event.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_trackevent",
+            "name": "track-event",
+            "output": ["ActionOutput_mixpanel_trackevent"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_trackevent", "ActionOutput_mixpanel_trackevent"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_trackevent": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "string",
+                                "description": "Mixpanel project ID. Example: \"4040293\""
+                            },
+                            "event": {
+                                "type": "string",
+                                "description": "The name of the event. Example: \"Signed Up\""
+                            },
+                            "properties": {
+                                "type": "object",
+                                "properties": {
+                                    "distinct_id": {
+                                        "type": "string",
+                                        "description": "The unique identifier of the user who performed the event. Example: \"13793\""
+                                    },
+                                    "time": {
+                                        "description": "The time at which the event occurred, in seconds or milliseconds since UTC epoch. Example: 1609459200",
+                                        "type": "number"
+                                    },
+                                    "insert_id": {
+                                        "description": "A unique identifier for the event, used for deduplication. Maps to $insert_id. Example: \"abc123\"",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["distinct_id"],
+                                "additionalProperties": {},
+                                "description": "Event properties. Must include distinct_id. Additional properties are passed through to Mixpanel."
+                            }
+                        },
+                        "required": ["project_id", "event", "properties"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_trackevent": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "number",
+                                "description": "1 on success, 0 on failure."
+                            },
+                            "error": {
+                                "description": "Error message if the request was not successful.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Union values into a group profile list property.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_uniongrouplistproperty",
+            "name": "union-group-list-property",
+            "output": ["ActionOutput_mixpanel_uniongrouplistproperty"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_uniongrouplistproperty", "ActionOutput_mixpanel_uniongrouplistproperty"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_uniongrouplistproperty": {
+                        "type": "object",
+                        "properties": {
+                            "group_key": {
+                                "type": "string",
+                                "description": "Group key. Example: \"company\""
+                            },
+                            "group_id": {
+                                "type": "string",
+                                "description": "Group ID. Example: \"acme\""
+                            },
+                            "property_name": {
+                                "type": "string",
+                                "description": "Name of the list property to union into. Example: \"features\""
+                            },
+                            "values": {
+                                "type": "array",
+                                "items": {
+                                    "type": ["string", "number"]
+                                },
+                                "description": "Values to union into the list property. Example: [\"feature-a\", \"feature-b\"]"
+                            },
+                            "project_token": {
+                                "description": "Mixpanel project token. If omitted, the connection credentials will be used.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["group_key", "group_id", "property_name", "values"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_uniongrouplistproperty": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "number"
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Union values into a user profile list property.",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_unionprofilelistproperty",
+            "name": "union-profile-list-property",
+            "output": ["ActionOutput_mixpanel_unionprofilelistproperty"],
+            "scopes": ["project:write"],
+            "usedModels": ["ActionInput_mixpanel_unionprofilelistproperty", "ActionOutput_mixpanel_unionprofilelistproperty"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_unionprofilelistproperty": {
+                        "type": "object",
+                        "properties": {
+                            "distinctId": {
+                                "type": "string",
+                                "description": "The distinct ID of the user profile to update. Example: \"user-123\""
+                            },
+                            "union": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": ["string", "number"]
+                                    }
+                                },
+                                "description": "An object mapping property names to arrays of values to union into list properties. Example: { \"roles\": [\"admin\", \"editor\"] }"
+                            },
+                            "ip": {
+                                "description": "If 0, Mixpanel will not perform geolocation parsing using the IP address of the request. Defaults to 1.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "strict": {
+                                "description": "If 1, Mixpanel will validate the provided records and return per-record error messages for records that fail validation.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "verbose": {
+                                "description": "If 1, Mixpanel will respond with a JSON object describing the success or failure of the tracking call.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1
+                            }
+                        },
+                        "required": ["distinctId", "union"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_unionprofilelistproperty": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Set or update user profile properties",
+            "endpoint": null,
+            "input": "ActionInput_mixpanel_updateprofileproperty",
+            "name": "update-profile-property",
+            "output": ["ActionOutput_mixpanel_updateprofileproperty"],
+            "scopes": [],
+            "usedModels": ["ActionInput_mixpanel_updateprofileproperty", "ActionOutput_mixpanel_updateprofileproperty"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_mixpanel_updateprofileproperty": {
+                        "type": "object",
+                        "properties": {
+                            "distinct_id": {
+                                "type": "string",
+                                "description": "The distinct ID of the user profile to update. Example: \"user-123\""
+                            },
+                            "properties": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Properties to set on the user profile. Example: {\"Plan\": \"Premium\"}"
+                            },
+                            "project_token": {
+                                "type": "string",
+                                "description": "The Mixpanel project token. Example: \"abc123...\""
+                            }
+                        },
+                        "required": ["distinct_id", "properties", "project_token"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_mixpanel_updateprofileproperty": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "number",
+                                "description": "1 if the request structure is valid, 0 if invalid"
+                            },
+                            "distinct_id": {
+                                "type": "string",
+                                "description": "The distinct ID of the updated profile"
+                            },
+                            "num_good_events": {
+                                "description": "Number of valid records when strict mode is enabled",
+                                "type": "number"
+                            },
+                            "error": {
+                                "description": "Error message if validation failed",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["status", "distinct_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync annotations.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "annotations",
+            "output": ["Annotation"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Annotation"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Annotation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "number"
+                            },
+                            "user_first_name": {
+                                "type": "string"
+                            },
+                            "user_last_name": {
+                                "type": "string"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "date"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync events.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": "SyncMetadata_mixpanel_events",
+            "name": "events",
+            "output": ["Event"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Event", "SyncMetadata_mixpanel_events"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Event": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "event": {
+                                "type": "string"
+                            },
+                            "time": {
+                                "type": "number"
+                            },
+                            "distinct_id": {
+                                "type": "string"
+                            },
+                            "insert_id": {
+                                "type": "string"
+                            },
+                            "properties": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "event", "time"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_mixpanel_events": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "string"
+                            },
+                            "data_host": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Mixpanel Lexicon schemas",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "lexicon-schemas",
+            "output": ["LexiconSchema"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["LexiconSchema"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "LexiconSchema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "entityType": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "schemaJson": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "entityType", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync Mixpanel lookup tables",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_mixpanel_lookuptables",
+            "name": "lookup-tables",
+            "output": ["LookupTable"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["LookupTable", "SyncMetadata_mixpanel_lookuptables"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "LookupTable": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_mixpanel_lookuptables": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "string"
+                            },
+                            "base_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["project_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync project service account memberships",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "project-service-accounts",
+            "output": ["ProjectServiceAccount"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ProjectServiceAccount"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ProjectServiceAccount": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "service_account_id": {
+                                "type": "string"
+                            },
+                            "project_id": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "last_used": {
+                                "type": "string"
+                            },
+                            "expires": {
+                                "type": "string"
+                            },
+                            "creator": {
+                                "type": "number"
+                            },
+                            "created": {
+                                "type": "string"
+                            },
+                            "user": {
+                                "type": "number"
+                            },
+                            "hasSensitiveAccess": {
+                                "type": "boolean"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "role_order": {
+                                "type": "number"
+                            },
+                            "target_type": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "service_account_id", "project_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

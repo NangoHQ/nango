@@ -1,0 +1,2097 @@
+{
+    "providerConfigKey": "discogs",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add a message to a marketplace order.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/orders/messages",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_addordermessage",
+            "name": "add-order-message",
+            "output": ["ActionOutput_discogs_addordermessage"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_addordermessage", "ActionOutput_discogs_addordermessage"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_addordermessage": {
+                        "type": "object",
+                        "properties": {
+                            "order_id": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "New Order",
+                                    "Buyer Contacted",
+                                    "Invoice Sent",
+                                    "Payment Pending",
+                                    "Payment Received",
+                                    "In Progress",
+                                    "Shipped",
+                                    "Refund Sent",
+                                    "Cancelled (Non-Paying Buyer)",
+                                    "Cancelled (Item Unavailable)",
+                                    "Cancelled (Per Buyer's Request)"
+                                ]
+                            }
+                        },
+                        "required": ["order_id", "message"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_addordermessage": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a release to a collection folder.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/collection/items",
+                "group": "Collection"
+            },
+            "input": "ActionInput_discogs_addtocollection",
+            "name": "add-to-collection",
+            "output": ["ActionOutput_discogs_addtocollection"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_addtocollection", "ActionOutput_discogs_addtocollection"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_addtocollection": {
+                        "type": "object",
+                        "properties": {
+                            "folder_id": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "release_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["folder_id", "release_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_addtocollection": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a release to the wantlist.",
+            "endpoint": {
+                "method": "PUT",
+                "path": "/wantlist",
+                "group": "Wantlist"
+            },
+            "input": "ActionInput_discogs_addtowantlist",
+            "name": "add-to-wantlist",
+            "output": ["ActionOutput_discogs_addtowantlist"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_addtowantlist", "ActionOutput_discogs_addtowantlist"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_addtowantlist": {
+                        "type": "object",
+                        "properties": {
+                            "release_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "rating": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 5
+                            }
+                        },
+                        "required": ["release_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_addtowantlist": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a collection folder.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/collection/folders",
+                "group": "Collection"
+            },
+            "input": "ActionInput_discogs_createcollectionfolder",
+            "name": "create-collection-folder",
+            "output": ["ActionOutput_discogs_createcollectionfolder"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_createcollectionfolder", "ActionOutput_discogs_createcollectionfolder"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_createcollectionfolder": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_createcollectionfolder": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new marketplace listing.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/listings",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_createlisting",
+            "name": "create-listing",
+            "output": ["ActionOutput_discogs_createlisting"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_createlisting", "ActionOutput_discogs_createlisting"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_createlisting": {
+                        "type": "object",
+                        "properties": {
+                            "release_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "condition": {
+                                "type": "string",
+                                "enum": [
+                                    "Mint (M)",
+                                    "Near Mint (NM or M-)",
+                                    "Very Good Plus (VG+)",
+                                    "Very Good (VG)",
+                                    "Good Plus (G+)",
+                                    "Good (G)",
+                                    "Fair (F)",
+                                    "Poor (P)"
+                                ]
+                            },
+                            "sleeve_condition": {
+                                "type": "string",
+                                "enum": [
+                                    "Mint (M)",
+                                    "Near Mint (NM or M-)",
+                                    "Very Good Plus (VG+)",
+                                    "Very Good (VG)",
+                                    "Good Plus (G+)",
+                                    "Good (G)",
+                                    "Fair (F)",
+                                    "Poor (P)",
+                                    "Generic",
+                                    "Not Graded",
+                                    "No Cover"
+                                ]
+                            },
+                            "price": {
+                                "type": "number"
+                            },
+                            "comments": {
+                                "type": "string"
+                            },
+                            "allow_offers": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["For Sale", "Draft"]
+                            },
+                            "external_id": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "weight": {
+                                "type": "number"
+                            },
+                            "format_quantity": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["release_id", "condition", "price"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_createlisting": {
+                        "type": "object",
+                        "properties": {
+                            "listing_id": {
+                                "type": "number"
+                            },
+                            "resource_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["listing_id", "resource_url"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a collection folder.",
+            "endpoint": {
+                "method": "DELETE",
+                "path": "/collection/folders",
+                "group": "Collection"
+            },
+            "input": "ActionInput_discogs_deletecollectionfolder",
+            "name": "delete-collection-folder",
+            "output": ["ActionOutput_discogs_deletecollectionfolder"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_deletecollectionfolder", "ActionOutput_discogs_deletecollectionfolder"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_deletecollectionfolder": {
+                        "type": "object",
+                        "properties": {
+                            "folder_id": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["folder_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_deletecollectionfolder": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a marketplace listing.",
+            "endpoint": {
+                "method": "DELETE",
+                "path": "/listings",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_deletelisting",
+            "name": "delete-listing",
+            "output": ["ActionOutput_discogs_deletelisting"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_deletelisting", "ActionOutput_discogs_deletelisting"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_deletelisting": {
+                        "type": "object",
+                        "properties": {
+                            "listing_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["listing_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_deletelisting": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Request an inventory export for the authenticated user.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/inventory/export",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_exportinventory",
+            "name": "export-inventory",
+            "output": ["ActionOutput_discogs_exportinventory"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_exportinventory", "ActionOutput_discogs_exportinventory"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_exportinventory": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_exportinventory": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get an artist by ID.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/artists",
+                "group": "Database"
+            },
+            "input": "ActionInput_discogs_getartist",
+            "name": "get-artist",
+            "output": ["ActionOutput_discogs_getartist"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getartist", "ActionOutput_discogs_getartist"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getartist": {
+                        "type": "object",
+                        "properties": {
+                            "artist_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["artist_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getartist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "resource_url": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            },
+                            "releases_url": {
+                                "type": "string"
+                            },
+                            "profile": {
+                                "type": "string"
+                            },
+                            "realname": {
+                                "type": "string"
+                            },
+                            "data_quality": {
+                                "type": "string"
+                            },
+                            "namevariations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "urls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id", "name", "resource_url"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the minimum, median, and maximum value of a collection.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/collection/value",
+                "group": "Collection"
+            },
+            "input": "ActionInput_discogs_getcollectionvalue",
+            "name": "get-collection-value",
+            "output": ["ActionOutput_discogs_getcollectionvalue"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getcollectionvalue", "ActionOutput_discogs_getcollectionvalue"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getcollectionvalue": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getcollectionvalue": {
+                        "type": "object",
+                        "properties": {
+                            "minimum": {
+                                "type": "number"
+                            },
+                            "median": {
+                                "type": "number"
+                            },
+                            "maximum": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["minimum", "median", "maximum"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Calculate the marketplace fee for a listing price.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/fee",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_getfee",
+            "name": "get-fee",
+            "output": ["ActionOutput_discogs_getfee"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getfee", "ActionOutput_discogs_getfee"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getfee": {
+                        "type": "object",
+                        "properties": {
+                            "price": {
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                            },
+                            "currency": {
+                                "type": "string",
+                                "enum": ["USD", "GBP", "EUR", "CAD", "AUD", "JPY", "CHF", "MXN", "BRL", "NZD", "SEK", "ZAR"]
+                            }
+                        },
+                        "required": ["price"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getfee": {
+                        "type": "object",
+                        "properties": {
+                            "value": {
+                                "type": "number"
+                            },
+                            "currency": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["value", "currency"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a specific inventory export by ID.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/inventory/export",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_getinventoryexport",
+            "name": "get-inventory-export",
+            "output": ["ActionOutput_discogs_getinventoryexport"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getinventoryexport", "ActionOutput_discogs_getinventoryexport"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getinventoryexport": {
+                        "type": "object",
+                        "properties": {
+                            "export_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["export_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getinventoryexport": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List inventory exports for the authenticated user.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/inventory/exports",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_getinventoryexports",
+            "name": "get-inventory-exports",
+            "output": ["ActionOutput_discogs_getinventoryexports"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getinventoryexports", "ActionOutput_discogs_getinventoryexports"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getinventoryexports": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getinventoryexports": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a label by ID.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/labels",
+                "group": "Database"
+            },
+            "input": "ActionInput_discogs_getlabel",
+            "name": "get-label",
+            "output": ["ActionOutput_discogs_getlabel"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getlabel", "ActionOutput_discogs_getlabel"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getlabel": {
+                        "type": "object",
+                        "properties": {
+                            "label_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["label_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getlabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "resource_url": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            },
+                            "releases_url": {
+                                "type": "string"
+                            },
+                            "profile": {
+                                "type": "string"
+                            },
+                            "contact_info": {
+                                "type": "string"
+                            },
+                            "data_quality": {
+                                "type": "string"
+                            },
+                            "urls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "sublabels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "resource_url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "parent_label": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "resource_url": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "name", "resource_url"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a marketplace listing by ID.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/listings",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_getlisting",
+            "name": "get-listing",
+            "output": ["ActionOutput_discogs_getlisting"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getlisting", "ActionOutput_discogs_getlisting"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getlisting": {
+                        "type": "object",
+                        "properties": {
+                            "listing_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["listing_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getlisting": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a master release by ID.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/masters",
+                "group": "Database"
+            },
+            "input": "ActionInput_discogs_getmaster",
+            "name": "get-master",
+            "output": ["ActionOutput_discogs_getmaster"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getmaster", "ActionOutput_discogs_getmaster"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getmaster": {
+                        "type": "object",
+                        "properties": {
+                            "master_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["master_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getmaster": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get messages for a marketplace order.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/orders/messages",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_getordermessages",
+            "name": "get-order-messages",
+            "output": ["ActionOutput_discogs_getordermessages"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getordermessages", "ActionOutput_discogs_getordermessages"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getordermessages": {
+                        "type": "object",
+                        "properties": {
+                            "order_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["order_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getordermessages": {
+                        "type": "object",
+                        "properties": {
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["messages"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a marketplace order by ID.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/orders/get",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_getorder",
+            "name": "get-order",
+            "output": ["ActionOutput_discogs_getorder"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getorder", "ActionOutput_discogs_getorder"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getorder": {
+                        "type": "object",
+                        "properties": {
+                            "order_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["order_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getorder": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get marketplace price suggestions for a release.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/price-suggestions",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_getpricesuggestions",
+            "name": "get-price-suggestions",
+            "output": ["ActionOutput_discogs_getpricesuggestions"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getpricesuggestions", "ActionOutput_discogs_getpricesuggestions"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getpricesuggestions": {
+                        "type": "object",
+                        "properties": {
+                            "release_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["release_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getpricesuggestions": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a release by ID.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/releases",
+                "group": "Database"
+            },
+            "input": "ActionInput_discogs_getrelease",
+            "name": "get-release",
+            "output": ["ActionOutput_discogs_getrelease"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_getrelease", "ActionOutput_discogs_getrelease"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_getrelease": {
+                        "type": "object",
+                        "properties": {
+                            "release_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["release_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_getrelease": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a release instance from a collection folder.",
+            "endpoint": {
+                "method": "DELETE",
+                "path": "/collection/items",
+                "group": "Collection"
+            },
+            "input": "ActionInput_discogs_removefromcollection",
+            "name": "remove-from-collection",
+            "output": ["ActionOutput_discogs_removefromcollection"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_removefromcollection", "ActionOutput_discogs_removefromcollection"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_removefromcollection": {
+                        "type": "object",
+                        "properties": {
+                            "folder_id": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "release_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "instance_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["folder_id", "release_id", "instance_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_removefromcollection": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a release from the wantlist.",
+            "endpoint": {
+                "method": "DELETE",
+                "path": "/wantlist",
+                "group": "Wantlist"
+            },
+            "input": "ActionInput_discogs_removefromwantlist",
+            "name": "remove-from-wantlist",
+            "output": ["ActionOutput_discogs_removefromwantlist"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_removefromwantlist", "ActionOutput_discogs_removefromwantlist"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_removefromwantlist": {
+                        "type": "object",
+                        "properties": {
+                            "release_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["release_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_removefromwantlist": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search the Discogs database.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/search",
+                "group": "Database"
+            },
+            "input": "ActionInput_discogs_search",
+            "name": "search",
+            "output": ["ActionOutput_discogs_search"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_search", "ActionOutput_discogs_search"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_search": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": ["release", "master", "artist", "label"]
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "release_title": {
+                                "type": "string"
+                            },
+                            "artist": {
+                                "type": "string"
+                            },
+                            "label": {
+                                "type": "string"
+                            },
+                            "genre": {
+                                "type": "string"
+                            },
+                            "style": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "year": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "string"
+                            },
+                            "catno": {
+                                "type": "string"
+                            },
+                            "barcode": {
+                                "type": "string"
+                            },
+                            "track": {
+                                "type": "string"
+                            },
+                            "submitter": {
+                                "type": "string"
+                            },
+                            "contributor": {
+                                "type": "string"
+                            },
+                            "credit": {
+                                "type": "string"
+                            },
+                            "anv": {
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "type": "string"
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_search": {
+                        "type": "object",
+                        "properties": {
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "pagination": {
+                                "type": "object",
+                                "properties": {
+                                    "page": {
+                                        "type": "number"
+                                    },
+                                    "pages": {
+                                        "type": "number"
+                                    },
+                                    "per_page": {
+                                        "type": "number"
+                                    },
+                                    "items": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["page", "pages", "per_page", "items"],
+                                "additionalProperties": false
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["results"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a collection folder name.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/collection/folders/update",
+                "group": "Collection"
+            },
+            "input": "ActionInput_discogs_updatecollectionfolder",
+            "name": "update-collection-folder",
+            "output": ["ActionOutput_discogs_updatecollectionfolder"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_updatecollectionfolder", "ActionOutput_discogs_updatecollectionfolder"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_updatecollectionfolder": {
+                        "type": "object",
+                        "properties": {
+                            "folder_id": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["folder_id", "name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_updatecollectionfolder": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a marketplace listing.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/listings/update",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_updatelisting",
+            "name": "update-listing",
+            "output": ["ActionOutput_discogs_updatelisting"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_updatelisting", "ActionOutput_discogs_updatelisting"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_updatelisting": {
+                        "type": "object",
+                        "properties": {
+                            "listing_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "condition": {
+                                "type": "string"
+                            },
+                            "sleeve_condition": {
+                                "type": "string"
+                            },
+                            "price": {
+                                "type": "number"
+                            },
+                            "comments": {
+                                "type": "string"
+                            },
+                            "allow_offers": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "external_id": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "weight": {
+                                "type": "number"
+                            },
+                            "format_quantity": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["listing_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_updatelisting": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update the status of a marketplace order.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/orders/status",
+                "group": "Marketplace"
+            },
+            "input": "ActionInput_discogs_updateorderstatus",
+            "name": "update-order-status",
+            "output": ["ActionOutput_discogs_updateorderstatus"],
+            "scopes": [],
+            "usedModels": ["ActionInput_discogs_updateorderstatus", "ActionOutput_discogs_updateorderstatus"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_discogs_updateorderstatus": {
+                        "type": "object",
+                        "properties": {
+                            "order_id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "New Order",
+                                    "Buyer Contacted",
+                                    "Invoice Sent",
+                                    "Payment Pending",
+                                    "Payment Received",
+                                    "In Progress",
+                                    "Shipped",
+                                    "Refund Sent",
+                                    "Cancelled (Non-Paying Buyer)",
+                                    "Cancelled (Item Unavailable)",
+                                    "Cancelled (Per Buyer's Request)"
+                                ]
+                            }
+                        },
+                        "required": ["order_id", "status"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_discogs_updateorderstatus": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync collection folders and releases for the authenticated user.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/collection/folders",
+                    "group": "Collection"
+                },
+                {
+                    "method": "GET",
+                    "path": "/collection/items",
+                    "group": "Collection"
+                }
+            ],
+            "input": null,
+            "name": "collection",
+            "output": ["CollectionFolder", "CollectionItem"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["CollectionFolder", "CollectionItem"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CollectionFolder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "folder_id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "count": {
+                                "type": "number"
+                            },
+                            "resource_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "folder_id", "name"],
+                        "additionalProperties": false
+                    },
+                    "CollectionItem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "folder_id": {
+                                "type": "number"
+                            },
+                            "instance_id": {
+                                "type": "number"
+                            },
+                            "release_id": {
+                                "type": "number"
+                            },
+                            "rating": {
+                                "type": "number"
+                            },
+                            "date_added": {
+                                "type": "string"
+                            },
+                            "basic_information": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "folder_id", "instance_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync release contributions for the authenticated user.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/contributions",
+                    "group": "Contributions"
+                }
+            ],
+            "input": "SyncMetadata_discogs_contributions",
+            "name": "contributions",
+            "output": ["Contribution"],
+            "runs": "every week",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Contribution", "SyncMetadata_discogs_contributions"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Contribution": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "release_id": {
+                                "type": "number"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "year": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "resource_url": {
+                                "type": "string"
+                            },
+                            "date_added": {
+                                "type": "string"
+                            },
+                            "artists_sort": {
+                                "type": "string"
+                            },
+                            "artists": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "labels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "formats": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "anv": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "release_id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_discogs_contributions": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync marketplace inventory listings for the authenticated user.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/inventory",
+                    "group": "Inventory"
+                }
+            ],
+            "input": null,
+            "name": "inventory",
+            "output": ["InventoryListing"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["InventoryListing"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "InventoryListing": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "listing_id": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "condition": {
+                                "type": "string"
+                            },
+                            "sleeve_condition": {
+                                "type": "string"
+                            },
+                            "price": {
+                                "anyOf": [
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "value": {
+                                                "type": "number"
+                                            },
+                                            "currency": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["value", "currency"],
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            },
+                            "comments": {
+                                "type": "string"
+                            },
+                            "allow_offers": {
+                                "type": "boolean"
+                            },
+                            "external_id": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "posted": {
+                                "type": "string"
+                            },
+                            "release": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "listing_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync user lists and their items.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/lists",
+                    "group": "Lists"
+                },
+                {
+                    "method": "GET",
+                    "path": "/list-items",
+                    "group": "Lists"
+                }
+            ],
+            "input": null,
+            "name": "lists",
+            "output": ["UserList", "ListItem"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["UserList", "ListItem"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "UserList": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "list_id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "public": {
+                                "type": "boolean"
+                            },
+                            "date_added": {
+                                "type": "string"
+                            },
+                            "date_changed": {
+                                "type": "string"
+                            },
+                            "resource_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "list_id", "name"],
+                        "additionalProperties": false
+                    },
+                    "ListItem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "list_id": {
+                                "type": "number"
+                            },
+                            "item_id": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "release_id": {
+                                "type": "number"
+                            },
+                            "position": {
+                                "type": "number"
+                            },
+                            "display_title": {
+                                "type": "string"
+                            },
+                            "comment": {
+                                "type": "string"
+                            },
+                            "uri": {
+                                "type": "string"
+                            },
+                            "resource_url": {
+                                "type": "string"
+                            },
+                            "image_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "list_id", "item_id", "type", "position"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync marketplace orders for the authenticated user.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/orders",
+                    "group": "Orders"
+                }
+            ],
+            "input": "SyncMetadata_discogs_orders",
+            "name": "orders",
+            "output": ["Order"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Order", "SyncMetadata_discogs_orders"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Order": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "order_id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "buyer": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "seller": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "total": {
+                                "anyOf": [
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "value": {
+                                                "type": "number"
+                                            },
+                                            "currency": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["value", "currency"],
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "created": {
+                                "type": "string"
+                            },
+                            "last_activity": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "order_id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_discogs_orders": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync the authenticated Discogs user profile.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/profile",
+                    "group": "Profile"
+                }
+            ],
+            "input": null,
+            "name": "profile",
+            "output": ["Profile"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Profile"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Profile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "home_page": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "profile": {
+                                "type": "string"
+                            },
+                            "registered": {
+                                "type": "string"
+                            },
+                            "rank": {
+                                "type": "number"
+                            },
+                            "num_collection": {
+                                "type": "number"
+                            },
+                            "num_wantlist": {
+                                "type": "number"
+                            },
+                            "num_pending": {
+                                "type": "number"
+                            },
+                            "num_for_sale": {
+                                "type": "number"
+                            },
+                            "buyer_num_ratings": {
+                                "type": "number"
+                            },
+                            "buyer_rating": {
+                                "type": "number"
+                            },
+                            "seller_num_ratings": {
+                                "type": "number"
+                            },
+                            "seller_rating": {
+                                "type": "number"
+                            },
+                            "curr_abbr": {
+                                "type": "string"
+                            },
+                            "releases_contributed": {
+                                "type": "number"
+                            },
+                            "releases_rated": {
+                                "type": "number"
+                            },
+                            "rating_avg": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "username"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync release submissions for the authenticated user.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/submissions",
+                    "group": "Submissions"
+                }
+            ],
+            "input": "SyncMetadata_discogs_submissions",
+            "name": "submissions",
+            "output": ["Submission"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Submission", "SyncMetadata_discogs_submissions"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Submission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "entity_type": {
+                                "type": "string",
+                                "enum": ["artist", "label", "release"]
+                            },
+                            "entity_id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "year": {
+                                "type": "number"
+                            },
+                            "resource_url": {
+                                "type": "string"
+                            },
+                            "date_added": {
+                                "type": "string"
+                            },
+                            "artists_sort": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "entity_type", "entity_id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_discogs_submissions": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync the authenticated user wantlist.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/wantlist",
+                    "group": "Wantlist"
+                }
+            ],
+            "input": null,
+            "name": "wantlist",
+            "output": ["WantlistItem"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["WantlistItem"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "WantlistItem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "release_id": {
+                                "type": "number"
+                            },
+                            "rating": {
+                                "type": "number"
+                            },
+                            "date_added": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "basic_information": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "release_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

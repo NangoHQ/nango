@@ -1,0 +1,2491 @@
+{
+    "providerConfigKey": "google-ads",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create an ad inside an ad group.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_createadgroupad",
+            "name": "create-ad-group-ad",
+            "output": ["ActionOutput_google_ads_createadgroupad"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_createadgroupad", "ActionOutput_google_ads_createadgroupad"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_createadgroupad": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "The Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            },
+                            "adGroupId": {
+                                "type": "string",
+                                "description": "The ad group ID where the ad will be created. Example: \"197714341345\""
+                            },
+                            "headlines": {
+                                "minItems": 3,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "At least 3 headlines for the responsive search ad."
+                            },
+                            "descriptions": {
+                                "minItems": 2,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "At least 2 descriptions for the responsive search ad."
+                            },
+                            "finalUrls": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Final URLs for the ad."
+                            },
+                            "status": {
+                                "description": "Ad status. Defaults to ENABLED.",
+                                "type": "string",
+                                "enum": ["ENABLED", "PAUSED"]
+                            }
+                        },
+                        "required": ["customerId", "adGroupId", "headlines", "descriptions", "finalUrls"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_createadgroupad": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string"
+                            },
+                            "adGroupAdId": {
+                                "type": "string"
+                            },
+                            "adId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an ad group in an existing Google Ads campaign",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_createadgroup",
+            "name": "create-ad-group",
+            "output": ["ActionOutput_google_ads_createadgroup"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_createadgroup", "ActionOutput_google_ads_createadgroup"],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_createadgroup": {
+                        "type": "object",
+                        "properties": {
+                            "campaign": {
+                                "type": "string",
+                                "description": "Campaign resource name. Example: \"customers/123/campaigns/456\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Ad group name. Example: \"My Ad Group\""
+                            },
+                            "type": {
+                                "type": "string",
+                                "description": "Ad group type. Example: \"SEARCH_STANDARD\""
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Ad group status. Example: \"ENABLED\" or \"PAUSED\""
+                            },
+                            "cpcBidMicros": {
+                                "type": "string",
+                                "description": "CPC bid in micros. Example: \"1000000\""
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["campaign", "name", "type", "status", "cpcBidMicros"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_createadgroup": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "campaign": {
+                                "type": "string"
+                            },
+                            "cpcBidMicros": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a campaign budget for one or more campaigns.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_createcampaignbudget",
+            "name": "create-campaign-budget",
+            "output": ["ActionOutput_google_ads_createcampaignbudget"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_createcampaignbudget", "ActionOutput_google_ads_createcampaignbudget"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_createcampaignbudget": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "The Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the campaign budget."
+                            },
+                            "amountMicros": {
+                                "type": "string",
+                                "description": "The budget amount in micros. Example: \"1000000\""
+                            },
+                            "deliveryMethod": {
+                                "type": "string",
+                                "enum": ["STANDARD", "ACCELERATED"],
+                                "description": "The delivery method for the budget."
+                            },
+                            "explicitlyShared": {
+                                "type": "boolean",
+                                "description": "Whether the budget is shared across multiple campaigns."
+                            }
+                        },
+                        "required": ["customerId", "name", "amountMicros", "deliveryMethod", "explicitlyShared"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_createcampaignbudget": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add geographic location targeting to a campaign using a geo target constant.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_createcampaignlocationcriterion",
+            "name": "create-campaign-location-criterion",
+            "output": ["ActionOutput_google_ads_createcampaignlocationcriterion"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_createcampaignlocationcriterion", "ActionOutput_google_ads_createcampaignlocationcriterion"],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_createcampaignlocationcriterion": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Customer ID. Example: \"1781900691\""
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            },
+                            "campaign": {
+                                "type": "string",
+                                "description": "Campaign resource name. Example: \"customers/1781900691/campaigns/24027360183\""
+                            },
+                            "geoTargetConstant": {
+                                "type": "string",
+                                "description": "Geo target constant resource name. Example: \"geoTargetConstants/21167\""
+                            }
+                        },
+                        "required": ["customerId", "campaign", "geoTargetConstant"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_createcampaignlocationcriterion": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a negative keyword criterion at the campaign level.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_createcampaignnegativekeyword",
+            "name": "create-campaign-negative-keyword",
+            "output": ["ActionOutput_google_ads_createcampaignnegativekeyword"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_createcampaignnegativekeyword", "ActionOutput_google_ads_createcampaignnegativekeyword"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_createcampaignnegativekeyword": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "campaignId": {
+                                "type": "string",
+                                "description": "Campaign ID. Example: \"24027360183\""
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "Negative keyword text. Example: \"free\""
+                            },
+                            "matchType": {
+                                "type": "string",
+                                "enum": ["EXACT", "PHRASE", "BROAD"],
+                                "description": "Keyword match type."
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerId", "campaignId", "text", "matchType"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_createcampaignnegativekeyword": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string",
+                                "description": "Resource name of the created campaign criterion. Example: \"customers/1781900691/campaignCriteria/24027360183~123456789\""
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a campaign that references an existing budget.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_createcampaign",
+            "name": "create-campaign",
+            "output": ["ActionOutput_google_ads_createcampaign"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_createcampaign", "ActionOutput_google_ads_createcampaign"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_createcampaign": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Campaign name."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["ENABLED", "PAUSED"],
+                                "description": "Campaign status."
+                            },
+                            "advertisingChannelType": {
+                                "type": "string",
+                                "enum": [
+                                    "SEARCH",
+                                    "DISPLAY",
+                                    "SHOPPING",
+                                    "HOTEL",
+                                    "VIDEO",
+                                    "MULTI_CHANNEL",
+                                    "LOCAL",
+                                    "SMART",
+                                    "PERFORMANCE_MAX",
+                                    "TRAVEL",
+                                    "DEMAND_GEN"
+                                ],
+                                "description": "Advertising channel type."
+                            },
+                            "campaignBudget": {
+                                "type": "string",
+                                "description": "Resource name of the existing campaign budget. Example: \"customers/123/campaignBudgets/456\""
+                            },
+                            "biddingStrategy": {
+                                "type": "string",
+                                "enum": [
+                                    "manualCpc",
+                                    "maximizeConversions",
+                                    "maximizeClicks",
+                                    "targetCpa",
+                                    "targetRoas",
+                                    "targetImpressionShare",
+                                    "maximizeConversionValue",
+                                    "percentCpc",
+                                    "pageOnePromoted"
+                                ],
+                                "description": "Bidding strategy type."
+                            },
+                            "networkSettings": {
+                                "type": "object",
+                                "properties": {
+                                    "targetGoogleSearch": {
+                                        "type": "boolean"
+                                    },
+                                    "targetSearchNetwork": {
+                                        "type": "boolean"
+                                    },
+                                    "targetContentNetwork": {
+                                        "type": "boolean"
+                                    },
+                                    "targetPartnerSearchNetwork": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["targetGoogleSearch", "targetSearchNetwork", "targetContentNetwork", "targetPartnerSearchNetwork"],
+                                "additionalProperties": false,
+                                "description": "Network settings."
+                            },
+                            "containsEuPoliticalAdvertising": {
+                                "type": "string",
+                                "enum": ["CONTAINS_EU_POLITICAL_ADVERTISING", "DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING"],
+                                "description": "EU political advertising flag."
+                            },
+                            "targetCpaMicros": {
+                                "description": "Average target CPA in micros. Required when biddingStrategy is \"targetCpa\". Example: \"1000000\"",
+                                "type": "string",
+                                "pattern": "^[1-9]\\d*$"
+                            },
+                            "targetRoas": {
+                                "description": "Target return on ad spend. Must be between 0.01 and 1000.0. Required when biddingStrategy is \"targetRoas\". Example: 3.5",
+                                "type": "number",
+                                "minimum": 0.01,
+                                "maximum": 1000
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "customerId",
+                            "name",
+                            "status",
+                            "advertisingChannelType",
+                            "campaignBudget",
+                            "biddingStrategy",
+                            "networkSettings",
+                            "containsEuPoliticalAdvertising"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_createcampaign": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string",
+                                "description": "Resource name of the created campaign."
+                            },
+                            "campaignId": {
+                                "description": "Campaign ID extracted from the resource name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a conversion action for tracking conversions.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_createconversionaction",
+            "name": "create-conversion-action",
+            "output": ["ActionOutput_google_ads_createconversionaction"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_createconversionaction", "ActionOutput_google_ads_createconversionaction"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_createconversionaction": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID for API access. Example: \"3608201627\"",
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Unique conversion action name."
+                            },
+                            "type": {
+                                "type": "string",
+                                "description": "Conversion action type. Example: \"WEBPAGE\""
+                            },
+                            "category": {
+                                "type": "string",
+                                "description": "Conversion action category. Example: \"DEFAULT\""
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Conversion action status. Example: \"ENABLED\""
+                            },
+                            "defaultValue": {
+                                "description": "Default conversion value.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["customerId", "name", "type", "category", "status"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_createconversionaction": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string",
+                                "description": "Resource name of the created conversion action. Example: \"customers/1781900691/conversionActions/7685274465\""
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a positive keyword criterion to an ad group.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_createkeywordcriterion",
+            "name": "create-keyword-criterion",
+            "output": ["ActionOutput_google_ads_createkeywordcriterion"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_createkeywordcriterion", "ActionOutput_google_ads_createkeywordcriterion"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_createkeywordcriterion": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "adGroupId": {
+                                "type": "string",
+                                "description": "Ad group ID to add the keyword to. Example: \"197714341345\""
+                            },
+                            "keywordText": {
+                                "type": "string",
+                                "description": "Keyword text. Example: \"nango integration\""
+                            },
+                            "keywordMatchType": {
+                                "type": "string",
+                                "enum": ["EXACT", "PHRASE", "BROAD"],
+                                "description": "Keyword match type. Example: \"EXACT\""
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["ENABLED", "PAUSED"],
+                                "description": "Criterion status. Example: \"ENABLED\""
+                            },
+                            "cpcBidMicros": {
+                                "description": "Optional CPC bid in micros. Example: 1000000",
+                                "type": "number"
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerId", "adGroupId", "keywordText", "keywordMatchType", "status"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_createkeywordcriterion": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string",
+                                "description": "Full resource name of the created criterion."
+                            },
+                            "criterionId": {
+                                "description": "Numeric criterion ID extracted from the resource name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a negative keyword criterion to an ad group so its ads stop showing for that term.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_createnegativekeyword",
+            "name": "create-negative-keyword",
+            "output": ["ActionOutput_google_ads_createnegativekeyword"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_createnegativekeyword", "ActionOutput_google_ads_createnegativekeyword"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_createnegativekeyword": {
+                        "type": "object",
+                        "properties": {
+                            "customer_id": {
+                                "type": "string",
+                                "description": "Customer ID. Example: \"1781900691\""
+                            },
+                            "login_customer_id": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            },
+                            "ad_group_id": {
+                                "type": "string",
+                                "description": "Ad group ID. Example: \"197714341345\""
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "Keyword text. Example: \"free\""
+                            },
+                            "match_type": {
+                                "type": "string",
+                                "enum": ["EXACT", "PHRASE", "BROAD"],
+                                "description": "Keyword match type. Example: \"EXACT\""
+                            }
+                        },
+                        "required": ["customer_id", "ad_group_id", "text", "match_type"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_createnegativekeyword": {
+                        "type": "object",
+                        "properties": {
+                            "resource_name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resource_name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Generate keyword ideas and search volume/competition metrics from a seed keyword list or URL.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_generatekeywordideas",
+            "name": "generate-keyword-ideas",
+            "output": ["ActionOutput_google_ads_generatekeywordideas"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_generatekeywordideas", "ActionOutput_google_ads_generatekeywordideas"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_generatekeywordideas": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "keywords": {
+                                "description": "Seed keywords to generate ideas from. Example: [\"plumber\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "url": {
+                                "description": "URL seed to generate ideas from. Example: \"https://example.com/plumbing\"",
+                                "type": "string"
+                            },
+                            "site": {
+                                "description": "Site seed to generate ideas from. Example: \"example.com\"",
+                                "type": "string"
+                            },
+                            "language": {
+                                "description": "Language constant resource name. Example: \"languageConstants/1000\"",
+                                "type": "string"
+                            },
+                            "geoTargetConstants": {
+                                "description": "Geo target constant resource names. Example: [\"geoTargetConstants/2840\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "keywordPlanNetwork": {
+                                "description": "Keyword plan network. Example: \"GOOGLE_SEARCH\"",
+                                "type": "string"
+                            },
+                            "loginCustomerId": {
+                                "description": "Login customer ID when accessing via a manager account. Example: \"3608201627\"",
+                                "type": "string"
+                            },
+                            "includeAdultKeywords": {
+                                "description": "Whether to include adult keywords in the response.",
+                                "type": "boolean"
+                            },
+                            "pageToken": {
+                                "description": "Pagination token for the next page of results.",
+                                "type": "string"
+                            },
+                            "pageSize": {
+                                "description": "Number of results to retrieve in a single page.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["customerId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_generatekeywordideas": {
+                        "type": "object",
+                        "properties": {
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "keywordIdeaMetrics": {
+                                            "type": "object",
+                                            "properties": {
+                                                "avgMonthlySearches": {
+                                                    "type": "string"
+                                                },
+                                                "monthlySearchVolumes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "year": {
+                                                                "type": "string"
+                                                            },
+                                                            "month": {
+                                                                "type": "string"
+                                                            },
+                                                            "monthlySearches": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "competition": {
+                                                    "type": "string"
+                                                },
+                                                "competitionIndex": {
+                                                    "type": "string"
+                                                },
+                                                "lowTopOfPageBidMicros": {
+                                                    "type": "string"
+                                                },
+                                                "highTopOfPageBidMicros": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "closeVariants": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            },
+                            "totalSize": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["results"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List customer accounts directly accessible to the authenticated user.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_listaccessiblecustomers",
+            "name": "list-accessible-customers",
+            "output": ["ActionOutput_google_ads_listaccessiblecustomers"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_listaccessiblecustomers", "ActionOutput_google_ads_listaccessiblecustomers"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_listaccessiblecustomers": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_listaccessiblecustomers": {
+                        "type": "object",
+                        "properties": {
+                            "resourceNames": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove an ad from an ad group by resource name.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_removeadgroupad",
+            "name": "remove-ad-group-ad",
+            "output": ["ActionOutput_google_ads_removeadgroupad"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_removeadgroupad", "ActionOutput_google_ads_removeadgroupad"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_removeadgroupad": {
+                        "type": "object",
+                        "properties": {
+                            "resource_name": {
+                                "type": "string",
+                                "description": "The resource name of the ad group ad to remove. Example: \"customers/1781900691/adGroupAds/197714341345~816946667444\""
+                            },
+                            "login_customer_id": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resource_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_removeadgroupad": {
+                        "type": "object",
+                        "properties": {
+                            "resource_name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resource_name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove an ad group by resource name.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_removeadgroup",
+            "name": "remove-ad-group",
+            "output": ["ActionOutput_google_ads_removeadgroup"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_removeadgroup", "ActionOutput_google_ads_removeadgroup"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_removeadgroup": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string",
+                                "description": "Ad group resource name. Example: \"customers/1781900691/adGroups/197714341425\""
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string",
+                                "pattern": "^\\d+$"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_removeadgroup": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove an unused campaign budget by resource name.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_removecampaignbudget",
+            "name": "remove-campaign-budget",
+            "output": ["ActionOutput_google_ads_removecampaignbudget"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_removecampaignbudget", "ActionOutput_google_ads_removecampaignbudget"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_removecampaignbudget": {
+                        "type": "object",
+                        "properties": {
+                            "resource_name": {
+                                "type": "string",
+                                "description": "The campaign budget resource name. Example: \"customers/123/campaignBudgets/456\""
+                            },
+                            "login_customer_id": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resource_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_removecampaignbudget": {
+                        "type": "object",
+                        "properties": {
+                            "resource_name": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a campaign-level criterion (negative keyword or location target) by resource name.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_removecampaigncriterion",
+            "name": "remove-campaign-criterion",
+            "output": ["ActionOutput_google_ads_removecampaigncriterion"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_removecampaigncriterion", "ActionOutput_google_ads_removecampaigncriterion"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_removecampaigncriterion": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "The Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            },
+                            "resourceName": {
+                                "type": "string",
+                                "description": "The resource name of the campaign criterion to remove. Example: \"customers/1781900691/campaignCriteria/24027360183~2515302470834\""
+                            }
+                        },
+                        "required": ["customerId", "resourceName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_removecampaigncriterion": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string",
+                                "description": "The resource name of the removed campaign criterion."
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a campaign by resource name.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_removecampaign",
+            "name": "remove-campaign",
+            "output": ["ActionOutput_google_ads_removecampaign"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_removecampaign", "ActionOutput_google_ads_removecampaign"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_removecampaign": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string",
+                                "description": "Campaign resource name. Example: \"customers/1781900691/campaigns/24036861751\""
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_removecampaign": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a conversion action by resource name.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_removeconversionaction",
+            "name": "remove-conversion-action",
+            "output": ["ActionOutput_google_ads_removeconversionaction"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_removeconversionaction", "ActionOutput_google_ads_removeconversionaction"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_removeconversionaction": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string",
+                                "description": "Resource name of the conversion action to remove. Example: customers/123/conversionActions/456"
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string",
+                                "pattern": "^\\d+$"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_removeconversionaction": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a keyword criterion from an ad group.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_removekeywordcriterion",
+            "name": "remove-keyword-criterion",
+            "output": ["ActionOutput_google_ads_removekeywordcriterion"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_removekeywordcriterion", "ActionOutput_google_ads_removekeywordcriterion"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_removekeywordcriterion": {
+                        "type": "object",
+                        "properties": {
+                            "resource_name": {
+                                "type": "string",
+                                "description": "Ad group criterion resource name. Example: customers/1781900691/adGroupCriteria/197714341345~2491223357239"
+                            },
+                            "login_customer_id": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: 3608201627",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resource_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_removekeywordcriterion": {
+                        "type": "object",
+                        "properties": {
+                            "resource_name": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Run a GAQL query and return paged Google Ads rows.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_searchgoogleads",
+            "name": "search-google-ads",
+            "output": ["ActionOutput_google_ads_searchgoogleads"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_searchgoogleads", "ActionOutput_google_ads_searchgoogleads"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_searchgoogleads": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "query": {
+                                "type": "string",
+                                "description": "GAQL query string. Example: \"SELECT campaign.id, campaign.name FROM campaign LIMIT 10\""
+                            },
+                            "pageToken": {
+                                "description": "Pagination token from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through a manager hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerId", "query"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_searchgoogleads": {
+                        "type": "object",
+                        "properties": {
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Run a GAQL query with streamed results",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_searchstreamgoogleads",
+            "name": "search-stream-google-ads",
+            "output": ["ActionOutput_google_ads_searchstreamgoogleads"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_searchstreamgoogleads", "ActionOutput_google_ads_searchstreamgoogleads"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_searchstreamgoogleads": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "query": {
+                                "type": "string",
+                                "description": "GAQL query string. Example: \"SELECT campaign.id, campaign.name FROM campaign LIMIT 10\""
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through a manager hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerId", "query"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_searchstreamgoogleads": {
+                        "type": "object",
+                        "properties": {
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                },
+                                "description": "Flattened array of GoogleAdsRow objects from all batches"
+                            },
+                            "fieldMask": {
+                                "description": "Field mask from the last batch",
+                                "type": "string"
+                            },
+                            "summaryRow": {
+                                "description": "Summary row from the last batch",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "requestId": {
+                                "description": "Request ID from the last batch",
+                                "type": "string"
+                            },
+                            "nextPageToken": {
+                                "description": "Pagination token for subsequent requests",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["rows"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Look up geo target constant resource names for location names or codes, for use in campaign location targeting.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_suggestgeotargetconstants",
+            "name": "suggest-geo-target-constants",
+            "output": ["ActionOutput_google_ads_suggestgeotargetconstants"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_suggestgeotargetconstants", "ActionOutput_google_ads_suggestgeotargetconstants"],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_suggestgeotargetconstants": {
+                        "type": "object",
+                        "properties": {
+                            "locale": {
+                                "description": "Locale code. Example: \"en\"",
+                                "type": "string"
+                            },
+                            "countryCode": {
+                                "description": "Country code. Example: \"US\"",
+                                "type": "string"
+                            },
+                            "locationNames": {
+                                "description": "Location names to search by. At most 25 names can be set.",
+                                "type": "object",
+                                "properties": {
+                                    "names": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": ["names"],
+                                "additionalProperties": false
+                            },
+                            "geoTargetConstants": {
+                                "description": "Geo target constant resource names to filter by.",
+                                "type": "object",
+                                "properties": {
+                                    "resourceNames": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": ["resourceNames"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_suggestgeotargetconstants": {
+                        "type": "object",
+                        "properties": {
+                            "geoTargetConstantSuggestions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "geoTargetConstant": {
+                                            "type": "object",
+                                            "properties": {
+                                                "resourceName": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "countryCode": {
+                                                    "type": "string"
+                                                },
+                                                "targetType": {
+                                                    "type": "string"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "canonicalName": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["resourceName"],
+                                            "additionalProperties": false
+                                        },
+                                        "geoTargetConstantParents": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "resourceName": {
+                                                        "type": "string"
+                                                    },
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "countryCode": {
+                                                        "type": "string"
+                                                    },
+                                                    "targetType": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "canonicalName": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["resourceName"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "locale": {
+                                            "type": "string"
+                                        },
+                                        "reach": {
+                                            "type": "string"
+                                        },
+                                        "searchTerm": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["geoTargetConstant"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["geoTargetConstantSuggestions"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update mutable fields on an ad group ad",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_updateadgroupad",
+            "name": "update-ad-group-ad",
+            "output": ["ActionOutput_google_ads_updateadgroupad"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_updateadgroupad", "ActionOutput_google_ads_updateadgroupad"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_updateadgroupad": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Customer ID. Example: \"1781900691\""
+                            },
+                            "resourceName": {
+                                "type": "string",
+                                "description": "Ad group ad resource name. Example: \"customers/1781900691/adGroupAds/197714341345~816946667438\""
+                            },
+                            "updateMask": {
+                                "type": "string",
+                                "description": "Comma-separated list of fields to update. Example: \"status\" or \"ad.finalUrls\""
+                            },
+                            "status": {
+                                "description": "Ad group ad status. Example: \"ENABLED\" or \"PAUSED\"",
+                                "type": "string"
+                            },
+                            "finalUrls": {
+                                "description": "Final URLs for the ad",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "labels": {
+                                "description": "Label resource names to attach to the ad group ad",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerId", "resourceName", "updateMask"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_updateadgroupad": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update mutable fields on an ad group.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_updateadgroup",
+            "name": "update-ad-group",
+            "output": ["ActionOutput_google_ads_updateadgroup"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_updateadgroup", "ActionOutput_google_ads_updateadgroup"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_updateadgroup": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "The customer ID. Example: \"1781900691\""
+                            },
+                            "loginCustomerId": {
+                                "description": "The manager account ID (login-customer-id) if accessing via MCC. Example: \"3608201627\"",
+                                "type": "string"
+                            },
+                            "adGroupId": {
+                                "type": "string",
+                                "description": "The ad group ID. Example: \"197714341345\""
+                            },
+                            "name": {
+                                "description": "The new name for the ad group.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "The new status.",
+                                "type": "string",
+                                "enum": ["UNSPECIFIED", "UNKNOWN", "ENABLED", "PAUSED", "REMOVED"]
+                            },
+                            "cpcBidMicros": {
+                                "description": "The max CPC bid in micros as a string. Example: \"1000000\"",
+                                "type": "string"
+                            },
+                            "targetingSetting": {
+                                "description": "Targeting settings to update.",
+                                "type": "object",
+                                "properties": {
+                                    "targetRestrictions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "targetingDimension": {
+                                                    "type": "string"
+                                                },
+                                                "bidOnly": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["customerId", "adGroupId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_updateadgroup": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update mutable fields on a campaign budget.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_updatecampaignbudget",
+            "name": "update-campaign-budget",
+            "output": ["ActionOutput_google_ads_updatecampaignbudget"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_updatecampaignbudget", "ActionOutput_google_ads_updatecampaignbudget"],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_updatecampaignbudget": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "campaignBudgetId": {
+                                "type": "string",
+                                "description": "Campaign budget ID to update. Example: \"15717542877\""
+                            },
+                            "amountMicros": {
+                                "description": "Average daily budget amount in micros. Example: \"500000\"",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "Name of the campaign budget.",
+                                "type": "string"
+                            },
+                            "explicitlyShared": {
+                                "description": "Whether this budget can be shared across campaigns.",
+                                "type": "boolean"
+                            },
+                            "deliveryMethod": {
+                                "description": "Delivery method. Example: \"STANDARD\" or \"ACCELERATED\"",
+                                "type": "string"
+                            },
+                            "totalAmountMicros": {
+                                "description": "Total budget amount in micros for custom period budgets.",
+                                "type": "string"
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerId", "campaignBudgetId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_updatecampaignbudget": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string",
+                                "description": "Resource name of the updated campaign budget. Example: \"customers/1781900691/campaignBudgets/15717542877\""
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update mutable campaign settings.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_updatecampaign",
+            "name": "update-campaign",
+            "output": ["ActionOutput_google_ads_updatecampaign"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_updatecampaign", "ActionOutput_google_ads_updatecampaign"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_updatecampaign": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "campaignId": {
+                                "type": "string",
+                                "description": "Campaign ID to update. Example: \"24027360183\""
+                            },
+                            "updateMask": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Fields to update. Example: [\"name\", \"status\"]"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["ENABLED", "PAUSED", "REMOVED"]
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "endDate": {
+                                "type": "string"
+                            },
+                            "campaignBudget": {
+                                "type": "string"
+                            },
+                            "manualCpc": {
+                                "type": "object",
+                                "properties": {
+                                    "enhancedCpcEnabled": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "targetCpa": {
+                                "type": "object",
+                                "properties": {
+                                    "targetCpaMicros": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "targetRoas": {
+                                "type": "object",
+                                "properties": {
+                                    "targetRoas": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "maximizeConversions": {
+                                "type": "object",
+                                "properties": {
+                                    "targetCpaMicros": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "maximizeConversionValue": {
+                                "type": "object",
+                                "properties": {
+                                    "targetRoas": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "networkSettings": {
+                                "type": "object",
+                                "properties": {
+                                    "targetGoogleSearch": {
+                                        "type": "boolean"
+                                    },
+                                    "targetSearchNetwork": {
+                                        "type": "boolean"
+                                    },
+                                    "targetContentNetwork": {
+                                        "type": "boolean"
+                                    },
+                                    "targetPartnerSearchNetwork": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID for login-customer-id header. Falls back to connection metadata. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerId", "campaignId", "updateMask"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_updatecampaign": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update mutable fields on a conversion action",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_updateconversionaction",
+            "name": "update-conversion-action",
+            "output": ["ActionOutput_google_ads_updateconversionaction"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_updateconversionaction", "ActionOutput_google_ads_updateconversionaction"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_updateconversionaction": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "conversionActionId": {
+                                "type": "string",
+                                "description": "Conversion action ID. Example: \"7685274465\""
+                            },
+                            "name": {
+                                "description": "New name for the conversion action",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Status of the conversion action",
+                                "type": "string",
+                                "enum": ["ENABLED", "PAUSED", "REMOVED"]
+                            },
+                            "valueSettings": {
+                                "description": "Value settings for the conversion action",
+                                "type": "object",
+                                "properties": {
+                                    "defaultValue": {
+                                        "description": "Default value for the conversion action",
+                                        "type": "number"
+                                    },
+                                    "defaultCurrencyCode": {
+                                        "description": "Default currency code",
+                                        "type": "string"
+                                    },
+                                    "alwaysUseDefaultValue": {
+                                        "description": "Whether to always use the default value",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID for access. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerId", "conversionActionId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_updateconversionaction": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string",
+                                "description": "Resource name of the updated conversion action"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update mutable fields on an ad group keyword criterion.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_updatekeywordcriterion",
+            "name": "update-keyword-criterion",
+            "output": ["ActionOutput_google_ads_updatekeywordcriterion"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_updatekeywordcriterion", "ActionOutput_google_ads_updatekeywordcriterion"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_updatekeywordcriterion": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string",
+                                "description": "Google Ads customer ID. Example: \"1781900691\""
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager account ID (login-customer-id) required when accessing a client account through an MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            },
+                            "resourceName": {
+                                "type": "string",
+                                "description": "Resource name of the ad group criterion. Example: \"customers/1781900691/adGroupCriteria/197714341345~2491223357039\""
+                            },
+                            "status": {
+                                "description": "Keyword status to update.",
+                                "type": "string",
+                                "enum": ["ENABLED", "PAUSED", "REMOVED"]
+                            },
+                            "cpcBidMicros": {
+                                "description": "CPC bid in micros to update. Example: \"1500000\"",
+                                "type": "string"
+                            },
+                            "finalUrls": {
+                                "description": "Final URLs to update.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["customerId", "resourceName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_updatekeywordcriterion": {
+                        "type": "object",
+                        "properties": {
+                            "resourceName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Validate a mutate request without applying changes.",
+            "endpoint": null,
+            "input": "ActionInput_google_ads_validategoogleadsmutate",
+            "name": "validate-google-ads-mutate",
+            "output": ["ActionOutput_google_ads_validategoogleadsmutate"],
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "usedModels": ["ActionInput_google_ads_validategoogleadsmutate", "ActionOutput_google_ads_validategoogleadsmutate"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_ads_validategoogleadsmutate": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "Google Ads mutate endpoint path. Example: \"v25/customers/1781900691/campaigns:mutate\""
+                            },
+                            "body": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Mutate request body without validateOnly. Example: {\"operations\":[{\"create\":{...}}]}"
+                            },
+                            "loginCustomerId": {
+                                "description": "Manager customer ID for MCC hierarchy. Example: \"3608201627\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["path", "body"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_ads_validategoogleadsmutate": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync directly accessible Google Ads customer accounts",
+            "auto_start": false,
+            "endpoints": [],
+            "input": null,
+            "name": "accessible-customers",
+            "output": ["Customer"],
+            "runs": "every hour",
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Customer"],
+            "version": "1.0.4",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Customer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "resourceName": {
+                                "type": "string"
+                            },
+                            "descriptiveName": {
+                                "type": "string"
+                            },
+                            "manager": {
+                                "type": "boolean"
+                            },
+                            "testAccount": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "resourceName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync ad group ads for customer accounts in scope.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_google_ads_adgroupads",
+            "name": "ad-group-ads",
+            "output": ["AdGroupAd"],
+            "runs": "every hour",
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["AdGroupAd", "SyncMetadata_google_ads_adgroupads"],
+            "version": "1.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "AdGroupAd": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "ad_name": {
+                                "type": "string"
+                            },
+                            "ad_type": {
+                                "type": "string"
+                            },
+                            "ad_group": {
+                                "type": "string"
+                            },
+                            "ad_group_name": {
+                                "type": "string"
+                            },
+                            "campaign": {
+                                "type": "string"
+                            },
+                            "campaign_name": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_google_ads_adgroupads": {
+                        "type": "object",
+                        "properties": {
+                            "customer_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "login_customer_id": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync ad groups for customer accounts in scope.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_google_ads_adgroups",
+            "name": "ad-groups",
+            "output": ["AdGroup"],
+            "runs": "every hour",
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["AdGroup", "SyncMetadata_google_ads_adgroups"],
+            "version": "1.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "AdGroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "resource_name": {
+                                "type": "string"
+                            },
+                            "campaign_id": {
+                                "type": "string"
+                            },
+                            "campaign_name": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "cpc_bid_micros": {
+                                "type": "string"
+                            },
+                            "cpm_bid_micros": {
+                                "type": "string"
+                            },
+                            "target_cpa_micros": {
+                                "type": "string"
+                            },
+                            "target_roas": {
+                                "type": "number"
+                            },
+                            "tracking_url_template": {
+                                "type": "string"
+                            },
+                            "final_url_suffix": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "resource_name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_google_ads_adgroups": {
+                        "type": "object",
+                        "properties": {
+                            "customer_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "login_customer_id": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync campaign budgets for customer accounts in scope",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_google_ads_campaignbudgets",
+            "name": "campaign-budgets",
+            "output": ["CampaignBudget"],
+            "runs": "every hour",
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["CampaignBudget", "SyncMetadata_google_ads_campaignbudgets"],
+            "version": "1.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CampaignBudget": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable resource name of the campaign budget"
+                            },
+                            "resourceName": {
+                                "type": "string",
+                                "description": "The resource name of the campaign budget"
+                            },
+                            "amountMicros": {
+                                "description": "The amount of the budget in micros",
+                                "type": "string"
+                            },
+                            "explicitlyShared": {
+                                "description": "Whether the budget is explicitly shared across campaigns",
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "description": "The status of the campaign budget",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "The name of the campaign budget",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "resourceName"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_google_ads_campaignbudgets": {
+                        "type": "object",
+                        "properties": {
+                            "customer_ids": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Google Ads customer IDs to sync campaign budgets for"
+                            },
+                            "login_customer_id": {
+                                "description": "Manager account ID for API access hierarchy",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customer_ids"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync campaign-level criteria (negative keywords and location targeting) for customer accounts in scope.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_google_ads_campaigncriteria",
+            "name": "campaign-criteria",
+            "output": ["CampaignCriterion"],
+            "runs": "every hour",
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["CampaignCriterion", "SyncMetadata_google_ads_campaigncriteria"],
+            "version": "1.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CampaignCriterion": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "resourceName": {
+                                "type": "string"
+                            },
+                            "campaignId": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "negative": {
+                                "type": "boolean"
+                            },
+                            "keywordText": {
+                                "type": "string"
+                            },
+                            "keywordMatchType": {
+                                "type": "string"
+                            },
+                            "geoTargetConstant": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "resourceName", "campaignId"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_google_ads_campaigncriteria": {
+                        "type": "object",
+                        "properties": {
+                            "customerIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "loginCustomerId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerIds"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync campaigns for customer accounts in scope.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_google_ads_campaigns",
+            "name": "campaigns",
+            "output": ["Campaign"],
+            "runs": "every hour",
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Campaign", "SyncMetadata_google_ads_campaigns"],
+            "version": "1.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Campaign": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "advertisingChannelType": {
+                                "type": "string"
+                            },
+                            "startDate": {
+                                "type": "string"
+                            },
+                            "endDate": {
+                                "type": "string"
+                            },
+                            "containsEuPoliticalAdvertising": {
+                                "type": "string"
+                            },
+                            "campaignBudgetResourceName": {
+                                "type": "string"
+                            },
+                            "budgetAmountMicros": {
+                                "type": ["string", "null"]
+                            },
+                            "budgetStatus": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_google_ads_campaigns": {
+                        "type": "object",
+                        "properties": {
+                            "customer_ids": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "login_customer_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customer_ids", "login_customer_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync conversion actions configured on customer accounts in scope",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_google_ads_conversionactions",
+            "name": "conversion-actions",
+            "output": ["ConversionAction"],
+            "runs": "every hour",
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ConversionAction", "SyncMetadata_google_ads_conversionactions"],
+            "version": "1.0.5",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ConversionAction": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "category": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "valueSettings": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "defaultValue": {
+                                                "type": ["number", "null"]
+                                            },
+                                            "alwaysUseDefaultValue": {
+                                                "type": ["boolean", "null"]
+                                            },
+                                            "currencyCode": {
+                                                "type": ["string", "null"]
+                                            },
+                                            "defaultCurrencyCode": {
+                                                "type": ["string", "null"]
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_google_ads_conversionactions": {
+                        "type": "object",
+                        "properties": {
+                            "customerIds": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "loginCustomerId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerIds"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync ad group keyword criteria for customer accounts in scope",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_google_ads_keywordcriteria",
+            "name": "keyword-criteria",
+            "output": ["KeywordCriterion"],
+            "runs": "every hour",
+            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["KeywordCriterion", "SyncMetadata_google_ads_keywordcriteria"],
+            "version": "1.0.3",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "KeywordCriterion": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "resource_name": {
+                                "type": "string"
+                            },
+                            "customer_id": {
+                                "type": "string"
+                            },
+                            "campaign_id": {
+                                "type": "string"
+                            },
+                            "ad_group_id": {
+                                "type": "string"
+                            },
+                            "criterion_id": {
+                                "type": "string"
+                            },
+                            "keyword_text": {
+                                "type": "string"
+                            },
+                            "keyword_match_type": {
+                                "type": "string"
+                            },
+                            "negative": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "resource_name", "customer_id", "campaign_id", "ad_group_id", "criterion_id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_google_ads_keywordcriteria": {
+                        "type": "object",
+                        "properties": {
+                            "customer_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "login_customer_id": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

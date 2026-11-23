@@ -1,0 +1,1181 @@
+{
+    "providerConfigKey": "workday",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Retrieve a single job profile from Workday.",
+            "endpoint": null,
+            "input": "ActionInput_workday_getjobprofile",
+            "name": "get-job-profile",
+            "output": ["ActionOutput_workday_getjobprofile"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_getjobprofile", "ActionOutput_workday_getjobprofile"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_getjobprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Job_Profile_ID. Example: \"JOB_PROFILE_001\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_workday_getjobprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "inactive": {
+                                "type": "boolean"
+                            },
+                            "job_family": {
+                                "type": "string"
+                            },
+                            "management_level": {
+                                "type": "string"
+                            },
+                            "job_category": {
+                                "type": "string"
+                            },
+                            "reference_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single location from Workday.",
+            "endpoint": null,
+            "input": "ActionInput_workday_getlocation",
+            "name": "get-location",
+            "output": ["ActionOutput_workday_getlocation"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_getlocation", "ActionOutput_workday_getlocation"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_getlocation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Location_ID. Example: \"San_Francisco_Site\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_workday_getlocation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "location_code": {
+                                "type": "string"
+                            },
+                            "location_usage": {
+                                "type": "string"
+                            },
+                            "inactive": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "name", "inactive"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single organisation from Workday by its reference ID.",
+            "endpoint": null,
+            "input": "ActionInput_workday_getorganization",
+            "name": "get-organization",
+            "output": ["ActionOutput_workday_getorganization"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_getorganization", "ActionOutput_workday_getorganization"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_getorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Organization_Reference_ID. Example: \"HRIS_matrix\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_workday_getorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "subtype": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "external_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single position from Workday.",
+            "endpoint": null,
+            "input": "ActionInput_workday_getposition",
+            "name": "get-position",
+            "output": ["ActionOutput_workday_getposition"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_getposition", "ActionOutput_workday_getposition"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_getposition": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Position_ID. Example: \"P-00030\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_workday_getposition": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "position_code": {
+                                "type": "string"
+                            },
+                            "effective_date": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "inactive": {
+                                "type": "boolean"
+                            },
+                            "job_profile": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "worker": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single worker from Workday.",
+            "endpoint": null,
+            "input": "ActionInput_workday_getworker",
+            "name": "get-worker",
+            "output": ["ActionOutput_workday_getworker"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_getworker", "ActionOutput_workday_getworker"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_getworker": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Employee_ID. Example: \"21001\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_workday_getworker": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "employee_id": {
+                                "type": "string"
+                            },
+                            "contingent_worker_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List job profiles from Workday.",
+            "endpoint": null,
+            "input": "ActionInput_workday_listjobprofiles",
+            "name": "list-job-profiles",
+            "output": ["ActionOutput_workday_listjobprofiles"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_listjobprofiles", "ActionOutput_workday_listjobprofiles"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_listjobprofiles": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Page number for pagination (1-based). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_workday_listjobprofiles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "reference_id": {
+                                            "type": "string"
+                                        },
+                                        "inactive": {
+                                            "type": "boolean"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "effective_date": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name", "inactive"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List locations from Workday with pagination support.",
+            "endpoint": null,
+            "input": "ActionInput_workday_listlocations",
+            "name": "list-locations",
+            "output": ["ActionOutput_workday_listlocations"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_listlocations", "ActionOutput_workday_listlocations"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_listlocations": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_workday_listlocations": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "reference_id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "location_usage": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "inactive": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "name", "inactive"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page": {
+                                "description": "Next page number for pagination.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List organizations from Workday.",
+            "endpoint": null,
+            "input": "ActionInput_workday_listorganizations",
+            "name": "list-organizations",
+            "output": ["ActionOutput_workday_listorganizations"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_listorganizations", "ActionOutput_workday_listorganizations"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_listorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_workday_listorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "subtype": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "inactive": {
+                                            "type": "boolean"
+                                        },
+                                        "external_id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name", "inactive"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List positions from Workday.",
+            "endpoint": null,
+            "input": "ActionInput_workday_listpositions",
+            "name": "list-positions",
+            "output": ["ActionOutput_workday_listpositions"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_listpositions", "ActionOutput_workday_listpositions"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_listpositions": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_workday_listpositions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "job_profile_id": {
+                                            "type": "string"
+                                        },
+                                        "job_profile_name": {
+                                            "type": "string"
+                                        },
+                                        "location_id": {
+                                            "type": "string"
+                                        },
+                                        "location_name": {
+                                            "type": "string"
+                                        },
+                                        "worker_id": {
+                                            "type": "string"
+                                        },
+                                        "worker_name": {
+                                            "type": "string"
+                                        },
+                                        "availability_date": {
+                                            "type": "string"
+                                        },
+                                        "inactive": {
+                                            "type": "boolean"
+                                        },
+                                        "organization_id": {
+                                            "type": "string"
+                                        },
+                                        "organization_name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "title", "inactive"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List workers from Workday.",
+            "endpoint": null,
+            "input": "ActionInput_workday_listworkers",
+            "name": "list-workers",
+            "output": ["ActionOutput_workday_listworkers"],
+            "scopes": [],
+            "usedModels": ["ActionInput_workday_listworkers", "ActionOutput_workday_listworkers"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_workday_listworkers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_workday_listworkers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "employee_id": {
+                                            "type": "string"
+                                        },
+                                        "contingent_worker_id": {
+                                            "type": "string"
+                                        },
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "phone": {
+                                            "type": "string"
+                                        },
+                                        "hire_date": {
+                                            "type": "string"
+                                        },
+                                        "termination_date": {
+                                            "type": "string"
+                                        },
+                                        "worker_type": {
+                                            "type": "string"
+                                        },
+                                        "employment_status": {
+                                            "type": "string"
+                                        },
+                                        "business_title": {
+                                            "type": "string"
+                                        },
+                                        "job_profile": {
+                                            "type": "string"
+                                        },
+                                        "department": {
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "type": "string"
+                                        },
+                                        "manager_id": {
+                                            "type": "string"
+                                        },
+                                        "is_active": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync Workday employees and contingent workers.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/employees"
+                }
+            ],
+            "input": null,
+            "name": "employees",
+            "output": ["Employee"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Employee"],
+            "version": "3.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Employee": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "worker_id": {
+                                "type": "string"
+                            },
+                            "employee_id": {
+                                "type": "string"
+                            },
+                            "contingent_worker_id": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "hire_date": {
+                                "type": "string"
+                            },
+                            "termination_date": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "job_title": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "manager_id": {
+                                "type": "string"
+                            },
+                            "employment_type": {
+                                "type": "string"
+                            },
+                            "last_updated": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync Workday supervisory or security groups.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/groups"
+                }
+            ],
+            "input": null,
+            "name": "groups",
+            "output": ["Group"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Group"],
+            "version": "2.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Group": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Organization_Reference_ID"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Organization_Type_ID",
+                                "type": "string"
+                            },
+                            "subtype": {
+                                "description": "Organization_Subtype_ID",
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "inactive": {
+                                "type": "boolean"
+                            },
+                            "last_updated": {
+                                "description": "ISO 8601 datetime of last update",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "inactive"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync job profiles from Workday.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/job-profiles"
+                }
+            ],
+            "input": null,
+            "name": "job-profiles",
+            "output": ["JobProfile"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["JobProfile"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "JobProfile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "management_level_id": {
+                                "type": "string"
+                            },
+                            "job_level_id": {
+                                "type": "string"
+                            },
+                            "job_family_id": {
+                                "type": "string"
+                            },
+                            "job_category_id": {
+                                "type": "string"
+                            },
+                            "last_updated": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "active"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync locations from Workday.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/locations"
+                }
+            ],
+            "input": null,
+            "name": "locations",
+            "output": ["Location"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Location"],
+            "version": "2.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Location": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "inactive": {
+                                "type": "boolean"
+                            },
+                            "location_type": {
+                                "type": "string"
+                            },
+                            "time_zone": {
+                                "type": "string"
+                            },
+                            "usage": {
+                                "type": "string"
+                            },
+                            "last_updated": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync organizations from Workday.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/organizations"
+                }
+            ],
+            "input": null,
+            "name": "organizations",
+            "output": ["Organization"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Organization"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Organization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "subtype": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "reference_id": {
+                                "type": "string"
+                            },
+                            "inactive": {
+                                "type": "boolean"
+                            },
+                            "last_updated": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "inactive"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync positions from Workday.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/positions"
+                }
+            ],
+            "input": null,
+            "name": "positions",
+            "output": ["Position"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Position"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Position": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Position ID (e.g., \"POS-001\")"
+                            },
+                            "name": {
+                                "description": "Position name",
+                                "type": "string"
+                            },
+                            "position_code": {
+                                "description": "Position code",
+                                "type": "string"
+                            },
+                            "effective_date": {
+                                "description": "Effective date of the position",
+                                "type": "string"
+                            },
+                            "inactive": {
+                                "description": "Whether the position is inactive",
+                                "type": "boolean"
+                            },
+                            "job_profile_id": {
+                                "description": "Job profile reference ID",
+                                "type": "string"
+                            },
+                            "job_profile_name": {
+                                "description": "Job profile name",
+                                "type": "string"
+                            },
+                            "location_id": {
+                                "description": "Location reference ID",
+                                "type": "string"
+                            },
+                            "location_name": {
+                                "description": "Location name",
+                                "type": "string"
+                            },
+                            "supervisory_org_id": {
+                                "description": "Supervisory organization reference ID",
+                                "type": "string"
+                            },
+                            "supervisory_org_name": {
+                                "description": "Supervisory organization name",
+                                "type": "string"
+                            },
+                            "worker_id": {
+                                "description": "Assigned worker ID",
+                                "type": "string"
+                            },
+                            "worker_name": {
+                                "description": "Assigned worker name",
+                                "type": "string"
+                            },
+                            "full_time_equivalent": {
+                                "description": "Full-time equivalent percentage",
+                                "type": "string"
+                            },
+                            "scheduled_weekly_hours": {
+                                "description": "Scheduled weekly hours",
+                                "type": "string"
+                            },
+                            "pay_rate": {
+                                "description": "Pay rate",
+                                "type": "string"
+                            },
+                            "currency": {
+                                "description": "Currency code",
+                                "type": "string"
+                            },
+                            "compensation_frequency": {
+                                "description": "Compensation frequency",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync workers from Workday.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/workers"
+                }
+            ],
+            "input": null,
+            "name": "workers",
+            "output": ["Worker"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Worker"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Worker": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Worker unique identifier"
+                            },
+                            "employee_id": {
+                                "description": "Employee ID from Workday",
+                                "type": "string"
+                            },
+                            "contingent_worker_id": {
+                                "description": "Contingent Worker ID from Workday",
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "description": "User ID from Workday",
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "hire_date": {
+                                "type": "string"
+                            },
+                            "termination_date": {
+                                "type": "string"
+                            },
+                            "is_active": {
+                                "type": "boolean"
+                            },
+                            "worker_type": {
+                                "description": "Employee or Contingent_Worker",
+                                "type": "string"
+                            },
+                            "job_title": {
+                                "type": "string"
+                            },
+                            "business_title": {
+                                "type": "string"
+                            },
+                            "job_profile_id": {
+                                "type": "string"
+                            },
+                            "position_id": {
+                                "type": "string"
+                            },
+                            "manager_id": {
+                                "type": "string"
+                            },
+                            "location_id": {
+                                "type": "string"
+                            },
+                            "company_id": {
+                                "type": "string"
+                            },
+                            "cost_center_id": {
+                                "type": "string"
+                            },
+                            "department_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

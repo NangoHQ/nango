@@ -1,0 +1,2177 @@
+{
+    "providerConfigKey": "netsuite-tba",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates a vendor bill in Netsuite.",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_billcreate",
+            "name": "bill-create",
+            "output": ["ActionOutput_netsuite_tba_billcreate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_billcreate", "ActionOutput_netsuite_tba_billcreate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_billcreate": {
+                        "type": "object",
+                        "properties": {
+                            "vendorId": {
+                                "type": "string"
+                            },
+                            "tranDate": {
+                                "type": "string"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "memo": {
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "subsidiary": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "string"
+                            },
+                            "class": {
+                                "type": "string"
+                            },
+                            "terms": {
+                                "type": "string"
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "itemId": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "rate": {
+                                            "type": "number"
+                                        },
+                                        "locationId": {
+                                            "type": "string"
+                                        },
+                                        "departmentId": {
+                                            "type": "string"
+                                        },
+                                        "classId": {
+                                            "type": "string"
+                                        },
+                                        "customerId": {
+                                            "type": "string"
+                                        },
+                                        "isBillable": {
+                                            "type": "boolean"
+                                        },
+                                        "taxDetails": {
+                                            "type": "object",
+                                            "properties": {
+                                                "taxCode": {
+                                                    "type": "string"
+                                                },
+                                                "taxRate": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "inventoryDetail": {
+                                            "type": "object",
+                                            "properties": {
+                                                "binNumber": {
+                                                    "type": "string"
+                                                },
+                                                "expirationDate": {
+                                                    "type": "string"
+                                                },
+                                                "quantity": {
+                                                    "type": "number"
+                                                },
+                                                "serialNumber": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["itemId", "quantity", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "billingAddress": {
+                                "type": "object",
+                                "properties": {
+                                    "addr1": {
+                                        "type": "string"
+                                    },
+                                    "addr2": {
+                                        "type": "string"
+                                    },
+                                    "addr3": {
+                                        "type": "string"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "taxDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "taxCode": {
+                                        "type": "string"
+                                    },
+                                    "taxRate": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["vendorId", "tranDate", "currency", "lines"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_billcreate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Updates an existing vendor bill in Netsuite.",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_billupdate",
+            "name": "bill-update",
+            "output": ["ActionOutput_netsuite_tba_billupdate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_billupdate", "ActionOutput_netsuite_tba_billupdate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_billupdate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "vendorId": {
+                                "type": "string"
+                            },
+                            "tranDate": {
+                                "type": "string"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "memo": {
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "subsidiary": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "string"
+                            },
+                            "class": {
+                                "type": "string"
+                            },
+                            "terms": {
+                                "type": "string"
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "itemId": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "rate": {
+                                            "type": "number"
+                                        },
+                                        "locationId": {
+                                            "type": "string"
+                                        },
+                                        "departmentId": {
+                                            "type": "string"
+                                        },
+                                        "classId": {
+                                            "type": "string"
+                                        },
+                                        "customerId": {
+                                            "type": "string"
+                                        },
+                                        "isBillable": {
+                                            "type": "boolean"
+                                        },
+                                        "taxDetails": {
+                                            "type": "object",
+                                            "properties": {
+                                                "taxCode": {
+                                                    "type": "string"
+                                                },
+                                                "taxRate": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "inventoryDetail": {
+                                            "type": "object",
+                                            "properties": {
+                                                "binNumber": {
+                                                    "type": "string"
+                                                },
+                                                "expirationDate": {
+                                                    "type": "string"
+                                                },
+                                                "quantity": {
+                                                    "type": "number"
+                                                },
+                                                "serialNumber": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["itemId", "quantity", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "billingAddress": {
+                                "type": "object",
+                                "properties": {
+                                    "addr1": {
+                                        "type": "string"
+                                    },
+                                    "addr2": {
+                                        "type": "string"
+                                    },
+                                    "addr3": {
+                                        "type": "string"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "taxDetails": {
+                                "type": "object",
+                                "properties": {
+                                    "taxCode": {
+                                        "type": "string"
+                                    },
+                                    "taxRate": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "lines"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_billupdate": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Creates a credit note in Netsuite",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_creditnotecreate",
+            "name": "credit-note-create",
+            "output": ["ActionOutput_netsuite_tba_creditnotecreate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_creditnotecreate", "ActionOutput_netsuite_tba_creditnotecreate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_creditnotecreate": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "itemId": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "vatCode": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["itemId", "quantity", "amount"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["customerId", "status", "currency", "lines"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_creditnotecreate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Updates a credit note in Netsuite",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_creditnoteupdate",
+            "name": "credit-note-update",
+            "output": ["ActionOutput_netsuite_tba_creditnoteupdate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_creditnoteupdate", "ActionOutput_netsuite_tba_creditnoteupdate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_creditnoteupdate": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "itemId": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "vatCode": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["itemId", "quantity", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerId", "status", "currency", "lines", "id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_creditnoteupdate": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Creates a customer in Netsuite",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_customercreate",
+            "name": "customer-create",
+            "output": ["ActionOutput_netsuite_tba_customercreate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_customercreate", "ActionOutput_netsuite_tba_customercreate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_customercreate": {
+                        "type": "object",
+                        "properties": {
+                            "externalId": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "taxNumber": {
+                                "type": "string"
+                            },
+                            "addressLine1": {
+                                "type": "string"
+                            },
+                            "addressLine2": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "zip": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["externalId", "name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_customercreate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Updates a customer in Netsuite",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_customerupdate",
+            "name": "customer-update",
+            "output": ["ActionOutput_netsuite_tba_customerupdate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_customerupdate", "ActionOutput_netsuite_tba_customerupdate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_customerupdate": {
+                        "type": "object",
+                        "properties": {
+                            "externalId": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "taxNumber": {
+                                "type": "string"
+                            },
+                            "addressLine1": {
+                                "type": "string"
+                            },
+                            "addressLine2": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "zip": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_customerupdate": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetches all fields in Netsuite",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_fetchfields",
+            "name": "fetch-fields",
+            "output": ["ActionOutput_netsuite_tba_fetchfields"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_fetchfields", "ActionOutput_netsuite_tba_fetchfields"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_fetchfields": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_fetchfields": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "schema": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ]
+                            },
+                            "properties": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "required": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "schema": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "properties": {
+                                                "type": "object",
+                                                "properties": {},
+                                                "additionalProperties": false
+                                            },
+                                            "required": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "enum": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "definitions": {
+                                                "type": "object",
+                                                "properties": {},
+                                                "additionalProperties": false
+                                            },
+                                            "additionalProperties": {
+                                                "type": "boolean"
+                                            },
+                                            "default": {}
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "schema": {
+                                                    "type": "string"
+                                                },
+                                                "title": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                "properties": {
+                                                    "type": "object",
+                                                    "properties": {},
+                                                    "additionalProperties": false
+                                                },
+                                                "required": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "enum": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                },
+                                                "definitions": {
+                                                    "type": "object",
+                                                    "properties": {},
+                                                    "additionalProperties": false
+                                                },
+                                                "additionalProperties": {
+                                                    "type": "boolean"
+                                                },
+                                                "default": {}
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                ]
+                            },
+                            "enum": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "definitions": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "additionalProperties": {
+                                "anyOf": [
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "schema": {
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "properties": {
+                                                "type": "object",
+                                                "properties": {},
+                                                "additionalProperties": false
+                                            },
+                                            "required": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "enum": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "definitions": {
+                                                "type": "object",
+                                                "properties": {},
+                                                "additionalProperties": false
+                                            },
+                                            "additionalProperties": {
+                                                "type": "boolean"
+                                            },
+                                            "default": {}
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            },
+                            "default": {}
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Creates an invoice in Netsuite",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_invoicecreate",
+            "name": "invoice-create",
+            "output": ["ActionOutput_netsuite_tba_invoicecreate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_invoicecreate", "ActionOutput_netsuite_tba_invoicecreate"],
+            "version": "3.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_invoicecreate": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "itemId": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "vatCode": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "locationId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["itemId", "quantity", "amount"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["customerId", "currency", "status", "lines"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_invoicecreate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Updates an invoice in Netsuite",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_invoiceupdate",
+            "name": "invoice-update",
+            "output": ["ActionOutput_netsuite_tba_invoiceupdate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_invoiceupdate", "ActionOutput_netsuite_tba_invoiceupdate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_invoiceupdate": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "itemId": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "vatCode": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "locationId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["itemId", "quantity", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "locationId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["status", "lines", "id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_invoiceupdate": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Creates a payment in Netsuite",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_paymentcreate",
+            "name": "payment-create",
+            "output": ["ActionOutput_netsuite_tba_paymentcreate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_paymentcreate", "ActionOutput_netsuite_tba_paymentcreate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_paymentcreate": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string"
+                            },
+                            "amount": {
+                                "type": "number"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "paymentReference": {
+                                "type": "string"
+                            },
+                            "applyTo": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerId", "amount", "currency", "paymentReference", "applyTo", "status"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_paymentcreate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Updates a payment in Netsuite",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_paymentupdate",
+            "name": "payment-update",
+            "output": ["ActionOutput_netsuite_tba_paymentupdate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_paymentupdate", "ActionOutput_netsuite_tba_paymentupdate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_paymentupdate": {
+                        "type": "object",
+                        "properties": {
+                            "customerId": {
+                                "type": "string"
+                            },
+                            "amount": {
+                                "type": "number"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "paymentReference": {
+                                "type": "string"
+                            },
+                            "applyTo": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["customerId", "id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_paymentupdate": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Creates a purchase order in Netsuite",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_purchaseordercreate",
+            "name": "purchase-order-create",
+            "output": ["ActionOutput_netsuite_tba_purchaseordercreate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_purchaseordercreate", "ActionOutput_netsuite_tba_purchaseordercreate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_purchaseordercreate": {
+                        "type": "object",
+                        "properties": {
+                            "vendorId": {
+                                "type": "string"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "tranDate": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "itemId": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "locationId": {
+                                            "type": "string"
+                                        },
+                                        "rate": {
+                                            "type": "number"
+                                        },
+                                        "department": {
+                                            "type": "string"
+                                        },
+                                        "class": {
+                                            "type": "string"
+                                        },
+                                        "createWorkOrder": {
+                                            "type": "boolean"
+                                        },
+                                        "inventoryDetail": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "binNumber": {
+                                                            "type": "string"
+                                                        },
+                                                        "expirationDate": {
+                                                            "type": "string"
+                                                        },
+                                                        "quantity": {
+                                                            "type": "number"
+                                                        },
+                                                        "serialNumber": {
+                                                            "type": "string"
+                                                        },
+                                                        "toBinNumber": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["itemId", "quantity", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "customForm": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "subsidiary": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "string"
+                            },
+                            "class": {
+                                "type": "string"
+                            },
+                            "taxDetails": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "taxCode": {
+                                                "type": "string"
+                                            },
+                                            "taxRate": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "billingAddress": {
+                                "type": "object",
+                                "properties": {
+                                    "addr1": {
+                                        "type": "string"
+                                    },
+                                    "addr2": {
+                                        "type": "string"
+                                    },
+                                    "addr3": {
+                                        "type": "string"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "shippingAddress": {
+                                "type": "object",
+                                "properties": {
+                                    "addr1": {
+                                        "type": "string"
+                                    },
+                                    "addr2": {
+                                        "type": "string"
+                                    },
+                                    "addr3": {
+                                        "type": "string"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["vendorId", "status", "lines", "billingAddress", "shippingAddress"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_purchaseordercreate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Updates an existing purchase order in Netsuite.",
+            "endpoint": null,
+            "input": "ActionInput_netsuite_tba_purchaseorderupdate",
+            "name": "purchase-order-update",
+            "output": ["ActionOutput_netsuite_tba_purchaseorderupdate"],
+            "scopes": [],
+            "usedModels": ["ActionInput_netsuite_tba_purchaseorderupdate", "ActionOutput_netsuite_tba_purchaseorderupdate"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_netsuite_tba_purchaseorderupdate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "vendorId": {
+                                "type": "string"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "tranDate": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "itemId": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "locationId": {
+                                            "type": "string"
+                                        },
+                                        "rate": {
+                                            "type": "number"
+                                        },
+                                        "department": {
+                                            "type": "string"
+                                        },
+                                        "class": {
+                                            "type": "string"
+                                        },
+                                        "createWorkOrder": {
+                                            "type": "boolean"
+                                        },
+                                        "inventoryDetail": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "binNumber": {
+                                                            "type": "string"
+                                                        },
+                                                        "expirationDate": {
+                                                            "type": "string"
+                                                        },
+                                                        "quantity": {
+                                                            "type": "number"
+                                                        },
+                                                        "serialNumber": {
+                                                            "type": "string"
+                                                        },
+                                                        "toBinNumber": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["itemId", "quantity", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "customForm": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "subsidiary": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "string"
+                            },
+                            "class": {
+                                "type": "string"
+                            },
+                            "billingAddress": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "addr1": {
+                                                "type": "string"
+                                            },
+                                            "addr2": {
+                                                "type": "string"
+                                            },
+                                            "addr3": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "zip": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "shippingAddress": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "addr1": {
+                                                "type": "string"
+                                            },
+                                            "addr2": {
+                                                "type": "string"
+                                            },
+                                            "addr3": {
+                                                "type": "string"
+                                            },
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "zip": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "taxDetails": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "taxCode": {
+                                                "type": "string"
+                                            },
+                                            "taxRate": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["id", "lines"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_netsuite_tba_purchaseorderupdate": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches all credit notes in Netsuite",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/credit-notes",
+                    "group": "Credit Notes"
+                }
+            ],
+            "input": "SyncMetadata_netsuite_tba_creditnotes",
+            "name": "credit-notes",
+            "output": ["NetsuiteCreditNote"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["NetsuiteCreditNote", "SyncMetadata_netsuite_tba_creditnotes"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "NetsuiteCreditNote": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "customerId": {
+                                "type": "string"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "itemId": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "vatCode": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "locationId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["itemId", "quantity", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "customerId", "currency", "description", "createdAt", "lines", "total", "status"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_netsuite_tba_creditnotes": {
+                        "type": "object",
+                        "properties": {
+                            "timezone": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches all customers in Netsuite",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/customers",
+                    "group": "Customers"
+                }
+            ],
+            "input": "SyncMetadata_netsuite_tba_customers",
+            "name": "customers",
+            "output": ["NetsuiteCustomer"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["NetsuiteCustomer", "SyncMetadata_netsuite_tba_customers"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "NetsuiteCustomer": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "type": ["string", "null"]
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": ["string", "null"]
+                            },
+                            "taxNumber": {
+                                "type": ["string", "null"]
+                            },
+                            "phone": {
+                                "type": ["string", "null"]
+                            },
+                            "addressLine1": {
+                                "type": ["string", "null"]
+                            },
+                            "addressLine2": {
+                                "type": ["string", "null"]
+                            },
+                            "city": {
+                                "type": ["string", "null"]
+                            },
+                            "zip": {
+                                "type": ["string", "null"]
+                            },
+                            "country": {
+                                "type": ["string", "null"]
+                            },
+                            "state": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "externalId",
+                            "name",
+                            "email",
+                            "taxNumber",
+                            "phone",
+                            "addressLine1",
+                            "addressLine2",
+                            "city",
+                            "zip",
+                            "country",
+                            "state"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_netsuite_tba_customers": {
+                        "type": "object",
+                        "properties": {
+                            "timezone": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches all JournalEntries in Netsuite",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/general-ledger"
+                }
+            ],
+            "input": "SyncMetadata_netsuite_tba_generalledger",
+            "name": "general-ledger",
+            "output": ["GeneralLedger"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["GeneralLedger", "SyncMetadata_netsuite_tba_generalledger"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "GeneralLedger": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "transactionId": {
+                                "type": "string"
+                            },
+                            "void": {
+                                "type": "boolean"
+                            },
+                            "approved": {
+                                "type": "boolean"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedDate": {
+                                "type": "string"
+                            },
+                            "isReversal": {
+                                "type": "boolean"
+                            },
+                            "subsidiary": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "name"],
+                                "additionalProperties": false
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "journalLineId": {
+                                            "type": "string"
+                                        },
+                                        "accountId": {
+                                            "type": "string"
+                                        },
+                                        "accountName": {
+                                            "type": "string"
+                                        },
+                                        "cleared": {
+                                            "type": "boolean"
+                                        },
+                                        "credit": {
+                                            "type": "number"
+                                        },
+                                        "debit": {
+                                            "type": "number"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["journalLineId", "accountId", "accountName", "cleared", "description"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "date",
+                            "transactionId",
+                            "void",
+                            "approved",
+                            "currency",
+                            "createdDate",
+                            "updatedDate",
+                            "isReversal",
+                            "subsidiary",
+                            "lines"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_netsuite_tba_generalledger": {
+                        "type": "object",
+                        "properties": {
+                            "timezone": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches all invoices in Netsuite",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/invoices",
+                    "group": "Invoices"
+                }
+            ],
+            "input": "SyncMetadata_netsuite_tba_invoices",
+            "name": "invoices",
+            "output": ["NetsuiteInvoice"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["NetsuiteInvoice", "SyncMetadata_netsuite_tba_invoices"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "NetsuiteInvoice": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "customerId": {
+                                "type": "string"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "lines": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "itemId": {
+                                            "type": "string"
+                                        },
+                                        "quantity": {
+                                            "type": "number"
+                                        },
+                                        "amount": {
+                                            "type": "number"
+                                        },
+                                        "vatCode": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "locationId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["itemId", "quantity", "amount"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "customerId", "currency", "description", "createdAt", "lines", "total", "status"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_netsuite_tba_invoices": {
+                        "type": "object",
+                        "properties": {
+                            "timezone": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches all locations in Netsuite",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/locations"
+                }
+            ],
+            "input": "SyncMetadata_netsuite_tba_locations",
+            "name": "locations",
+            "output": ["NetsuiteLocation"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["NetsuiteLocation", "SyncMetadata_netsuite_tba_locations"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "NetsuiteLocation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "isInactive": {
+                                "type": "boolean"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "lastModifiedDate": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "object",
+                                "properties": {
+                                    "address1": {
+                                        "type": "string"
+                                    },
+                                    "addressee": {
+                                        "type": "string"
+                                    },
+                                    "addressText": {
+                                        "type": "string"
+                                    },
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["address1", "addressee", "addressText", "city", "country", "state", "zip"],
+                                "additionalProperties": false
+                            },
+                            "returnAddress": {
+                                "type": "object",
+                                "properties": {
+                                    "addressText": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["addressText", "country"],
+                                "additionalProperties": false
+                            },
+                            "timeZone": {
+                                "type": ["string", "null"]
+                            },
+                            "useBins": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "isInactive", "name", "lastModifiedDate", "address", "returnAddress", "useBins"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_netsuite_tba_locations": {
+                        "type": "object",
+                        "properties": {
+                            "timezone": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches all payments received from customers in Netsuite",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/payments",
+                    "group": "Payments"
+                }
+            ],
+            "input": "SyncMetadata_netsuite_tba_payments",
+            "name": "payments",
+            "output": ["NetsuitePayment"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["NetsuitePayment", "SyncMetadata_netsuite_tba_payments"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "NetsuitePayment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "customerId": {
+                                "type": ["string", "null"]
+                            },
+                            "amount": {
+                                "type": ["number", "null"]
+                            },
+                            "createdAt": {
+                                "type": ["string", "null"]
+                            },
+                            "currency": {
+                                "type": ["string", "null"]
+                            },
+                            "paymentReference": {
+                                "type": ["string", "null"]
+                            },
+                            "status": {
+                                "type": ["string", "null"]
+                            },
+                            "applyTo": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id", "customerId", "amount", "createdAt", "currency", "paymentReference", "status", "applyTo"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_netsuite_tba_payments": {
+                        "type": "object",
+                        "properties": {
+                            "timezone": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

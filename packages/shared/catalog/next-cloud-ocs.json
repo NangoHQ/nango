@@ -1,0 +1,253 @@
+{
+    "providerConfigKey": "next-cloud-ocs",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of all users' details from NextCloud account",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/next-cloud-ocs/next-cloud-users"
+                }
+            ],
+            "input": "SyncMetadata_next_cloud_ocs_users",
+            "name": "users",
+            "output": ["NextCloudUser"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["NextCloudUser", "SyncMetadata_next_cloud_ocs_users"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "NextCloudUser": {
+                        "type": "object",
+                        "properties": {
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "lastLogin": {
+                                "type": "number"
+                            },
+                            "backend": {
+                                "type": "string"
+                            },
+                            "subadmin": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "quota": {
+                                "type": "object",
+                                "properties": {
+                                    "free": {
+                                        "type": "number"
+                                    },
+                                    "used": {
+                                        "type": "number"
+                                    },
+                                    "total": {
+                                        "type": "number"
+                                    },
+                                    "relative": {
+                                        "type": "number"
+                                    },
+                                    "quota": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["free", "used", "total", "relative", "quota"],
+                                "additionalProperties": false
+                            },
+                            "manager": {
+                                "type": "string"
+                            },
+                            "avatarScope": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "emailScope": {
+                                "type": "string"
+                            },
+                            "additional_mail": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "additional_mailScope": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "displayname": {
+                                "type": "string"
+                            },
+                            "display_name": {
+                                "type": "string"
+                            },
+                            "displaynameScope": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "phoneScope": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "string"
+                            },
+                            "addressScope": {
+                                "type": "string"
+                            },
+                            "website": {
+                                "type": "string"
+                            },
+                            "websiteScope": {
+                                "type": "string"
+                            },
+                            "twitter": {
+                                "type": "string"
+                            },
+                            "twitterScope": {
+                                "type": "string"
+                            },
+                            "fediverse": {
+                                "type": "string"
+                            },
+                            "fediverseScope": {
+                                "type": "string"
+                            },
+                            "organisation": {
+                                "type": "string"
+                            },
+                            "organisationScope": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "roleScope": {
+                                "type": "string"
+                            },
+                            "headline": {
+                                "type": "string"
+                            },
+                            "headlineScope": {
+                                "type": "string"
+                            },
+                            "biography": {
+                                "type": "string"
+                            },
+                            "biographyScope": {
+                                "type": "string"
+                            },
+                            "profile_enabled": {
+                                "type": "string"
+                            },
+                            "profile_enabledScope": {
+                                "type": "string"
+                            },
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "notify_email": {
+                                "type": "boolean"
+                            },
+                            "backendCapabilities": {
+                                "type": "object",
+                                "properties": {
+                                    "setDisplayName": {
+                                        "type": "boolean"
+                                    },
+                                    "setPassword": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["setDisplayName", "setPassword"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "enabled",
+                            "id",
+                            "lastLogin",
+                            "backend",
+                            "subadmin",
+                            "quota",
+                            "manager",
+                            "avatarScope",
+                            "email",
+                            "emailScope",
+                            "additional_mail",
+                            "additional_mailScope",
+                            "displayname",
+                            "display_name",
+                            "displaynameScope",
+                            "phone",
+                            "phoneScope",
+                            "address",
+                            "addressScope",
+                            "website",
+                            "websiteScope",
+                            "twitter",
+                            "twitterScope",
+                            "fediverse",
+                            "fediverseScope",
+                            "organisation",
+                            "organisationScope",
+                            "role",
+                            "roleScope",
+                            "headline",
+                            "headlineScope",
+                            "biography",
+                            "biographyScope",
+                            "profile_enabled",
+                            "profile_enabledScope",
+                            "groups",
+                            "language",
+                            "locale",
+                            "notify_email",
+                            "backendCapabilities"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_next_cloud_ocs_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

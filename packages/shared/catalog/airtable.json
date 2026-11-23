@@ -1,0 +1,3228 @@
+{
+    "providerConfigKey": "airtable",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create multiple Airtable records in one request.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_batchcreaterecords",
+            "name": "batch-create-records",
+            "output": ["ActionOutput_airtable_batchcreaterecords"],
+            "scopes": ["data.records:write"],
+            "usedModels": ["ActionInput_airtable_batchcreaterecords", "ActionOutput_airtable_batchcreaterecords"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_batchcreaterecords": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Table ID or name. Example: \"tblXXXXXXXXXXXXXX\" or \"My Table\""
+                            },
+                            "records": {
+                                "maxItems": 10,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {},
+                                            "description": "Field values for the record. Keys are field names or IDs."
+                                        }
+                                    },
+                                    "required": ["fields"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Array of records to create. Maximum 10 records per request."
+                            },
+                            "typecast": {
+                                "description": "If true, the Airtable API will perform best-effort automatic data conversion.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName", "records"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_batchcreaterecords": {
+                        "type": "object",
+                        "properties": {
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "createdTime", "fields"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["records"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete multiple Airtable records by record ID.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_batchdeleterecords",
+            "name": "batch-delete-records",
+            "output": ["ActionOutput_airtable_batchdeleterecords"],
+            "scopes": ["data.records:write"],
+            "usedModels": ["ActionInput_airtable_batchdeleterecords", "ActionOutput_airtable_batchdeleterecords"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_batchdeleterecords": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"app1234567890abcd\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Airtable table ID or name. Example: \"tbl1234567890abcd\" or \"Tasks\""
+                            },
+                            "recordIds": {
+                                "minItems": 1,
+                                "maxItems": 10,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Array of record IDs to delete. Minimum 1, maximum 10. Example: [\"rec1234567890abcd\"]"
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName", "recordIds"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_batchdeleterecords": {
+                        "type": "object",
+                        "properties": {
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "deleted": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "deleted"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["records"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Replace multiple Airtable records in one request.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_batchreplacerecords",
+            "name": "batch-replace-records",
+            "output": ["ActionOutput_airtable_batchreplacerecords"],
+            "scopes": ["data.records:write"],
+            "usedModels": ["ActionInput_airtable_batchreplacerecords", "ActionOutput_airtable_batchreplacerecords"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_batchreplacerecords": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "The ID of the Airtable base. Example: \"appJxrbEgLaF00M2f\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "The ID or name of the table. Example: \"tblNPITrPesLLh2eA\""
+                            },
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The record ID to replace. Example: \"recslM5i7emIT0Mn9\""
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {},
+                                            "description": "Field values to set on the record."
+                                        }
+                                    },
+                                    "required": ["id", "fields"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Array of records to replace."
+                            },
+                            "typecast": {
+                                "description": "If true, Airtable will coerce data types.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName", "records"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_batchreplacerecords": {
+                        "type": "object",
+                        "properties": {
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["records"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update multiple Airtable records in one request.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_batchupdaterecords",
+            "name": "batch-update-records",
+            "output": ["ActionOutput_airtable_batchupdaterecords"],
+            "scopes": ["data.records:write"],
+            "usedModels": ["ActionInput_airtable_batchupdaterecords", "ActionOutput_airtable_batchupdaterecords"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_batchupdaterecords": {
+                        "type": "object",
+                        "properties": {
+                            "base_id": {
+                                "type": "string",
+                                "description": "Base ID. Example: \"app1234567890abcdef\""
+                            },
+                            "table_id_or_name": {
+                                "type": "string",
+                                "description": "Table ID or name. Example: \"tbl1234567890abcdef\" or \"My Table\""
+                            },
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Record ID. Example: \"rec1234567890abcdef\""
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {},
+                                            "description": "Fields to update for this record."
+                                        }
+                                    },
+                                    "required": ["id", "fields"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Array of records to update."
+                            },
+                            "typecast": {
+                                "description": "If true, Airtable will attempt to convert values to the appropriate field type.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["base_id", "table_id_or_name", "records"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_batchupdaterecords": {
+                        "type": "object",
+                        "properties": {
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "created_time": {
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["records"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new Airtable base in a workspace.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_createbase",
+            "name": "create-base",
+            "output": ["ActionOutput_airtable_createbase"],
+            "scopes": ["schema.bases:write"],
+            "usedModels": ["ActionInput_airtable_createbase", "ActionOutput_airtable_createbase"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_createbase": {
+                        "type": "object",
+                        "properties": {
+                            "workspaceId": {
+                                "type": "string",
+                                "description": "The ID of the workspace where the new base will live. Example: \"wspXXXXXXXXXXXXXX\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name to give to the new base. Does not need to be unique."
+                            },
+                            "tables": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Table name. Example: \"Table 1\""
+                                        },
+                                        "description": {
+                                            "description": "Table description. Must be no longer than 20k characters.",
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Field name. Example: \"Name\""
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "Airtable field type. Example: \"singleLineText\""
+                                                    },
+                                                    "description": {
+                                                        "description": "Field description. Must be no longer than 20k characters.",
+                                                        "type": "string"
+                                                    },
+                                                    "options": {
+                                                        "description": "Field-type-specific options.",
+                                                        "type": "object",
+                                                        "propertyNames": {
+                                                            "type": "string"
+                                                        },
+                                                        "additionalProperties": {}
+                                                    }
+                                                },
+                                                "required": ["name", "type"],
+                                                "additionalProperties": false
+                                            },
+                                            "description": "Fields to create in this table."
+                                        }
+                                    },
+                                    "required": ["name", "fields"],
+                                    "additionalProperties": false
+                                },
+                                "description": "Tables to create in the new base."
+                            }
+                        },
+                        "required": ["workspaceId", "name", "tables"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_createbase": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "tables": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "primaryFieldId": {
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "name", "type"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "views": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "name", "type"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "name", "primaryFieldId", "fields", "views"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "tables"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a comment on an Airtable record.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_createcomment",
+            "name": "create-comment",
+            "output": ["ActionOutput_airtable_createcomment"],
+            "scopes": ["data.records:write"],
+            "usedModels": ["ActionInput_airtable_createcomment", "ActionOutput_airtable_createcomment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "base_id": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "table_id_or_name": {
+                                "type": "string",
+                                "description": "Airtable table ID or name. Example: \"tblXXXXXXXXXXXXXX\""
+                            },
+                            "record_id": {
+                                "type": "string",
+                                "description": "Airtable record ID. Example: \"recXXXXXXXXXXXXXX\""
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "Comment text. Example: \"Hello from Nango!\""
+                            }
+                        },
+                        "required": ["base_id", "table_id_or_name", "record_id", "text"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "author": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "email", "name"],
+                                "additionalProperties": false
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "created_time": {
+                                "type": "string"
+                            },
+                            "last_updated_time": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "author", "text", "created_time"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new field on an Airtable table.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_createfield",
+            "name": "create-field",
+            "output": ["ActionOutput_airtable_createfield"],
+            "scopes": ["schema.bases:write"],
+            "usedModels": ["ActionInput_airtable_createfield", "ActionOutput_airtable_createfield"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_createfield": {
+                        "type": "object",
+                        "properties": {
+                            "base_id": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"app1234567890abcd\""
+                            },
+                            "table_id": {
+                                "type": "string",
+                                "description": "Airtable table ID. Example: \"tbl1234567890abcd\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the new field."
+                            },
+                            "type": {
+                                "type": "string",
+                                "description": "Airtable field type. Example: \"singleLineText\", \"number\", \"singleSelect\""
+                            },
+                            "description": {
+                                "description": "Description for the field.",
+                                "type": "string"
+                            },
+                            "options": {
+                                "description": "Field-type-specific options.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["base_id", "table_id", "name", "type"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_createfield": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "options": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "name", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a single Airtable record in a table.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_createrecord",
+            "name": "create-record",
+            "output": ["ActionOutput_airtable_createrecord"],
+            "scopes": ["data.records:write"],
+            "usedModels": ["ActionInput_airtable_createrecord", "ActionOutput_airtable_createrecord"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_createrecord": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Table ID or name. Example: \"tblXXXXXXXXXXXXXX\" or \"Table 1\""
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Field values keyed by field name or field ID."
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName", "fields"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_createrecord": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "createdTime", "fields"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new table in an Airtable base",
+            "endpoint": null,
+            "input": "ActionInput_airtable_createtable",
+            "name": "create-table",
+            "output": ["ActionOutput_airtable_createtable"],
+            "scopes": ["schema.bases:write"],
+            "usedModels": ["ActionInput_airtable_createtable", "ActionOutput_airtable_createtable"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_createtable": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "The ID of the base to create the table in. Example: \"app1234567890abcd\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the table. Example: \"Tasks\""
+                            },
+                            "description": {
+                                "description": "A description for the table. Must be no longer than 20k characters.",
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "options": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["name", "type"],
+                                    "additionalProperties": false
+                                },
+                                "description": "An array of field definitions conforming to the Airtable field model."
+                            },
+                            "primaryFieldId": {
+                                "description": "The ID of the field to use as the primary field. If omitted, the first field becomes the primary field.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["baseId", "name", "fields"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_createtable": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "primaryFieldId": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "options": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "name", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "views": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name", "type"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "name", "primaryFieldId", "fields", "views"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an Airtable webhook on a base.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_createwebhook",
+            "name": "create-webhook",
+            "output": ["ActionOutput_airtable_createwebhook"],
+            "scopes": ["webhook:manage"],
+            "usedModels": ["ActionInput_airtable_createwebhook", "ActionOutput_airtable_createwebhook"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_createwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "The ID of the base to create the webhook on. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "notificationUrl": {
+                                "type": "string",
+                                "description": "The URL where Airtable will POST all event notifications. Example: \"https://example.com/webhook\""
+                            },
+                            "specification": {
+                                "type": "object",
+                                "properties": {
+                                    "options": {
+                                        "type": "object",
+                                        "properties": {
+                                            "filters": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "dataTypes": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "description": "The types of data changes to watch. Example: [\"tableData\"]"
+                                                    },
+                                                    "recordChangeScope": {
+                                                        "description": "The table ID to scope changes to. Example: \"tblXXXXXXXXXXXXXX\"",
+                                                        "type": "string"
+                                                    },
+                                                    "changeTypes": {
+                                                        "description": "The types of changes to watch. Example: [\"add\", \"update\", \"remove\"]",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "fromSources": {
+                                                        "description": "The sources of changes to watch. Example: [\"client\", \"formSubmission\"]",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "watchDataInFieldIds": {
+                                                        "description": "Field IDs to watch for data changes. Example: [\"fldXXXXXXXXXXXXXX\"]",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "watchSchemasOfFieldIds": {
+                                                        "description": "Field IDs to watch for schema changes. Example: [\"fldXXXXXXXXXXXXXX\"]",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                },
+                                                "required": ["dataTypes"],
+                                                "additionalProperties": false
+                                            },
+                                            "includes": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "includeCellValuesInFieldIds": {
+                                                        "description": "Field IDs to include cell values for, or \"all\".",
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": "string",
+                                                                "const": "all"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "includePreviousCellValues": {
+                                                        "description": "Whether to include previous cell values.",
+                                                        "type": "boolean"
+                                                    },
+                                                    "includePreviousFieldDefinitions": {
+                                                        "description": "Whether to include previous field definitions.",
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": ["filters"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["options"],
+                                "additionalProperties": false,
+                                "description": "The webhook specification defining what changes to watch."
+                            }
+                        },
+                        "required": ["baseId", "notificationUrl", "specification"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_createwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the created webhook. Example: \"achXXXXXXXXXXXXXX\""
+                            },
+                            "macSecretBase64": {
+                                "type": "string",
+                                "description": "The base64-encoded MAC secret for validating webhook notifications."
+                            },
+                            "expirationTime": {
+                                "description": "The timestamp when the webhook will expire and be deleted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "macSecretBase64"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a comment from an Airtable record.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_deletecomment",
+            "name": "delete-comment",
+            "output": ["ActionOutput_airtable_deletecomment"],
+            "scopes": ["data.records:write"],
+            "usedModels": ["ActionInput_airtable_deletecomment", "ActionOutput_airtable_deletecomment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "base_id": {
+                                "type": "string",
+                                "description": "The ID of the Airtable base. Example: \"app1234567890abcd\""
+                            },
+                            "table_id_or_name": {
+                                "type": "string",
+                                "description": "The ID or name of the table. Example: \"tbl1234567890abcd\""
+                            },
+                            "record_id": {
+                                "type": "string",
+                                "description": "The ID of the record. Example: \"rec1234567890abcd\""
+                            },
+                            "row_comment_id": {
+                                "type": "string",
+                                "description": "The ID of the comment to delete. Example: \"com1234567890abcd\""
+                            }
+                        },
+                        "required": ["base_id", "table_id_or_name", "record_id", "row_comment_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a single Airtable record by record ID.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_deleterecord",
+            "name": "delete-record",
+            "output": ["ActionOutput_airtable_deleterecord"],
+            "scopes": ["data.records:write"],
+            "usedModels": ["ActionInput_airtable_deleterecord", "ActionOutput_airtable_deleterecord"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_deleterecord": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Airtable table ID or name. Example: \"tblXXXXXXXXXXXXXX\" or \"Table Name\""
+                            },
+                            "recordId": {
+                                "type": "string",
+                                "description": "Airtable record ID. Example: \"recXXXXXXXXXXXXXX\""
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName", "recordId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_deleterecord": {
+                        "type": "object",
+                        "properties": {
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["deleted", "id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an Airtable webhook from a base.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_deletewebhook",
+            "name": "delete-webhook",
+            "output": ["ActionOutput_airtable_deletewebhook"],
+            "scopes": ["webhook:manage"],
+            "usedModels": ["ActionInput_airtable_deletewebhook", "ActionOutput_airtable_deletewebhook"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_deletewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "base_id": {
+                                "type": "string",
+                                "description": "The ID of the Airtable base containing the webhook. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "webhook_id": {
+                                "type": "string",
+                                "description": "The ID of the webhook to delete. Example: \"achXXXXXXXXXXXXXX\""
+                            }
+                        },
+                        "required": ["base_id", "webhook_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_deletewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "base_id": {
+                                "type": "string"
+                            },
+                            "webhook_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "base_id", "webhook_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve collaborators and permissions for an Airtable base.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_getbasecollaborators",
+            "name": "get-base-collaborators",
+            "output": ["ActionOutput_airtable_getbasecollaborators"],
+            "scopes": ["schema.bases:read"],
+            "usedModels": ["ActionInput_airtable_getbasecollaborators", "ActionOutput_airtable_getbasecollaborators"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_getbasecollaborators": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
+                            }
+                        },
+                        "required": ["baseId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_getbasecollaborators": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "permissionLevel": {
+                                "type": "string"
+                            },
+                            "workspaceId": {
+                                "type": "string"
+                            },
+                            "groupCollaborators": {
+                                "type": "object",
+                                "properties": {
+                                    "viaBase": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "createdTime": {
+                                                    "type": "string"
+                                                },
+                                                "grantedByUserId": {
+                                                    "type": "string"
+                                                },
+                                                "groupId": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "permissionLevel": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "viaWorkspace": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "createdTime": {
+                                                    "type": "string"
+                                                },
+                                                "grantedByUserId": {
+                                                    "type": "string"
+                                                },
+                                                "groupId": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "permissionLevel": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "individualCollaborators": {
+                                "type": "object",
+                                "properties": {
+                                    "viaBase": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "createdTime": {
+                                                    "type": "string"
+                                                },
+                                                "grantedByUserId": {
+                                                    "type": "string"
+                                                },
+                                                "userId": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "permissionLevel": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "viaWorkspace": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "createdTime": {
+                                                    "type": "string"
+                                                },
+                                                "grantedByUserId": {
+                                                    "type": "string"
+                                                },
+                                                "userId": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "permissionLevel": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve Airtable base schema metadata including tables and fields.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_getbaseschema",
+            "name": "get-base-schema",
+            "output": ["ActionOutput_airtable_getbaseschema"],
+            "scopes": ["schema.bases:read"],
+            "usedModels": ["ActionInput_airtable_getbaseschema", "ActionOutput_airtable_getbaseschema"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_getbaseschema": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
+                            }
+                        },
+                        "required": ["baseId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_getbaseschema": {
+                        "type": "object",
+                        "properties": {
+                            "tables": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "primaryFieldId": {
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
+                                                    "options": {
+                                                        "type": "object",
+                                                        "propertyNames": {
+                                                            "type": "string"
+                                                        },
+                                                        "additionalProperties": {}
+                                                    }
+                                                },
+                                                "required": ["id", "name", "type"],
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "views": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id", "name", "type"],
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "name", "primaryFieldId", "fields", "views"],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["tables"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single Airtable record by record ID.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_getrecord",
+            "name": "get-record",
+            "output": ["ActionOutput_airtable_getrecord"],
+            "scopes": ["data.records:read"],
+            "usedModels": ["ActionInput_airtable_getrecord", "ActionOutput_airtable_getrecord"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_getrecord": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Table ID or name. Example: \"tblXXXXXXXXXXXXXX\" or \"My Table\""
+                            },
+                            "recordId": {
+                                "type": "string",
+                                "description": "Airtable record ID. Example: \"recXXXXXXXXXXXXXX\""
+                            },
+                            "cellFormat": {
+                                "description": "The cell format to request. Defaults to json.",
+                                "type": "string",
+                                "enum": ["json", "string"]
+                            },
+                            "timeZone": {
+                                "description": "Time zone to use for formatting dates when cell_format is string.",
+                                "type": "string"
+                            },
+                            "userLocale": {
+                                "description": "User locale to use for formatting dates when cell_format is string.",
+                                "type": "string"
+                            },
+                            "returnFieldsByFieldId": {
+                                "description": "Return field objects where the key is the field id instead of field name.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName", "recordId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_getrecord": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve information about the authenticated Airtable user and scopes.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_getuserinfo",
+            "name": "get-user-info",
+            "output": ["ActionOutput_airtable_getuserinfo"],
+            "scopes": [],
+            "usedModels": ["ActionInput_airtable_getuserinfo", "ActionOutput_airtable_getuserinfo"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_getuserinfo": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_getuserinfo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "scopes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Airtable bases accessible to the authenticated user.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_listbases",
+            "name": "list-bases",
+            "output": ["ActionOutput_airtable_listbases"],
+            "scopes": ["schema.bases:read"],
+            "usedModels": ["ActionInput_airtable_listbases", "ActionOutput_airtable_listbases"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_listbases": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination offset from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_listbases": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "permissionLevel": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextOffset": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List comments on an Airtable record.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_listcomments",
+            "name": "list-comments",
+            "output": ["ActionOutput_airtable_listcomments"],
+            "scopes": ["data.records:read"],
+            "usedModels": ["ActionInput_airtable_listcomments", "ActionOutput_airtable_listcomments"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_listcomments": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "The ID of the Airtable base. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "The ID or name of the table. Example: \"tblXXXXXXXXXXXXXX\""
+                            },
+                            "recordId": {
+                                "type": "string",
+                                "description": "The ID of the record. Example: \"recXXXXXXXXXXXXXX\""
+                            },
+                            "pageSize": {
+                                "description": "Number of comments per page (1-100, default: 100).",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Maps to the Airtable offset parameter. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName", "recordId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_listcomments": {
+                        "type": "object",
+                        "properties": {
+                            "comments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "lastUpdatedTime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "author", "text", "createdTime"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "description": "Pagination cursor for the next page. Maps from the Airtable offset response field.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["comments"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Airtable records from a table with view, filter, and pagination options.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_listrecords",
+            "name": "list-records",
+            "output": ["ActionOutput_airtable_listrecords"],
+            "scopes": ["data.records:read"],
+            "usedModels": ["ActionInput_airtable_listrecords", "ActionOutput_airtable_listrecords"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_listrecords": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"app123\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Table ID or name. Example: \"TableName\""
+                            },
+                            "view": {
+                                "description": "View name or ID to filter records.",
+                                "type": "string"
+                            },
+                            "filterByFormula": {
+                                "description": "Airtable formula to filter records.",
+                                "type": "string"
+                            },
+                            "fields": {
+                                "description": "List of field names to include.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "sort": {
+                                "description": "Sort configuration.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "field": {
+                                            "type": "string",
+                                            "description": "Field name to sort by. Example: \"Name\""
+                                        },
+                                        "direction": {
+                                            "description": "Sort direction.",
+                                            "type": "string",
+                                            "enum": ["asc", "desc"]
+                                        }
+                                    },
+                                    "required": ["field"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "pageSize": {
+                                "description": "Records per page (1-100).",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "maxRecords": {
+                                "description": "Maximum total records to return.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "cellFormat": {
+                                "description": "Cell format.",
+                                "type": "string",
+                                "enum": ["json", "string"]
+                            },
+                            "offset": {
+                                "description": "Pagination offset from previous response.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_listrecords": {
+                        "type": "object",
+                        "properties": {
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "createdTime", "fields"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "offset": {
+                                "description": "Pagination offset for the next page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["records"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List views available in an Airtable base.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_listviews",
+            "name": "list-views",
+            "output": ["ActionOutput_airtable_listviews"],
+            "scopes": ["schema.bases:read"],
+            "usedModels": ["ActionInput_airtable_listviews", "ActionOutput_airtable_listviews"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_listviews": {
+                        "type": "object",
+                        "properties": {
+                            "base_id": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
+                            }
+                        },
+                        "required": ["base_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_listviews": {
+                        "type": "object",
+                        "properties": {
+                            "views": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name", "type"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["views"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List delivered payload batches for an Airtable webhook.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_listwebhookpayloads",
+            "name": "list-webhook-payloads",
+            "output": ["ActionOutput_airtable_listwebhookpayloads"],
+            "scopes": ["webhook:manage"],
+            "usedModels": ["ActionInput_airtable_listwebhookpayloads", "ActionOutput_airtable_listwebhookpayloads"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_listwebhookpayloads": {
+                        "type": "object",
+                        "properties": {
+                            "base_id": {
+                                "type": "string",
+                                "description": "The ID of the base. Example: \"app00000000000000\""
+                            },
+                            "webhook_id": {
+                                "type": "string",
+                                "description": "The ID of the webhook. Example: \"ach00000000000001\""
+                            },
+                            "cursor": {
+                                "description": "The transaction number of the payload to start listing from. Omit on the first call.",
+                                "type": "number"
+                            },
+                            "limit": {
+                                "description": "Maximum number of payloads to return. Max: 50.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["base_id", "webhook_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_listwebhookpayloads": {
+                        "type": "object",
+                        "properties": {
+                            "payloads": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "actionMetadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                "source": {
+                                                    "type": "string"
+                                                },
+                                                "sourceMetadata": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                }
+                                            },
+                                            "required": ["source"],
+                                            "additionalProperties": false
+                                        },
+                                        "baseTransactionNumber": {
+                                            "type": "number"
+                                        },
+                                        "payloadFormat": {
+                                            "type": "string"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "changedTablesById": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "createdTablesById": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "destroyedTableIds": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "error": {
+                                            "type": "boolean"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["actionMetadata", "baseTransactionNumber", "payloadFormat", "timestamp"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "cursor": {
+                                "type": "number"
+                            },
+                            "might_have_more": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["payloads", "cursor", "might_have_more"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List webhooks configured on an Airtable base.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_listwebhooks",
+            "name": "list-webhooks",
+            "output": ["ActionOutput_airtable_listwebhooks"],
+            "scopes": ["webhook:manage"],
+            "usedModels": ["ActionInput_airtable_listwebhooks", "ActionOutput_airtable_listwebhooks"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_listwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"appJxrbEgLaF00M2f\""
+                            }
+                        },
+                        "required": ["baseId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_listwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "webhooks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "specification": {
+                                            "type": "object",
+                                            "properties": {
+                                                "options": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "filters": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "dataTypes": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "recordChangeScope": {
+                                                                    "type": "string"
+                                                                },
+                                                                "changeTypes": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "fromSources": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "sourceOptions": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "formSubmission": {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "viewId": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "required": ["viewId"],
+                                                                            "additionalProperties": false
+                                                                        },
+                                                                        "formPageSubmission": {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "pageId": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "required": ["pageId"],
+                                                                            "additionalProperties": false
+                                                                        }
+                                                                    },
+                                                                    "additionalProperties": false
+                                                                },
+                                                                "watchDataInFieldIds": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "watchSchemasOfFieldIds": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "string"
+                                                                    }
+                                                                }
+                                                            },
+                                                            "required": ["dataTypes"],
+                                                            "additionalProperties": false
+                                                        },
+                                                        "includes": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "includeCellValuesInFieldIds": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "type": "string",
+                                                                            "const": "all"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                "includePreviousCellValues": {
+                                                                    "type": "boolean"
+                                                                },
+                                                                "includePreviousFieldDefinitions": {
+                                                                    "type": "boolean"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    "required": ["filters"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["options"],
+                                            "additionalProperties": false
+                                        },
+                                        "notificationUrl": {
+                                            "type": "string"
+                                        },
+                                        "cursorForNextPayload": {
+                                            "type": "number"
+                                        },
+                                        "lastNotificationResult": {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "completionTimestamp": {
+                                                    "type": "string"
+                                                },
+                                                "durationMs": {
+                                                    "type": "number"
+                                                },
+                                                "retryNumber": {
+                                                    "type": "number"
+                                                },
+                                                "willBeRetried": {
+                                                    "type": "boolean"
+                                                },
+                                                "error": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "message": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["message"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["success"],
+                                            "additionalProperties": false
+                                        },
+                                        "areNotificationsEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "lastSuccessfulNotificationTime": {
+                                            "type": "string"
+                                        },
+                                        "isHookEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "expirationTime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "specification", "cursorForNextPayload", "areNotificationsEnabled", "isHookEnabled"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["webhooks"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Refresh an Airtable webhook expiration before it expires.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_refreshwebhook",
+            "name": "refresh-webhook",
+            "output": ["ActionOutput_airtable_refreshwebhook"],
+            "scopes": ["webhook:manage"],
+            "usedModels": ["ActionInput_airtable_refreshwebhook", "ActionOutput_airtable_refreshwebhook"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_refreshwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "The ID of the base containing the webhook. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "webhookId": {
+                                "type": "string",
+                                "description": "The ID of the webhook to refresh. Example: \"achXXXXXXXXXXXXXX\""
+                            }
+                        },
+                        "required": ["baseId", "webhookId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_refreshwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "expirationTime": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Replace a single Airtable record.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_replacerecord",
+            "name": "replace-record",
+            "output": ["ActionOutput_airtable_replacerecord"],
+            "scopes": ["data.records:write"],
+            "usedModels": ["ActionInput_airtable_replacerecord", "ActionOutput_airtable_replacerecord"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_replacerecord": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "The ID of the Airtable base. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "The ID or name of the table. Example: \"tblXXXXXXXXXXXXXX\" or \"Table 1\""
+                            },
+                            "recordId": {
+                                "type": "string",
+                                "description": "The ID of the record to replace. Example: \"recXXXXXXXXXXXXXX\""
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "The fields to set on the record."
+                            },
+                            "typecast": {
+                                "description": "If true, Airtable will attempt to convert strings to appropriate types.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName", "recordId", "fields"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_replacerecord": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "createdTime", "fields"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Enable or disable notifications for an Airtable webhook.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_setwebhooknotifications",
+            "name": "set-webhook-notifications",
+            "output": ["ActionOutput_airtable_setwebhooknotifications"],
+            "scopes": ["webhook:manage"],
+            "usedModels": ["ActionInput_airtable_setwebhooknotifications", "ActionOutput_airtable_setwebhooknotifications"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_setwebhooknotifications": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "Base ID. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "webhookId": {
+                                "type": "string",
+                                "description": "Webhook ID. Example: \"achXXXXXXXXXXXXXX\""
+                            },
+                            "enable": {
+                                "type": "boolean",
+                                "description": "Whether to enable or disable notifications for the webhook."
+                            }
+                        },
+                        "required": ["baseId", "webhookId", "enable"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_setwebhooknotifications": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "areNotificationsEnabled": {
+                                "type": "boolean"
+                            },
+                            "isHookEnabled": {
+                                "type": "boolean"
+                            },
+                            "notificationUrl": {
+                                "type": "string"
+                            },
+                            "cursorForNextPayload": {
+                                "type": "number"
+                            },
+                            "expirationTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a comment on an Airtable record.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_updatecomment",
+            "name": "update-comment",
+            "output": ["ActionOutput_airtable_updatecomment"],
+            "scopes": ["data.recordComments:write"],
+            "usedModels": ["ActionInput_airtable_updatecomment", "ActionOutput_airtable_updatecomment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "base_id": {
+                                "type": "string",
+                                "description": "The ID of the Airtable base. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "table_id_or_name": {
+                                "type": "string",
+                                "description": "The ID or name of the table. Example: \"tblXXXXXXXXXXXXXX\""
+                            },
+                            "record_id": {
+                                "type": "string",
+                                "description": "The ID of the record. Example: \"recXXXXXXXXXXXXXX\""
+                            },
+                            "row_comment_id": {
+                                "type": "string",
+                                "description": "The ID of the comment to update. Example: \"comXXXXXXXXXXXXXX\""
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "The updated comment text."
+                            }
+                        },
+                        "required": ["base_id", "table_id_or_name", "record_id", "row_comment_id", "text"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "author": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["id", "email", "name"],
+                                "additionalProperties": false
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "created_time": {
+                                "type": "string"
+                            },
+                            "last_updated_time": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "author", "text", "created_time"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update metadata for an Airtable field.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_updatefield",
+            "name": "update-field",
+            "output": ["ActionOutput_airtable_updatefield"],
+            "scopes": ["data.records:write", "schema.bases:write"],
+            "usedModels": ["ActionInput_airtable_updatefield", "ActionOutput_airtable_updatefield"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_updatefield": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "The ID of the base containing the field. Example: \"app1234567890\""
+                            },
+                            "tableId": {
+                                "type": "string",
+                                "description": "The ID of the table containing the field. Example: \"tbltp8DGLhqbUmjK1\""
+                            },
+                            "columnId": {
+                                "type": "string",
+                                "description": "The ID of the field (column) to update. Example: \"fld1VnoyuotSTyxW1\""
+                            },
+                            "name": {
+                                "description": "The new name for the field.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "The new description for the field. If provided, must be a string no longer than 20,000 characters. Pass null to clear the description.",
+                                "type": ["string", "null"]
+                            },
+                            "options": {
+                                "description": "Field-type-specific options to update. Only certain options are mutable depending on the field type.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["baseId", "tableId", "columnId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_updatefield": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "options": {}
+                        },
+                        "required": ["id", "name", "type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update fields on a single Airtable record.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_updaterecord",
+            "name": "update-record",
+            "output": ["ActionOutput_airtable_updaterecord"],
+            "scopes": ["data.records:write"],
+            "usedModels": ["ActionInput_airtable_updaterecord", "ActionOutput_airtable_updaterecord"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_updaterecord": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Airtable table ID or name."
+                            },
+                            "recordId": {
+                                "type": "string",
+                                "description": "Airtable record ID. Example: \"recXXXXXXXXXXXXXX\""
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Fields to update on the record."
+                            },
+                            "typecast": {
+                                "description": "Whether to allow typecasting of field values.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName", "recordId", "fields"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_updaterecord": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "createdTime", "fields"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update metadata for an Airtable table.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_updatetable",
+            "name": "update-table",
+            "output": ["ActionOutput_airtable_updatetable"],
+            "scopes": ["schema.bases:read", "schema.bases:write"],
+            "usedModels": ["ActionInput_airtable_updatetable", "ActionOutput_airtable_updatetable"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_updatetable": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "ID of the base. Example: \"app1234567890\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Table ID or table name. Example: \"tbltp8DGLhqbUmjK1\""
+                            },
+                            "name": {
+                                "description": "The new name for the table.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "The new description for the table. Must be no longer than 20,000 characters.",
+                                "type": "string",
+                                "maxLength": 20000
+                            },
+                            "dateDependencySettings": {
+                                "description": "Date dependency settings for the table.",
+                                "type": "object",
+                                "properties": {
+                                    "durationFieldId": {
+                                        "type": "string"
+                                    },
+                                    "endDateFieldId": {
+                                        "type": "string"
+                                    },
+                                    "holidays": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "isEnabled": {
+                                        "type": "boolean"
+                                    },
+                                    "predecessorFieldId": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "reschedulingMode": {
+                                        "type": "string"
+                                    },
+                                    "shouldSkipWeekendsAndHolidays": {
+                                        "type": "boolean"
+                                    },
+                                    "startDateFieldId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "durationFieldId",
+                                    "endDateFieldId",
+                                    "isEnabled",
+                                    "predecessorFieldId",
+                                    "reschedulingMode",
+                                    "shouldSkipWeekendsAndHolidays",
+                                    "startDateFieldId"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_updatetable": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "primaryFieldId": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "options": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {},
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["id", "name", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "views": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name", "type"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "name", "primaryFieldId", "fields", "views"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload an attachment into a record's attachment field.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_uploadattachment",
+            "name": "upload-attachment",
+            "output": ["ActionOutput_airtable_uploadattachment"],
+            "scopes": ["data.records:write", "schema.bases:read"],
+            "usedModels": ["ActionInput_airtable_uploadattachment", "ActionOutput_airtable_uploadattachment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_uploadattachment": {
+                        "type": "object",
+                        "properties": {
+                            "base_id": {
+                                "type": "string",
+                                "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "record_id": {
+                                "type": "string",
+                                "description": "Airtable record ID. Example: \"recXXXXXXXXXXXXXX\""
+                            },
+                            "attachment_field_id_or_name": {
+                                "type": "string",
+                                "description": "The ID or name of the multipleAttachments type field. Example: \"Attachments\""
+                            },
+                            "content_type": {
+                                "type": "string",
+                                "description": "The MIME type of the file. Example: \"image/png\""
+                            },
+                            "filename": {
+                                "type": "string",
+                                "description": "The name of the file. Example: \"example.png\""
+                            },
+                            "file": {
+                                "type": "string",
+                                "description": "The file content as a base64-encoded string."
+                            }
+                        },
+                        "required": ["base_id", "record_id", "attachment_field_id_or_name", "content_type", "filename", "file"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_uploadattachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "created_time": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "fields"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update or insert Airtable records using performUpsert match fields.",
+            "endpoint": null,
+            "input": "ActionInput_airtable_upsertrecords",
+            "name": "upsert-records",
+            "output": ["ActionOutput_airtable_upsertrecords"],
+            "scopes": ["data.records:write"],
+            "usedModels": ["ActionInput_airtable_upsertrecords", "ActionOutput_airtable_upsertrecords"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_airtable_upsertrecords": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string",
+                                "description": "The ID of the Airtable base. Example: \"appXXXXXXXXXXXXXX\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "The ID or name of the table. Example: \"tblXXXXXXXXXXXXXX\" or \"Table Name\""
+                            },
+                            "fieldsToMergeOn": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "The fields to match on for upsert. Example: [\"Name\"]"
+                            },
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Optional record ID for direct updates.",
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {},
+                                            "description": "The field values for the record."
+                                        }
+                                    },
+                                    "required": ["fields"],
+                                    "additionalProperties": false
+                                },
+                                "description": "The records to upsert."
+                            },
+                            "typecast": {
+                                "description": "Whether the API should attempt to automatically convert strings into the appropriate field types.",
+                                "type": "boolean"
+                            },
+                            "returnFieldsByFieldId": {
+                                "description": "Whether to return field values by field ID instead of field name.",
+                                "type": "boolean"
+                            },
+                            "destructive": {
+                                "description": "Whether to clear unspecified fields for updated records.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName", "fieldsToMergeOn", "records"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_airtable_upsertrecords": {
+                        "type": "object",
+                        "properties": {
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "createdTime", "fields"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "updatedRecords": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "createdRecords": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["records", "updatedRecords", "createdRecords"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync Airtable bases visible to the authenticated user.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/bases"
+                }
+            ],
+            "input": null,
+            "name": "bases",
+            "output": ["Base"],
+            "runs": "every hour",
+            "scopes": ["schema.bases:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Base"],
+            "version": "2.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Base": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier for the base. Example: appXXXXXXXXXXXXXX"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "permissionLevel": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Airtable records for a specific base and table.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/records"
+                }
+            ],
+            "input": "SyncMetadata_airtable_records",
+            "name": "records",
+            "output": ["AirtableRecord"],
+            "runs": "every hour",
+            "scopes": ["data.records:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["AirtableRecord", "SyncMetadata_airtable_records"],
+            "version": "",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "AirtableRecord": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "createdTime"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_airtable_records": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string"
+                            },
+                            "tableIdOrName": {
+                                "type": "string"
+                            },
+                            "view": {
+                                "type": "string"
+                            },
+                            "sort": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "field": {
+                                            "type": "string"
+                                        },
+                                        "direction": {
+                                            "type": "string",
+                                            "enum": ["asc", "desc"]
+                                        }
+                                    },
+                                    "required": ["field"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "filterByFormula": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["baseId", "tableIdOrName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Airtable table schemas across bases in scope.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/tables"
+                }
+            ],
+            "input": null,
+            "name": "tables",
+            "output": ["Table"],
+            "runs": "every day",
+            "scopes": ["schema.bases:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Table"],
+            "version": "2.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Table": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "baseId": {
+                                "type": "string"
+                            },
+                            "baseName": {
+                                "type": "string"
+                            },
+                            "primaryFieldId": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "options": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "name", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "views": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name", "type"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "name", "baseId", "baseName", "primaryFieldId", "fields", "views"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Airtable views for bases and tables in scope.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/views"
+                }
+            ],
+            "input": null,
+            "name": "views",
+            "output": ["View"],
+            "runs": "every hour",
+            "scopes": ["schema.bases:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["View"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "View": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "base_id": {
+                                "type": "string"
+                            },
+                            "table_id": {
+                                "type": "string"
+                            },
+                            "table_name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "base_id", "table_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Airtable webhooks configured on bases in scope",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/webhooks"
+                }
+            ],
+            "input": "SyncMetadata_airtable_webhooks",
+            "name": "webhooks",
+            "output": ["Webhook"],
+            "runs": "every hour",
+            "scopes": ["webhook:manage", "schema.bases:read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Webhook", "SyncMetadata_airtable_webhooks"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Webhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "baseId": {
+                                "type": "string"
+                            },
+                            "notificationUrl": {
+                                "type": "string"
+                            },
+                            "isHookEnabled": {
+                                "type": "boolean"
+                            },
+                            "areNotificationsEnabled": {
+                                "type": "boolean"
+                            },
+                            "cursorForNextPayload": {
+                                "type": "number"
+                            },
+                            "expirationTime": {
+                                "type": "string"
+                            },
+                            "lastSuccessfulNotificationTime": {
+                                "type": "string"
+                            },
+                            "lastNotificationResult": {
+                                "type": "object",
+                                "properties": {
+                                    "success": {
+                                        "type": "boolean"
+                                    },
+                                    "completionTimestamp": {
+                                        "type": "string"
+                                    },
+                                    "durationMs": {
+                                        "type": "number"
+                                    },
+                                    "retryNumber": {
+                                        "type": "number"
+                                    },
+                                    "willBeRetried": {
+                                        "type": "boolean"
+                                    },
+                                    "error": {
+                                        "type": "object",
+                                        "properties": {
+                                            "message": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "specification": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "baseId", "isHookEnabled", "areNotificationsEnabled", "cursorForNextPayload"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_airtable_webhooks": {
+                        "type": "object",
+                        "properties": {
+                            "baseId": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,1878 @@
+{
+    "providerConfigKey": "microsoft-excel-oauth2-cc",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a chart on a worksheet from a data range.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_addchart",
+            "name": "add-chart",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_addchart"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_addchart", "ActionOutput_microsoft_excel_oauth2_cc_addchart"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_addchart": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "worksheetIdOrName": {
+                                "type": "string",
+                                "description": "Worksheet ID or name. Example: \"Sheet1\""
+                            },
+                            "type": {
+                                "type": "string",
+                                "description": "Chart type. Example: \"ColumnClustered\""
+                            },
+                            "sourceData": {
+                                "type": "string",
+                                "description": "Source data range. Example: \"Sheet1!B1:B3\""
+                            },
+                            "seriesBy": {
+                                "description": "How the series is arranged. Example: \"Auto\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["driveId", "itemId", "worksheetIdOrName", "type", "sourceData"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_addchart": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "height": {
+                                "type": "number"
+                            },
+                            "width": {
+                                "type": "number"
+                            },
+                            "top": {
+                                "type": "number"
+                            },
+                            "left": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a workbook-level defined name (named range or formula).",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_adddefinedname",
+            "name": "add-defined-name",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_adddefinedname"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_adddefinedname", "ActionOutput_microsoft_excel_oauth2_cc_adddefinedname"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_adddefinedname": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0"
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Drive item (workbook) ID. Example: 01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Defined name. Example: MyNamedRange"
+                            },
+                            "reference": {
+                                "type": "string",
+                                "description": "Reference formula or range. Example: =Sheet1!$B$1:$B$3"
+                            },
+                            "comment": {
+                                "description": "Optional comment for the defined name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["driveId", "itemId", "name", "reference"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_adddefinedname": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            },
+                            "comment": {
+                                "type": "string"
+                            },
+                            "scope": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "visible": {
+                                "type": "boolean"
+                            },
+                            "worksheetId": {
+                                "type": "string"
+                            },
+                            "worksheetName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Append one or more rows to a table.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_addtablerows",
+            "name": "add-table-rows",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_addtablerows"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_addtablerows", "ActionOutput_microsoft_excel_oauth2_cc_addtablerows"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_addtablerows": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMW...\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID. Example: \"01RFYLAYD...\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Table ID or name. Example: \"Table1\""
+                            },
+                            "values": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                },
+                                "description": "2-dimensional array of row values. Example: [[\"Alice\", 100], [\"Bob\", 200]]"
+                            }
+                        },
+                        "required": ["driveId", "itemId", "tableIdOrName", "values"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_addtablerows": {
+                        "type": "object",
+                        "properties": {
+                            "index": {
+                                "type": "number"
+                            },
+                            "values": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a table from an existing range.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_addtable",
+            "name": "add-table",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_addtable"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_addtable", "ActionOutput_microsoft_excel_oauth2_cc_addtable"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_addtable": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!abc123\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Range address for the table. Example: \"Sheet1!A1:C2\""
+                            },
+                            "hasHeaders": {
+                                "description": "Whether the first row of the range contains headers.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["driveId", "itemId", "address"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_addtable": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "showHeaders": {
+                                "type": "boolean"
+                            },
+                            "showTotals": {
+                                "type": "boolean"
+                            },
+                            "style": {
+                                "type": "string"
+                            },
+                            "highlightLastColumn": {
+                                "type": "boolean"
+                            },
+                            "highlightFirstColumn": {
+                                "type": "boolean"
+                            },
+                            "columns": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "values": {
+                                            "type": "array",
+                                            "items": {}
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "index": {
+                                            "type": "number"
+                                        },
+                                        "values": {
+                                            "type": "array",
+                                            "items": {}
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a new worksheet to a workbook.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_addworksheet",
+            "name": "add-worksheet",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_addworksheet"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_addworksheet", "ActionOutput_microsoft_excel_oauth2_cc_addworksheet"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_addworksheet": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!abc123\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item (file) ID. Example: \"01RFYLAY...\""
+                            },
+                            "name": {
+                                "description": "Name for the new worksheet. If omitted, Excel auto-generates a name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_addworksheet": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "number"
+                            },
+                            "visibility": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "position"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Force recalculation of all formulas in the workbook.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_calculateworkbook",
+            "name": "calculate-workbook",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_calculateworkbook"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_calculateworkbook", "ActionOutput_microsoft_excel_oauth2_cc_calculateworkbook"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_calculateworkbook": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive containing the workbook. Example: \"b!abc123\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The ID of the workbook file (drive item). Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "calculationType": {
+                                "description": "The calculation type. Defaults to \"Recalculate\".",
+                                "type": "string",
+                                "enum": ["Recalculate", "Full", "FullRebuild"]
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_calculateworkbook": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "const": true
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload a new .xlsx workbook to a drive folder.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_createworkbook",
+            "name": "create-workbook",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_createworkbook"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_createworkbook", "ActionOutput_microsoft_excel_oauth2_cc_createworkbook"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_createworkbook": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "filename": {
+                                "type": "string",
+                                "description": "Filename including .xlsx extension. Example: \"workbook.xlsx\""
+                            },
+                            "parentId": {
+                                "description": "Parent folder item ID. If omitted, uploads to the drive root.",
+                                "type": "string"
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "description": "Base64-encoded .xlsx file content."
+                            },
+                            "conflictBehavior": {
+                                "description": "Behavior when a file with this name already exists at the destination. Defaults to \"fail\" to avoid silently overwriting an existing workbook.",
+                                "type": "string",
+                                "enum": ["fail", "replace", "rename"]
+                            }
+                        },
+                        "required": ["driveId", "filename", "contentBase64"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_createworkbook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a workbook-level defined name.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_deletedefinedname",
+            "name": "delete-defined-name",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_deletedefinedname"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_deletedefinedname", "ActionOutput_microsoft_excel_oauth2_cc_deletedefinedname"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_deletedefinedname": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID containing the workbook. Example: \"b!abc123\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook file item ID. Example: \"01RFYLAYBTFQ2CLBMYRNEJOWXIFFJQOYW2\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Defined name to delete. Example: \"DryrunDeleteTestName\""
+                            }
+                        },
+                        "required": ["driveId", "itemId", "name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_deletedefinedname": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "driveId": {
+                                "type": "string"
+                            },
+                            "itemId": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "driveId", "itemId", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a table (converts it back to a normal range; does not delete the underlying cell data).",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_deletetable",
+            "name": "delete-table",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_deletetable"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_deletetable", "ActionOutput_microsoft_excel_oauth2_cc_deletetable"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_deletetable": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Table ID or name. Example: \"Table1\""
+                            }
+                        },
+                        "required": ["driveId", "itemId", "tableIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_deletetable": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a workbook file.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_deleteworkbook",
+            "name": "delete-workbook",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_deleteworkbook"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_deleteworkbook", "ActionOutput_microsoft_excel_oauth2_cc_deleteworkbook"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_deleteworkbook": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID containing the workbook. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID to delete. Example: \"01RFYLAYBTFQ2CLBMYRNEJOWXIFFJQOYW2\""
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_deleteworkbook": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a worksheet from a workbook.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_deleteworksheet",
+            "name": "delete-worksheet",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_deleteworksheet"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_deleteworksheet", "ActionOutput_microsoft_excel_oauth2_cc_deleteworksheet"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_deleteworksheet": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID containing the workbook. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Item ID of the workbook. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "worksheetIdOrName": {
+                                "type": "string",
+                                "description": "Worksheet ID or name to delete. Example: \"Sheet1\" or \"RegistrySeedSheet2\""
+                            }
+                        },
+                        "required": ["driveId", "itemId", "worksheetIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_deleteworksheet": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "driveId": {
+                                "type": "string"
+                            },
+                            "itemId": {
+                                "type": "string"
+                            },
+                            "worksheetIdOrName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "driveId", "itemId", "worksheetIdOrName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Render a chart as an image.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_getchartimage",
+            "name": "get-chart-image",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getchartimage"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getchartimage", "ActionOutput_microsoft_excel_oauth2_cc_getchartimage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_getchartimage": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID containing the workbook. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "worksheetIdOrName": {
+                                "type": "string",
+                                "description": "Worksheet ID or name. Example: \"Sheet1\""
+                            },
+                            "chartId": {
+                                "type": "string",
+                                "description": "Chart ID (GUID). Use the chart's id, not its display name, to avoid URL encoding issues with names containing spaces."
+                            }
+                        },
+                        "required": ["driveId", "itemId", "worksheetIdOrName", "chartId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_getchartimage": {
+                        "type": "object",
+                        "properties": {
+                            "imageBase64": {
+                                "type": "string",
+                                "description": "Base64-encoded PNG image of the chart."
+                            }
+                        },
+                        "required": ["imageBase64"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Read cell values from a specific range on a worksheet.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_getrange",
+            "name": "get-range",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getrange"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getrange", "ActionOutput_microsoft_excel_oauth2_cc_getrange"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_getrange": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "worksheetIdOrName": {
+                                "type": "string",
+                                "description": "Worksheet ID or name. Example: \"Sheet1\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Range address. Example: \"A1:C2\""
+                            }
+                        },
+                        "required": ["driveId", "itemId", "worksheetIdOrName", "address"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_getrange": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string"
+                            },
+                            "values": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            },
+                            "text": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            },
+                            "formulas": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            },
+                            "numberFormat": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the default document library (drive) for a SharePoint site.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_getsitedrive",
+            "name": "get-site-drive",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getsitedrive"],
+            "scopes": ["Sites.Read.All", "Files.Read.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getsitedrive", "ActionOutput_microsoft_excel_oauth2_cc_getsitedrive"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_getsitedrive": {
+                        "type": "object",
+                        "properties": {
+                            "siteId": {
+                                "type": "string",
+                                "description": "The unique identifier for the SharePoint site. Example: \"nangodevelopers.sharepoint.com,4c97403e-1663-4673-90fa-d2f8690b4510,29d15734-3d19-43f6-976b-43ece3ff81a8\""
+                            }
+                        },
+                        "required": ["siteId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_getsitedrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "driveType": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Read all non-empty cells on a worksheet.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_getusedrange",
+            "name": "get-used-range",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getusedrange"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getusedrange", "ActionOutput_microsoft_excel_oauth2_cc_getusedrange"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_getusedrange": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook file item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "worksheetIdOrName": {
+                                "type": "string",
+                                "description": "Worksheet ID or name. Example: \"Sheet1\""
+                            }
+                        },
+                        "required": ["driveId", "itemId", "worksheetIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_getusedrange": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string"
+                            },
+                            "cellCount": {
+                                "type": "number"
+                            },
+                            "columnCount": {
+                                "type": "number"
+                            },
+                            "columnHidden": {
+                                "type": "boolean"
+                            },
+                            "rowCount": {
+                                "type": "number"
+                            },
+                            "rowHidden": {
+                                "type": "boolean"
+                            },
+                            "values": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            },
+                            "formulas": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            },
+                            "text": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            },
+                            "numberFormat": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a user's personal OneDrive (drive).",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_getuserdrive",
+            "name": "get-user-drive",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getuserdrive"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getuserdrive", "ActionOutput_microsoft_excel_oauth2_cc_getuserdrive"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_getuserdrive": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "User ID or user principal name. Example: \"api@nango.dev\""
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_getuserdrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "driveType": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve driveItem metadata for a workbook.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_getworkbook",
+            "name": "get-workbook",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getworkbook"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getworkbook", "ActionOutput_microsoft_excel_oauth2_cc_getworkbook"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_getworkbook": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The unique identifier of the drive. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The unique identifier of the drive item (workbook). Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_getworkbook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "file": {
+                                "type": "object",
+                                "properties": {
+                                    "mimeType": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "parentReference": {
+                                "type": "object",
+                                "properties": {
+                                    "driveId": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "path": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List workbook-level defined names.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_listdefinednames",
+            "name": "list-defined-names",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listdefinednames"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listdefinednames", "ActionOutput_microsoft_excel_oauth2_cc_listdefinednames"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_listdefinednames": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID containing the workbook. Example: \"b!abc123\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_listdefinednames": {
+                        "type": "object",
+                        "properties": {
+                            "names": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "comment": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "scope": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "type": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "value": {
+                                            "anyOf": [
+                                                {},
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "visible": {
+                                            "type": ["boolean", "null"]
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["names"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search and list SharePoint sites accessible to the app.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_listsites",
+            "name": "list-sites",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listsites"],
+            "scopes": ["Sites.Read.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listsites", "ActionOutput_microsoft_excel_oauth2_cc_listsites"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_listsites": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "description": "Search query to filter sites. Example: \"nango\"",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response (@odata.nextLink). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_listsites": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "webUrl": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the columns of a table",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_listtablecolumns",
+            "name": "list-table-columns",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listtablecolumns"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listtablecolumns", "ActionOutput_microsoft_excel_oauth2_cc_listtablecolumns"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_listtablecolumns": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The drive ID containing the workbook. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "The table ID or name. Example: \"Table1\""
+                            }
+                        },
+                        "required": ["driveId", "itemId", "tableIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_listtablecolumns": {
+                        "type": "object",
+                        "properties": {
+                            "columns": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "index": {
+                                            "type": "number"
+                                        },
+                                        "values": {
+                                            "type": "array",
+                                            "items": {}
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["columns"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the data rows of a table.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_listtablerows",
+            "name": "list-table-rows",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listtablerows"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listtablerows", "ActionOutput_microsoft_excel_oauth2_cc_listtablerows"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_listtablerows": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID containing the workbook. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "tableIdOrName": {
+                                "type": "string",
+                                "description": "Table ID or name. Example: \"Table1\""
+                            }
+                        },
+                        "required": ["driveId", "itemId", "tableIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_listtablerows": {
+                        "type": "object",
+                        "properties": {
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "index": {
+                                            "type": "number"
+                                        },
+                                        "values": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            }
+                                        }
+                                    },
+                                    "required": ["index", "values"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["rows"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List tables in a workbook.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_listtables",
+            "name": "list-tables",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listtables"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listtables", "ActionOutput_microsoft_excel_oauth2_cc_listtables"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_listtables": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_listtables": {
+                        "type": "object",
+                        "properties": {
+                            "tables": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "showHeaders": {
+                                            "type": "boolean"
+                                        },
+                                        "showTotals": {
+                                            "type": "boolean"
+                                        },
+                                        "style": {
+                                            "type": "string"
+                                        },
+                                        "highlightFirstColumn": {
+                                            "type": "boolean"
+                                        },
+                                        "highlightLastColumn": {
+                                            "type": "boolean"
+                                        },
+                                        "showBandedColumns": {
+                                            "type": "boolean"
+                                        },
+                                        "showBandedRows": {
+                                            "type": "boolean"
+                                        },
+                                        "showFilterButton": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["tables"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List/search tenant users, to resolve a user id for personal OneDrive access.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listusers"],
+            "scopes": ["User.Read.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listusers", "ActionOutput_microsoft_excel_oauth2_cc_listusers"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response (@odata.nextLink). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "top": {
+                                "description": "Number of users to return per page. Must be between 1 and 999. Default is determined by the API.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 999
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "userPrincipalName": {
+                                            "type": "string"
+                                        },
+                                        "mail": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["users"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List and search .xlsx files within a drive.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_listworkbooks",
+            "name": "list-workbooks",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listworkbooks"],
+            "scopes": ["Files.Read.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listworkbooks", "ActionOutput_microsoft_excel_oauth2_cc_listworkbooks"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_listworkbooks": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "query": {
+                                "description": "Search query for workbook names. Omit to list all workbooks.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["driveId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_listworkbooks": {
+                        "type": "object",
+                        "properties": {
+                            "workbooks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "webUrl": {
+                                            "type": "string"
+                                        },
+                                        "downloadUrl": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "number"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["workbooks"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List worksheets in a workbook.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_listworksheets",
+            "name": "list-worksheets",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listworksheets"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listworksheets", "ActionOutput_microsoft_excel_oauth2_cc_listworksheets"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_listworksheets": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID containing the workbook. Example: \"b!abc123\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Item ID of the workbook file. Example: \"01RFYLAY...\""
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_listworksheets": {
+                        "type": "object",
+                        "properties": {
+                            "worksheets": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "type": "number"
+                                        },
+                                        "visibility": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["worksheets"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Write cell values into a specific range on a worksheet",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_updaterange",
+            "name": "update-range",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_updaterange"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_updaterange", "ActionOutput_microsoft_excel_oauth2_cc_updaterange"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_updaterange": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "worksheetIdOrName": {
+                                "type": "string",
+                                "description": "Worksheet ID or name. Example: \"Sheet1\""
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Range address. Example: \"A1:C2\""
+                            },
+                            "values": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                },
+                                "description": "2D array of cell values matching the range row/column count"
+                            }
+                        },
+                        "required": ["driveId", "itemId", "worksheetIdOrName", "address", "values"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_updaterange": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string"
+                            },
+                            "cellCount": {
+                                "type": "number"
+                            },
+                            "columnCount": {
+                                "type": "number"
+                            },
+                            "rowCount": {
+                                "type": "number"
+                            },
+                            "values": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Rename a worksheet and/or change its tab position.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_excel_oauth2_cc_updateworksheet",
+            "name": "update-worksheet",
+            "output": ["ActionOutput_microsoft_excel_oauth2_cc_updateworksheet"],
+            "scopes": ["Files.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_updateworksheet", "ActionOutput_microsoft_excel_oauth2_cc_updateworksheet"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_excel_oauth2_cc_updateworksheet": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
+                            },
+                            "worksheetIdOrName": {
+                                "type": "string",
+                                "description": "Worksheet ID or name. Example: \"Sheet1\""
+                            },
+                            "name": {
+                                "description": "New name for the worksheet.",
+                                "type": "string"
+                            },
+                            "position": {
+                                "description": "New zero-based position index for the worksheet tab.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["driveId", "itemId", "worksheetIdOrName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_excel_oauth2_cc_updateworksheet": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "visibility": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "position"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync .xlsx files within a drive",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_microsoft_excel_oauth2_cc_workbooks",
+            "name": "workbooks",
+            "output": ["Workbook"],
+            "runs": "every hour",
+            "scopes": ["Files.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Workbook", "SyncMetadata_microsoft_excel_oauth2_cc_workbooks"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Workbook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "downloadUrl": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_microsoft_excel_oauth2_cc_workbooks": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["driveId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync the worksheets within a specific workbook.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_microsoft_excel_oauth2_cc_worksheets",
+            "name": "worksheets",
+            "output": ["Worksheet"],
+            "runs": "every hour",
+            "scopes": ["Files.ReadWrite.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Worksheet", "SyncMetadata_microsoft_excel_oauth2_cc_worksheets"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Worksheet": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "position": {
+                                "type": "number"
+                            },
+                            "visibility": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_microsoft_excel_oauth2_cc_worksheets": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string"
+                            },
+                            "itemId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["driveId", "itemId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

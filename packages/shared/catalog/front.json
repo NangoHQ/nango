@@ -1,0 +1,749 @@
+{
+    "providerConfigKey": "front",
+    "actions": [
+        {
+            "type": "action",
+            "description": "List the messages in a conversation in reverse chronological order (newest first).",
+            "endpoint": null,
+            "input": "ActionInput_front_conversation",
+            "name": "conversation",
+            "output": ["ActionOutput_front_conversation"],
+            "scopes": [],
+            "usedModels": ["ActionInput_front_conversation", "ActionOutput_front_conversation"],
+            "version": "2.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_front_conversation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "query": {
+                                "type": "object",
+                                "properties": {
+                                    "limit": {
+                                        "type": "number"
+                                    },
+                                    "page_token": {
+                                        "type": "string"
+                                    },
+                                    "sort_by": {
+                                        "type": "string"
+                                    },
+                                    "sort_order": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "const": "asc"
+                                            },
+                                            {
+                                                "type": "string",
+                                                "const": "desc"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id", "query"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_front_conversation": {
+                        "type": "object",
+                        "properties": {
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "_links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "self": {
+                                                    "type": "string"
+                                                },
+                                                "related": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "conversation": {
+                                                            "type": "string"
+                                                        },
+                                                        "message_replied_to": {
+                                                            "type": "string"
+                                                        },
+                                                        "message_seen": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["conversation", "message_seen"],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": ["self", "related"],
+                                            "additionalProperties": false
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "version": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "blurb": {
+                                            "type": "string"
+                                        },
+                                        "error_type": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "call"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "custom"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "email"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "facebook"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "front_chat"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "googleplay"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "intercom"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "internal"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "phone-call"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "sms"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "tweet"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "tweet_dm"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "whatsapp"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "yalo_wha"
+                                                }
+                                            ]
+                                        },
+                                        "is_draft": {
+                                            "type": "boolean"
+                                        },
+                                        "is_inbound": {
+                                            "type": "boolean"
+                                        },
+                                        "draft_mode": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "created_at": {
+                                            "type": "number"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "_links": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "self": {
+                                                                    "type": "string"
+                                                                },
+                                                                "related": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "inboxes": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "conversations": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["inboxes", "conversations"],
+                                                                    "additionalProperties": false
+                                                                }
+                                                            },
+                                                            "required": ["self", "related"],
+                                                            "additionalProperties": false
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        },
+                                                        "username": {
+                                                            "type": "string"
+                                                        },
+                                                        "first_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "last_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "is_admin": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "is_blocked": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "custom_fields": {
+                                                            "type": "object",
+                                                            "propertyNames": {
+                                                                "type": "string"
+                                                            },
+                                                            "additionalProperties": {}
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "_links",
+                                                        "id",
+                                                        "email",
+                                                        "username",
+                                                        "first_name",
+                                                        "last_name",
+                                                        "is_admin",
+                                                        "is_blocked",
+                                                        "custom_fields"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "recipients": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "_links": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "related": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "contact": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": ["contact"],
+                                                                "additionalProperties": false
+                                                            }
+                                                        },
+                                                        "required": ["related"],
+                                                        "additionalProperties": false
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "handle": {
+                                                        "type": "string"
+                                                    },
+                                                    "role": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "string",
+                                                                "const": "from"
+                                                            },
+                                                            {
+                                                                "type": "string",
+                                                                "const": "to"
+                                                            },
+                                                            {
+                                                                "type": "string",
+                                                                "const": "cc"
+                                                            },
+                                                            {
+                                                                "type": "string",
+                                                                "const": "bcc"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "required": ["_links", "name", "handle", "role"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "body": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "attachments": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "filename": {
+                                                        "type": "string"
+                                                    },
+                                                    "url": {
+                                                        "type": "string"
+                                                    },
+                                                    "content_type": {
+                                                        "type": "string"
+                                                    },
+                                                    "size": {
+                                                        "type": "number"
+                                                    },
+                                                    "metadata": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "is_inline": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "cid": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["is_inline", "cid"],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "required": ["id", "filename", "url", "content_type", "size", "metadata"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "signature": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "_links": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "related": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "owner": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "additionalProperties": false
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "body": {
+                                                            "type": "string"
+                                                        },
+                                                        "sender_info": {
+                                                            "type": "string"
+                                                        },
+                                                        "is_visible_for_all_teammate_channels": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "is_default": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "is_private": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "channel_ids": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                "intercom_url": {
+                                                    "type": "string"
+                                                },
+                                                "duration": {
+                                                    "type": "number"
+                                                },
+                                                "have_been_answered": {
+                                                    "type": "boolean"
+                                                },
+                                                "external_id": {
+                                                    "type": "string"
+                                                },
+                                                "twitter_url": {
+                                                    "type": "string"
+                                                },
+                                                "is_retweet": {
+                                                    "type": "boolean"
+                                                },
+                                                "have_been_retweeted": {
+                                                    "type": "boolean"
+                                                },
+                                                "have_been_favorited": {
+                                                    "type": "boolean"
+                                                },
+                                                "thread_ref": {
+                                                    "type": "string"
+                                                },
+                                                "headers": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                "chat_visitor_url": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "_links",
+                                        "id",
+                                        "blurb",
+                                        "error_type",
+                                        "type",
+                                        "is_draft",
+                                        "is_inbound",
+                                        "draft_mode",
+                                        "created_at",
+                                        "subject",
+                                        "author",
+                                        "recipients",
+                                        "body",
+                                        "text"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["messages"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "List the conversations in the company in reverse chronological order.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/conversations",
+                    "group": "Conversations"
+                }
+            ],
+            "input": "SyncMetadata_front_conversations",
+            "name": "conversations",
+            "output": ["Conversation"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Conversation", "SyncMetadata_front_conversations"],
+            "version": "2.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Conversation": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "archived"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "unassigned"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "deleted"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "assigned"
+                                    }
+                                ]
+                            },
+                            "assignee": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "email": {
+                                                "type": "string"
+                                            },
+                                            "first_name": {
+                                                "type": "string"
+                                            },
+                                            "last_name": {
+                                                "type": "string"
+                                            },
+                                            "is_admin": {
+                                                "type": "boolean"
+                                            },
+                                            "is_available": {
+                                                "type": "boolean"
+                                            },
+                                            "is_blocked": {
+                                                "type": "boolean"
+                                            },
+                                            "custom_fields": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "required": ["id", "email", "first_name", "last_name", "is_admin", "is_available", "is_blocked", "custom_fields"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "recipient": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "handle": {
+                                                "type": "string"
+                                            },
+                                            "role": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "const": "from"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "const": "to"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "const": "cc"
+                                                    },
+                                                    {
+                                                        "type": "string",
+                                                        "const": "bcc"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": ["name", "handle", "role"],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "highlight": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "is_private": {
+                                            "type": "boolean"
+                                        },
+                                        "is_visible_in_conversation_lists": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "description",
+                                        "highlight",
+                                        "is_private",
+                                        "is_visible_in_conversation_lists",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "links": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "external_url": {
+                                            "type": "string"
+                                        },
+                                        "custom_fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["id", "name", "type", "external_url", "custom_fields"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "custom_fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "waiting_since": {
+                                "type": "string"
+                            },
+                            "is_private": {
+                                "type": "boolean"
+                            },
+                            "scheduled_reminders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "scheduled_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["created_at", "scheduled_at", "updated_at"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "subject",
+                            "status",
+                            "assignee",
+                            "recipient",
+                            "tags",
+                            "links",
+                            "custom_fields",
+                            "created_at",
+                            "waiting_since",
+                            "is_private",
+                            "scheduled_reminders"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_front_conversations": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

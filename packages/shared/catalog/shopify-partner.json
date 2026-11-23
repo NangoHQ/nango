@@ -1,0 +1,1130 @@
+{
+    "providerConfigKey": "shopify-partner",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Retrieve the active recurring/usage subscription for an app on a shop.",
+            "endpoint": null,
+            "input": "ActionInput_shopify_partner_getactivesubscription",
+            "name": "get-active-subscription",
+            "output": ["ActionOutput_shopify_partner_getactivesubscription"],
+            "scopes": ["read_apps", "read_shopify_payments"],
+            "usedModels": ["ActionInput_shopify_partner_getactivesubscription", "ActionOutput_shopify_partner_getactivesubscription"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_shopify_partner_getactivesubscription": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "type": "string",
+                                "description": "Shopify app GID using the shopify namespace. Example: \"gid://shopify/App/1234567890\""
+                            },
+                            "shopId": {
+                                "type": "string",
+                                "description": "Shopify shop GID using the shopify namespace. Example: \"gid://shopify/Shop/1234567890\""
+                            }
+                        },
+                        "required": ["appId", "shopId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_shopify_partner_getactivesubscription": {
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "app": {
+                                        "type": "object",
+                                        "properties": {
+                                            "apiKey": {
+                                                "type": "string"
+                                            },
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["apiKey", "id", "name"],
+                                        "additionalProperties": false
+                                    },
+                                    "billingPeriod": {
+                                        "type": "string"
+                                    },
+                                    "cancelAtEndOfCycle": {
+                                        "type": "boolean"
+                                    },
+                                    "currentBillingCycle": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "endTime": {
+                                                        "type": "string"
+                                                    },
+                                                    "startTime": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["endTime", "startTime"],
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "description": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "discount": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "amount": {
+                                                                    "type": ["string", "null"]
+                                                                },
+                                                                "discountEndsAt": {
+                                                                    "type": ["string", "null"]
+                                                                },
+                                                                "originalDiscountCycles": {
+                                                                    "type": ["number", "null"]
+                                                                },
+                                                                "percentage": {
+                                                                    "type": ["number", "null"]
+                                                                },
+                                                                "remainingDiscountCycles": {
+                                                                    "type": ["number", "null"]
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                },
+                                                "handle": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "price": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "active": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "currency": {
+                                                            "type": "string"
+                                                        },
+                                                        "amount": {
+                                                            "type": "string"
+                                                        },
+                                                        "tiers": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "amount": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "amountPerUnit": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "upTo": {
+                                                                        "type": ["number", "null"]
+                                                                    }
+                                                                },
+                                                                "required": ["amount", "amountPerUnit"],
+                                                                "additionalProperties": false
+                                                            }
+                                                        },
+                                                        "tiersMode": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["active", "currency"],
+                                                    "additionalProperties": false
+                                                },
+                                                "usage": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "cost": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "currencyCode": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["amount", "currencyCode"],
+                                                                    "additionalProperties": false
+                                                                },
+                                                                "quantity": {
+                                                                    "type": "number"
+                                                                }
+                                                            },
+                                                            "required": ["cost", "quantity"],
+                                                            "additionalProperties": false
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "required": ["price"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "legacySubscriptionId": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "pendingUpdate": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "billingPeriod": {
+                                                        "type": "string"
+                                                    },
+                                                    "items": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "description": {
+                                                                    "type": ["string", "null"]
+                                                                },
+                                                                "discount": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "amount": {
+                                                                                    "type": ["string", "null"]
+                                                                                },
+                                                                                "discountEndsAt": {
+                                                                                    "type": ["string", "null"]
+                                                                                },
+                                                                                "originalDiscountCycles": {
+                                                                                    "type": ["number", "null"]
+                                                                                },
+                                                                                "percentage": {
+                                                                                    "type": ["number", "null"]
+                                                                                },
+                                                                                "remainingDiscountCycles": {
+                                                                                    "type": ["number", "null"]
+                                                                                }
+                                                                            },
+                                                                            "additionalProperties": false
+                                                                        },
+                                                                        {
+                                                                            "type": "null"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                "handle": {
+                                                                    "type": ["string", "null"]
+                                                                },
+                                                                "price": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "active": {
+                                                                            "type": "boolean"
+                                                                        },
+                                                                        "currency": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "amount": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "tiers": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "amount": {
+                                                                                        "type": "string"
+                                                                                    },
+                                                                                    "amountPerUnit": {
+                                                                                        "type": "string"
+                                                                                    },
+                                                                                    "upTo": {
+                                                                                        "type": ["number", "null"]
+                                                                                    }
+                                                                                },
+                                                                                "required": ["amount", "amountPerUnit"],
+                                                                                "additionalProperties": false
+                                                                            }
+                                                                        },
+                                                                        "tiersMode": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["active", "currency"],
+                                                                    "additionalProperties": false
+                                                                },
+                                                                "usage": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "cost": {
+                                                                                    "type": "object",
+                                                                                    "properties": {
+                                                                                        "amount": {
+                                                                                            "type": "string"
+                                                                                        },
+                                                                                        "currencyCode": {
+                                                                                            "type": "string"
+                                                                                        }
+                                                                                    },
+                                                                                    "required": ["amount", "currencyCode"],
+                                                                                    "additionalProperties": false
+                                                                                },
+                                                                                "quantity": {
+                                                                                    "type": "number"
+                                                                                }
+                                                                            },
+                                                                            "required": ["cost", "quantity"],
+                                                                            "additionalProperties": false
+                                                                        },
+                                                                        {
+                                                                            "type": "null"
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            },
+                                                            "required": ["price"],
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    "legacySubscriptionId": {
+                                                        "type": ["string", "null"]
+                                                    }
+                                                },
+                                                "required": ["billingPeriod", "items"],
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "shop": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "myshopifyDomain": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["id", "myshopifyDomain", "name"],
+                                        "additionalProperties": false
+                                    },
+                                    "trialEndsAt": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "required": ["app", "billingPeriod", "cancelAtEndOfCycle", "items", "shop"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the Partner API versions supported by this account.",
+            "endpoint": null,
+            "input": "ActionInput_shopify_partner_getpublicapiversions",
+            "name": "get-public-api-versions",
+            "output": ["ActionOutput_shopify_partner_getpublicapiversions"],
+            "scopes": [],
+            "usedModels": ["ActionInput_shopify_partner_getpublicapiversions", "ActionOutput_shopify_partner_getpublicapiversions"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_shopify_partner_getpublicapiversions": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_shopify_partner_getpublicapiversions": {
+                        "type": "object",
+                        "properties": {
+                            "versions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "handle": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "supported": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["handle", "displayName", "supported"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["versions"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List historical events for a single known Partner app.",
+            "endpoint": null,
+            "input": "ActionInput_shopify_partner_listappevents",
+            "name": "list-app-events",
+            "output": ["ActionOutput_shopify_partner_listappevents"],
+            "scopes": ["read_partner_events"],
+            "usedModels": ["ActionInput_shopify_partner_listappevents", "ActionOutput_shopify_partner_listappevents"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_shopify_partner_listappevents": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "type": "string",
+                                "description": "The app GID. Example: gid://partners/App/1234"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "first": {
+                                "description": "Number of events to return per page. Default: 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 250
+                            },
+                            "shopId": {
+                                "description": "Shop GID to filter by. Example: gid://partners/Shop/1234",
+                                "type": "string"
+                            },
+                            "occurredAtMin": {
+                                "description": "Return events on or after this ISO 8601 datetime.",
+                                "type": "string"
+                            },
+                            "occurredAtMax": {
+                                "description": "Return events on or before this ISO 8601 datetime.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["appId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_shopify_partner_listappevents": {
+                        "type": "object",
+                        "properties": {
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "occurredAt": {
+                                            "type": "string"
+                                        },
+                                        "app": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "name"],
+                                            "additionalProperties": false
+                                        },
+                                        "shop": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "myshopifyDomain": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id", "name", "myshopifyDomain"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["type", "occurredAt", "app", "shop"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["events"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Partner account events across apps and shops with filters.",
+            "endpoint": null,
+            "input": "ActionInput_shopify_partner_listevents",
+            "name": "list-events",
+            "output": ["ActionOutput_shopify_partner_listevents"],
+            "scopes": ["read_partner_events"],
+            "usedModels": ["ActionInput_shopify_partner_listevents", "ActionOutput_shopify_partner_listevents"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_shopify_partner_listevents": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of events to return. Defaults to 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 250
+                            },
+                            "shopId": {
+                                "description": "Filter by shop ID. Must be a GID in the format gid://shopify/Shop/{id}.",
+                                "type": "string"
+                            },
+                            "subjectType": {
+                                "description": "Filter by subject type.",
+                                "type": "string",
+                                "enum": ["APP", "THEME"]
+                            },
+                            "subjectId": {
+                                "description": "Filter by subject ID. Must be a GID in the format gid://shopify/App/{id} or gid://shopify/Theme/{id}.",
+                                "type": "string"
+                            },
+                            "eventTypes": {
+                                "description": "Filter by one or more event types.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "CHARGE_ONE_TIME",
+                                        "CHARGE_RECURRING",
+                                        "CHARGE_USAGE",
+                                        "CREDIT_APPLIED",
+                                        "CREDIT_FAILED",
+                                        "CREDIT_PENDING",
+                                        "EARNING_ADJUSTMENT",
+                                        "EARNING_CHARGE_ONE_TIME",
+                                        "EARNING_CHARGE_RECURRING",
+                                        "EARNING_CHARGE_USAGE",
+                                        "EARNING_CREDIT",
+                                        "EARNING_REFUND",
+                                        "RELATIONSHIP_DEACTIVATED",
+                                        "RELATIONSHIP_INSTALLED",
+                                        "RELATIONSHIP_REACTIVATED",
+                                        "RELATIONSHIP_UNINSTALLED",
+                                        "SUBSCRIPTION_CANCELED",
+                                        "SUBSCRIPTION_CANCELLATION_SCHEDULED",
+                                        "SUBSCRIPTION_CREATED",
+                                        "SUBSCRIPTION_FROZEN",
+                                        "SUBSCRIPTION_UNFROZEN",
+                                        "SUBSCRIPTION_UPDATED"
+                                    ]
+                                }
+                            },
+                            "occurredAtMin": {
+                                "description": "Filter events that occurred on or after this ISO 8601 datetime.",
+                                "type": "string"
+                            },
+                            "occurredAtMax": {
+                                "description": "Filter events that occurred on or before this ISO 8601 datetime.",
+                                "type": "string"
+                            },
+                            "orderBy": {
+                                "description": "Order direction for event results.",
+                                "type": "string",
+                                "enum": ["OCCURRED_AT_ASC", "OCCURRED_AT_DESC"]
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_shopify_partner_listevents": {
+                        "type": "object",
+                        "properties": {
+                            "events": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "eventType": {
+                                            "type": "string"
+                                        },
+                                        "occurredAt": {
+                                            "type": "string"
+                                        },
+                                        "shop": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "myshopifyDomain": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["id", "myshopifyDomain", "name"],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "subject": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "apiKey": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["id", "name"],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["id", "eventType", "occurredAt"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["events"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Partner transactions with cursor pagination and filters.",
+            "endpoint": null,
+            "input": "ActionInput_shopify_partner_listtransactions",
+            "name": "list-transactions",
+            "output": ["ActionOutput_shopify_partner_listtransactions"],
+            "scopes": [],
+            "usedModels": ["ActionInput_shopify_partner_listtransactions", "ActionOutput_shopify_partner_listtransactions"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_shopify_partner_listtransactions": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "first": {
+                                "description": "Number of results to return. Defaults to 50, maximum 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "shopId": {
+                                "description": "Shop GID filter. Example: gid://partners/Shop/123",
+                                "type": "string"
+                            },
+                            "myshopifyDomain": {
+                                "description": "Shop domain filter. Example: my-shop.myshopify.com",
+                                "type": "string"
+                            },
+                            "appId": {
+                                "description": "App GID filter. Example: gid://partners/App/123",
+                                "type": "string"
+                            },
+                            "createdAtMin": {
+                                "description": "Minimum created at timestamp (ISO 8601).",
+                                "type": "string"
+                            },
+                            "createdAtMax": {
+                                "description": "Maximum created at timestamp (ISO 8601).",
+                                "type": "string"
+                            },
+                            "types": {
+                                "description": "Transaction types to filter by.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "SERVICE_SALE",
+                                        "SERVICE_SALE_ADJUSTMENT",
+                                        "THEME_SALE",
+                                        "THEME_SALE_ADJUSTMENT",
+                                        "APP_ONE_TIME_SALE",
+                                        "APP_SUBSCRIPTION_SALE",
+                                        "APP_USAGE_SALE",
+                                        "APP_SALE_CREDIT",
+                                        "APP_SALE_ADJUSTMENT",
+                                        "REFERRAL",
+                                        "REFERRAL_ADJUSTMENT",
+                                        "TAX",
+                                        "LEGACY"
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_shopify_partner_listtransactions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "__typename": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            },
+                            "hasNextPage": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["items", "hasNextPage"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Run a constrained Partner API GraphQL query for cases the typed actions do not cover.",
+            "endpoint": null,
+            "input": "ActionInput_shopify_partner_querypartnerdata",
+            "name": "query-partner-data",
+            "output": ["ActionOutput_shopify_partner_querypartnerdata"],
+            "scopes": [],
+            "usedModels": ["ActionInput_shopify_partner_querypartnerdata", "ActionOutput_shopify_partner_querypartnerdata"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_shopify_partner_querypartnerdata": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "A read-only GraphQL query string. Every object ID argument must be a full GID (e.g. gid://partners/App/123, gid://shopify/Shop/456)."
+                            },
+                            "variables": {
+                                "description": "GraphQL variables map.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["query"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_shopify_partner_querypartnerdata": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "errors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "locations": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "line": {
+                                                        "type": "number"
+                                                    },
+                                                    "column": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": ["line", "column"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "path": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": ["string", "number"]
+                                            }
+                                        },
+                                        "extensions": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": ["message"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync Partner account events (installs, charges, credits, earnings, subscription status changes).",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "events",
+            "output": ["Event"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Event"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Event": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "eventType": {
+                                "type": "string"
+                            },
+                            "occurredAt": {
+                                "type": "string"
+                            },
+                            "shopId": {
+                                "type": "string"
+                            },
+                            "shopMyshopifyDomain": {
+                                "type": "string"
+                            },
+                            "shopName": {
+                                "type": "string"
+                            },
+                            "subjectId": {
+                                "type": "string"
+                            },
+                            "subjectName": {
+                                "type": "string"
+                            },
+                            "subjectType": {
+                                "type": "string"
+                            },
+                            "chargeId": {
+                                "type": "string"
+                            },
+                            "chargeType": {
+                                "type": "string"
+                            },
+                            "amount": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "string"
+                                    },
+                                    "currencyCode": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["amount", "currencyCode"],
+                                "additionalProperties": false
+                            },
+                            "balanceUsed": {
+                                "type": "string"
+                            },
+                            "cappedAmount": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "planHandle": {
+                                "type": "string"
+                            },
+                            "usageQuantity": {
+                                "type": "string"
+                            },
+                            "metadataLegacyChargeId": {
+                                "type": "string"
+                            },
+                            "creditMoney": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "string"
+                                    },
+                                    "currencyCode": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["amount", "currencyCode"],
+                                "additionalProperties": false
+                            },
+                            "creditStatus": {
+                                "type": "string"
+                            },
+                            "earningType": {
+                                "type": "string"
+                            },
+                            "grossAmount": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "string"
+                                    },
+                                    "currencyCode": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["amount", "currencyCode"],
+                                "additionalProperties": false
+                            },
+                            "netAmount": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "string"
+                                    },
+                                    "currencyCode": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["amount", "currencyCode"],
+                                "additionalProperties": false
+                            },
+                            "settlementDate": {
+                                "type": "string"
+                            },
+                            "shopifyFee": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "string"
+                                    },
+                                    "currencyCode": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["amount", "currencyCode"],
+                                "additionalProperties": false
+                            },
+                            "reason": {
+                                "type": "string"
+                            },
+                            "reasonDescription": {
+                                "type": "string"
+                            },
+                            "relationshipState": {
+                                "type": "string"
+                            },
+                            "subscriptionState": {
+                                "type": "string"
+                            },
+                            "cancelEffectiveOn": {
+                                "type": "string"
+                            },
+                            "planBillingPeriod": {
+                                "type": "string"
+                            },
+                            "planTrialDays": {
+                                "type": "number"
+                            },
+                            "planTrialDaysRemaining": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "eventType", "occurredAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Partner transactions.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "transactions",
+            "output": ["Transaction"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Transaction"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Transaction": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "appName": {
+                                "type": "string"
+                            },
+                            "shopName": {
+                                "type": "string"
+                            },
+                            "shopDomain": {
+                                "type": "string"
+                            },
+                            "netAmount": {
+                                "type": "string"
+                            },
+                            "netAmountCurrency": {
+                                "type": "string"
+                            },
+                            "grossAmount": {
+                                "type": "string"
+                            },
+                            "grossAmountCurrency": {
+                                "type": "string"
+                            },
+                            "shopifyFee": {
+                                "type": "string"
+                            },
+                            "shopifyFeeCurrency": {
+                                "type": "string"
+                            },
+                            "category": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "createdAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

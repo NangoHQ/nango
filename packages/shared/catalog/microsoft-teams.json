@@ -1,0 +1,3246 @@
+{
+    "providerConfigKey": "microsoft-teams",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add a member to a team",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_addteammember",
+            "name": "add-team-member",
+            "output": ["ActionOutput_microsoft_teams_addteammember"],
+            "scopes": ["TeamMember.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_teams_addteammember", "ActionOutput_microsoft_teams_addteammember"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_addteammember": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "Team ID to add the member to. Example: \"ee0f5ae2-8bc6-4ae5-8466-7daeebbfa062\""
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "User ID or user principal name (UPN) to add as a member. Example: \"8b081ef6-4792-4def-b2c9-c363a1bf41d5\" or \"jacob@contoso.com\""
+                            },
+                            "isOwner": {
+                                "description": "Whether to add the user as an owner. Defaults to false (regular member).",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["teamId", "userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_addteammember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "roles"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Post a root message in a channel",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_createchannelmessage",
+            "name": "create-channel-message",
+            "output": ["ActionOutput_microsoft_teams_createchannelmessage"],
+            "scopes": ["ChannelMessage.Send"],
+            "usedModels": ["ActionInput_microsoft_teams_createchannelmessage", "ActionOutput_microsoft_teams_createchannelmessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_createchannelmessage": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "Team ID. Example: \"19:xxxxxxxxxxxxxxxxxxxxxxxxxx@thread.tacv2\""
+                            },
+                            "channelId": {
+                                "type": "string",
+                                "description": "Channel ID. Example: \"19:xxxxxxxxxxxxxxxxxxxxxxxxxx@thread.tacv2\""
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string",
+                                        "enum": ["html", "text"],
+                                        "description": "Content type. Example: \"html\""
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "description": "Message content in HTML or plain text. Example: \"<p>Hello team!</p>\""
+                                    }
+                                },
+                                "required": ["contentType", "content"],
+                                "additionalProperties": false
+                            },
+                            "attachments": {
+                                "description": "Optional attachments for the message",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Unique ID for the attachment"
+                                        },
+                                        "contentType": {
+                                            "type": "string",
+                                            "description": "MIME type of the attachment. Example: \"application/vnd.microsoft.card.hero\""
+                                        },
+                                        "contentUrl": {
+                                            "description": "URL for the attachment",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "description": "Name of the attachment",
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "description": "JSON-encoded content for adaptive cards",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "contentType"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["teamId", "channelId", "body"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_createchannelmessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Message ID"
+                            },
+                            "createdDateTime": {
+                                "type": "string",
+                                "description": "Creation timestamp"
+                            },
+                            "from": {
+                                "description": "Sender information",
+                                "type": "object",
+                                "properties": {
+                                    "userId": {
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string",
+                                        "enum": ["html", "text", "markdown"]
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["contentType", "content"],
+                                "additionalProperties": false
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "contentType": {
+                                            "type": "string"
+                                        },
+                                        "contentUrl": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "contentType"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "createdDateTime", "body"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a tab to a channel.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_createchanneltab",
+            "name": "create-channel-tab",
+            "output": ["ActionOutput_microsoft_teams_createchanneltab"],
+            "scopes": ["TeamsTab.Create"],
+            "usedModels": ["ActionInput_microsoft_teams_createchanneltab", "ActionOutput_microsoft_teams_createchanneltab"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_createchanneltab": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "Team ID. Example: \"02bd9fd6-8f93-4758-87c3-1fb73740a315\""
+                            },
+                            "channelId": {
+                                "type": "string",
+                                "description": "Channel ID. Example: \"19:4b6bedd7427d44f6b46b1bf92ab9f5f2@thread.tacv2\""
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Display name for the tab. Example: \"My Tab\""
+                            },
+                            "teamsAppOdataBind": {
+                                "type": "string",
+                                "description": "OData bind reference to the Teams app. Example: \"https://graph.microsoft.com/v1.0/appCatalogs/teamsApps/com.microsoft.teamspace.tab.web\""
+                            },
+                            "configuration": {
+                                "type": "object",
+                                "properties": {
+                                    "entityId": {
+                                        "description": "Entity ID for the tab content",
+                                        "type": "string"
+                                    },
+                                    "contentUrl": {
+                                        "type": "string",
+                                        "description": "Content URL for the tab. Example: \"https://www.example.com/content\""
+                                    },
+                                    "removeUrl": {
+                                        "description": "Remove URL for the tab",
+                                        "type": "string"
+                                    },
+                                    "websiteUrl": {
+                                        "description": "Website URL for the tab. Example: \"https://www.example.com\"",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["contentUrl"],
+                                "additionalProperties": false,
+                                "description": "Configuration properties for the tab"
+                            }
+                        },
+                        "required": ["teamId", "channelId", "displayName", "teamsAppOdataBind", "configuration"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_createchanneltab": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "teamsAppId": {
+                                "type": "string"
+                            },
+                            "teamsAppName": {
+                                "type": "string"
+                            },
+                            "configuration": {
+                                "type": "object",
+                                "properties": {
+                                    "entityId": {
+                                        "type": "string"
+                                    },
+                                    "contentUrl": {
+                                        "type": "string"
+                                    },
+                                    "removeUrl": {
+                                        "type": "string"
+                                    },
+                                    "websiteUrl": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "sortOrderIndex": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "displayName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a channel in a team.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_createchannel",
+            "name": "create-channel",
+            "output": ["ActionOutput_microsoft_teams_createchannel"],
+            "scopes": ["Channel.Create", "Group.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_teams_createchannel", "ActionOutput_microsoft_teams_createchannel"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_createchannel": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "The ID of the team to create the channel in. Example: \"19:xxxxxxxxxxxx\""
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "The display name of the channel. Example: \"General\""
+                            },
+                            "description": {
+                                "description": "The description of the channel.",
+                                "type": "string"
+                            },
+                            "membershipType": {
+                                "description": "The type of the channel. Defaults to standard.",
+                                "type": "string",
+                                "enum": ["standard", "private", "shared", "unknownFutureValue"]
+                            }
+                        },
+                        "required": ["teamId", "displayName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_createchannel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "membershipType": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "displayName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Send a message in a chat",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_createchatmessage",
+            "name": "create-chat-message",
+            "output": ["ActionOutput_microsoft_teams_createchatmessage"],
+            "scopes": ["ChatMessage.Send"],
+            "usedModels": ["ActionInput_microsoft_teams_createchatmessage", "ActionOutput_microsoft_teams_createchatmessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_createchatmessage": {
+                        "type": "object",
+                        "properties": {
+                            "chatId": {
+                                "type": "string",
+                                "description": "The unique identifier of the chat. Example: \"19:2da4c29f6d7041eca70b638b43d45437@thread.v2\""
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "description": "Content type of the message body",
+                                        "type": "string",
+                                        "enum": ["text", "html"]
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "description": "Content of the message body in plain text or HTML format. Example: \"<p>Hello world</p>\""
+                                    }
+                                },
+                                "required": ["content"],
+                                "additionalProperties": false,
+                                "description": "The body of the chat message"
+                            }
+                        },
+                        "required": ["chatId", "body"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_createchatmessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "chatId": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["contentType", "content"],
+                                "additionalProperties": false
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "importance": {
+                                "type": "string"
+                            },
+                            "messageType": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a one-on-one or group chat.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_createchat",
+            "name": "create-chat",
+            "output": ["ActionOutput_microsoft_teams_createchat"],
+            "scopes": ["Chat.Create"],
+            "usedModels": ["ActionInput_microsoft_teams_createchat", "ActionOutput_microsoft_teams_createchat"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_createchat": {
+                        "type": "object",
+                        "properties": {
+                            "chatType": {
+                                "type": "string",
+                                "enum": ["oneOnOne", "group"],
+                                "description": "The type of chat. oneOnOne for 1:1 chats, group for group chats."
+                            },
+                            "topic": {
+                                "description": "The topic or title of the chat. Required for group chats.",
+                                "type": "string"
+                            },
+                            "members": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "userId": {
+                                            "type": "string",
+                                            "description": "The Azure AD user ID of the member. Example: \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\""
+                                        },
+                                        "roles": {
+                                            "description": "Roles for this member. Use \"owner\" to grant ownership; omit or pass [] for a regular member.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "enum": ["owner", "guest"]
+                                            }
+                                        }
+                                    },
+                                    "required": ["userId"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of members to add to the chat. Must include at least one member for group chats."
+                            }
+                        },
+                        "required": ["chatType", "members"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_createchat": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the chat."
+                            },
+                            "chatType": {
+                                "type": "string",
+                                "enum": ["oneOnOne", "group", "meeting", "unknownFutureValue"]
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastUpdatedDateTime": {
+                                "type": "string"
+                            },
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "chatType"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a team from a template or existing group.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_createteam",
+            "name": "create-team",
+            "output": ["ActionOutput_microsoft_teams_createteam"],
+            "scopes": ["Team.Create"],
+            "usedModels": ["ActionInput_microsoft_teams_createteam", "ActionOutput_microsoft_teams_createteam"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_createteam": {
+                        "type": "object",
+                        "properties": {
+                            "display_name": {
+                                "type": "string",
+                                "description": "Display name of the team. Example: \"My Sample Team\""
+                            },
+                            "description": {
+                                "description": "Description of the team.",
+                                "type": "string"
+                            },
+                            "template": {
+                                "description": "Template ID or name. Example: \"standard\" or \"educationClass\". Defaults to \"standard\".",
+                                "type": "string"
+                            },
+                            "first_channel_name": {
+                                "description": "Name of the first (General) channel. Defaults to \"General\".",
+                                "type": "string"
+                            },
+                            "visibility": {
+                                "description": "Team visibility.",
+                                "type": "string",
+                                "enum": ["public", "private", "hiddenMembership"]
+                            },
+                            "group_id": {
+                                "description": "Existing group ID to create the team from. If provided, team is created from this group.",
+                                "type": "string"
+                            },
+                            "members": {
+                                "description": "Members to add to the team. Required for application permissions.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "string",
+                                            "description": "User ID to add as a member. Example: \"0040b377-61d8-43db-94f5-81374122dc7e\""
+                                        },
+                                        "roles": {
+                                            "description": "Member roles. Defaults to [\"member\"].",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "enum": ["owner", "member"]
+                                            }
+                                        }
+                                    },
+                                    "required": ["user_id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "channels": {
+                                "description": "Channels to create with the team.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "display_name": {
+                                            "type": "string",
+                                            "description": "Channel display name."
+                                        },
+                                        "description": {
+                                            "description": "Channel description.",
+                                            "type": "string"
+                                        },
+                                        "is_favorite_by_default": {
+                                            "description": "Whether the channel is favorited by default.",
+                                            "type": "boolean"
+                                        },
+                                        "tabs": {
+                                            "description": "Tabs to install in the channel.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "teams_app_id": {
+                                                        "type": "string",
+                                                        "description": "Teams app ID. Example: \"com.microsoft.teamspace.tab.web\""
+                                                    },
+                                                    "display_name": {
+                                                        "type": "string",
+                                                        "description": "Tab display name."
+                                                    },
+                                                    "configuration": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "content_url": {
+                                                                "type": "string",
+                                                                "description": "Tab content URL."
+                                                            },
+                                                            "website_url": {
+                                                                "description": "Tab website URL.",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["content_url"],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                "required": ["teams_app_id", "display_name", "configuration"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["display_name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "member_settings": {
+                                "description": "Member settings for the team.",
+                                "type": "object",
+                                "properties": {
+                                    "allow_create_update_channels": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_delete_channels": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_add_remove_apps": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_create_update_remove_tabs": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_create_update_remove_connectors": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "guest_settings": {
+                                "description": "Guest settings for the team.",
+                                "type": "object",
+                                "properties": {
+                                    "allow_create_update_channels": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_delete_channels": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "fun_settings": {
+                                "description": "Fun settings for the team.",
+                                "type": "object",
+                                "properties": {
+                                    "allow_giphy": {
+                                        "type": "boolean"
+                                    },
+                                    "giphy_content_rating": {
+                                        "type": "string",
+                                        "enum": ["strict", "moderate"]
+                                    },
+                                    "allow_stickers_and_memes": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_custom_memes": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "messaging_settings": {
+                                "description": "Messaging settings for the team.",
+                                "type": "object",
+                                "properties": {
+                                    "allow_user_edit_messages": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_user_delete_messages": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_owner_delete_messages": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_team_mentions": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_channel_mentions": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "discovery_settings": {
+                                "description": "Discovery settings for the team.",
+                                "type": "object",
+                                "properties": {
+                                    "show_in_teams_search_and_suggestions": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "installed_apps": {
+                                "description": "Apps to install in the team.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "teams_app_id": {
+                                            "type": "string",
+                                            "description": "Teams app ID to install. Example: \"com.microsoft.teamspace.tab.vsts\""
+                                        }
+                                    },
+                                    "required": ["teams_app_id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["display_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_createteam": {
+                        "type": "object",
+                        "properties": {
+                            "team_id": {
+                                "description": "ID of the created team (available after operation succeeds).",
+                                "type": "string"
+                            },
+                            "operation_id": {
+                                "type": "string",
+                                "description": "ID of the async operation."
+                            },
+                            "operation_url": {
+                                "type": "string",
+                                "description": "URL to poll for operation status."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["notStarted", "inProgress", "succeeded", "failed"],
+                                "description": "Current operation status."
+                            },
+                            "error": {
+                                "description": "Error details if the operation failed.",
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "string"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["code", "message"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["operation_id", "operation_url", "status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a channel from a team",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_deletechannel",
+            "name": "delete-channel",
+            "output": ["ActionOutput_microsoft_teams_deletechannel"],
+            "scopes": ["Channel.Delete.All"],
+            "usedModels": ["ActionInput_microsoft_teams_deletechannel", "ActionOutput_microsoft_teams_deletechannel"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_deletechannel": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "The unique identifier of the team. Example: \"19:1234567890abcdef@thread.tacv2\""
+                            },
+                            "channelId": {
+                                "type": "string",
+                                "description": "The unique identifier of the channel. Example: \"19:abcdef1234567890@thread.tacv2\""
+                            }
+                        },
+                        "required": ["teamId", "channelId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_deletechannel": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "channelId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "teamId", "channelId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a channel message by ID.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_getchannelmessage",
+            "name": "get-channel-message",
+            "output": ["ActionOutput_microsoft_teams_getchannelmessage"],
+            "scopes": ["ChannelMessage.Read.All", "Group.Read.All"],
+            "usedModels": ["ActionInput_microsoft_teams_getchannelmessage", "ActionOutput_microsoft_teams_getchannelmessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_getchannelmessage": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "The unique identifier of the team. Example: \"fbe2bf47-16c8-47cf-b4a5-4b9b187c508b\""
+                            },
+                            "channelId": {
+                                "type": "string",
+                                "description": "The unique identifier of the channel. Example: \"19:4a95f7d8db4c4e7fae857bcebe0623e6@thread.tacv2\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "The unique identifier of the message. Example: \"1614618259349\""
+                            }
+                        },
+                        "required": ["teamId", "channelId", "messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_getchannelmessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "replyToId": {
+                                "type": "string"
+                            },
+                            "messageType": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "lastEditedDateTime": {
+                                "type": "string"
+                            },
+                            "deletedDateTime": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "importance": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "channelIdentity": {
+                                "type": "object",
+                                "properties": {
+                                    "teamId": {
+                                        "type": "string"
+                                    },
+                                    "channelId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "from": {
+                                "type": "object",
+                                "properties": {
+                                    "user": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "displayName": {
+                                                "type": "string"
+                                            },
+                                            "userIdentityType": {
+                                                "type": "string"
+                                            },
+                                            "tenantId": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a channel by ID.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_getchannel",
+            "name": "get-channel",
+            "output": ["ActionOutput_microsoft_teams_getchannel"],
+            "scopes": ["Channel.ReadBasic.All"],
+            "usedModels": ["ActionInput_microsoft_teams_getchannel", "ActionOutput_microsoft_teams_getchannel"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_getchannel": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "The unique identifier of the team. Example: \"893075dd-2487-4122-925f-022c42e20265\""
+                            },
+                            "channelId": {
+                                "type": "string",
+                                "description": "The unique identifier of the channel. Example: \"19:561fbdbbfca848a484f0a6f00ce9dbbd@thread.tacv2\""
+                            }
+                        },
+                        "required": ["teamId", "channelId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_getchannel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "isFavoriteByDefault": {
+                                "type": "boolean"
+                            },
+                            "layoutType": {
+                                "type": "string"
+                            },
+                            "membershipType": {
+                                "type": "string"
+                            },
+                            "tenantId": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a chat message by ID.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_getchatmessage",
+            "name": "get-chat-message",
+            "output": ["ActionOutput_microsoft_teams_getchatmessage"],
+            "scopes": ["Chat.Read"],
+            "usedModels": ["ActionInput_microsoft_teams_getchatmessage", "ActionOutput_microsoft_teams_getchatmessage"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_getchatmessage": {
+                        "type": "object",
+                        "properties": {
+                            "chatId": {
+                                "type": "string",
+                                "description": "The ID of the chat containing the message. Example: \"19:xxxxxxxxxxxxxxxxxxxxxxxxxxxx@thread.v2\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "The ID of the chat message to retrieve. Example: \"1659458708524\""
+                            }
+                        },
+                        "required": ["chatId", "messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_getchatmessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "chatId": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "deletedDateTime": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "object",
+                                "properties": {
+                                    "user": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "displayName": {
+                                                "type": "string"
+                                            },
+                                            "email": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "application": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "displayName": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "body": {
+                                "type": "object",
+                                "properties": {
+                                    "contentType": {
+                                        "type": "string",
+                                        "enum": ["text", "html"]
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "importance": {
+                                "type": "string",
+                                "enum": ["normal", "high", "urgent"]
+                            },
+                            "replyToId": {
+                                "type": "string"
+                            },
+                            "messageType": {
+                                "type": "string",
+                                "enum": ["message", "chatEvent", "systemEventMessage", "typing", "unknownFutureValue"]
+                            }
+                        },
+                        "required": ["id", "chatId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a chat by ID.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_getchat",
+            "name": "get-chat",
+            "output": ["ActionOutput_microsoft_teams_getchat"],
+            "scopes": ["Chat.Read", "Chat.ReadBasic"],
+            "usedModels": ["ActionInput_microsoft_teams_getchat", "ActionOutput_microsoft_teams_getchat"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_getchat": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the chat. Example: \"19:xxx@thread.v2\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_getchat": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "chat_type": {
+                                "type": "string",
+                                "enum": ["oneOnOne", "group", "meeting", "unknownFutureValue"]
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "last_updated_at": {
+                                "type": "string"
+                            },
+                            "join_url": {
+                                "type": "string"
+                            },
+                            "tenant_id": {
+                                "type": "string"
+                            },
+                            "web_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a team by ID.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_getteam",
+            "name": "get-team",
+            "output": ["ActionOutput_microsoft_teams_getteam"],
+            "scopes": ["Team.ReadBasic.All"],
+            "usedModels": ["ActionInput_microsoft_teams_getteam", "ActionOutput_microsoft_teams_getteam"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "The unique identifier of the team. Example: \"893075dd-2487-4122-925f-022c42e20265\""
+                            }
+                        },
+                        "required": ["teamId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "classification": {
+                                "type": "string"
+                            },
+                            "visibility": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "internalId": {
+                                "type": "string"
+                            },
+                            "tenantId": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "funSettings": {
+                                "type": "object",
+                                "properties": {
+                                    "allowGiphy": {
+                                        "type": "boolean"
+                                    },
+                                    "giphyContentRating": {
+                                        "type": "string"
+                                    },
+                                    "allowStickersAndMemes": {
+                                        "type": "boolean"
+                                    },
+                                    "allowCustomMemes": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "guestSettings": {
+                                "type": "object",
+                                "properties": {
+                                    "allowCreateUpdateChannels": {
+                                        "type": "boolean"
+                                    },
+                                    "allowDeleteChannels": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "memberSettings": {
+                                "type": "object",
+                                "properties": {
+                                    "allowCreateUpdateChannels": {
+                                        "type": "boolean"
+                                    },
+                                    "allowDeleteChannels": {
+                                        "type": "boolean"
+                                    },
+                                    "allowAddRemoveApps": {
+                                        "type": "boolean"
+                                    },
+                                    "allowCreateUpdateRemoveTabs": {
+                                        "type": "boolean"
+                                    },
+                                    "allowCreateUpdateRemoveConnectors": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "messagingSettings": {
+                                "type": "object",
+                                "properties": {
+                                    "allowUserEditMessages": {
+                                        "type": "boolean"
+                                    },
+                                    "allowUserDeleteMessages": {
+                                        "type": "boolean"
+                                    },
+                                    "allowOwnerDeleteMessages": {
+                                        "type": "boolean"
+                                    },
+                                    "allowTeamMentions": {
+                                        "type": "boolean"
+                                    },
+                                    "allowChannelMentions": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "discoverySettings": {
+                                "type": "object",
+                                "properties": {
+                                    "showInTeamsSearchAndSuggestions": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "summary": {
+                                "type": "object",
+                                "properties": {
+                                    "ownersCount": {
+                                        "type": "number"
+                                    },
+                                    "membersCount": {
+                                        "type": "number"
+                                    },
+                                    "guestsCount": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List root messages in a channel.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_listchannelmessages",
+            "name": "list-channel-messages",
+            "output": ["ActionOutput_microsoft_teams_listchannelmessages"],
+            "scopes": ["ChannelMessage.Read.All", "Group.Read.All"],
+            "usedModels": ["ActionInput_microsoft_teams_listchannelmessages", "ActionOutput_microsoft_teams_listchannelmessages"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_listchannelmessages": {
+                        "type": "object",
+                        "properties": {
+                            "team_id": {
+                                "description": "Team ID. Example: \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\". Required when next_link is not provided.",
+                                "type": "string"
+                            },
+                            "channel_id": {
+                                "description": "Channel ID. Example: \"19:abc123@thread.tacv2\". Required when next_link is not provided.",
+                                "type": "string"
+                            },
+                            "next_link": {
+                                "description": "Pagination cursor (@odata.nextLink) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_listchannelmessages": {
+                        "type": "object",
+                        "properties": {
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "deletedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "from": {
+                                            "type": "object",
+                                            "properties": {
+                                                "user": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "userIdentityType": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "body": {
+                                            "type": "object",
+                                            "properties": {
+                                                "contentType": {
+                                                    "type": "string"
+                                                },
+                                                "content": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "importance": {
+                                            "type": "string"
+                                        },
+                                        "reactions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "reactionType": {
+                                                        "type": "string"
+                                                    },
+                                                    "user": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "displayName": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    "createdDateTime": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "attachments": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "contentType": {
+                                                        "type": "string"
+                                                    },
+                                                    "contentUrl": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "replyToId": {
+                                            "type": "string"
+                                        },
+                                        "messageType": {
+                                            "type": "string"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_link": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["messages"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List replies under a channel message thread",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_listchannelreplies",
+            "name": "list-channel-replies",
+            "output": ["ActionOutput_microsoft_teams_listchannelreplies"],
+            "scopes": ["ChannelMessage.Read.All"],
+            "usedModels": ["ActionInput_microsoft_teams_listchannelreplies", "ActionOutput_microsoft_teams_listchannelreplies"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_listchannelreplies": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "Team ID. Example: \"5d7a3b3e-8c9d-4e0f-a1b2-c3d4e5f6a7b8\""
+                            },
+                            "channelId": {
+                                "type": "string",
+                                "description": "Channel ID. Example: \"19:abc123@thread.tacv2\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Parent message ID to fetch replies for. Example: \"1234567890\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (full @odata.nextLink URL) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["teamId", "channelId", "messageId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_listchannelreplies": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "replyToId": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "createdDateTime": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "deletedDateTime": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "subject": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "bodyContentType": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "enum": ["text", "html"]
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "bodyContent": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "fromUserId": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "fromUserDisplayName": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "fromApplicationId": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "fromApplicationDisplayName": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "teamId": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "channelId": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "messageType": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "importance": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "enum": ["normal", "high", "urgent"]
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "reactions": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "reactionType": {
+                                                                "type": ["string", "null"]
+                                                            },
+                                                            "userId": {
+                                                                "type": ["string", "null"]
+                                                            },
+                                                            "userDisplayName": {
+                                                                "type": ["string", "null"]
+                                                            },
+                                                            "createdDateTime": {
+                                                                "type": ["string", "null"]
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Pagination cursor to fetch the next page. Pass this as the cursor input in the next request.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List tabs configured on a channel.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_listchanneltabs",
+            "name": "list-channel-tabs",
+            "output": ["ActionOutput_microsoft_teams_listchanneltabs"],
+            "scopes": ["TeamsTab.Read.All"],
+            "usedModels": ["ActionInput_microsoft_teams_listchanneltabs", "ActionOutput_microsoft_teams_listchanneltabs"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_listchanneltabs": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "The ID of the team. Example: \"6903fa93-605b-43ef-920e-77c4729f8258\""
+                            },
+                            "channelId": {
+                                "type": "string",
+                                "description": "The ID of the channel. Example: \"19:33b76eea88574bd1969dca37e2b7a819@thread.skype\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response (@odata.nextLink). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["teamId", "channelId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_listchanneltabs": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "configuration": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "entityId": {
+                                                            "type": ["string", "null"]
+                                                        },
+                                                        "contentUrl": {
+                                                            "type": ["string", "null"]
+                                                        },
+                                                        "websiteUrl": {
+                                                            "type": ["string", "null"]
+                                                        },
+                                                        "removeUrl": {
+                                                            "type": ["string", "null"]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "sortOrderIndex": {
+                                            "type": "string"
+                                        },
+                                        "teamsApp": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "displayName": {
+                                                    "type": "string"
+                                                },
+                                                "distributionMethod": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["id"],
+                                            "additionalProperties": false
+                                        },
+                                        "webUrl": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List channels in a team.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_listchannels",
+            "name": "list-channels",
+            "output": ["ActionOutput_microsoft_teams_listchannels"],
+            "scopes": ["Channel.ReadBasic.All"],
+            "usedModels": ["ActionInput_microsoft_teams_listchannels", "ActionOutput_microsoft_teams_listchannels"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_listchannels": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "The unique identifier of the team. Example: \"893075dd-2487-4122-925f-022c42e20265\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response (@odata.nextLink). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["teamId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_listchannels": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "webUrl": {
+                                            "type": "string"
+                                        },
+                                        "membershipType": {
+                                            "type": "string"
+                                        },
+                                        "layoutType": {
+                                            "type": "string"
+                                        },
+                                        "isArchived": {
+                                            "type": "boolean"
+                                        },
+                                        "isFavoriteByDefault": {
+                                            "type": "boolean"
+                                        },
+                                        "tenantId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List members in a chat",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_listchatmembers",
+            "name": "list-chat-members",
+            "output": ["ActionOutput_microsoft_teams_listchatmembers"],
+            "scopes": ["Chat.ReadBasic"],
+            "usedModels": ["ActionInput_microsoft_teams_listchatmembers", "ActionOutput_microsoft_teams_listchatmembers"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_listchatmembers": {
+                        "type": "object",
+                        "properties": {
+                            "chat_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the chat. Example: \"19:xxxxx@thread.v2\""
+                            },
+                            "cursor": {
+                                "description": "Full URL from @odata.nextLink for pagination. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["chat_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_listchatmembers": {
+                        "type": "object",
+                        "properties": {
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "display_name": {
+                                            "type": "string"
+                                        },
+                                        "visible_history_start_date_time": {
+                                            "type": "string"
+                                        },
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "tenant_id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["members"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List messages in a chat.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_listchatmessages",
+            "name": "list-chat-messages",
+            "output": ["ActionOutput_microsoft_teams_listchatmessages"],
+            "scopes": ["Chat.Read"],
+            "usedModels": ["ActionInput_microsoft_teams_listchatmessages", "ActionOutput_microsoft_teams_listchatmessages"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_listchatmessages": {
+                        "type": "object",
+                        "properties": {
+                            "chatId": {
+                                "type": "string",
+                                "description": "The unique identifier of the chat. Example: \"19:2da4c29f6d7041eca70b638b43d45437@thread.v2\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (full @odata.nextLink URL) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "top": {
+                                "description": "Maximum number of messages to return per page (1-50). Default is determined by the API.",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 50
+                            }
+                        },
+                        "required": ["chatId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_listchatmessages": {
+                        "type": "object",
+                        "properties": {
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "replyToId": {
+                                            "type": "string"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "deletedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "subject": {
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "type": "string"
+                                        },
+                                        "chatId": {
+                                            "type": "string"
+                                        },
+                                        "importance": {
+                                            "type": "string"
+                                        },
+                                        "messageType": {
+                                            "type": "string"
+                                        },
+                                        "fromUserId": {
+                                            "type": "string"
+                                        },
+                                        "fromUserDisplayName": {
+                                            "type": "string"
+                                        },
+                                        "bodyContentType": {
+                                            "type": "string"
+                                        },
+                                        "bodyContent": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextLink": {
+                                "description": "Full URL for the next page. Pass this value as the cursor input for the next request.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["messages"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List chats for a user.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_listchats",
+            "name": "list-chats",
+            "output": ["ActionOutput_microsoft_teams_listchats"],
+            "scopes": ["Chat.ReadBasic", "Chat.Read"],
+            "usedModels": ["ActionInput_microsoft_teams_listchats", "ActionOutput_microsoft_teams_listchats"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_listchats": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response (@odata.nextLink). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "userId": {
+                                "description": "User ID to scope chats to a specific user. Omit to use /me/chats.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_listchats": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "topic": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "lastUpdatedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "chatType": {
+                                            "type": "string"
+                                        },
+                                        "webUrl": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "isHiddenForAllMembers": {
+                                            "type": "boolean"
+                                        },
+                                        "tenantId": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "viewpoint": {
+                                            "type": "object",
+                                            "properties": {
+                                                "isHidden": {
+                                                    "type": "boolean"
+                                                },
+                                                "lastMessageReadDateTime": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List teams the user has joined",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_listjoinedteams",
+            "name": "list-joined-teams",
+            "output": ["ActionOutput_microsoft_teams_listjoinedteams"],
+            "scopes": ["Team.ReadBasic.All", "TeamSettings.Read.All"],
+            "usedModels": ["ActionInput_microsoft_teams_listjoinedteams", "ActionOutput_microsoft_teams_listjoinedteams"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_listjoinedteams": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. For Microsoft Graph, this is the full @odata.nextLink URL. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_listjoinedteams": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The unique identifier of the team"
+                                        },
+                                        "display_name": {
+                                            "description": "The display name of the team",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "The description of the team",
+                                            "type": "string"
+                                        },
+                                        "visibility": {
+                                            "description": "The visibility of the team",
+                                            "type": "string"
+                                        },
+                                        "is_archived": {
+                                            "description": "Whether the team is archived",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "The full @odata.nextLink URL for fetching the next page, if more results exist",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List members in a team.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_listteammembers",
+            "name": "list-team-members",
+            "output": ["ActionOutput_microsoft_teams_listteammembers"],
+            "scopes": ["TeamMember.Read.All"],
+            "usedModels": ["ActionInput_microsoft_teams_listteammembers", "ActionOutput_microsoft_teams_listteammembers"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_listteammembers": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "Team ID. Example: \"ee0f5ae2-8bc6-4ae5-8466-7daeebbfa062\""
+                            },
+                            "cursor": {
+                                "description": "Full @odata.nextLink URL from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["teamId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_listteammembers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "tenantId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a member from a team.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_removeteammember",
+            "name": "remove-team-member",
+            "output": ["ActionOutput_microsoft_teams_removeteammember"],
+            "scopes": ["TeamMember.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_teams_removeteammember", "ActionOutput_microsoft_teams_removeteammember"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_removeteammember": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "The unique identifier of the team. Example: \"12345678-1234-1234-1234-123456789012\""
+                            },
+                            "membershipId": {
+                                "type": "string",
+                                "description": "The unique identifier of the team membership. Example: \"12345678-1234-1234-1234-123456789012\""
+                            }
+                        },
+                        "required": ["teamId", "membershipId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_removeteammember": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "membershipId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "teamId", "membershipId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Reply to a channel message thread.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_replytochannelmessage",
+            "name": "reply-to-channel-message",
+            "output": ["ActionOutput_microsoft_teams_replytochannelmessage"],
+            "scopes": ["ChannelMessage.Send"],
+            "usedModels": ["ActionInput_microsoft_teams_replytochannelmessage", "ActionOutput_microsoft_teams_replytochannelmessage"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_replytochannelmessage": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "Team ID. Example: \"57fb72d0-d811-46f4-8947-305e6072eaa5\""
+                            },
+                            "channelId": {
+                                "type": "string",
+                                "description": "Channel ID. Example: \"19:4b6bed8d24574f6a9e436813cb2617d8@thread.tacv2\""
+                            },
+                            "messageId": {
+                                "type": "string",
+                                "description": "Message ID to reply to. Example: \"1590776551682\""
+                            },
+                            "bodyContent": {
+                                "type": "string",
+                                "description": "Message body content. Example: \"Hello World\""
+                            },
+                            "bodyContentType": {
+                                "description": "Content type of the body. Defaults to \"html\".",
+                                "type": "string",
+                                "enum": ["text", "html"]
+                            }
+                        },
+                        "required": ["teamId", "channelId", "messageId", "bodyContent"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_replytochannelmessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "replyToId": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "bodyContentType": {
+                                "type": "string"
+                            },
+                            "bodyContent": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update mutable channel properties.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_teams_updatechannel",
+            "name": "update-channel",
+            "output": ["ActionOutput_microsoft_teams_updatechannel"],
+            "scopes": ["ChannelSettings.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_teams_updatechannel", "ActionOutput_microsoft_teams_updatechannel"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_teams_updatechannel": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "Team ID. Example: \"3b254736-3eae-4ea8-a2d3-c2af15567230\""
+                            },
+                            "channelId": {
+                                "type": "string",
+                                "description": "Channel ID. Example: \"19:Xlx3Yg8n-kzEJI9-t2-ahJx0QIOxmdKaM9SSMAVtnDE1@thread.tacv2\""
+                            },
+                            "displayName": {
+                                "description": "New display name for the channel.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "New description for the channel.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["teamId", "channelId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_teams_updatechannel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "membershipType": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "isFavoriteByDefault": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync replies for selected channel message threads",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/channel-message-replies"
+                }
+            ],
+            "input": null,
+            "name": "channel-message-replies",
+            "output": ["ChannelMessageReply"],
+            "runs": "every hour",
+            "scopes": ["ChannelMessage.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ChannelMessageReply"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ChannelMessageReply": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "parentMessageId": {
+                                "type": "string"
+                            },
+                            "channelId": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "deletedDateTime": {
+                                "type": "string"
+                            },
+                            "fromUserId": {
+                                "type": "string"
+                            },
+                            "fromUserDisplayName": {
+                                "type": "string"
+                            },
+                            "contentType": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "messageType": {
+                                "type": "string"
+                            },
+                            "importance": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "parentMessageId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync root channel messages for selected channels",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/channel-messages"
+                }
+            ],
+            "input": "SyncMetadata_microsoft_teams_channelmessages",
+            "name": "channel-messages",
+            "output": ["ChannelMessage"],
+            "runs": "every hour",
+            "scopes": ["ChannelMessage.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ChannelMessage", "SyncMetadata_microsoft_teams_channelmessages"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ChannelMessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "channelId": {
+                                "type": "string"
+                            },
+                            "messageType": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "lastEditedDateTime": {
+                                "type": "string"
+                            },
+                            "deletedDateTime": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "importance": {
+                                "type": "string"
+                            },
+                            "locale": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "contentType": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "fromUserId": {
+                                "type": "string"
+                            },
+                            "fromUserDisplayName": {
+                                "type": "string"
+                            },
+                            "replyToId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "teamId", "channelId", "createdDateTime", "lastModifiedDateTime"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_microsoft_teams_channelmessages": {
+                        "type": "object",
+                        "properties": {
+                            "teams": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "teamId": {
+                                            "type": "string"
+                                        },
+                                        "channelIds": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["teamId", "channelIds"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync member rosters for chats",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/chat-members"
+                }
+            ],
+            "input": null,
+            "name": "chat-members",
+            "output": ["ChatMember"],
+            "runs": "every hour",
+            "scopes": ["Chat.ReadBasic"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ChatMember"],
+            "version": "1.2.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ChatMember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "chatId": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id", "chatId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync chat messages across user chats.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/chat-messages",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "chat-messages",
+            "output": ["ChatMessage"],
+            "runs": "every hour",
+            "scopes": ["Chat.Read"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ChatMessage"],
+            "version": "1.2.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ChatMessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "chatId": {
+                                "type": "string"
+                            },
+                            "messageId": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "lastEditedDateTime": {
+                                "type": "string"
+                            },
+                            "fromDisplayName": {
+                                "type": "string"
+                            },
+                            "bodyContent": {
+                                "type": "string"
+                            },
+                            "bodyContentType": {
+                                "type": "string"
+                            },
+                            "messageType": {
+                                "type": "string"
+                            },
+                            "importance": {
+                                "type": "string"
+                            },
+                            "subject": {
+                                "type": "string"
+                            },
+                            "deletedDateTime": {
+                                "type": "string"
+                            },
+                            "replyToId": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync chats available to the user.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/chats"
+                }
+            ],
+            "input": null,
+            "name": "chats",
+            "output": ["Chat"],
+            "runs": "every hour",
+            "scopes": ["Chat.ReadBasic"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Chat"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Chat": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "topic": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastUpdatedDateTime": {
+                                "type": "string"
+                            },
+                            "chatType": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "tenantId": {
+                                "type": "string"
+                            },
+                            "isHiddenForAllMembers": {
+                                "type": "boolean"
+                            },
+                            "isHidden": {
+                                "type": "boolean"
+                            },
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "createdDateTime", "lastUpdatedDateTime", "chatType"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync the teams joined by a user",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/joined-teams",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "joined-teams",
+            "output": ["JoinedTeam"],
+            "runs": "every hour",
+            "scopes": ["Team.ReadBasic.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["JoinedTeam"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "JoinedTeam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "tenantId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Microsoft 365 or Entra groups used as organizational units",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/org-units",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "org-units",
+            "output": ["OrgUnit"],
+            "runs": "every hour",
+            "scopes": ["GroupMember.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["OrgUnit"],
+            "version": "3.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "OrgUnit": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "mail": {
+                                "type": "string"
+                            },
+                            "mailNickname": {
+                                "type": "string"
+                            },
+                            "groupTypes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "securityEnabled": {
+                                "type": "boolean"
+                            },
+                            "mailEnabled": {
+                                "type": "boolean"
+                            },
+                            "visibility": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "renewedDateTime": {
+                                "type": "string"
+                            },
+                            "expirationDateTime": {
+                                "type": "string"
+                            },
+                            "classification": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync channels for selected teams.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/team-channels"
+                }
+            ],
+            "input": null,
+            "name": "team-channels",
+            "output": ["Channel"],
+            "runs": "every hour",
+            "scopes": ["Channel.ReadBasic.All", "Team.ReadBasic.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Channel"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Channel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "membershipType": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "isArchived": {
+                                "type": "boolean"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "teamId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync team membership rosters",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/team-members"
+                }
+            ],
+            "input": null,
+            "name": "team-members",
+            "output": ["TeamMember"],
+            "runs": "every hour",
+            "scopes": ["TeamMember.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["TeamMember"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "TeamMember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id", "teamId", "userId", "roles"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync directory users relevant to Microsoft Teams workspaces",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/users",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": ["User.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User"],
+            "version": "3.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "givenName": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "mail": {
+                                "type": "string"
+                            },
+                            "userPrincipalName": {
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "string"
+                            },
+                            "officeLocation": {
+                                "type": "string"
+                            },
+                            "businessPhones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "mobilePhone": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastPasswordChangeDateTime": {
+                                "type": "string"
+                            },
+                            "accountEnabled": {
+                                "type": "boolean"
+                            },
+                            "userType": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "userPrincipalName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

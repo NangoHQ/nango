@@ -1,0 +1,266 @@
+{
+    "providerConfigKey": "clicksend",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Fetches basic information about the ClickSend account.",
+            "endpoint": null,
+            "input": "ActionInput_clicksend_fetchaccount",
+            "name": "fetch-account",
+            "output": ["ActionOutput_clicksend_fetchaccount"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clicksend_fetchaccount", "ActionOutput_clicksend_fetchaccount"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clicksend_fetchaccount": {
+                        "type": "null"
+                    },
+                    "ActionOutput_clicksend_fetchaccount": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "balance": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "accountName": {
+                                "type": "string"
+                            },
+                            "accountBillingEmail": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "email", "phone", "balance", "country", "timezone", "accountName", "accountBillingEmail"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Sends an SMS message via ClickSend's API.",
+            "endpoint": null,
+            "input": "ActionInput_clicksend_sendsms",
+            "name": "send-sms",
+            "output": ["ActionOutput_clicksend_sendsms"],
+            "scopes": [],
+            "usedModels": ["ActionInput_clicksend_sendsms", "ActionOutput_clicksend_sendsms"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_clicksend_sendsms": {
+                        "type": "object",
+                        "properties": {
+                            "to": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["to", "body"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_clicksend_sendsms": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "to": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "QUEUED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "COMPLETED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "SCHEDULED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "WAIT_APPROVAL"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "FAILED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "CANCELLED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "CANCELLED_AFTER_REVIEW"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "RECEIVED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "SENT"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "SUCCESS"
+                                    }
+                                ]
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "to", "from", "body", "status", "createdAt", "updatedAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches the history of SMS messages sent through ClickSend.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/sms/history",
+                    "group": "SMS"
+                }
+            ],
+            "input": "SyncMetadata_clicksend_smshistory",
+            "name": "sms-history",
+            "output": ["Sms"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Sms", "SyncMetadata_clicksend_smshistory"],
+            "version": "2.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Sms": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "to": {
+                                "type": "string"
+                            },
+                            "from": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "QUEUED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "COMPLETED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "SCHEDULED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "WAIT_APPROVAL"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "FAILED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "CANCELLED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "CANCELLED_AFTER_REVIEW"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "RECEIVED"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "SENT"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "SUCCESS"
+                                    }
+                                ]
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "to", "from", "body", "status", "createdAt", "updatedAt"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_clicksend_smshistory": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

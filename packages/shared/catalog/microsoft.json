@@ -1,0 +1,3431 @@
+{
+    "providerConfigKey": "microsoft",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add a member (user, group, or service principal) to a group in Microsoft.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_addgroupmember",
+            "name": "add-group-member",
+            "output": ["ActionOutput_microsoft_addgroupmember"],
+            "scopes": ["Group.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_addgroupmember", "ActionOutput_microsoft_addgroupmember"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_addgroupmember": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ID of the group to add a member to. Example: \"51d82e22-a356-4506-afa1-2c3992bed3d7\""
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ID of the user, group, or service principal to add as a member. Example: \"9fc4580d-5ed8-46c5-9fff-258fd68d533d\""
+                            }
+                        },
+                        "required": ["groupId", "memberId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_addgroupmember": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "groupId": {
+                                "type": "string"
+                            },
+                            "memberId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "groupId", "memberId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new application in Microsoft Entra ID",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_createapplication",
+            "name": "create-application",
+            "output": ["ActionOutput_microsoft_createapplication"],
+            "scopes": ["Application.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_createapplication", "ActionOutput_microsoft_createapplication"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_createapplication": {
+                        "type": "object",
+                        "properties": {
+                            "displayName": {
+                                "type": "string",
+                                "description": "The display name for the application. Example: \"My Application\""
+                            },
+                            "description": {
+                                "description": "Free text field to provide a description of the application. Example: \"Application description\"",
+                                "type": "string"
+                            },
+                            "signInAudience": {
+                                "description": "Specifies the Microsoft accounts supported. Example: \"AzureADandPersonalMicrosoftAccount\"",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "AzureADMyOrg"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "AzureADMultipleOrgs"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "AzureADandPersonalMicrosoftAccount"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "PersonalMicrosoftAccount"
+                                    }
+                                ]
+                            },
+                            "identifierUris": {
+                                "description": "Also known as App ID URI, this value acts as the prefix for scopes. Example: [\"api://myapp\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "web": {
+                                "description": "Specifies settings for a web application.",
+                                "type": "object",
+                                "properties": {
+                                    "redirectUris": {
+                                        "description": "The redirect URIs for web applications.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "homePageUrl": {
+                                        "description": "Home page URL of the application.",
+                                        "type": "string"
+                                    },
+                                    "logoutUrl": {
+                                        "description": "URL for logout.",
+                                        "type": "string"
+                                    },
+                                    "implicitGrantSettings": {
+                                        "type": "object",
+                                        "properties": {
+                                            "enableIdTokenIssuance": {
+                                                "type": "boolean"
+                                            },
+                                            "enableAccessTokenIssuance": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "spa": {
+                                "description": "Specifies settings for a single-page application.",
+                                "type": "object",
+                                "properties": {
+                                    "redirectUris": {
+                                        "description": "The redirect URIs for single-page applications.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "publicClient": {
+                                "description": "Specifies settings for public clients (mobile/desktop apps).",
+                                "type": "object",
+                                "properties": {
+                                    "redirectUris": {
+                                        "description": "The redirect URIs for public client applications.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "api": {
+                                "description": "Specifies settings for an application that implements a web API.",
+                                "type": "object",
+                                "properties": {
+                                    "requestedAccessTokenVersion": {
+                                        "description": "The access token version expected.",
+                                        "type": "number"
+                                    },
+                                    "oauth2PermissionScopes": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "adminConsentDescription": {
+                                                    "type": "string"
+                                                },
+                                                "adminConsentDisplayName": {
+                                                    "type": "string"
+                                                },
+                                                "userConsentDescription": {
+                                                    "type": "string"
+                                                },
+                                                "userConsentDisplayName": {
+                                                    "type": "string"
+                                                },
+                                                "isEnabled": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": ["id", "value"],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "tags": {
+                                "description": "Custom strings to categorize the application. Example: [\"production\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "groupMembershipClaims": {
+                                "description": "Configures the groups claim issued in tokens. Example: \"SecurityGroup\"",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "None"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "SecurityGroup"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "All"
+                                    }
+                                ]
+                            },
+                            "requiredResourceAccess": {
+                                "description": "Resources that the application needs to access.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "resourceAppId": {
+                                            "type": "string"
+                                        },
+                                        "resourceAccess": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "string",
+                                                                "const": "Scope"
+                                                            },
+                                                            {
+                                                                "type": "string",
+                                                                "const": "Role"
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "required": ["id", "type"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["resourceAppId", "resourceAccess"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "passwordCredentials": {
+                                "description": "Password credentials for the application.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "displayName": {
+                                            "type": "string",
+                                            "description": "Display name for the password. Example: \"Password 1\""
+                                        },
+                                        "endDateTime": {
+                                            "description": "End date time in ISO 8601 format.",
+                                            "type": "string"
+                                        },
+                                        "startDateTime": {
+                                            "description": "Start date time in ISO 8601 format.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["displayName"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "isFallbackPublicClient": {
+                                "description": "Specifies whether to fall back to public client type.",
+                                "type": "boolean"
+                            },
+                            "notes": {
+                                "description": "Notes for management of the application.",
+                                "type": "string"
+                            },
+                            "samlMetadataUrl": {
+                                "description": "URL where the service exposes SAML metadata.",
+                                "type": "string"
+                            },
+                            "serviceManagementReference": {
+                                "description": "References app contact info from a Service Management database.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["displayName"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_createapplication": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier for the application object. Example: \"03ef14b0-ca33-4840-8f4f-d6e91916010e\""
+                            },
+                            "appId": {
+                                "type": "string",
+                                "description": "The unique identifier for the application assigned by Microsoft Entra ID. Example: \"631a96bc-a705-4eda-9f99-fdaf9f54f6a2\""
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "The display name for the application."
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "identifierUris": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "signInAudience": {
+                                "type": "string"
+                            },
+                            "publisherDomain": {
+                                "type": "string"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "web": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "spa": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "publicClient": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "api": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "passwordCredentials": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "keyCredentials": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "appRoles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "requiredResourceAccess": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "isFallbackPublicClient": {
+                                "type": "boolean"
+                            },
+                            "groupMembershipClaims": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "samlMetadataUrl": {
+                                "type": "string"
+                            },
+                            "serviceManagementReference": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "appId", "displayName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a group in Microsoft",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_creategroup",
+            "name": "create-group",
+            "output": ["ActionOutput_microsoft_creategroup"],
+            "scopes": ["Group.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_creategroup", "ActionOutput_microsoft_creategroup"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "displayName": {
+                                "type": "string",
+                                "description": "The display name for the group. Example: \"Engineering Team\""
+                            },
+                            "description": {
+                                "description": "An optional description for the group. Example: \"Team collaboration space\"",
+                                "type": "string"
+                            },
+                            "mailNickname": {
+                                "type": "string",
+                                "description": "The mail alias for the group. Required by Microsoft Graph. Example: \"engineeringteam\""
+                            },
+                            "mailEnabled": {
+                                "description": "Whether the group is mail-enabled. Default: false for security groups",
+                                "type": "boolean"
+                            },
+                            "securityEnabled": {
+                                "description": "Whether the group is a security group. Default: true",
+                                "type": "boolean"
+                            },
+                            "groupTypes": {
+                                "description": "Group type classification. Use [\"Unified\"] for Microsoft 365 groups, leave empty for security groups.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["displayName", "mailNickname"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the created group"
+                            },
+                            "displayName": {
+                                "description": "The display name of the group",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "The description of the group",
+                                "type": "string"
+                            },
+                            "mailNickname": {
+                                "description": "The mail alias of the group",
+                                "type": "string"
+                            },
+                            "mailEnabled": {
+                                "description": "Whether the group is mail-enabled",
+                                "type": "boolean"
+                            },
+                            "securityEnabled": {
+                                "description": "Whether the group is a security group",
+                                "type": "boolean"
+                            },
+                            "groupTypes": {
+                                "description": "Group type classification",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "createdDateTime": {
+                                "description": "The date and time the group was created",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a service principal in Microsoft Entra ID for an existing application.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_createserviceprincipal",
+            "name": "create-service-principal",
+            "output": ["ActionOutput_microsoft_createserviceprincipal"],
+            "scopes": ["Application.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_createserviceprincipal", "ActionOutput_microsoft_createserviceprincipal"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_createserviceprincipal": {
+                        "type": "object",
+                        "properties": {
+                            "appId": {
+                                "type": "string",
+                                "description": "The application ID to create a service principal for. Example: \"dd6b0cea-e204-44c6-b2e0-1162323c22f4\""
+                            }
+                        },
+                        "required": ["appId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_createserviceprincipal": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "appId": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "accountEnabled": {
+                                "type": "boolean"
+                            },
+                            "appDisplayName": {
+                                "type": "string"
+                            },
+                            "appOwnerOrganizationId": {
+                                "type": "string"
+                            },
+                            "appRoleAssignmentRequired": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "appId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a user in Microsoft Azure AD",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_createuser",
+            "name": "create-user",
+            "output": ["ActionOutput_microsoft_createuser"],
+            "scopes": ["User.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_createuser", "ActionOutput_microsoft_createuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "accountEnabled": {
+                                "description": "Whether the account is enabled. Example: true",
+                                "type": "boolean"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Display name of the user. Example: \"John Doe\""
+                            },
+                            "mailNickname": {
+                                "type": "string",
+                                "description": "Mail alias for the user. Example: \"johndoe\""
+                            },
+                            "userPrincipalName": {
+                                "type": "string",
+                                "description": "User principal name (UPN). Example: \"johndoe@contoso.onmicrosoft.com\""
+                            },
+                            "passwordProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "description": "Password for the user. Example: \"Password123!\""
+                                    },
+                                    "forceChangePasswordNextSignIn": {
+                                        "description": "Whether user must change password at next sign-in. Example: true",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["password"],
+                                "additionalProperties": false,
+                                "description": "Password profile for the user"
+                            },
+                            "givenName": {
+                                "description": "First name of the user. Example: \"John\"",
+                                "type": "string"
+                            },
+                            "surname": {
+                                "description": "Last name of the user. Example: \"Doe\"",
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "description": "Job title of the user. Example: \"Software Engineer\"",
+                                "type": "string"
+                            },
+                            "department": {
+                                "description": "Department of the user. Example: \"Engineering\"",
+                                "type": "string"
+                            },
+                            "mobilePhone": {
+                                "description": "Mobile phone number. Example: \"+1 555 555 5555\"",
+                                "type": "string"
+                            },
+                            "officeLocation": {
+                                "description": "Office location. Example: \"Building 1\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["displayName", "mailNickname", "userPrincipalName", "passwordProfile"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "userPrincipalName": {
+                                "type": "string"
+                            },
+                            "accountEnabled": {
+                                "type": "boolean"
+                            },
+                            "givenName": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "string"
+                            },
+                            "mobilePhone": {
+                                "type": "string"
+                            },
+                            "officeLocation": {
+                                "type": "string"
+                            },
+                            "mail": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive an application in Microsoft.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_deleteapplication",
+            "name": "delete-application",
+            "output": ["ActionOutput_microsoft_deleteapplication"],
+            "scopes": ["Application.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_deleteapplication", "ActionOutput_microsoft_deleteapplication"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_deleteapplication": {
+                        "type": "object",
+                        "properties": {
+                            "applicationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier for the application object. Example: \"cc67332f-dfd9-43f0-af0f-bc0ff5334965\""
+                            }
+                        },
+                        "required": ["applicationId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_deleteapplication": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "applicationId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "applicationId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a group in Microsoft",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_deletegroup",
+            "name": "delete-group",
+            "output": ["ActionOutput_microsoft_deletegroup"],
+            "scopes": ["Group.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_deletegroup", "ActionOutput_microsoft_deletegroup"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier of the group to delete. Example: \"51d82e22-a356-4506-afa1-2c3992bed3d7\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the group was successfully deleted"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a service principal in Microsoft Entra ID",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_deleteserviceprincipal",
+            "name": "delete-service-principal",
+            "output": ["ActionOutput_microsoft_deleteserviceprincipal"],
+            "scopes": ["Application.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_deleteserviceprincipal", "ActionOutput_microsoft_deleteserviceprincipal"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_deleteserviceprincipal": {
+                        "type": "object",
+                        "properties": {
+                            "service_principal_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier of the service principal to delete. Example: \"8c7410b7-37cd-4463-981d-74cd6ab033a7\""
+                            }
+                        },
+                        "required": ["service_principal_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_deleteserviceprincipal": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "service_principal_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "service_principal_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a user in Microsoft",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_deleteuser",
+            "name": "delete-user",
+            "output": ["ActionOutput_microsoft_deleteuser"],
+            "scopes": ["User.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_deleteuser", "ActionOutput_microsoft_deleteuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier of the user to delete. Example: \"9fc4580d-5ed8-46c5-9fff-258fd68d533d\""
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "userId", "message"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single application from Microsoft.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_getapplication",
+            "name": "get-application",
+            "output": ["ActionOutput_microsoft_getapplication"],
+            "scopes": ["Application.Read.All"],
+            "usedModels": ["ActionInput_microsoft_getapplication", "ActionOutput_microsoft_getapplication"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_getapplication": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier for the application. Example: \"cc67332f-dfd9-43f0-af0f-bc0ff5334965\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_getapplication": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "appId": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "publisherDomain": {
+                                "type": "string"
+                            },
+                            "signInAudience": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single directory role from Microsoft.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_getdirectoryrole",
+            "name": "get-directory-role",
+            "output": ["ActionOutput_microsoft_getdirectoryrole"],
+            "scopes": ["RoleManagement.Read.Directory"],
+            "usedModels": ["ActionInput_microsoft_getdirectoryrole", "ActionOutput_microsoft_getdirectoryrole"],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_getdirectoryrole": {
+                        "type": "object",
+                        "properties": {
+                            "directoryRoleId": {
+                                "type": "string",
+                                "description": "The unique identifier for the directory role. Example: \"c35aa61d-9e3d-419e-84a9-24767a8a9988\""
+                            }
+                        },
+                        "required": ["directoryRoleId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_getdirectoryrole": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "roleTemplateId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single group from Microsoft.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_getgroup",
+            "name": "get-group",
+            "output": ["ActionOutput_microsoft_getgroup"],
+            "scopes": ["Group.Read.All"],
+            "usedModels": ["ActionInput_microsoft_getgroup", "ActionOutput_microsoft_getgroup"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier for the group. Example: \"51d82e22-a356-4506-afa1-2c3992bed3d7\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "groupTypes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "mail": {
+                                "type": "string"
+                            },
+                            "mailEnabled": {
+                                "type": "boolean"
+                            },
+                            "mailNickname": {
+                                "type": "string"
+                            },
+                            "securityEnabled": {
+                                "type": "boolean"
+                            },
+                            "visibility": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "renewedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "displayName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single organization from Microsoft.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_getorganization",
+            "name": "get-organization",
+            "output": ["ActionOutput_microsoft_getorganization"],
+            "scopes": ["Organization.Read.All"],
+            "usedModels": ["ActionInput_microsoft_getorganization", "ActionOutput_microsoft_getorganization"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_getorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Organization ID. Example: \"56480ae2-88be-49cf-86f6-d62a45bf8758\""
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_getorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "businessPhones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "countryLetterCode": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "deletedDateTime": {
+                                "type": "string"
+                            },
+                            "marketingNotificationEmails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "onPremisesLastSyncDateTime": {
+                                "type": "string"
+                            },
+                            "onPremisesSyncEnabled": {
+                                "type": "boolean"
+                            },
+                            "postalCode": {
+                                "type": "string"
+                            },
+                            "preferredLanguage": {
+                                "type": "string"
+                            },
+                            "securityComplianceNotificationMails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "securityComplianceNotificationPhones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "street": {
+                                "type": "string"
+                            },
+                            "technicalNotificationMails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "tenantType": {
+                                "type": "string"
+                            },
+                            "verifiedDomains": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "capabilities": {
+                                            "type": "string"
+                                        },
+                                        "isDefault": {
+                                            "type": "boolean"
+                                        },
+                                        "isInitial": {
+                                            "type": "boolean"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "assignedPlans": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "assignedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "capabilityStatus": {
+                                            "type": "string"
+                                        },
+                                        "service": {
+                                            "type": "string"
+                                        },
+                                        "servicePlanId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "provisionedPlans": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "capabilityStatus": {
+                                            "type": "string"
+                                        },
+                                        "provisioningStatus": {
+                                            "type": "string"
+                                        },
+                                        "service": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single service principal from Microsoft.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_getserviceprincipal",
+            "name": "get-service-principal",
+            "output": ["ActionOutput_microsoft_getserviceprincipal"],
+            "scopes": ["Application.Read.All"],
+            "usedModels": ["ActionInput_microsoft_getserviceprincipal", "ActionOutput_microsoft_getserviceprincipal"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_getserviceprincipal": {
+                        "type": "object",
+                        "properties": {
+                            "servicePrincipalId": {
+                                "type": "string",
+                                "description": "The unique identifier of the service principal. Example: \"8c7410b7-37cd-4463-981d-74cd6ab033a7\""
+                            }
+                        },
+                        "required": ["servicePrincipalId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_getserviceprincipal": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier for the service principal."
+                            },
+                            "appId": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "appDisplayName": {
+                                "type": "string"
+                            },
+                            "servicePrincipalType": {
+                                "type": "string"
+                            },
+                            "accountEnabled": {
+                                "type": "boolean"
+                            },
+                            "alternativeNames": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "appDescription": {
+                                "type": "string"
+                            },
+                            "appOwnerOrganizationId": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "loginUrl": {
+                                "type": "string"
+                            },
+                            "logoutUrl": {
+                                "type": "string"
+                            },
+                            "notificationEmailAddresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "preferredSingleSignOnMode": {
+                                "type": "string"
+                            },
+                            "replyUrls": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "servicePrincipalNames": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "signInAudience": {
+                                "type": "string"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "addIns": {},
+                            "appRoles": {},
+                            "info": {},
+                            "keyCredentials": {},
+                            "oauth2PermissionScopes": {},
+                            "passwordCredentials": {},
+                            "verifiedPublisher": {},
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "deletedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single user from Microsoft",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_getuser",
+            "name": "get-user",
+            "output": ["ActionOutput_microsoft_getuser"],
+            "scopes": ["User.Read.All"],
+            "usedModels": ["ActionInput_microsoft_getuser", "ActionOutput_microsoft_getuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ID of the user to retrieve. Example: \"9fc4580d-5ed8-46c5-9fff-258fd68d533d\""
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "givenName": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "mail": {
+                                "type": "string"
+                            },
+                            "userPrincipalName": {
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "type": "string"
+                            },
+                            "officeLocation": {
+                                "type": "string"
+                            },
+                            "mobilePhone": {
+                                "type": "string"
+                            },
+                            "businessPhones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "preferredLanguage": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "accountEnabled": {
+                                "type": "boolean"
+                            },
+                            "department": {
+                                "type": "string"
+                            },
+                            "companyName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List applications from Microsoft Graph API",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_listapplications",
+            "name": "list-applications",
+            "output": ["ActionOutput_microsoft_listapplications"],
+            "scopes": ["Application.Read.All"],
+            "usedModels": ["ActionInput_microsoft_listapplications", "ActionOutput_microsoft_listapplications"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_listapplications": {
+                        "type": "object",
+                        "properties": {
+                            "filter": {
+                                "description": "OData filter expression to filter applications. Example: displayName eq 'MyApp'",
+                                "type": "string"
+                            },
+                            "select": {
+                                "description": "OData select expression to specify which properties to return. Example: id,displayName,appId",
+                                "type": "string"
+                            },
+                            "top": {
+                                "description": "Number of items to return in a page (max 999). Example: 50",
+                                "type": "number"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_listapplications": {
+                        "type": "object",
+                        "properties": {
+                            "applications": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "appId": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "signInAudience": {
+                                            "type": "string"
+                                        },
+                                        "publisherDomain": {
+                                            "type": "string"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "identifierUris": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["applications"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List devices from Microsoft Graph",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_listdevices",
+            "name": "list-devices",
+            "output": ["ActionOutput_microsoft_listdevices"],
+            "scopes": ["Device.Read.All"],
+            "usedModels": ["ActionInput_microsoft_listdevices", "ActionOutput_microsoft_listdevices"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_listdevices": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (odata.nextLink) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_listdevices": {
+                        "type": "object",
+                        "properties": {
+                            "devices": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The unique identifier for the device."
+                                        },
+                                        "deviceId": {
+                                            "description": "The device ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "The display name for the device.",
+                                            "type": "string"
+                                        },
+                                        "operatingSystem": {
+                                            "description": "The operating system of the device.",
+                                            "type": "string"
+                                        },
+                                        "operatingSystemVersion": {
+                                            "description": "The operating system version of the device.",
+                                            "type": "string"
+                                        },
+                                        "accountEnabled": {
+                                            "description": "Whether the device account is enabled.",
+                                            "type": "boolean"
+                                        },
+                                        "approximateLastSignInDateTime": {
+                                            "description": "The timestamp of the approximate last sign-in.",
+                                            "type": "string"
+                                        },
+                                        "enrollmentProfileName": {
+                                            "description": "The enrollment profile name.",
+                                            "type": ["string", "null"]
+                                        },
+                                        "managementType": {
+                                            "description": "The device management type.",
+                                            "type": ["string", "null"]
+                                        },
+                                        "registrationDateTime": {
+                                            "description": "The timestamp when the device was registered.",
+                                            "type": "string"
+                                        },
+                                        "deviceOwnership": {
+                                            "description": "The ownership of the device.",
+                                            "type": ["string", "null"]
+                                        },
+                                        "domainName": {
+                                            "description": "The domain name.",
+                                            "type": ["string", "null"]
+                                        },
+                                        "profileType": {
+                                            "description": "The profile type of the device.",
+                                            "type": ["string", "null"]
+                                        },
+                                        "mdmAppId": {
+                                            "description": "The MDM application ID.",
+                                            "type": ["string", "null"]
+                                        },
+                                        "complianceExpirationDateTime": {
+                                            "description": "The compliance expiration timestamp.",
+                                            "type": ["string", "null"]
+                                        },
+                                        "onPremisesSyncEnabled": {
+                                            "description": "Whether on-premises sync is enabled.",
+                                            "type": ["boolean", "null"]
+                                        },
+                                        "trustType": {
+                                            "description": "The trust type of the device.",
+                                            "type": ["string", "null"]
+                                        },
+                                        "alternativeSecurityIds": {
+                                            "description": "Alternative security IDs for the device.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "The odata.nextLink cursor for the next page of results.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["devices"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all members (users and service principals) assigned to a directory role in Microsoft.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_listdirectoryrolemembers",
+            "name": "list-directory-role-members",
+            "output": ["ActionOutput_microsoft_listdirectoryrolemembers"],
+            "scopes": ["RoleManagement.Read.Directory"],
+            "usedModels": ["ActionInput_microsoft_listdirectoryrolemembers", "ActionOutput_microsoft_listdirectoryrolemembers"],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_listdirectoryrolemembers": {
+                        "type": "object",
+                        "properties": {
+                            "directoryRoleId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier of the directory role. Example: \"c35aa61d-9e3d-419e-84a9-24767a8a9988\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (skipToken) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["directoryRoleId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_listdirectoryrolemembers": {
+                        "type": "object",
+                        "properties": {
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["user", "servicePrincipal"]
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "userPrincipalName": {
+                                            "type": "string"
+                                        },
+                                        "appId": {
+                                            "type": "string"
+                                        },
+                                        "servicePrincipalType": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["members"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List directory roles from Microsoft Graph. Returns activated directory roles in the tenant.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_listdirectoryroles",
+            "name": "list-directory-roles",
+            "output": ["ActionOutput_microsoft_listdirectoryroles"],
+            "scopes": ["RoleManagement.Read.Directory"],
+            "usedModels": ["ActionInput_microsoft_listdirectoryroles", "ActionOutput_microsoft_listdirectoryroles"],
+            "version": "1.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_listdirectoryroles": {
+                        "type": "object",
+                        "properties": {
+                            "filter": {
+                                "description": "OData filter query parameter using eq operator only. Example: displayName eq Global Administrator",
+                                "type": "string"
+                            },
+                            "select": {
+                                "description": "OData select query parameter to specify which properties to include in the response. Example: id,displayName,description",
+                                "type": "string"
+                            },
+                            "top": {
+                                "description": "Maximum number of records to return per page.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 999
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (skipToken) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_listdirectoryroles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "deletedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "roleTemplateId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all direct members of a group in Microsoft",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_listgroupmembers",
+            "name": "list-group-members",
+            "output": ["ActionOutput_microsoft_listgroupmembers"],
+            "scopes": ["GroupMember.Read.All"],
+            "usedModels": ["ActionInput_microsoft_listgroupmembers", "ActionOutput_microsoft_listgroupmembers"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_listgroupmembers": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier of the group. Example: \"51d82e22-a356-4506-afa1-2c3992bed3d7\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (skipToken) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["groupId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_listgroupmembers": {
+                        "type": "object",
+                        "properties": {
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The unique identifier of the member"
+                                        },
+                                        "type": {
+                                            "description": "The type of directory object (e.g., #microsoft.graph.user, #microsoft.graph.group)",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "The display name of the member",
+                                            "type": "string"
+                                        },
+                                        "mail": {
+                                            "description": "The email address of the member",
+                                            "type": "string"
+                                        },
+                                        "userPrincipalName": {
+                                            "description": "The user principal name of the member",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of direct members of the group"
+                            },
+                            "nextLink": {
+                                "description": "URL to retrieve the next page of results, if more members exist",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["members"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List groups from Microsoft",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_listgroups",
+            "name": "list-groups",
+            "output": ["ActionOutput_microsoft_listgroups"],
+            "scopes": ["Group.Read.All"],
+            "usedModels": ["ActionInput_microsoft_listgroups", "ActionOutput_microsoft_listgroups"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "filter": {
+                                "description": "OData filter expression",
+                                "type": "string"
+                            },
+                            "select": {
+                                "description": "Comma-separated list of properties to return",
+                                "type": "string"
+                            },
+                            "top": {
+                                "description": "Number of items to return per page (1-999). Default is 100.",
+                                "type": "number"
+                            },
+                            "orderby": {
+                                "description": "OData orderby expression",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination URL from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "mail": {
+                                            "type": "string"
+                                        },
+                                        "mailNickname": {
+                                            "type": "string"
+                                        },
+                                        "groupTypes": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "securityEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "mailEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "visibility": {
+                                            "type": "string"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "renewedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "expirationDateTime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List organizations from Microsoft Graph.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_listorganizations",
+            "name": "list-organizations",
+            "output": ["ActionOutput_microsoft_listorganizations"],
+            "scopes": ["Organization.Read.All"],
+            "usedModels": ["ActionInput_microsoft_listorganizations", "ActionOutput_microsoft_listorganizations"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_listorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "$select": {
+                                "description": "Comma-separated list of properties to include in the response.",
+                                "type": "string"
+                            },
+                            "$filter": {
+                                "description": "OData filter to narrow results.",
+                                "type": "string"
+                            },
+                            "$top": {
+                                "description": "Number of items to return per page.",
+                                "type": "number"
+                            },
+                            "$skip": {
+                                "description": "Number of items to skip.",
+                                "type": "number"
+                            },
+                            "$count": {
+                                "description": "Include a count of the total number of items.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_listorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "organizations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "businessPhones": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "countryLetterCode": {
+                                            "type": "string"
+                                        },
+                                        "defaultUsageLocation": {
+                                            "type": "string"
+                                        },
+                                        "marketingNotificationEmails": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "onPremisesLastSyncDateTime": {
+                                            "type": "string"
+                                        },
+                                        "onPremisesSyncEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "postalCode": {
+                                            "type": "string"
+                                        },
+                                        "preferredLanguage": {
+                                            "type": "string"
+                                        },
+                                        "securityComplianceNotificationMails": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "securityComplianceNotificationPhones": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "street": {
+                                            "type": "string"
+                                        },
+                                        "technicalNotificationMails": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "tenantType": {
+                                            "type": "string"
+                                        },
+                                        "assignedPlans": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "assignedDateTime": {
+                                                        "type": "string"
+                                                    },
+                                                    "capabilityStatus": {
+                                                        "type": "string"
+                                                    },
+                                                    "service": {
+                                                        "type": "string"
+                                                    },
+                                                    "servicePlanId": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "verifiedDomains": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "capabilities": {
+                                                        "type": "string"
+                                                    },
+                                                    "isDefault": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "isInitial": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "provisionedPlans": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "capabilityStatus": {
+                                                        "type": "string"
+                                                    },
+                                                    "provisioningStatus": {
+                                                        "type": "string"
+                                                    },
+                                                    "service": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "count": {
+                                "type": "number"
+                            },
+                            "nextLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["organizations"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List service principals from Microsoft Graph",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_listserviceprincipals",
+            "name": "list-service-principals",
+            "output": ["ActionOutput_microsoft_listserviceprincipals"],
+            "scopes": ["Application.Read.All"],
+            "usedModels": ["ActionInput_microsoft_listserviceprincipals", "ActionOutput_microsoft_listserviceprincipals"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_listserviceprincipals": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor for the next page of results. Pass the value from @odata.nextLink or next_cursor.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_listserviceprincipals": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "The unique identifier for the service principal"
+                                        },
+                                        "appId": {
+                                            "type": "string",
+                                            "description": "The application ID of the application associated with this service principal"
+                                        },
+                                        "displayName": {
+                                            "description": "The display name for the service principal",
+                                            "type": "string"
+                                        },
+                                        "appDisplayName": {
+                                            "description": "The application display name",
+                                            "type": "string"
+                                        },
+                                        "servicePrincipalType": {
+                                            "description": "The type of service principal: Application or ManagedIdentity",
+                                            "type": "string"
+                                        },
+                                        "accountEnabled": {
+                                            "description": "Whether the service principal account is enabled",
+                                            "type": "boolean"
+                                        },
+                                        "createdDateTime": {
+                                            "description": "The date and time the service principal was created",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "A description for the service principal",
+                                            "type": "string"
+                                        },
+                                        "loginUrl": {
+                                            "description": "The URL that users are redirected to when signing in to the application",
+                                            "type": "string"
+                                        },
+                                        "logoutUrl": {
+                                            "description": "The URL that users are redirected to when signing out of the application",
+                                            "type": "string"
+                                        },
+                                        "notes": {
+                                            "description": "Free text field to capture information about the service principal",
+                                            "type": "string"
+                                        },
+                                        "notificationEmailAddresses": {
+                                            "description": "Email addresses to which notifications are sent",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "preferredSingleSignOnMode": {
+                                            "description": "The preferred single sign-on mode for the application",
+                                            "type": "string"
+                                        },
+                                        "publisherName": {
+                                            "description": "The publisher name of the application associated with this service principal",
+                                            "type": "string"
+                                        },
+                                        "signInAudience": {
+                                            "description": "The sign-in audience for the application",
+                                            "type": "string"
+                                        },
+                                        "tags": {
+                                            "description": "Custom strings that can be used to categorize and identify the service principal",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "appId"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "description": "Pagination cursor to retrieve the next page of results. Pass this value as the cursor parameter in the next request.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all groups, directory roles, and administrative units that a user is a member of in Microsoft.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_listusermemberships",
+            "name": "list-user-memberships",
+            "output": ["ActionOutput_microsoft_listusermemberships"],
+            "scopes": ["User.Read.All", "Directory.Read.All"],
+            "usedModels": ["ActionInput_microsoft_listusermemberships", "ActionOutput_microsoft_listusermemberships"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_listusermemberships": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "The user ID or user principal name to list memberships for. Example: \"9fc4580d-5ed8-46c5-9fff-258fd68d533d\" or \"user@contoso.com\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "filterType": {
+                                "description": "Optional filter to return only specific member types: group, directoryRole, or administrativeUnit. Omit to return all types.",
+                                "type": "string",
+                                "enum": ["group", "directoryRole", "administrativeUnit"]
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_listusermemberships": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["group", "directoryRole", "administrativeUnit", "unknown"]
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "groupDetails": {
+                                            "type": "object",
+                                            "properties": {
+                                                "mail": {
+                                                    "type": "string"
+                                                },
+                                                "mailEnabled": {
+                                                    "type": "boolean"
+                                                },
+                                                "securityEnabled": {
+                                                    "type": "boolean"
+                                                },
+                                                "groupTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "visibility": {
+                                                    "type": "string"
+                                                },
+                                                "createdDateTime": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "directoryRoleDetails": {
+                                            "type": "object",
+                                            "properties": {
+                                                "roleTemplateId": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "administrativeUnitDetails": {
+                                            "type": "object",
+                                            "properties": {
+                                                "visibility": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Pagination cursor for the next page. Null if no more pages.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List users from Microsoft",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_microsoft_listusers"],
+            "scopes": ["User.Read.All"],
+            "usedModels": ["ActionInput_microsoft_listusers", "ActionOutput_microsoft_listusers"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "filter": {
+                                "description": "OData filter query. Example: \"startswith(displayName,'John')\"",
+                                "type": "string"
+                            },
+                            "select": {
+                                "description": "Comma-separated list of properties to return. Example: \"id,displayName,mail\"",
+                                "type": "string"
+                            },
+                            "top": {
+                                "description": "Number of users to return (1-999). Default: 100",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 999
+                            },
+                            "orderby": {
+                                "description": "Order by clause. Example: \"displayName\"",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (skipToken) from previous response. Omit for first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "mail": {
+                                            "type": "string"
+                                        },
+                                        "userPrincipalName": {
+                                            "type": "string"
+                                        },
+                                        "givenName": {
+                                            "type": "string"
+                                        },
+                                        "surname": {
+                                            "type": "string"
+                                        },
+                                        "jobTitle": {
+                                            "type": "string"
+                                        },
+                                        "officeLocation": {
+                                            "type": "string"
+                                        },
+                                        "mobilePhone": {
+                                            "type": "string"
+                                        },
+                                        "businessPhones": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "accountEnabled": {
+                                            "type": "boolean"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["users"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a member from a group in Microsoft.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_removegroupmember",
+            "name": "remove-group-member",
+            "output": ["ActionOutput_microsoft_removegroupmember"],
+            "scopes": ["Group.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_removegroupmember", "ActionOutput_microsoft_removegroupmember"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_removegroupmember": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ID of the group from which to remove the member. Example: \"51d82e22-a356-4506-afa1-2c3992bed3d7\""
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ID of the member to remove from the group. Example: \"9fc4580d-5ed8-46c5-9fff-258fd68d533d\""
+                            }
+                        },
+                        "required": ["groupId", "memberId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_removegroupmember": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an application in Microsoft Entra",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_updateapplication",
+            "name": "update-application",
+            "output": ["ActionOutput_microsoft_updateapplication"],
+            "scopes": ["Application.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_updateapplication", "ActionOutput_microsoft_updateapplication"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_updateapplication": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier of the application object. Example: \"cc67332f-dfd9-43f0-af0f-bc0ff5334965\""
+                            },
+                            "displayName": {
+                                "description": "The display name for the application.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "An optional description of the application.",
+                                "type": ["string", "null"]
+                            },
+                            "signInAudience": {
+                                "description": "Specifies what Microsoft accounts are supported.",
+                                "type": "string",
+                                "enum": ["AzureADMyOrg", "AzureADMultipleOrgs", "AzureADandPersonalMicrosoftAccount"]
+                            },
+                            "groupMembershipClaims": {
+                                "description": "Configures the groups claim issued in tokens.",
+                                "type": "string",
+                                "enum": ["None", "SecurityGroup", "All"]
+                            },
+                            "tags": {
+                                "description": "Custom strings to categorize and identify the application.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "isFallbackPublicClient": {
+                                "description": "Specifies the fallback application type as public client.",
+                                "type": ["boolean", "null"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_updateapplication": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a group in Microsoft.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_updategroup",
+            "name": "update-group",
+            "output": ["ActionOutput_microsoft_updategroup"],
+            "scopes": ["Group.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_updategroup", "ActionOutput_microsoft_updategroup"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier for the group. Example: \"51d82e22-a356-4506-afa1-2c3992bed3d7\""
+                            },
+                            "description": {
+                                "description": "An optional description for the group.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "The display name for the group.",
+                                "type": "string"
+                            },
+                            "mailNickname": {
+                                "description": "The mail alias for the group.",
+                                "type": "string"
+                            },
+                            "securityEnabled": {
+                                "description": "Specifies whether the group is a security group.",
+                                "type": "boolean"
+                            },
+                            "visibility": {
+                                "description": "Specifies the visibility of a Microsoft 365 group.",
+                                "type": "string",
+                                "enum": ["Private", "Public"]
+                            },
+                            "allowExternalSenders": {
+                                "description": "Indicates whether people external to the organization can send messages to the group.",
+                                "type": "boolean"
+                            },
+                            "autoSubscribeNewMembers": {
+                                "description": "Indicates whether new members added to the group will be auto-subscribed to receive email notifications.",
+                                "type": "boolean"
+                            },
+                            "preferredDataLocation": {
+                                "description": "The preferred data location for the Microsoft 365 group.",
+                                "type": "string"
+                            },
+                            "uniqueName": {
+                                "description": "The unique identifier that can be assigned to a group.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["groupId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "groupId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "groupId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update the properties of a Microsoft organization.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_updateorganization",
+            "name": "update-organization",
+            "output": ["ActionOutput_microsoft_updateorganization"],
+            "scopes": ["Organization.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_updateorganization", "ActionOutput_microsoft_updateorganization"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_updateorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier of the organization."
+                            },
+                            "marketingNotificationEmails": {
+                                "description": "Email addresses for marketing notifications.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "privacyProfile": {
+                                "description": "Privacy profile with contact email and statement URL.",
+                                "type": "object",
+                                "properties": {
+                                    "contactEmail": {
+                                        "description": "Contact email for privacy issues.",
+                                        "type": "string"
+                                    },
+                                    "statementUrl": {
+                                        "description": "URL to the privacy statement.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "securityComplianceNotificationMails": {
+                                "description": "Email addresses for security compliance notifications.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "securityComplianceNotificationPhones": {
+                                "description": "Phone numbers for security compliance notifications.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "technicalNotificationMails": {
+                                "description": "Email addresses for technical notifications.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_updateorganization": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the update was successful."
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a service principal in Microsoft Entra ID.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_updateserviceprincipal",
+            "name": "update-service-principal",
+            "output": ["ActionOutput_microsoft_updateserviceprincipal"],
+            "scopes": ["Application.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_updateserviceprincipal", "ActionOutput_microsoft_updateserviceprincipal"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_updateserviceprincipal": {
+                        "type": "object",
+                        "properties": {
+                            "servicePrincipalId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier for the service principal. Example: \"8c7410b7-37cd-4463-981d-74cd6ab033a7\""
+                            },
+                            "accountEnabled": {
+                                "description": "Whether the service principal account is enabled.",
+                                "type": "boolean"
+                            },
+                            "appRoleAssignmentRequired": {
+                                "description": "Whether an appRoleAssignment is required before Microsoft Entra ID will issue a user or access token.",
+                                "type": "boolean"
+                            },
+                            "displayName": {
+                                "description": "The display name for the service principal.",
+                                "type": "string"
+                            },
+                            "homepage": {
+                                "description": "Home page or landing page of the application.",
+                                "type": "string"
+                            },
+                            "logoutUrl": {
+                                "description": "URL used by Microsoft authorization service to log out a user.",
+                                "type": "string"
+                            },
+                            "preferredSingleSignOnMode": {
+                                "description": "Single sign-on mode configured for this application. Values: password, saml, external, oidc.",
+                                "type": "string"
+                            },
+                            "replyUrls": {
+                                "description": "URLs that user tokens are sent to for sign in, or redirect URIs for OAuth 2.0 codes and tokens.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "servicePrincipalNames": {
+                                "description": "List of identifiersUris copied from the associated application.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "tags": {
+                                "description": "Custom strings used to categorize and identify the application.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "alternativeNames": {
+                                "description": "Used to retrieve service principals by subscription, identify resource group and full resource IDs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["servicePrincipalId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_updateserviceprincipal": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "servicePrincipalId": {
+                                "type": "string"
+                            },
+                            "updatedFields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["success", "servicePrincipalId", "updatedFields"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a user in Microsoft Entra ID",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_updateuser",
+            "name": "update-user",
+            "output": ["ActionOutput_microsoft_updateuser"],
+            "scopes": ["User.ReadWrite.All"],
+            "usedModels": ["ActionInput_microsoft_updateuser", "ActionOutput_microsoft_updateuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The unique identifier of the user to update. Example: \"9fc4580d-5ed8-46c5-9fff-258fd68d533d\""
+                            },
+                            "displayName": {
+                                "description": "The name displayed in the address book for the user.",
+                                "type": "string"
+                            },
+                            "givenName": {
+                                "description": "The given name (first name) of the user.",
+                                "type": "string"
+                            },
+                            "surname": {
+                                "description": "The surname (family name or last name) of the user.",
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "description": "The job title of the user.",
+                                "type": "string"
+                            },
+                            "department": {
+                                "description": "The name of the department in which the user works.",
+                                "type": "string"
+                            },
+                            "officeLocation": {
+                                "description": "The office location in the user's place of business.",
+                                "type": "string"
+                            },
+                            "mobilePhone": {
+                                "description": "The primary cellular telephone number for the user.",
+                                "type": "string"
+                            },
+                            "businessPhones": {
+                                "description": "The telephone numbers for the user.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "city": {
+                                "description": "The city in which the user is located.",
+                                "type": "string"
+                            },
+                            "country": {
+                                "description": "The country/region in which the user is located.",
+                                "type": "string"
+                            },
+                            "preferredLanguage": {
+                                "description": "The preferred language for the user. Should follow ISO 639-1 Code; for example, \"en-US\".",
+                                "type": "string"
+                            },
+                            "mailNickname": {
+                                "description": "The mail alias for the user.",
+                                "type": "string"
+                            },
+                            "accountEnabled": {
+                                "description": "true if the account is enabled; otherwise, false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["userId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "userId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success", "userId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync applications from Microsoft Graph",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/applications",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "applications",
+            "output": ["MicrosoftApplication"],
+            "runs": "every hour",
+            "scopes": ["Application.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["MicrosoftApplication"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MicrosoftApplication": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "appId": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": ["string", "null"]
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "signInAudience": {
+                                "type": ["string", "null"]
+                            },
+                            "publisherDomain": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id", "appId"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync directory roles from Microsoft",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/directory-roles"
+                }
+            ],
+            "input": null,
+            "name": "directory-roles",
+            "output": ["DirectoryRole"],
+            "runs": "every hour",
+            "scopes": ["RoleManagement.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["DirectoryRole"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "DirectoryRole": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "roleTemplateId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync groups from Microsoft Graph with incremental delta tracking",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/groups"
+                }
+            ],
+            "input": null,
+            "name": "groups",
+            "output": ["Group"],
+            "runs": "every hour",
+            "scopes": ["Group.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Group"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Group": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": ["string", "null"]
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            },
+                            "mail": {
+                                "type": ["string", "null"]
+                            },
+                            "mailNickname": {
+                                "type": ["string", "null"]
+                            },
+                            "groupTypes": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "securityEnabled": {
+                                "type": ["boolean", "null"]
+                            },
+                            "mailEnabled": {
+                                "type": ["boolean", "null"]
+                            },
+                            "visibility": {
+                                "type": ["string", "null"]
+                            },
+                            "createdDateTime": {
+                                "type": ["string", "null"]
+                            },
+                            "renewedDateTime": {
+                                "type": ["string", "null"]
+                            },
+                            "deletedDateTime": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync organizations from Microsoft",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/organizations",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "organizations",
+            "output": ["Organization"],
+            "runs": "every hour",
+            "scopes": ["Organization.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Organization"],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Organization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "tenantType": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "onPremisesLastSyncDateTime": {
+                                "type": "string"
+                            },
+                            "onPremisesSyncEnabled": {
+                                "type": "boolean"
+                            },
+                            "postType": {
+                                "type": "string"
+                            },
+                            "preferredLanguage": {
+                                "type": "string"
+                            },
+                            "privacyProfile": {
+                                "type": "object",
+                                "properties": {
+                                    "contactEmail": {
+                                        "type": "string"
+                                    },
+                                    "statementUrl": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "provisionedPlans": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "capabilityStatus": {
+                                            "type": "string"
+                                        },
+                                        "provisioningStatus": {
+                                            "type": "string"
+                                        },
+                                        "service": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "securityComplianceNotificationMails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "securityComplianceNotificationPhones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "technicalNotificationMails": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "verifiedDomains": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "capabilities": {
+                                            "type": "string"
+                                        },
+                                        "isDefault": {
+                                            "type": "boolean"
+                                        },
+                                        "isInitial": {
+                                            "type": "boolean"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync service principals from Microsoft Graph",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/service-principals",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "service-principals",
+            "output": ["ServicePrincipal"],
+            "runs": "every hour",
+            "scopes": ["Application.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ServicePrincipal"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ServicePrincipal": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "appId": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync users from Microsoft",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/users"
+                }
+            ],
+            "input": null,
+            "name": "users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": ["User.Read.All"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "givenName": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "mail": {
+                                "type": "string"
+                            },
+                            "userPrincipalName": {
+                                "type": "string"
+                            },
+                            "jobTitle": {
+                                "type": "string"
+                            },
+                            "mobilePhone": {
+                                "type": "string"
+                            },
+                            "businessPhones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "officeLocation": {
+                                "type": "string"
+                            },
+                            "preferredLanguage": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastPasswordChangeDateTime": {
+                                "type": "string"
+                            },
+                            "accountEnabled": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "userPrincipalName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

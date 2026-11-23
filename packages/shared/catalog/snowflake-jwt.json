@@ -1,0 +1,1896 @@
+{
+    "providerConfigKey": "snowflake-jwt",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Cancel a running Snowflake SQL statement.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_cancelstatement",
+            "name": "cancel-statement",
+            "output": ["ActionOutput_snowflake_jwt_cancelstatement"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_cancelstatement", "ActionOutput_snowflake_jwt_cancelstatement"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_cancelstatement": {
+                        "type": "object",
+                        "properties": {
+                            "statement_handle": {
+                                "type": "string",
+                                "description": "The statement handle returned by Snowflake when a statement is submitted. Example: \"01c4d2c3-0001-e881-001c-d6c3000130ea\""
+                            }
+                        },
+                        "required": ["statement_handle"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_cancelstatement": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["code", "message"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Submit a SQL statement to Snowflake.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_executestatement",
+            "name": "execute-statement",
+            "output": ["ActionOutput_snowflake_jwt_executestatement"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_executestatement", "ActionOutput_snowflake_jwt_executestatement"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_executestatement": {
+                        "type": "object",
+                        "properties": {
+                            "statement": {
+                                "type": "string"
+                            },
+                            "timeout": {
+                                "type": "number"
+                            },
+                            "warehouse": {
+                                "type": "string"
+                            },
+                            "database": {
+                                "type": "string"
+                            },
+                            "schema": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "bindings": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "value"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["statement"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_executestatement": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string"
+                            },
+                            "sqlState": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "statementHandle": {
+                                "type": "string"
+                            },
+                            "statementHandles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "statementStatusUrl": {
+                                "type": "string"
+                            },
+                            "createdOn": {
+                                "type": "number"
+                            },
+                            "resultSetMetaData": {
+                                "type": "object",
+                                "properties": {
+                                    "numRows": {
+                                        "type": "number"
+                                    },
+                                    "format": {
+                                        "type": "string"
+                                    },
+                                    "rowType": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "database": {
+                                                    "type": "string"
+                                                },
+                                                "schema": {
+                                                    "type": "string"
+                                                },
+                                                "table": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "scale": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "precision": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "length": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "nullable": {
+                                                    "type": "boolean"
+                                                },
+                                                "byteLength": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "collation": {
+                                                    "type": ["string", "null"]
+                                                }
+                                            },
+                                            "required": ["name", "type", "nullable"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "partitionInfo": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "rowCount": {
+                                                    "type": "number"
+                                                },
+                                                "uncompressedSize": {
+                                                    "type": "number"
+                                                },
+                                                "compressedSize": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": ["rowCount", "uncompressedSize"],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            },
+                            "stats": {
+                                "type": "object",
+                                "properties": {
+                                    "numRowsInserted": {
+                                        "type": "number"
+                                    },
+                                    "numRowsUpdated": {
+                                        "type": "number"
+                                    },
+                                    "numRowsDeleted": {
+                                        "type": "number"
+                                    },
+                                    "numDuplicateRowsUpdated": {
+                                        "type": "number"
+                                    },
+                                    "numRowsUnloaded": {
+                                        "type": "number"
+                                    },
+                                    "numBytesUnloaded": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["code", "message", "statementHandle", "statementStatusUrl"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch a Snowflake SQL statement result partition.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_getstatementresult",
+            "name": "get-statement-result",
+            "output": ["ActionOutput_snowflake_jwt_getstatementresult"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_getstatementresult", "ActionOutput_snowflake_jwt_getstatementresult"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_getstatementresult": {
+                        "type": "object",
+                        "properties": {
+                            "statement_handle": {
+                                "type": "string",
+                                "description": "The statement handle returned by the execute-statement endpoint. Example: \"01c4d2c3-0001-e881-001c-d6c3000130ea\""
+                            },
+                            "partition": {
+                                "description": "The partition number to fetch. Defaults to 0.",
+                                "type": "number"
+                            }
+                        },
+                        "required": ["statement_handle"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_getstatementresult": {
+                        "type": "object",
+                        "properties": {
+                            "statement_handle": {
+                                "type": "string"
+                            },
+                            "statement_state": {
+                                "type": "string"
+                            },
+                            "num_rows": {
+                                "type": "number"
+                            },
+                            "columns": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "precision": {
+                                            "type": "number"
+                                        },
+                                        "scale": {
+                                            "type": "number"
+                                        },
+                                        "byte_length": {
+                                            "type": "number"
+                                        },
+                                        "length": {
+                                            "type": "number"
+                                        },
+                                        "nullable": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["name", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            },
+                            "next_partition_num": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["statement_handle"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get Snowflake SQL statement execution status and inline results.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_getstatementstatus",
+            "name": "get-statement-status",
+            "output": ["ActionOutput_snowflake_jwt_getstatementstatus"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_getstatementstatus", "ActionOutput_snowflake_jwt_getstatementstatus"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_getstatementstatus": {
+                        "type": "object",
+                        "properties": {
+                            "statementHandle": {
+                                "type": "string",
+                                "description": "The handle of the SQL statement to check. Example: \"01c4d2c3-0001-e881-001c-d6c3000130ea\""
+                            }
+                        },
+                        "required": ["statementHandle"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_getstatementstatus": {
+                        "type": "object",
+                        "properties": {
+                            "statementHandle": {
+                                "type": "string"
+                            },
+                            "sqlState": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "createdOn": {
+                                "type": "number"
+                            },
+                            "statementStatusUrl": {
+                                "type": "string"
+                            },
+                            "resultSetMetaData": {
+                                "type": "object",
+                                "properties": {
+                                    "numRows": {
+                                        "type": "number"
+                                    },
+                                    "format": {
+                                        "type": "string"
+                                    },
+                                    "rowType": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "database": {
+                                                    "type": "string"
+                                                },
+                                                "schema": {
+                                                    "type": "string"
+                                                },
+                                                "table": {
+                                                    "type": "string"
+                                                },
+                                                "scale": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "precision": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "length": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "byteLength": {
+                                                    "type": ["number", "null"]
+                                                },
+                                                "nullable": {
+                                                    "type": "boolean"
+                                                },
+                                                "collation": {
+                                                    "type": ["string", "null"]
+                                                }
+                                            },
+                                            "required": ["name", "type"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "partitionInfo": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "rowCount": {
+                                                    "type": "number"
+                                                },
+                                                "uncompressedSize": {
+                                                    "type": "number"
+                                                },
+                                                "compressedSize": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": ["rowCount", "uncompressedSize"],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {}
+                                }
+                            }
+                        },
+                        "required": ["statementHandle"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List columns in a Snowflake table with data types, nullability, and defaults.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_listcolumns",
+            "name": "list-columns",
+            "output": ["ActionOutput_snowflake_jwt_listcolumns"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_listcolumns", "ActionOutput_snowflake_jwt_listcolumns"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_listcolumns": {
+                        "type": "object",
+                        "properties": {
+                            "database": {
+                                "type": "string",
+                                "description": "Database name. Example: \"NANGO_TEST_DB\""
+                            },
+                            "schema": {
+                                "type": "string",
+                                "description": "Schema name. Example: \"SALES\""
+                            },
+                            "table": {
+                                "type": "string",
+                                "description": "Table name. Example: \"CUSTOMERS\""
+                            }
+                        },
+                        "required": ["database", "schema", "table"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_listcolumns": {
+                        "type": "object",
+                        "properties": {
+                            "columns": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "table_name": {
+                                            "type": "string"
+                                        },
+                                        "schema_name": {
+                                            "type": "string"
+                                        },
+                                        "column_name": {
+                                            "type": "string"
+                                        },
+                                        "data_type": {
+                                            "type": "string"
+                                        },
+                                        "nullable": {
+                                            "type": "boolean"
+                                        },
+                                        "default": {
+                                            "type": "string"
+                                        },
+                                        "kind": {
+                                            "type": "string"
+                                        },
+                                        "autoincrement": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["table_name", "schema_name", "column_name", "data_type", "nullable", "kind"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["columns"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Snowflake databases.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_listdatabases",
+            "name": "list-databases",
+            "output": ["ActionOutput_snowflake_jwt_listdatabases"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_listdatabases", "ActionOutput_snowflake_jwt_listdatabases"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_listdatabases": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_listdatabases": {
+                        "type": "object",
+                        "properties": {
+                            "databases": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "created_on": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "is_default": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "is_current": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "origin": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "owner": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "comment": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "retention_time": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "kind": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["databases"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Snowflake roles with hierarchy and assignment counts.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_listroles",
+            "name": "list-roles",
+            "output": ["ActionOutput_snowflake_jwt_listroles"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_listroles", "ActionOutput_snowflake_jwt_listroles"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_listroles": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_listroles": {
+                        "type": "object",
+                        "properties": {
+                            "roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "created_on": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "is_default": {
+                                            "type": "boolean"
+                                        },
+                                        "is_current": {
+                                            "type": "boolean"
+                                        },
+                                        "is_inherited": {
+                                            "type": "boolean"
+                                        },
+                                        "assigned_to_users": {
+                                            "type": "number"
+                                        },
+                                        "granted_to_roles": {
+                                            "type": "number"
+                                        },
+                                        "granted_roles": {
+                                            "type": "number"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "comment": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name", "is_default", "is_current", "is_inherited"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["roles"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List schemas in a Snowflake database",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_listschemas",
+            "name": "list-schemas",
+            "output": ["ActionOutput_snowflake_jwt_listschemas"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_listschemas", "ActionOutput_snowflake_jwt_listschemas"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_listschemas": {
+                        "type": "object",
+                        "properties": {
+                            "database": {
+                                "type": "string",
+                                "description": "Database name. Example: \"NANGO_TEST_DB\""
+                            }
+                        },
+                        "required": ["database"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_listschemas": {
+                        "type": "object",
+                        "properties": {
+                            "schemas": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "created_on": {
+                                            "description": "Schema creation timestamp in ISO 8601 format",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Schema name"
+                                        },
+                                        "is_default": {
+                                            "type": "boolean",
+                                            "description": "Whether this is the default schema"
+                                        },
+                                        "is_current": {
+                                            "type": "boolean",
+                                            "description": "Whether this is the current schema"
+                                        },
+                                        "database_name": {
+                                            "type": "string",
+                                            "description": "Database name"
+                                        },
+                                        "owner": {
+                                            "type": "string",
+                                            "description": "Owner of the schema"
+                                        },
+                                        "comment": {
+                                            "description": "Comment on the schema",
+                                            "type": "string"
+                                        },
+                                        "retention_time": {
+                                            "description": "Retention time in days",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name", "is_default", "is_current", "database_name", "owner"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["schemas"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Snowflake stages in a database.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_liststages",
+            "name": "list-stages",
+            "output": ["ActionOutput_snowflake_jwt_liststages"],
+            "scopes": ["sql_api"],
+            "usedModels": ["ActionInput_snowflake_jwt_liststages", "ActionOutput_snowflake_jwt_liststages"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_liststages": {
+                        "type": "object",
+                        "properties": {
+                            "database": {
+                                "type": "string",
+                                "description": "Database name. Example: \"NANGO_TEST_DB\""
+                            }
+                        },
+                        "required": ["database"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_liststages": {
+                        "type": "object",
+                        "properties": {
+                            "stages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "created_on": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "database_name": {
+                                            "type": "string"
+                                        },
+                                        "schema_name": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "has_credentials": {
+                                            "type": "string"
+                                        },
+                                        "has_encryption_key": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "comment": {
+                                            "type": "string"
+                                        },
+                                        "region": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "cloud": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["stages"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Snowflake streams (change data capture) in a database.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_liststreams",
+            "name": "list-streams",
+            "output": ["ActionOutput_snowflake_jwt_liststreams"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_liststreams", "ActionOutput_snowflake_jwt_liststreams"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_liststreams": {
+                        "type": "object",
+                        "properties": {
+                            "database": {
+                                "type": "string",
+                                "description": "Database name to list streams from. Example: \"NANGO_TEST_DB\""
+                            }
+                        },
+                        "required": ["database"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_liststreams": {
+                        "type": "object",
+                        "properties": {
+                            "streams": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "created_on": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "database_name": {
+                                            "type": "string"
+                                        },
+                                        "schema_name": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "comment": {
+                                            "type": "string"
+                                        },
+                                        "table_name": {
+                                            "type": "string"
+                                        },
+                                        "source_type": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "stale": {
+                                            "type": "string"
+                                        },
+                                        "mode": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["streams"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List tables in a Snowflake schema",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_listtables",
+            "name": "list-tables",
+            "output": ["ActionOutput_snowflake_jwt_listtables"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_listtables", "ActionOutput_snowflake_jwt_listtables"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_listtables": {
+                        "type": "object",
+                        "properties": {
+                            "database": {
+                                "type": "string",
+                                "description": "Database name. Example: \"NANGO_TEST_DB\""
+                            },
+                            "schema": {
+                                "type": "string",
+                                "description": "Schema name. Example: \"SALES\""
+                            }
+                        },
+                        "required": ["database", "schema"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_listtables": {
+                        "type": "object",
+                        "properties": {
+                            "tables": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "created_on": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "database_name": {
+                                            "type": "string"
+                                        },
+                                        "schema_name": {
+                                            "type": "string"
+                                        },
+                                        "kind": {
+                                            "type": "string"
+                                        },
+                                        "rows": {
+                                            "type": "number"
+                                        },
+                                        "bytes": {
+                                            "type": "number"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "retention_time": {
+                                            "type": "number"
+                                        },
+                                        "is_external": {
+                                            "type": "string"
+                                        },
+                                        "is_iceberg": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["tables"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Snowflake tasks in a database",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_listtasks",
+            "name": "list-tasks",
+            "output": ["ActionOutput_snowflake_jwt_listtasks"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_listtasks", "ActionOutput_snowflake_jwt_listtasks"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_listtasks": {
+                        "type": "object",
+                        "properties": {
+                            "database": {
+                                "type": "string",
+                                "description": "Database name to list tasks from. Example: \"NANGO_TEST_DB\""
+                            }
+                        },
+                        "required": ["database"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_listtasks": {
+                        "type": "object",
+                        "properties": {
+                            "tasks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "created_on": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "database_name": {
+                                            "type": "string"
+                                        },
+                                        "schema_name": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "warehouse": {
+                                            "type": "string"
+                                        },
+                                        "schedule": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "definition": {
+                                            "type": "string"
+                                        },
+                                        "condition": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["tasks"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Snowflake users with login, email, role, and auth details.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_listusers",
+            "name": "list-users",
+            "output": ["ActionOutput_snowflake_jwt_listusers"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_listusers", "ActionOutput_snowflake_jwt_listusers"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_listusers": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "created_on": {
+                                            "type": "string"
+                                        },
+                                        "login_name": {
+                                            "type": "string"
+                                        },
+                                        "display_name": {
+                                            "type": "string"
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "disabled": {
+                                            "type": "boolean"
+                                        },
+                                        "must_change_password": {
+                                            "type": "boolean"
+                                        },
+                                        "default_warehouse": {
+                                            "type": "string"
+                                        },
+                                        "default_role": {
+                                            "type": "string"
+                                        },
+                                        "has_password": {
+                                            "type": "boolean"
+                                        },
+                                        "has_rsa_public_key": {
+                                            "type": "boolean"
+                                        },
+                                        "last_success_login": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List views in a Snowflake schema.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_listviews",
+            "name": "list-views",
+            "output": ["ActionOutput_snowflake_jwt_listviews"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_listviews", "ActionOutput_snowflake_jwt_listviews"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_listviews": {
+                        "type": "object",
+                        "properties": {
+                            "database_name": {
+                                "type": "string",
+                                "description": "Database name. Example: \"NANGO_TEST_DB\""
+                            },
+                            "schema_name": {
+                                "type": "string",
+                                "description": "Schema name. Example: \"SALES\""
+                            }
+                        },
+                        "required": ["database_name", "schema_name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_listviews": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "created_on": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "database_name": {
+                                            "type": "string"
+                                        },
+                                        "schema_name": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "comment": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "is_secure": {
+                                            "type": "boolean"
+                                        },
+                                        "is_materialized": {
+                                            "type": "boolean"
+                                        },
+                                        "change_tracking": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["created_on", "name", "database_name", "schema_name", "is_secure", "is_materialized"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Snowflake warehouses with size, state, and resource usage.",
+            "endpoint": null,
+            "input": "ActionInput_snowflake_jwt_listwarehouses",
+            "name": "list-warehouses",
+            "output": ["ActionOutput_snowflake_jwt_listwarehouses"],
+            "scopes": [],
+            "usedModels": ["ActionInput_snowflake_jwt_listwarehouses", "ActionOutput_snowflake_jwt_listwarehouses"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_snowflake_jwt_listwarehouses": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_snowflake_jwt_listwarehouses": {
+                        "type": "object",
+                        "properties": {
+                            "warehouses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "string"
+                                        },
+                                        "min_cluster_count": {
+                                            "type": "number"
+                                        },
+                                        "max_cluster_count": {
+                                            "type": "number"
+                                        },
+                                        "started_clusters": {
+                                            "type": "number"
+                                        },
+                                        "running": {
+                                            "type": "number"
+                                        },
+                                        "queued": {
+                                            "type": "number"
+                                        },
+                                        "is_default": {
+                                            "type": "boolean"
+                                        },
+                                        "is_current": {
+                                            "type": "boolean"
+                                        },
+                                        "auto_suspend": {
+                                            "type": "number"
+                                        },
+                                        "auto_resume": {
+                                            "type": "boolean"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "enable_query_acceleration": {
+                                            "type": "boolean"
+                                        },
+                                        "resource_monitor": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "state",
+                                        "type",
+                                        "size",
+                                        "min_cluster_count",
+                                        "max_cluster_count",
+                                        "started_clusters",
+                                        "running",
+                                        "queued",
+                                        "is_default",
+                                        "is_current",
+                                        "auto_suspend",
+                                        "auto_resume",
+                                        "owner",
+                                        "enable_query_acceleration"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["warehouses"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync Snowflake column metadata across all tables in configured schemas.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/columns"
+                }
+            ],
+            "input": null,
+            "name": "columns",
+            "output": ["Column"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Column"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Column": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "database_name": {
+                                "type": "string"
+                            },
+                            "schema_name": {
+                                "type": "string"
+                            },
+                            "table_name": {
+                                "type": "string"
+                            },
+                            "column_name": {
+                                "type": "string"
+                            },
+                            "ordinal_position": {
+                                "type": "number"
+                            },
+                            "data_type": {
+                                "type": "string"
+                            },
+                            "data_type_type": {
+                                "type": "string"
+                            },
+                            "data_type_precision": {
+                                "type": "number"
+                            },
+                            "data_type_scale": {
+                                "type": "number"
+                            },
+                            "data_type_byte_length": {
+                                "type": "number"
+                            },
+                            "data_type_length": {
+                                "type": "number"
+                            },
+                            "nullable": {
+                                "type": "boolean"
+                            },
+                            "default_value": {
+                                "type": "string"
+                            },
+                            "kind": {
+                                "type": "string"
+                            },
+                            "expression": {
+                                "type": "string"
+                            },
+                            "comment": {
+                                "type": "string"
+                            },
+                            "autoincrement": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "database_name", "schema_name", "table_name", "column_name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Snowflake database metadata",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/databases",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "databases",
+            "output": ["Database"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Database"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Database": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_on": {
+                                "type": "string"
+                            },
+                            "kind": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "comment": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync rows from a customer-configured SELECT query.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/query-results"
+                }
+            ],
+            "input": "SyncMetadata_snowflake_jwt_queryresults",
+            "name": "query-results",
+            "output": ["QueryResult"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["QueryResult", "SyncMetadata_snowflake_jwt_queryresults"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "QueryResult": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "row_data": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["id", "row_data"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_snowflake_jwt_queryresults": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "incremental_column": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "id_column": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "database": {
+                                "type": "string"
+                            },
+                            "schema": {
+                                "type": "string"
+                            },
+                            "warehouse": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["query", "incremental_column", "id_column"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Snowflake role metadata and hierarchy.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/roles"
+                }
+            ],
+            "input": null,
+            "name": "roles",
+            "output": ["Role"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Role"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Role": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "is_default": {
+                                "type": "boolean"
+                            },
+                            "is_current": {
+                                "type": "boolean"
+                            },
+                            "is_inherited": {
+                                "type": "boolean"
+                            },
+                            "assigned_to_users": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "granted_to_roles": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "granted_roles": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "created_on": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "comment": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "created_on"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Snowflake schema metadata",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/schemas"
+                }
+            ],
+            "input": null,
+            "name": "schemas",
+            "output": ["Schema"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Schema"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Composite identifier: database_name/schema_name"
+                            },
+                            "database_name": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_on": {
+                                "type": "string"
+                            },
+                            "schema_owner": {
+                                "type": "string"
+                            },
+                            "comment": {
+                                "type": "string"
+                            },
+                            "retention_time": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "database_name", "name"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Snowflake table metadata.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/tables",
+                    "method": "POST"
+                }
+            ],
+            "input": "SyncMetadata_snowflake_jwt_tables",
+            "name": "tables",
+            "output": ["Table"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Table", "SyncMetadata_snowflake_jwt_tables"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Table": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "database_name": {
+                                "type": "string"
+                            },
+                            "schema_name": {
+                                "type": "string"
+                            },
+                            "rows": {
+                                "type": ["number", "null"]
+                            },
+                            "bytes": {
+                                "type": ["number", "null"]
+                            },
+                            "is_external": {
+                                "type": "string"
+                            },
+                            "is_iceberg": {
+                                "type": "string"
+                            },
+                            "change_tracking": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "database_name", "schema_name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_snowflake_jwt_tables": {
+                        "type": "object",
+                        "properties": {
+                            "schemas": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Snowflake user roster with login, auth, and role details",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/users"
+                }
+            ],
+            "input": null,
+            "name": "users",
+            "output": ["User"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "login_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "display_name": {
+                                "type": "string"
+                            },
+                            "default_role": {
+                                "type": "string"
+                            },
+                            "default_warehouse": {
+                                "type": "string"
+                            },
+                            "disabled": {
+                                "type": "boolean"
+                            },
+                            "has_password": {
+                                "type": "boolean"
+                            },
+                            "has_rsa_public_key": {
+                                "type": "boolean"
+                            },
+                            "last_success_login": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Snowflake view metadata.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/views"
+                }
+            ],
+            "input": "SyncMetadata_snowflake_jwt_views",
+            "name": "views",
+            "output": ["View"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["View", "SyncMetadata_snowflake_jwt_views"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "View": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "database_name": {
+                                "type": "string"
+                            },
+                            "schema_name": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "is_secure": {
+                                "type": "string"
+                            },
+                            "is_materialized": {
+                                "type": "string"
+                            },
+                            "change_tracking": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "comment": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "name", "database_name", "schema_name"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_snowflake_jwt_views": {
+                        "type": "object",
+                        "properties": {
+                            "schemas": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "database": {
+                                            "type": "string"
+                                        },
+                                        "schema": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["database", "schema"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

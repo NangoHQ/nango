@@ -1,0 +1,275 @@
+{
+    "providerConfigKey": "clari-copilot",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of calls from your account. For the first sync, it will go back to the past one year",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/calls"
+                }
+            ],
+            "input": "SyncMetadata_clari_copilot_calls",
+            "name": "calls",
+            "output": ["ClariCopilotCall"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["ClariCopilotCall", "SyncMetadata_clari_copilot_calls"],
+            "version": "2.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ClariCopilotCall": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "source_id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "externalParticipants": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "bot_not_join_reason": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "time": {
+                                "type": "string"
+                            },
+                            "icaluid": {
+                                "type": "string"
+                            },
+                            "calendar_id": {
+                                "type": "string"
+                            },
+                            "recurring_event_id": {
+                                "type": "string"
+                            },
+                            "original_start_time": {
+                                "type": "string"
+                            },
+                            "last_modified_time": {
+                                "type": "string"
+                            },
+                            "audio_url": {
+                                "type": "string"
+                            },
+                            "video_url": {
+                                "type": "string"
+                            },
+                            "disposition": {
+                                "type": "string"
+                            },
+                            "deal_name": {
+                                "type": "string"
+                            },
+                            "deal_value": {
+                                "type": "string"
+                            },
+                            "deal_close_date": {
+                                "type": "string"
+                            },
+                            "deal_stage_before_call": {
+                                "type": "string"
+                            },
+                            "account_name": {
+                                "type": "string"
+                            },
+                            "contact_names": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "crm_info": {
+                                "type": "object",
+                                "properties": {
+                                    "source_crm": {
+                                        "type": "string"
+                                    },
+                                    "deal_id": {
+                                        "type": "string"
+                                    },
+                                    "account_id": {
+                                        "type": "string"
+                                    },
+                                    "contact_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": ["source_crm", "deal_id", "account_id", "contact_ids"],
+                                "additionalProperties": false
+                            },
+                            "bookmark_timestamps": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "metrics": {
+                                "type": "object",
+                                "properties": {
+                                    "talk_listen_ratio": {
+                                        "type": "number"
+                                    },
+                                    "num_questions_asked": {
+                                        "type": "number"
+                                    },
+                                    "num_questions_asked_by_reps": {
+                                        "type": "number"
+                                    },
+                                    "call_duration": {
+                                        "type": "number"
+                                    },
+                                    "total_speak_duration": {
+                                        "type": "number"
+                                    },
+                                    "longest_monologue_duration": {
+                                        "type": "number"
+                                    },
+                                    "longest_monologue_start_time": {
+                                        "type": "number"
+                                    },
+                                    "engaging_questions": {
+                                        "type": "number"
+                                    },
+                                    "categories": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "talk_listen_ratio",
+                                    "num_questions_asked",
+                                    "num_questions_asked_by_reps",
+                                    "call_duration",
+                                    "total_speak_duration",
+                                    "longest_monologue_duration",
+                                    "longest_monologue_start_time",
+                                    "engaging_questions",
+                                    "categories"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "call_review_page_url": {
+                                "type": "string"
+                            },
+                            "deal_stage_live": {
+                                "type": "string"
+                            },
+                            "transcript": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "summary": {
+                                "type": "object",
+                                "properties": {
+                                    "full_summary": {
+                                        "type": "string"
+                                    },
+                                    "topics_discussed": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "key_action_items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": ["full_summary", "topics_discussed", "key_action_items"],
+                                "additionalProperties": false
+                            },
+                            "competitor_sentiments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "source_id",
+                            "title",
+                            "users",
+                            "externalParticipants",
+                            "status",
+                            "bot_not_join_reason",
+                            "type",
+                            "time",
+                            "icaluid",
+                            "calendar_id",
+                            "recurring_event_id",
+                            "original_start_time",
+                            "last_modified_time",
+                            "audio_url",
+                            "video_url",
+                            "disposition",
+                            "deal_name",
+                            "deal_value",
+                            "deal_close_date",
+                            "deal_stage_before_call",
+                            "account_name",
+                            "contact_names",
+                            "crm_info",
+                            "bookmark_timestamps",
+                            "metrics",
+                            "call_review_page_url",
+                            "deal_stage_live",
+                            "transcript",
+                            "summary",
+                            "competitor_sentiments"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_clari_copilot_calls": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,3778 @@
+{
+    "providerConfigKey": "elevenlabs",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add rules to a pronunciation dictionary.",
+            "endpoint": {
+                "path": "/actions/add-pronunciation-dictionary-rules",
+                "method": "POST"
+            },
+            "input": "ActionInput_elevenlabs_addpronunciationdictionaryrules",
+            "name": "add-pronunciation-dictionary-rules",
+            "output": ["ActionOutput_elevenlabs_addpronunciationdictionaryrules"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_addpronunciationdictionaryrules", "ActionOutput_elevenlabs_addpronunciationdictionaryrules"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_addpronunciationdictionaryrules": {
+                        "type": "object",
+                        "properties": {
+                            "pronunciation_dictionary_id": {
+                                "type": "string",
+                                "description": "The ID of the pronunciation dictionary."
+                            },
+                            "rules": {
+                                "type": "array",
+                                "items": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "alias"
+                                                },
+                                                "string_to_replace": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "The string to replace. Must be a non-empty string."
+                                                },
+                                                "alias": {
+                                                    "type": "string",
+                                                    "description": "The alias for the string to be replaced."
+                                                },
+                                                "case_sensitive": {
+                                                    "description": "Whether the rule should match case-sensitively. Default: true.",
+                                                    "type": "boolean"
+                                                },
+                                                "word_boundaries": {
+                                                    "description": "Whether the rule should only match at word boundaries. Default: true.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": ["type", "string_to_replace", "alias"],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "phoneme"
+                                                },
+                                                "string_to_replace": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "The string to replace. Must be a non-empty string."
+                                                },
+                                                "phoneme": {
+                                                    "type": "string",
+                                                    "description": "The phoneme rule."
+                                                },
+                                                "alphabet": {
+                                                    "type": "string",
+                                                    "description": "The alphabet to use with the phoneme rule."
+                                                },
+                                                "case_sensitive": {
+                                                    "description": "Whether the rule should match case-sensitively. Default: true.",
+                                                    "type": "boolean"
+                                                },
+                                                "word_boundaries": {
+                                                    "description": "Whether the rule should only match at word boundaries. Default: true.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": ["type", "string_to_replace", "phoneme", "alphabet"],
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                "description": "List of pronunciation rules to add."
+                            }
+                        },
+                        "required": ["pronunciation_dictionary_id", "rules"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_addpronunciationdictionaryrules": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the pronunciation dictionary."
+                            },
+                            "version_id": {
+                                "type": "string",
+                                "description": "The version ID of the pronunciation dictionary."
+                            },
+                            "version_rules_num": {
+                                "type": "number",
+                                "description": "The number of rules in the version of the pronunciation dictionary."
+                            }
+                        },
+                        "required": ["id", "version_id", "version_rules_num"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a Conversational AI agent.",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_createagent",
+            "name": "create-agent",
+            "output": ["ActionOutput_elevenlabs_createagent"],
+            "scopes": ["convai"],
+            "usedModels": ["ActionInput_elevenlabs_createagent", "ActionOutput_elevenlabs_createagent"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_createagent": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "conversation_config": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "platform_settings": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "workflow": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["conversation_config"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_createagent": {
+                        "type": "object",
+                        "properties": {
+                            "agent_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["agent_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Conversational AI agent.",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_deleteagent",
+            "name": "delete-agent",
+            "output": ["ActionOutput_elevenlabs_deleteagent"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_deleteagent", "ActionOutput_elevenlabs_deleteagent"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_deleteagent": {
+                        "type": "object",
+                        "properties": {
+                            "agent_id": {
+                                "type": "string",
+                                "description": "The ID of the agent to delete. Example: \"agent_123\""
+                            }
+                        },
+                        "required": ["agent_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_deleteagent": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Conversational AI conversation.",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_deleteconversation",
+            "name": "delete-conversation",
+            "output": ["ActionOutput_elevenlabs_deleteconversation"],
+            "scopes": ["convai"],
+            "usedModels": ["ActionInput_elevenlabs_deleteconversation", "ActionOutput_elevenlabs_deleteconversation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_deleteconversation": {
+                        "type": "object",
+                        "properties": {
+                            "conversation_id": {
+                                "type": "string",
+                                "description": "The ID of the conversation to delete. Example: \"abc123\""
+                            }
+                        },
+                        "required": ["conversation_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_deleteconversation": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a dubbing project.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/delete-dubbing-project"
+            },
+            "input": "ActionInput_elevenlabs_deletedubbingproject",
+            "name": "delete-dubbing-project",
+            "output": ["ActionOutput_elevenlabs_deletedubbingproject"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_deletedubbingproject", "ActionOutput_elevenlabs_deletedubbingproject"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_deletedubbingproject": {
+                        "type": "object",
+                        "properties": {
+                            "dubbing_id": {
+                                "type": "string",
+                                "description": "ID of the dubbing project to delete. Example: \"qHq83s7gp3QoJRaiLh9H\""
+                            }
+                        },
+                        "required": ["dubbing_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_deletedubbingproject": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "description": "The status of the deletion."
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a history item.",
+            "endpoint": {
+                "method": "POST",
+                "path": "/actions/delete-history-item"
+            },
+            "input": "ActionInput_elevenlabs_deletehistoryitem",
+            "name": "delete-history-item",
+            "output": ["ActionOutput_elevenlabs_deletehistoryitem"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_deletehistoryitem", "ActionOutput_elevenlabs_deletehistoryitem"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_deletehistoryitem": {
+                        "type": "object",
+                        "properties": {
+                            "history_item_id": {
+                                "type": "string",
+                                "description": "ID of the history item to delete. Example: \"JveLb9l9aA9OP7eF6zYH\""
+                            }
+                        },
+                        "required": ["history_item_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_deletehistoryitem": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a knowledge base document.",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_deleteknowledgebasedocument",
+            "name": "delete-knowledge-base-document",
+            "output": ["ActionOutput_elevenlabs_deleteknowledgebasedocument"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_deleteknowledgebasedocument", "ActionOutput_elevenlabs_deleteknowledgebasedocument"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_deleteknowledgebasedocument": {
+                        "type": "object",
+                        "properties": {
+                            "documentation_id": {
+                                "type": "string",
+                                "description": "The id of a document from the knowledge base. This is returned on document addition. Example: \"21m00Tcm4TlvDq8ikWAM\""
+                            },
+                            "force": {
+                                "description": "If set to true, the document or folder will be deleted regardless of whether it is used by any agents.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["documentation_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_deleteknowledgebasedocument": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update voice settings",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_editvoicesettings",
+            "name": "edit-voice-settings",
+            "output": ["ActionOutput_elevenlabs_editvoicesettings"],
+            "scopes": ["voices:write"],
+            "usedModels": ["ActionInput_elevenlabs_editvoicesettings", "ActionOutput_elevenlabs_editvoicesettings"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_editvoicesettings": {
+                        "type": "object",
+                        "properties": {
+                            "voice_id": {
+                                "type": "string",
+                                "description": "ID of the voice to be used. Example: \"29vD33N1CtxCmqQRPOHJ\""
+                            },
+                            "stability": {
+                                "description": "Determines how stable the voice is and the randomness between each generation. Defaults to 0.5",
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "use_speaker_boost": {
+                                "description": "Boosts the similarity to the original speaker. Defaults to true",
+                                "type": "boolean"
+                            },
+                            "similarity_boost": {
+                                "description": "Determines how closely the AI should adhere to the original voice. Defaults to 0.75",
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "style": {
+                                "description": "Determines the style exaggeration of the voice. Must be between 0 and 1. Defaults to 0",
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "speed": {
+                                "description": "Adjusts the speed of the voice. Must be between 0.7 and 1.2. Defaults to 1",
+                                "type": "number",
+                                "minimum": 0.7,
+                                "maximum": 1.2
+                            }
+                        },
+                        "required": ["voice_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_editvoicesettings": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "description": "The status of the voice settings edit request. If the request was successful, the status will be \"ok\"."
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Conversational AI agent",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-agent"
+            },
+            "input": "ActionInput_elevenlabs_getagent",
+            "name": "get-agent",
+            "output": ["ActionOutput_elevenlabs_getagent"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_getagent", "ActionOutput_elevenlabs_getagent"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_getagent": {
+                        "type": "object",
+                        "properties": {
+                            "agent_id": {
+                                "type": "string",
+                                "description": "The ID of an agent. This is returned on agent creation. Example: \"agent_8301kvx0de7afd18wvh6xcq9nwqc\""
+                            },
+                            "version_id": {
+                                "description": "The ID of the agent version to use",
+                                "type": "string"
+                            },
+                            "branch_id": {
+                                "description": "The ID of the branch to use",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["agent_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_getagent": {
+                        "type": "object",
+                        "properties": {
+                            "agent_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "conversation_config": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "platform_settings": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "secrets": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "access_info": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["agent_id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Conversational AI conversation.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-conversation"
+            },
+            "input": "ActionInput_elevenlabs_getconversation",
+            "name": "get-conversation",
+            "output": ["ActionOutput_elevenlabs_getconversation"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_getconversation", "ActionOutput_elevenlabs_getconversation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_getconversation": {
+                        "type": "object",
+                        "properties": {
+                            "conversation_id": {
+                                "type": "string",
+                                "description": "The ID of the conversation to retrieve. Example: \"abc123\""
+                            }
+                        },
+                        "required": ["conversation_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_getconversation": {
+                        "type": "object",
+                        "properties": {
+                            "conversation_id": {
+                                "type": "string"
+                            },
+                            "agent_id": {
+                                "type": "string"
+                            },
+                            "agent_name": {
+                                "type": ["string", "null"]
+                            },
+                            "conversation_product": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": ["string", "null"]
+                            },
+                            "branch_id": {
+                                "type": ["string", "null"]
+                            },
+                            "version_id": {
+                                "type": ["string", "null"]
+                            },
+                            "environment": {
+                                "type": ["string", "null"]
+                            },
+                            "has_audio": {
+                                "type": "boolean"
+                            },
+                            "has_user_audio": {
+                                "type": "boolean"
+                            },
+                            "has_response_audio": {
+                                "type": "boolean"
+                            },
+                            "transcript": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "agent_metadata": {
+                                            "anyOf": [
+                                                {},
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "tool_calls": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "request_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "tool_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "params_as_json": {
+                                                        "type": "string"
+                                                    },
+                                                    "tool_has_been_called": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["request_id", "tool_name"],
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "tool_results": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "request_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "tool_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "result_value": {
+                                                        "type": "string"
+                                                    },
+                                                    "is_error": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "tool_has_been_called": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": ["request_id", "tool_name"],
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "time_in_call_secs": {
+                                            "type": "number"
+                                        },
+                                        "feedback": {
+                                            "anyOf": [
+                                                {},
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "conversation_turn_id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["role"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "start_time_unix_secs": {
+                                        "type": "number"
+                                    },
+                                    "accepted_time_unix_secs": {
+                                        "type": ["number", "null"]
+                                    },
+                                    "call_duration_secs": {
+                                        "type": "number"
+                                    },
+                                    "cost": {
+                                        "type": ["number", "null"]
+                                    },
+                                    "deletion_settings": {
+                                        "anyOf": [
+                                            {},
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "feedback": {
+                                        "anyOf": [
+                                            {},
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "authorization_method": {
+                                        "type": "string"
+                                    },
+                                    "charging": {
+                                        "anyOf": [
+                                            {},
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "phone_call": {
+                                        "anyOf": [
+                                            {},
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "whatsapp": {
+                                        "anyOf": [
+                                            {},
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "agent_phone_number": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "timezone": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "voice_rewards": {
+                                        "anyOf": [
+                                            {},
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "required": ["start_time_unix_secs", "call_duration_secs"],
+                                "additionalProperties": {}
+                            },
+                            "analysis": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "evaluation_criteria_results": {
+                                                "anyOf": [
+                                                    {},
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "data_collection_results": {
+                                                "anyOf": [
+                                                    {},
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "call_successful": {
+                                                "type": "string"
+                                            },
+                                            "transcript_summary": {
+                                                "type": "string"
+                                            },
+                                            "summary": {
+                                                "type": "string"
+                                            },
+                                            "scoped": {
+                                                "anyOf": [
+                                                    {},
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "visited_agents": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "agent_id": {
+                                            "type": "string"
+                                        },
+                                        "branch_id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["agent_id"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "conversation_initiation_client_data": {
+                                "anyOf": [
+                                    {},
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "tag_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "otlpTraces": {
+                                "anyOf": [
+                                    {},
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["conversation_id", "agent_id", "status", "metadata"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the account default voice settings.",
+            "endpoint": {
+                "path": "/actions/get-default-voice-settings",
+                "method": "GET"
+            },
+            "input": "ActionInput_elevenlabs_getdefaultvoicesettings",
+            "name": "get-default-voice-settings",
+            "output": ["ActionOutput_elevenlabs_getdefaultvoicesettings"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_getdefaultvoicesettings", "ActionOutput_elevenlabs_getdefaultvoicesettings"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_getdefaultvoicesettings": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_getdefaultvoicesettings": {
+                        "type": "object",
+                        "properties": {
+                            "stability": {
+                                "type": "number"
+                            },
+                            "similarity_boost": {
+                                "type": "number"
+                            },
+                            "style": {
+                                "type": "number"
+                            },
+                            "use_speaker_boost": {
+                                "type": "boolean"
+                            },
+                            "speed": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a dubbing project.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-dubbing-project"
+            },
+            "input": "ActionInput_elevenlabs_getdubbingproject",
+            "name": "get-dubbing-project",
+            "output": ["ActionOutput_elevenlabs_getdubbingproject"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_getdubbingproject", "ActionOutput_elevenlabs_getdubbingproject"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_getdubbingproject": {
+                        "type": "object",
+                        "properties": {
+                            "dubbing_id": {
+                                "type": "string",
+                                "description": "ID of the dubbing project. Example: \"21m00Tcm4TlvDq8ikWAM\""
+                            }
+                        },
+                        "required": ["dubbing_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_getdubbingproject": {
+                        "type": "object",
+                        "properties": {
+                            "dubbing_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "source_language": {
+                                "type": "string"
+                            },
+                            "target_languages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "editable": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "media_metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "content_type": {
+                                        "type": "string"
+                                    },
+                                    "duration": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["content_type", "duration"],
+                                "additionalProperties": false
+                            },
+                            "error": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["dubbing_id", "name", "status", "target_languages", "created_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve history item metadata.",
+            "endpoint": {
+                "path": "/actions/get-history-item",
+                "method": "GET"
+            },
+            "input": "ActionInput_elevenlabs_gethistoryitem",
+            "name": "get-history-item",
+            "output": ["ActionOutput_elevenlabs_gethistoryitem"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_gethistoryitem", "ActionOutput_elevenlabs_gethistoryitem"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_gethistoryitem": {
+                        "type": "object",
+                        "properties": {
+                            "history_item_id": {
+                                "type": "string",
+                                "description": "ID of the history item to retrieve. Example: \"JveLb9l9aA9OP7eF6zYH\""
+                            }
+                        },
+                        "required": ["history_item_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_gethistoryitem": {
+                        "type": "object",
+                        "properties": {
+                            "history_item_id": {
+                                "type": "string"
+                            },
+                            "request_id": {
+                                "type": "string"
+                            },
+                            "voice_id": {
+                                "type": "string"
+                            },
+                            "model_id": {
+                                "type": "string"
+                            },
+                            "voice_name": {
+                                "type": "string"
+                            },
+                            "voice_category": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "date_unix": {
+                                "type": "number"
+                            },
+                            "character_count_change_from": {
+                                "type": "number"
+                            },
+                            "character_count_change_to": {
+                                "type": "number"
+                            },
+                            "content_type": {
+                                "type": "string"
+                            },
+                            "state": {},
+                            "settings": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "feedback": {
+                                "type": "object",
+                                "properties": {
+                                    "thumbs_up": {
+                                        "type": "boolean"
+                                    },
+                                    "feedback": {
+                                        "type": "string"
+                                    },
+                                    "emotions": {
+                                        "type": "boolean"
+                                    },
+                                    "inaccurate_clone": {
+                                        "type": "boolean"
+                                    },
+                                    "glitches": {
+                                        "type": "boolean"
+                                    },
+                                    "audio_quality": {
+                                        "type": "boolean"
+                                    },
+                                    "other": {
+                                        "type": "boolean"
+                                    },
+                                    "review_status": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "share_link_id": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "string"
+                            },
+                            "alignments": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "object",
+                                        "properties": {
+                                            "characters": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "character_start_times_seconds": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "character_end_times_seconds": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        },
+                                        "required": ["characters", "character_start_times_seconds", "character_end_times_seconds"],
+                                        "additionalProperties": false
+                                    },
+                                    "normalized_alignment": {
+                                        "type": "object",
+                                        "properties": {
+                                            "characters": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "character_start_times_seconds": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "character_end_times_seconds": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        },
+                                        "required": ["characters", "character_start_times_seconds", "character_end_times_seconds"],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": ["alignment", "normalized_alignment"],
+                                "additionalProperties": false
+                            },
+                            "dialogue": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "voice_id": {
+                                            "type": "string"
+                                        },
+                                        "voice_name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["text", "voice_id", "voice_name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "output_format": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["history_item_id", "date_unix", "character_count_change_from", "character_count_change_to", "content_type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a knowledge base document.",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_getknowledgebasedocument",
+            "name": "get-knowledge-base-document",
+            "output": ["ActionOutput_elevenlabs_getknowledgebasedocument"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_getknowledgebasedocument", "ActionOutput_elevenlabs_getknowledgebasedocument"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_getknowledgebasedocument": {
+                        "type": "object",
+                        "properties": {
+                            "documentation_id": {
+                                "type": "string",
+                                "description": "The ID of a document from the knowledge base."
+                            },
+                            "agent_id": {
+                                "description": "Optional agent ID to filter the document context.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["documentation_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_getknowledgebasedocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "created_at_unix_secs": {
+                                        "type": "number"
+                                    },
+                                    "last_updated_at_unix_secs": {
+                                        "type": "number"
+                                    },
+                                    "size_bytes": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "supported_usages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "access_info": {
+                                "type": "object",
+                                "properties": {
+                                    "is_creator": {
+                                        "type": "boolean"
+                                    },
+                                    "creator_name": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "creator_email": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "role": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "access_source": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "folder_parent_id": {
+                                "type": ["string", "null"]
+                            },
+                            "folder_path": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "extracted_inner_html": {
+                                "type": "string"
+                            },
+                            "auto_sync_info": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "minimum_frequency_days": {
+                                                "type": "number"
+                                            },
+                                            "auto_remove": {
+                                                "type": "boolean"
+                                            },
+                                            "consec_failures": {
+                                                "type": "number"
+                                            },
+                                            "next_refresh_by": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "dependent_agents": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "referenced_resource_ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "created_at_unix_secs": {
+                                            "type": "number"
+                                        },
+                                        "access_level": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "is_frozen": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a pronunciation dictionary.",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_getpronunciationdictionary",
+            "name": "get-pronunciation-dictionary",
+            "output": ["ActionOutput_elevenlabs_getpronunciationdictionary"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_getpronunciationdictionary", "ActionOutput_elevenlabs_getpronunciationdictionary"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_getpronunciationdictionary": {
+                        "type": "object",
+                        "properties": {
+                            "pronunciation_dictionary_id": {
+                                "type": "string",
+                                "description": "The ID of the pronunciation dictionary. Example: \"pdct_123456789\""
+                            }
+                        },
+                        "required": ["pronunciation_dictionary_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_getpronunciationdictionary": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "latest_version_id": {
+                                "type": "string"
+                            },
+                            "latest_version_rules_num": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "permission_on_resource": {
+                                "type": "string"
+                            },
+                            "created_by": {
+                                "type": "string"
+                            },
+                            "creation_time_unix": {
+                                "type": "number"
+                            },
+                            "archived_time_unix": {
+                                "type": "number"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "rules": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "string_to_replace": {
+                                            "type": "string"
+                                        },
+                                        "case_sensitive": {
+                                            "type": "boolean"
+                                        },
+                                        "word_boundaries": {
+                                            "type": "boolean"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "alias": {
+                                            "type": "string"
+                                        },
+                                        "phoneme": {
+                                            "type": "string"
+                                        },
+                                        "alphabet": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["string_to_replace", "type"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["id", "latest_version_id", "latest_version_rules_num", "name", "created_by", "creation_time_unix", "rules"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get subscription details.",
+            "endpoint": {
+                "path": "/actions/get-user-subscription",
+                "method": "GET"
+            },
+            "input": "ActionInput_elevenlabs_getusersubscription",
+            "name": "get-user-subscription",
+            "output": ["ActionOutput_elevenlabs_getusersubscription"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_getusersubscription", "ActionOutput_elevenlabs_getusersubscription"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_getusersubscription": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_getusersubscription": {
+                        "type": "object",
+                        "properties": {
+                            "tier": {
+                                "type": "string"
+                            },
+                            "character_count": {
+                                "type": "number"
+                            },
+                            "character_limit": {
+                                "type": "number"
+                            },
+                            "max_character_limit_extension": {
+                                "type": "number"
+                            },
+                            "max_credit_limit_extension": {
+                                "type": "number"
+                            },
+                            "can_extend_character_limit": {
+                                "type": "boolean"
+                            },
+                            "allowed_to_extend_character_limit": {
+                                "type": "boolean"
+                            },
+                            "voice_slots_used": {
+                                "type": "number"
+                            },
+                            "professional_voice_slots_used": {
+                                "type": "number"
+                            },
+                            "voice_limit": {
+                                "type": "number"
+                            },
+                            "voice_add_edit_counter": {
+                                "type": "number"
+                            },
+                            "professional_voice_limit": {
+                                "type": "number"
+                            },
+                            "can_extend_voice_limit": {
+                                "type": "boolean"
+                            },
+                            "can_use_instant_voice_cloning": {
+                                "type": "boolean"
+                            },
+                            "can_use_professional_voice_cloning": {
+                                "type": "boolean"
+                            },
+                            "current_overage": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": {
+                                        "type": "string"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["amount", "currency"],
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "has_open_invoices": {
+                                "type": "boolean"
+                            },
+                            "next_character_count_reset_unix": {
+                                "type": "number"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "billing_period": {
+                                "type": "string"
+                            },
+                            "character_refresh_period": {
+                                "type": "string"
+                            },
+                            "next_invoice": {
+                                "type": "object",
+                                "properties": {
+                                    "amount_due_cents": {
+                                        "type": "number"
+                                    },
+                                    "next_payment_attempt_unix": {
+                                        "type": "number"
+                                    },
+                                    "discounts": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "discount_percent_off": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "payment_intent_status": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "payment_intent_statusses": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "subtotal_cents": {
+                                        "type": ["number", "null"]
+                                    },
+                                    "tax_cents": {
+                                        "type": ["number", "null"]
+                                    }
+                                },
+                                "required": ["amount_due_cents", "next_payment_attempt_unix"],
+                                "additionalProperties": false
+                            },
+                            "open_invoices": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "amount_due_cents": {
+                                            "type": "number"
+                                        },
+                                        "next_payment_attempt_unix": {
+                                            "type": "number"
+                                        },
+                                        "discounts": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "discount_percent_off": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "payment_intent_status": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "payment_intent_statusses": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "subtotal_cents": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "tax_cents": {
+                                            "type": ["number", "null"]
+                                        }
+                                    },
+                                    "required": ["amount_due_cents", "next_payment_attempt_unix"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "pending_change": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "has_used_starter_coupon_on_account": {
+                                "type": "boolean"
+                            },
+                            "has_used_creator_coupon_on_account": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "tier",
+                            "character_count",
+                            "character_limit",
+                            "can_extend_character_limit",
+                            "allowed_to_extend_character_limit",
+                            "voice_slots_used",
+                            "professional_voice_slots_used",
+                            "voice_limit",
+                            "voice_add_edit_counter",
+                            "professional_voice_limit",
+                            "can_extend_voice_limit",
+                            "can_use_instant_voice_cloning",
+                            "can_use_professional_voice_cloning",
+                            "current_overage"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get user/account details.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-user"
+            },
+            "input": "ActionInput_elevenlabs_getuser",
+            "name": "get-user",
+            "output": ["ActionOutput_elevenlabs_getuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_getuser", "ActionOutput_elevenlabs_getuser"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_getuser": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "subscription": {
+                                "type": "object",
+                                "properties": {
+                                    "tier": {
+                                        "type": "string"
+                                    },
+                                    "character_count": {
+                                        "type": "number"
+                                    },
+                                    "character_limit": {
+                                        "type": "number"
+                                    },
+                                    "max_character_limit_extension": {
+                                        "type": ["number", "null"]
+                                    },
+                                    "can_extend_character_limit": {
+                                        "type": "boolean"
+                                    },
+                                    "allowed_to_extend_character_limit": {
+                                        "type": "boolean"
+                                    },
+                                    "voice_slots_used": {
+                                        "type": "number"
+                                    },
+                                    "professional_voice_slots_used": {
+                                        "type": "number"
+                                    },
+                                    "voice_limit": {
+                                        "type": "number"
+                                    },
+                                    "voice_add_edit_counter": {
+                                        "type": "number"
+                                    },
+                                    "professional_voice_limit": {
+                                        "type": "number"
+                                    },
+                                    "can_extend_voice_limit": {
+                                        "type": "boolean"
+                                    },
+                                    "can_use_instant_voice_cloning": {
+                                        "type": "boolean"
+                                    },
+                                    "can_use_professional_voice_cloning": {
+                                        "type": "boolean"
+                                    },
+                                    "current_overage": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "amount": {
+                                                        "type": "string"
+                                                    },
+                                                    "currency": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["amount", "currency"],
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "next_character_count_reset_unix": {
+                                        "type": ["number", "null"]
+                                    },
+                                    "max_voice_add_edits": {
+                                        "type": ["number", "null"]
+                                    },
+                                    "currency": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "billing_period": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "character_refresh_period": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "is_new_user": {
+                                "type": "boolean"
+                            },
+                            "xi_api_key": {
+                                "type": ["string", "null"]
+                            },
+                            "can_use_delayed_payment_methods": {
+                                "type": "boolean"
+                            },
+                            "is_onboarding_completed": {
+                                "type": "boolean"
+                            },
+                            "is_onboarding_checklist_completed": {
+                                "type": "boolean"
+                            },
+                            "show_compliance_terms": {
+                                "type": ["boolean", "null"]
+                            },
+                            "first_name": {
+                                "type": ["string", "null"]
+                            },
+                            "is_api_key_hashed": {
+                                "type": ["boolean", "null"]
+                            },
+                            "xi_api_key_preview": {
+                                "type": ["string", "null"]
+                            },
+                            "referral_link_code": {
+                                "type": ["string", "null"]
+                            },
+                            "partnerstack_partner_default_link": {
+                                "type": ["string", "null"]
+                            },
+                            "created_at": {
+                                "type": "number"
+                            },
+                            "seat_type": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get settings for a specific voice.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/get-voice-settings"
+            },
+            "input": "ActionInput_elevenlabs_getvoicesettings",
+            "name": "get-voice-settings",
+            "output": ["ActionOutput_elevenlabs_getvoicesettings"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_getvoicesettings", "ActionOutput_elevenlabs_getvoicesettings"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_getvoicesettings": {
+                        "type": "object",
+                        "properties": {
+                            "voice_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Voice ID. Example: \"CwhRBWXzGAHq8TQ4Fs17\""
+                            }
+                        },
+                        "required": ["voice_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_getvoicesettings": {
+                        "type": "object",
+                        "properties": {
+                            "stability": {
+                                "type": "number"
+                            },
+                            "similarity_boost": {
+                                "type": "number"
+                            },
+                            "style": {
+                                "type": "number"
+                            },
+                            "use_speaker_boost": {
+                                "type": "boolean"
+                            },
+                            "speed": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a voice.",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_getvoice",
+            "name": "get-voice",
+            "output": ["ActionOutput_elevenlabs_getvoice"],
+            "scopes": ["voices:read"],
+            "usedModels": ["ActionInput_elevenlabs_getvoice", "ActionOutput_elevenlabs_getvoice"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_getvoice": {
+                        "type": "object",
+                        "properties": {
+                            "voice_id": {
+                                "type": "string",
+                                "description": "Voice ID. Example: \"CwhRBWXzGAHq8TQ4Fs17\""
+                            }
+                        },
+                        "required": ["voice_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_getvoice": {
+                        "type": "object",
+                        "properties": {
+                            "voice_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "samples": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "sample_id": {
+                                            "type": "string"
+                                        },
+                                        "file_name": {
+                                            "type": "string"
+                                        },
+                                        "mime_type": {
+                                            "type": "string"
+                                        },
+                                        "size_bytes": {
+                                            "type": "number"
+                                        },
+                                        "hash": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "category": {
+                                "type": "string"
+                            },
+                            "fine_tuning": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "labels": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "preview_url": {
+                                "type": "string"
+                            },
+                            "available_for_tiers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "settings": {
+                                "type": "object",
+                                "properties": {
+                                    "stability": {
+                                        "type": "number"
+                                    },
+                                    "similarity_boost": {
+                                        "type": "number"
+                                    },
+                                    "style": {
+                                        "type": "number"
+                                    },
+                                    "use_speaker_boost": {
+                                        "type": "boolean"
+                                    },
+                                    "speed": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "sharing": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "high_quality_base_model_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "safety_control": {
+                                "type": "string"
+                            },
+                            "voice_verification": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "permission_on_resource": {
+                                "type": "string"
+                            },
+                            "is_legacy": {
+                                "type": "boolean"
+                            },
+                            "is_mixed": {
+                                "type": "boolean"
+                            },
+                            "is_new": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["voice_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Conversational AI agents.",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_listagents",
+            "name": "list-agents",
+            "output": ["ActionOutput_elevenlabs_listagents"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_listagents", "ActionOutput_elevenlabs_listagents"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_listagents": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "How many agents to return at maximum. Cannot exceed 100. Defaults to 30.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "search": {
+                                "description": "Search by agent name.",
+                                "type": "string"
+                            },
+                            "archived": {
+                                "description": "Filter agents by archived status.",
+                                "type": "boolean"
+                            },
+                            "show_only_owned_agents": {
+                                "description": "If true, omits agents shared with you and returns only agents you own.",
+                                "type": "boolean"
+                            },
+                            "sort_direction": {
+                                "description": "Sort direction.",
+                                "type": "string",
+                                "enum": ["asc", "desc"]
+                            },
+                            "sort_by": {
+                                "description": "Field to sort by.",
+                                "type": "string",
+                                "enum": ["name", "created_at", "call_count_7d"]
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_listagents": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "agent_id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "created_at_unix_secs": {
+                                            "type": "number"
+                                        },
+                                        "access_info": {
+                                            "type": "object",
+                                            "properties": {
+                                                "is_creator": {
+                                                    "type": "boolean"
+                                                },
+                                                "creator_name": {
+                                                    "type": "string"
+                                                },
+                                                "creator_email": {
+                                                    "type": "string"
+                                                },
+                                                "role": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["is_creator", "creator_name", "creator_email", "role"],
+                                            "additionalProperties": false
+                                        },
+                                        "last_call_time_unix_secs": {
+                                            "type": "number"
+                                        },
+                                        "archived": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["agent_id", "name", "tags", "created_at_unix_secs", "access_info"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Conversational AI conversations.",
+            "endpoint": {
+                "path": "/actions/list-conversations",
+                "method": "GET"
+            },
+            "input": "ActionInput_elevenlabs_listconversations",
+            "name": "list-conversations",
+            "output": ["ActionOutput_elevenlabs_listconversations"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_listconversations", "ActionOutput_elevenlabs_listconversations"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_listconversations": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "agent_id": {
+                                "description": "Agent id (agent_…) or speech engine external id (seng_).",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "Maximum number of conversations to return. Defaults to 30.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_listconversations": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "agent_id": {
+                                            "type": "string"
+                                        },
+                                        "conversation_id": {
+                                            "type": "string"
+                                        },
+                                        "start_time_unix_secs": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "call_duration_secs": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "message_count": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "call_successful": {
+                                            "type": "string"
+                                        },
+                                        "branch_id": {
+                                            "type": "string"
+                                        },
+                                        "version_id": {
+                                            "type": "string"
+                                        },
+                                        "agent_name": {
+                                            "type": "string"
+                                        },
+                                        "termination_reason": {
+                                            "type": "string"
+                                        },
+                                        "transcript_summary": {
+                                            "type": "string"
+                                        },
+                                        "call_summary_title": {
+                                            "type": "string"
+                                        },
+                                        "main_language": {
+                                            "type": "string"
+                                        },
+                                        "conversation_initiation_source": {
+                                            "type": "string"
+                                        },
+                                        "tool_names": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "direction": {
+                                            "type": "string"
+                                        },
+                                        "rating": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "agent_id",
+                                        "conversation_id",
+                                        "start_time_unix_secs",
+                                        "call_duration_secs",
+                                        "message_count",
+                                        "status",
+                                        "call_successful"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "has_more": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["items", "has_more"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List dubbing projects.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-dubbing-projects"
+            },
+            "input": "ActionInput_elevenlabs_listdubbingprojects",
+            "name": "list-dubbing-projects",
+            "output": ["ActionOutput_elevenlabs_listdubbingprojects"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_listdubbingprojects", "ActionOutput_elevenlabs_listdubbingprojects"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_listdubbingprojects": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "How many dubs to return at maximum. Cannot exceed 200, defaults to 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            },
+                            "dubbing_status": {
+                                "description": "What state the dub is currently in.",
+                                "type": "string",
+                                "enum": ["dubbing", "dubbed", "failed"]
+                            },
+                            "filter_by_creator": {
+                                "description": "Filters who created the resources being listed. Defaults to all.",
+                                "type": "string",
+                                "enum": ["personal", "others", "all"]
+                            },
+                            "order_by": {
+                                "description": "The field to use for ordering results from this query.",
+                                "type": "string",
+                                "const": "created_at"
+                            },
+                            "order_direction": {
+                                "description": "The order direction to use for results from this query. Defaults to DESCENDING.",
+                                "type": "string",
+                                "enum": ["DESCENDING", "ASCENDING"]
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_listdubbingprojects": {
+                        "type": "object",
+                        "properties": {
+                            "dubs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dubbing_id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "source_language": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "target_languages": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "editable": {
+                                            "type": "boolean"
+                                        },
+                                        "media_metadata": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "content_type": {
+                                                            "type": "string"
+                                                        },
+                                                        "duration": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "error": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "has_more": {
+                                "type": "boolean"
+                            },
+                            "next_cursor": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["dubs"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List generated history items.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-history"
+            },
+            "input": "ActionInput_elevenlabs_listhistory",
+            "name": "list-history",
+            "output": ["ActionOutput_elevenlabs_listhistory"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_listhistory", "ActionOutput_elevenlabs_listhistory"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_listhistory": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "How many history items to return at maximum. Can not exceed 1000, defaults to 100.",
+                                "type": "number"
+                            },
+                            "voice_id": {
+                                "description": "ID of the voice to be filtered for.",
+                                "type": "string"
+                            },
+                            "model_id": {
+                                "description": "Filter history items by model ID.",
+                                "type": "string"
+                            },
+                            "search": {
+                                "description": "Search term used for filtering.",
+                                "type": "string"
+                            },
+                            "source": {
+                                "description": "Source of the generated history item.",
+                                "type": "string"
+                            },
+                            "date_before_unix": {
+                                "description": "Unix timestamp to filter history items before this date (exclusive).",
+                                "type": "number"
+                            },
+                            "date_after_unix": {
+                                "description": "Unix timestamp to filter history items after this date (inclusive).",
+                                "type": "number"
+                            },
+                            "sort_direction": {
+                                "description": "Sort direction for the results.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_listhistory": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "history_item_id": {
+                                            "type": "string"
+                                        },
+                                        "request_id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "voice_id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "model_id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "voice_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "voice_category": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "text": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "date_unix": {
+                                            "type": "number"
+                                        },
+                                        "character_count_change_from": {
+                                            "type": "number"
+                                        },
+                                        "character_count_change_to": {
+                                            "type": "number"
+                                        },
+                                        "content_type": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "anyOf": [
+                                                {},
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "settings": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "feedback": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "thumbs_up": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "feedback": {
+                                                            "type": "string"
+                                                        },
+                                                        "emotions": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "inaccurate_clone": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "glitches": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "audio_quality": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "other": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "review_status": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "thumbs_up",
+                                                        "feedback",
+                                                        "emotions",
+                                                        "inaccurate_clone",
+                                                        "glitches",
+                                                        "audio_quality",
+                                                        "other",
+                                                        "review_status"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "share_link_id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "source": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "alignments": {
+                                            "anyOf": [
+                                                {},
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "dialogue": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "output_format": {
+                                            "type": ["string", "null"]
+                                        }
+                                    },
+                                    "required": ["history_item_id", "date_unix", "character_count_change_from", "character_count_change_to", "content_type"],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "has_more": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["items", "has_more"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List knowledge base documents.",
+            "endpoint": {
+                "path": "/actions/list-knowledge-base",
+                "method": "GET"
+            },
+            "input": "ActionInput_elevenlabs_listknowledgebase",
+            "name": "list-knowledge-base",
+            "output": ["ActionOutput_elevenlabs_listknowledgebase"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_listknowledgebase", "ActionOutput_elevenlabs_listknowledgebase"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_listknowledgebase": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "How many documents to return at maximum. Cannot exceed 100, defaults to 30.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_listknowledgebase": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["file", "url", "text", "folder"]
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                "created_at_unix_secs": {
+                                                    "type": "number"
+                                                },
+                                                "last_updated_at_unix_secs": {
+                                                    "type": "number"
+                                                },
+                                                "size_bytes": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": ["created_at_unix_secs", "last_updated_at_unix_secs", "size_bytes"],
+                                            "additionalProperties": false
+                                        },
+                                        "supported_usages": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "access_info": {
+                                            "type": "object",
+                                            "properties": {
+                                                "is_creator": {
+                                                    "type": "boolean"
+                                                },
+                                                "creator_name": {
+                                                    "type": "string"
+                                                },
+                                                "creator_email": {
+                                                    "type": "string"
+                                                },
+                                                "role": {
+                                                    "type": "string"
+                                                },
+                                                "anonymous_access_level_override": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "access_source": {
+                                                    "type": ["string", "null"]
+                                                }
+                                            },
+                                            "required": ["is_creator", "creator_name", "creator_email", "role"],
+                                            "additionalProperties": false
+                                        },
+                                        "folder_parent_id": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "folder_path": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "dependent_agents": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "referenced_resource_ids": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
+                                                    "created_at_unix_secs": {
+                                                        "type": "number"
+                                                    },
+                                                    "access_level": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["id"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "children_count": {
+                                            "type": "number"
+                                        },
+                                        "is_frozen": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["id", "name", "type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "has_more": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["items", "has_more"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List models.",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-models"
+            },
+            "input": "ActionInput_elevenlabs_listmodels",
+            "name": "list-models",
+            "output": ["ActionOutput_elevenlabs_listmodels"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_listmodels", "ActionOutput_elevenlabs_listmodels"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_listmodels": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_listmodels": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "model_id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "can_be_finetuned": {
+                                            "type": "boolean"
+                                        },
+                                        "can_do_text_to_speech": {
+                                            "type": "boolean"
+                                        },
+                                        "can_do_voice_conversion": {
+                                            "type": "boolean"
+                                        },
+                                        "can_use_style": {
+                                            "type": "boolean"
+                                        },
+                                        "can_use_speaker_boost": {
+                                            "type": "boolean"
+                                        },
+                                        "serves_pro_voices": {
+                                            "type": "boolean"
+                                        },
+                                        "token_cost_factor": {
+                                            "type": "number"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "requires_alpha_access": {
+                                            "type": "boolean"
+                                        },
+                                        "max_characters_request_free_user": {
+                                            "type": "number"
+                                        },
+                                        "max_characters_request_subscribed_user": {
+                                            "type": "number"
+                                        },
+                                        "maximum_text_length_per_request": {
+                                            "type": "number"
+                                        },
+                                        "languages": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "language_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["language_id", "name"],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "model_rates": {
+                                            "type": "object",
+                                            "properties": {
+                                                "character_cost_multiplier": {
+                                                    "type": "number"
+                                                },
+                                                "cost_discount_multiplier": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "concurrency_group": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["model_id", "name"],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": ["items"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List pronunciation dictionaries.",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_listpronunciationdictionaries",
+            "name": "list-pronunciation-dictionaries",
+            "output": ["ActionOutput_elevenlabs_listpronunciationdictionaries"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_listpronunciationdictionaries", "ActionOutput_elevenlabs_listpronunciationdictionaries"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_listpronunciationdictionaries": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_listpronunciationdictionaries": {
+                        "type": "object",
+                        "properties": {
+                            "pronunciation_dictionaries": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "latest_version_id": {
+                                            "type": "string"
+                                        },
+                                        "latest_version_rules_num": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "permission_on_resource": {
+                                            "type": "string"
+                                        },
+                                        "created_by": {
+                                            "type": "string"
+                                        },
+                                        "creation_time_unix": {
+                                            "type": "number"
+                                        },
+                                        "archived_time_unix": {
+                                            "type": ["number", "null"]
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "latest_version_id",
+                                        "latest_version_rules_num",
+                                        "name",
+                                        "permission_on_resource",
+                                        "created_by",
+                                        "creation_time_unix"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["pronunciation_dictionaries"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List voices",
+            "endpoint": {
+                "method": "GET",
+                "path": "/actions/list-voices"
+            },
+            "input": "ActionInput_elevenlabs_listvoices",
+            "name": "list-voices",
+            "output": ["ActionOutput_elevenlabs_listvoices"],
+            "scopes": ["voice_read"],
+            "usedModels": ["ActionInput_elevenlabs_listvoices", "ActionOutput_elevenlabs_listvoices"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_listvoices": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_listvoices": {
+                        "type": "object",
+                        "properties": {
+                            "voices": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "voice_id": {
+                                            "type": "string",
+                                            "description": "The ID of the voice. Example: \"21m00Tcm4TlvDq8ikWAM\""
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the voice. Example: \"Rachel\""
+                                        },
+                                        "category": {
+                                            "description": "The category of the voice. Example: \"premade\"",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "The description of the voice.",
+                                            "type": "string"
+                                        },
+                                        "preview_url": {
+                                            "description": "The preview URL of the voice.",
+                                            "type": "string"
+                                        },
+                                        "available_for_tiers": {
+                                            "description": "The tiers the voice is available for.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "labels": {
+                                            "description": "Labels associated with the voice.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "is_owner": {
+                                            "description": "Whether the voice is owned by the user.",
+                                            "type": "boolean"
+                                        },
+                                        "is_legacy": {
+                                            "description": "Whether the voice is legacy.",
+                                            "type": "boolean"
+                                        },
+                                        "is_mixed": {
+                                            "description": "Whether the voice is mixed.",
+                                            "type": "boolean"
+                                        },
+                                        "created_at_unix": {
+                                            "description": "The creation time of the voice in Unix time.",
+                                            "type": "number"
+                                        },
+                                        "high_quality_base_model_ids": {
+                                            "description": "The base model IDs for high-quality voices.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "verified_languages": {
+                                            "description": "The verified languages of the voice.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "language": {
+                                                        "type": "string"
+                                                    },
+                                                    "model_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "accent": {
+                                                        "type": "string"
+                                                    },
+                                                    "locale": {
+                                                        "type": "string"
+                                                    },
+                                                    "preview_url": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["language", "model_id"],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": ["voice_id", "name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["voices"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove rules from a pronunciation dictionary.",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_removepronunciationdictionaryrules",
+            "name": "remove-pronunciation-dictionary-rules",
+            "output": ["ActionOutput_elevenlabs_removepronunciationdictionaryrules"],
+            "scopes": [],
+            "usedModels": ["ActionInput_elevenlabs_removepronunciationdictionaryrules", "ActionOutput_elevenlabs_removepronunciationdictionaryrules"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_removepronunciationdictionaryrules": {
+                        "type": "object",
+                        "properties": {
+                            "pronunciation_dictionary_id": {
+                                "type": "string",
+                                "description": "The ID of the pronunciation dictionary. Example: \"pronunciation_dictionary_id\""
+                            },
+                            "rule_strings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of strings to remove from the pronunciation dictionary. Example: [\"tomato\", \"Tomato\"]"
+                            }
+                        },
+                        "required": ["pronunciation_dictionary_id", "rule_strings"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_removepronunciationdictionaryrules": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "version_id": {
+                                "type": "string"
+                            },
+                            "version_rules_num": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["id", "version_id", "version_rules_num"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Conversational AI agent",
+            "endpoint": null,
+            "input": "ActionInput_elevenlabs_updateagent",
+            "name": "update-agent",
+            "output": ["ActionOutput_elevenlabs_updateagent"],
+            "scopes": ["agent"],
+            "usedModels": ["ActionInput_elevenlabs_updateagent", "ActionOutput_elevenlabs_updateagent"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_elevenlabs_updateagent": {
+                        "type": "object",
+                        "properties": {
+                            "agent_id": {
+                                "type": "string",
+                                "description": "The ID of the agent to update. Example: \"agent_8301kvx0de7afd18wvh6xcq9nwqc\""
+                            },
+                            "name": {
+                                "description": "A name to make the agent easier to find",
+                                "type": ["string", "null"]
+                            },
+                            "tags": {
+                                "description": "Tags to help classify and filter the agent",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "conversation_config": {
+                                "description": "Conversation configuration for an agent",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "platform_settings": {
+                                "description": "Platform settings for the agent",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "workflow": {
+                                "description": "Workflow for the agent",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "version_description": {
+                                "description": "Description for this version when publishing changes",
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["agent_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_elevenlabs_updateagent": {
+                        "type": "object",
+                        "properties": {
+                            "agent_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "conversation_config": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "created_at_unix_secs": {
+                                        "type": "number"
+                                    },
+                                    "updated_at_unix_secs": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "platform_settings": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "phone_numbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "whatsapp_accounts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "workflow": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "access_info": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "version_id": {
+                                "type": ["string", "null"]
+                            },
+                            "branch_id": {
+                                "type": ["string", "null"]
+                            },
+                            "main_branch_id": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["agent_id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync Conversational AI agents",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "agents",
+            "output": ["Agent"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Agent"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Agent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "created_at_unix_secs": {
+                                "type": "number"
+                            },
+                            "access_info": {
+                                "type": "object",
+                                "properties": {
+                                    "is_creator": {
+                                        "type": "boolean"
+                                    },
+                                    "creator_name": {
+                                        "type": "string"
+                                    },
+                                    "creator_email": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    },
+                                    "anonymous_access_level_override": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "access_source": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "required": ["is_creator", "creator_name", "creator_email", "role"],
+                                "additionalProperties": false
+                            },
+                            "last_call_time_unix_secs": {
+                                "type": "number"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "name", "created_at_unix_secs", "access_info"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync history.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "history",
+            "output": ["History"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["History"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "History": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The stable ID of the history item."
+                            },
+                            "history_item_id": {
+                                "type": "string",
+                                "description": "The ID of the history item."
+                            },
+                            "request_id": {
+                                "type": ["string", "null"]
+                            },
+                            "voice_id": {
+                                "type": ["string", "null"]
+                            },
+                            "model_id": {
+                                "type": ["string", "null"]
+                            },
+                            "voice_name": {
+                                "type": ["string", "null"]
+                            },
+                            "voice_category": {
+                                "type": ["string", "null"]
+                            },
+                            "text": {
+                                "type": ["string", "null"]
+                            },
+                            "date_unix": {
+                                "type": "number",
+                                "description": "Unix timestamp of when the item was created."
+                            },
+                            "character_count_change_from": {
+                                "type": "number"
+                            },
+                            "character_count_change_to": {
+                                "type": "number"
+                            },
+                            "content_type": {
+                                "type": "string"
+                            },
+                            "state": {},
+                            "settings": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "feedback": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "share_link_id": {
+                                "type": ["string", "null"]
+                            },
+                            "source": {
+                                "type": ["string", "null"]
+                            },
+                            "alignments": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "dialogue": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "output_format": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id", "history_item_id", "date_unix", "character_count_change_from", "character_count_change_to", "content_type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync models.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/models"
+                }
+            ],
+            "input": null,
+            "name": "models",
+            "output": ["Model"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Model"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Model": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "can_be_finetuned": {
+                                "type": "boolean"
+                            },
+                            "can_do_text_to_speech": {
+                                "type": "boolean"
+                            },
+                            "can_do_voice_conversion": {
+                                "type": "boolean"
+                            },
+                            "can_use_style": {
+                                "type": "boolean"
+                            },
+                            "can_use_speaker_boost": {
+                                "type": "boolean"
+                            },
+                            "serves_pro_voices": {
+                                "type": "boolean"
+                            },
+                            "token_cost_factor": {
+                                "type": "number"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "requires_alpha_access": {
+                                "type": "boolean"
+                            },
+                            "max_characters_request_free_user": {
+                                "type": "number"
+                            },
+                            "max_characters_request_subscribed_user": {
+                                "type": "number"
+                            },
+                            "maximum_text_length_per_request": {
+                                "type": "number"
+                            },
+                            "languages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "language_id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["language_id", "name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "model_rates": {
+                                "type": "object",
+                                "properties": {
+                                    "character_cost_multiplier": {
+                                        "type": "number"
+                                    },
+                                    "cost_discount_multiplier": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["character_cost_multiplier"],
+                                "additionalProperties": false
+                            },
+                            "concurrency_group": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync pronunciation dictionaries",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/pronunciation-dictionaries"
+                }
+            ],
+            "input": null,
+            "name": "pronunciation-dictionaries",
+            "output": ["PronunciationDictionary"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["PronunciationDictionary"],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "PronunciationDictionary": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "latest_version_id": {
+                                "type": "string"
+                            },
+                            "latest_version_rules_num": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "permission_on_resource": {
+                                "type": ["string", "null"]
+                            },
+                            "created_by": {
+                                "type": "string"
+                            },
+                            "creation_time_unix": {
+                                "type": "number"
+                            },
+                            "archived_time_unix": {
+                                "type": ["number", "null"]
+                            },
+                            "description": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["id", "latest_version_id", "name", "created_by", "creation_time_unix"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync voices.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "voices",
+            "output": ["Voice"],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["Voice"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Voice": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "category": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "preview_url": {
+                                "type": "string"
+                            },
+                            "labels": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            },
+                            "created_at_unix": {
+                                "type": "number"
+                            },
+                            "is_legacy": {
+                                "type": "boolean"
+                            },
+                            "is_mixed": {
+                                "type": "boolean"
+                            },
+                            "is_owner": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

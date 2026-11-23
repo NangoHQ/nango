@@ -1,0 +1,1509 @@
+{
+    "providerConfigKey": "unanet",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a company in the system",
+            "endpoint": null,
+            "input": "ActionInput_unanet_createcompany",
+            "name": "create-company",
+            "output": ["ActionOutput_unanet_createcompany"],
+            "scopes": [],
+            "usedModels": ["ActionInput_unanet_createcompany", "ActionOutput_unanet_createcompany"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_unanet_createcompany": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "federalAgency": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "companyId": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "externalId": {
+                                        "type": "string"
+                                    },
+                                    "acronym": {
+                                        "type": "string"
+                                    },
+                                    "address1": {
+                                        "type": "string"
+                                    },
+                                    "address2": {
+                                        "type": "string"
+                                    },
+                                    "address3": {
+                                        "type": "string"
+                                    },
+                                    "isHeadquarters": {
+                                        "type": "boolean"
+                                    },
+                                    "parentCompanyId": {
+                                        "type": "number"
+                                    },
+                                    "parentCompanyName": {
+                                        "type": "string"
+                                    },
+                                    "childCount": {
+                                        "type": "number"
+                                    },
+                                    "addrLat": {
+                                        "type": "number"
+                                    },
+                                    "addrLong": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["name", "federalAgency"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_unanet_createcompany": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "type": "string"
+                            },
+                            "federalAgency": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "companyId": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "externalId": {
+                                        "type": "string"
+                                    },
+                                    "acronym": {
+                                        "type": "string"
+                                    },
+                                    "address1": {
+                                        "type": "string"
+                                    },
+                                    "address2": {
+                                        "type": "string"
+                                    },
+                                    "address3": {
+                                        "type": "string"
+                                    },
+                                    "isHeadquarters": {
+                                        "type": "boolean"
+                                    },
+                                    "parentCompanyId": {
+                                        "type": "number"
+                                    },
+                                    "parentCompanyName": {
+                                        "type": "string"
+                                    },
+                                    "childCount": {
+                                        "type": "number"
+                                    },
+                                    "addrLat": {
+                                        "type": "number"
+                                    },
+                                    "addrLong": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false
+                            },
+                            "shortName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name", "externalId", "shortName", "description"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a contact in the system",
+            "endpoint": null,
+            "input": "ActionInput_unanet_createcontact",
+            "name": "create-contact",
+            "output": ["ActionOutput_unanet_createcontact"],
+            "scopes": [],
+            "usedModels": ["ActionInput_unanet_createcontact", "ActionOutput_unanet_createcontact"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_unanet_createcontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "federalAgency": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "companyId": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "externalId": {
+                                        "type": "string"
+                                    },
+                                    "acronym": {
+                                        "type": "string"
+                                    },
+                                    "address1": {
+                                        "type": "string"
+                                    },
+                                    "address2": {
+                                        "type": "string"
+                                    },
+                                    "address3": {
+                                        "type": "string"
+                                    },
+                                    "isHeadquarters": {
+                                        "type": "boolean"
+                                    },
+                                    "parentCompanyId": {
+                                        "type": "number"
+                                    },
+                                    "parentCompanyName": {
+                                        "type": "string"
+                                    },
+                                    "childCount": {
+                                        "type": "number"
+                                    },
+                                    "addrLat": {
+                                        "type": "number"
+                                    },
+                                    "addrLong": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false
+                            },
+                            "position": {
+                                "type": "string"
+                            },
+                            "emailAddress": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "fax": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["firstName", "lastName", "federalAgency", "position", "emailAddress", "phone", "fax"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_unanet_createcontact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "federalAgency": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "companyId": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "externalId": {
+                                        "type": "string"
+                                    },
+                                    "acronym": {
+                                        "type": "string"
+                                    },
+                                    "address1": {
+                                        "type": "string"
+                                    },
+                                    "address2": {
+                                        "type": "string"
+                                    },
+                                    "address3": {
+                                        "type": "string"
+                                    },
+                                    "isHeadquarters": {
+                                        "type": "boolean"
+                                    },
+                                    "parentCompanyId": {
+                                        "type": "number"
+                                    },
+                                    "parentCompanyName": {
+                                        "type": "string"
+                                    },
+                                    "childCount": {
+                                        "type": "number"
+                                    },
+                                    "addrLat": {
+                                        "type": "number"
+                                    },
+                                    "addrLong": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false
+                            },
+                            "position": {
+                                "type": "string"
+                            },
+                            "emailAddress": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "fax": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["firstName", "lastName", "federalAgency", "position", "emailAddress", "phone", "fax"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a lead with with information about the federal agency, the name, due date, posted date, solicitation number, naics category or categories, the city, state, country, and description.",
+            "endpoint": null,
+            "input": "ActionInput_unanet_createlead",
+            "name": "create-lead",
+            "output": ["ActionOutput_unanet_createlead"],
+            "scopes": [],
+            "usedModels": ["ActionInput_unanet_createlead", "ActionOutput_unanet_createlead"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_unanet_createlead": {
+                        "type": "object",
+                        "properties": {
+                            "federalAgency": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "companyId": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "externalId": {
+                                        "type": "string"
+                                    },
+                                    "acronym": {
+                                        "type": "string"
+                                    },
+                                    "address1": {
+                                        "type": "string"
+                                    },
+                                    "address2": {
+                                        "type": "string"
+                                    },
+                                    "address3": {
+                                        "type": "string"
+                                    },
+                                    "isHeadquarters": {
+                                        "type": "boolean"
+                                    },
+                                    "parentCompanyId": {
+                                        "type": "number"
+                                    },
+                                    "parentCompanyName": {
+                                        "type": "string"
+                                    },
+                                    "childCount": {
+                                        "type": "number"
+                                    },
+                                    "addrLat": {
+                                        "type": "number"
+                                    },
+                                    "addrLong": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "postedDate": {
+                                "type": "string"
+                            },
+                            "solicitationNumber": {
+                                "type": "string"
+                            },
+                            "naicsCategory": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ]
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "federalAgency",
+                            "name",
+                            "dueDate",
+                            "postedDate",
+                            "solicitationNumber",
+                            "naicsCategory",
+                            "city",
+                            "state",
+                            "country",
+                            "description"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_unanet_createlead": {
+                        "type": "object",
+                        "properties": {
+                            "federalAgency": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "companyId": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "externalId": {
+                                        "type": "string"
+                                    },
+                                    "acronym": {
+                                        "type": "string"
+                                    },
+                                    "address1": {
+                                        "type": "string"
+                                    },
+                                    "address2": {
+                                        "type": "string"
+                                    },
+                                    "address3": {
+                                        "type": "string"
+                                    },
+                                    "isHeadquarters": {
+                                        "type": "boolean"
+                                    },
+                                    "parentCompanyId": {
+                                        "type": "number"
+                                    },
+                                    "parentCompanyName": {
+                                        "type": "string"
+                                    },
+                                    "childCount": {
+                                        "type": "number"
+                                    },
+                                    "addrLat": {
+                                        "type": "number"
+                                    },
+                                    "addrLong": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "postedDate": {
+                                "type": "string"
+                            },
+                            "solicitationNumber": {
+                                "type": "string"
+                            },
+                            "naicsCategory": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ]
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "federalAgency",
+                            "name",
+                            "dueDate",
+                            "postedDate",
+                            "solicitationNumber",
+                            "naicsCategory",
+                            "city",
+                            "state",
+                            "country",
+                            "description",
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an opportunity in the system. Requires a stage that exists\nin the system. Use the list-stages action to find the appropriate stage.",
+            "endpoint": null,
+            "input": "ActionInput_unanet_createopportunity",
+            "name": "create-opportunity",
+            "output": ["ActionOutput_unanet_createopportunity"],
+            "scopes": [],
+            "usedModels": ["ActionInput_unanet_createopportunity", "ActionOutput_unanet_createopportunity"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_unanet_createopportunity": {
+                        "type": "object",
+                        "properties": {
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "zip": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "federalAgency": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "companyId": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "externalId": {
+                                        "type": "string"
+                                    },
+                                    "acronym": {
+                                        "type": "string"
+                                    },
+                                    "address1": {
+                                        "type": "string"
+                                    },
+                                    "address2": {
+                                        "type": "string"
+                                    },
+                                    "address3": {
+                                        "type": "string"
+                                    },
+                                    "isHeadquarters": {
+                                        "type": "boolean"
+                                    },
+                                    "parentCompanyId": {
+                                        "type": "number"
+                                    },
+                                    "parentCompanyName": {
+                                        "type": "string"
+                                    },
+                                    "childCount": {
+                                        "type": "number"
+                                    },
+                                    "addrLat": {
+                                        "type": "number"
+                                    },
+                                    "addrLong": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false
+                            },
+                            "stage": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["name", "description", "externalId", "dueDate", "federalAgency", "stage", "active"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_unanet_createopportunity": {
+                        "type": "object",
+                        "properties": {
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "zip": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "externalId": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "federalAgency": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "companyId": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "externalId": {
+                                        "type": "string"
+                                    },
+                                    "acronym": {
+                                        "type": "string"
+                                    },
+                                    "address1": {
+                                        "type": "string"
+                                    },
+                                    "address2": {
+                                        "type": "string"
+                                    },
+                                    "address3": {
+                                        "type": "string"
+                                    },
+                                    "isHeadquarters": {
+                                        "type": "boolean"
+                                    },
+                                    "parentCompanyId": {
+                                        "type": "number"
+                                    },
+                                    "parentCompanyName": {
+                                        "type": "string"
+                                    },
+                                    "childCount": {
+                                        "type": "number"
+                                    },
+                                    "addrLat": {
+                                        "type": "number"
+                                    },
+                                    "addrLong": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false
+                            },
+                            "stage": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["name", "description", "externalId", "dueDate", "federalAgency", "stage", "active"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve information about a company",
+            "endpoint": null,
+            "input": "ActionInput_unanet_getcompany",
+            "name": "get-company",
+            "output": ["ActionOutput_unanet_getcompany"],
+            "scopes": [],
+            "usedModels": ["ActionInput_unanet_getcompany", "ActionOutput_unanet_getcompany"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_unanet_getcompany": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_unanet_getcompany": {
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "externalId": {
+                                        "type": "string"
+                                    },
+                                    "federalAgency": {
+                                        "type": "object",
+                                        "properties": {
+                                            "city": {
+                                                "type": "string"
+                                            },
+                                            "state": {
+                                                "type": "string"
+                                            },
+                                            "country": {
+                                                "type": "string"
+                                            },
+                                            "zip": {
+                                                "type": "string"
+                                            },
+                                            "companyId": {
+                                                "type": "number"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "externalId": {
+                                                "type": "string"
+                                            },
+                                            "acronym": {
+                                                "type": "string"
+                                            },
+                                            "address1": {
+                                                "type": "string"
+                                            },
+                                            "address2": {
+                                                "type": "string"
+                                            },
+                                            "address3": {
+                                                "type": "string"
+                                            },
+                                            "isHeadquarters": {
+                                                "type": "boolean"
+                                            },
+                                            "parentCompanyId": {
+                                                "type": "number"
+                                            },
+                                            "parentCompanyName": {
+                                                "type": "string"
+                                            },
+                                            "childCount": {
+                                                "type": "number"
+                                            },
+                                            "addrLat": {
+                                                "type": "number"
+                                            },
+                                            "addrLong": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["name"],
+                                        "additionalProperties": false
+                                    },
+                                    "shortName": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["name", "externalId", "shortName", "description"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch all leads",
+            "endpoint": null,
+            "input": "ActionInput_unanet_getleads",
+            "name": "get-leads",
+            "output": ["ActionOutput_unanet_getleads"],
+            "scopes": [],
+            "usedModels": ["ActionInput_unanet_getleads", "ActionOutput_unanet_getleads"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_unanet_getleads": {
+                        "type": "null"
+                    },
+                    "ActionOutput_unanet_getleads": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "federalAgency": {
+                                    "type": "object",
+                                    "properties": {
+                                        "city": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        },
+                                        "zip": {
+                                            "type": "string"
+                                        },
+                                        "companyId": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "externalId": {
+                                            "type": "string"
+                                        },
+                                        "acronym": {
+                                            "type": "string"
+                                        },
+                                        "address1": {
+                                            "type": "string"
+                                        },
+                                        "address2": {
+                                            "type": "string"
+                                        },
+                                        "address3": {
+                                            "type": "string"
+                                        },
+                                        "isHeadquarters": {
+                                            "type": "boolean"
+                                        },
+                                        "parentCompanyId": {
+                                            "type": "number"
+                                        },
+                                        "parentCompanyName": {
+                                            "type": "string"
+                                        },
+                                        "childCount": {
+                                            "type": "number"
+                                        },
+                                        "addrLat": {
+                                            "type": "number"
+                                        },
+                                        "addrLong": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "dueDate": {
+                                    "type": "string"
+                                },
+                                "postedDate": {
+                                    "type": "string"
+                                },
+                                "solicitationNumber": {
+                                    "type": "string"
+                                },
+                                "naicsCategory": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "city": {
+                                    "type": "string"
+                                },
+                                "state": {
+                                    "type": "string"
+                                },
+                                "country": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "createdAt": {
+                                    "type": "string"
+                                },
+                                "updatedAt": {
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "federalAgency",
+                                "name",
+                                "dueDate",
+                                "postedDate",
+                                "solicitationNumber",
+                                "naicsCategory",
+                                "city",
+                                "state",
+                                "country",
+                                "description",
+                                "id"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the schema of any entity. Useful to know the properties of any object that exists in the system.",
+            "endpoint": null,
+            "input": "ActionInput_unanet_getschema",
+            "name": "get-schema",
+            "output": ["ActionOutput_unanet_getschema"],
+            "scopes": [],
+            "usedModels": ["ActionInput_unanet_getschema", "ActionOutput_unanet_getschema"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_unanet_getschema": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["name"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_unanet_getschema": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "PropertyName": {
+                                    "type": "string"
+                                },
+                                "Group": {
+                                    "type": ["string", "null"]
+                                },
+                                "Label": {
+                                    "type": "string"
+                                },
+                                "Description": {
+                                    "type": ["string", "null"]
+                                },
+                                "Enabled": {
+                                    "type": "boolean"
+                                },
+                                "ReadOnly": {
+                                    "type": "boolean"
+                                },
+                                "Required": {
+                                    "type": "boolean"
+                                },
+                                "DefaultValue": {
+                                    "type": ["string", "null"]
+                                },
+                                "DataType": {
+                                    "type": "number"
+                                },
+                                "MaxLength": {
+                                    "type": ["number", "null"]
+                                },
+                                "UnicodeSupported": {
+                                    "type": "boolean"
+                                },
+                                "Searchable": {
+                                    "type": "boolean"
+                                },
+                                "ArrayType": {
+                                    "type": ["string", "null"]
+                                },
+                                "IsPrimaryKey": {
+                                    "type": "boolean"
+                                },
+                                "IsExternalId": {
+                                    "type": "boolean"
+                                },
+                                "ObjectEndpoint": {
+                                    "type": ["string", "null"]
+                                },
+                                "IsHidden": {
+                                    "type": "boolean"
+                                },
+                                "IsIncludedInResponse": {
+                                    "type": "boolean"
+                                },
+                                "SchemaEndpoint": {
+                                    "type": ["string", "null"]
+                                },
+                                "SortOrder": {
+                                    "type": "number"
+                                },
+                                "CustomSort": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [
+                                "PropertyName",
+                                "Group",
+                                "Label",
+                                "Description",
+                                "Enabled",
+                                "ReadOnly",
+                                "Required",
+                                "DefaultValue",
+                                "DataType",
+                                "MaxLength",
+                                "UnicodeSupported",
+                                "Searchable",
+                                "ArrayType",
+                                "IsPrimaryKey",
+                                "IsExternalId",
+                                "ObjectEndpoint",
+                                "IsHidden",
+                                "IsIncludedInResponse",
+                                "SchemaEndpoint",
+                                "SortOrder",
+                                "CustomSort"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all the stages that exist in the system. Use this action to find\nthe correct stage to be able to create an opportunity.",
+            "endpoint": null,
+            "input": "ActionInput_unanet_liststages",
+            "name": "list-stages",
+            "output": ["ActionOutput_unanet_liststages"],
+            "scopes": [],
+            "usedModels": ["ActionInput_unanet_liststages", "ActionOutput_unanet_liststages"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_unanet_liststages": {
+                        "type": "null"
+                    },
+                    "ActionOutput_unanet_liststages": {
+                        "type": "object",
+                        "properties": {
+                            "stages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["id", "name", "status"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["stages"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a lead with any changed information about the federal agency, the name, due date, posted date, solicitation number, naics category or categories, the city, state, country, and description.",
+            "endpoint": null,
+            "input": "ActionInput_unanet_updatelead",
+            "name": "update-lead",
+            "output": ["ActionOutput_unanet_updatelead"],
+            "scopes": [],
+            "usedModels": ["ActionInput_unanet_updatelead", "ActionOutput_unanet_updatelead"],
+            "version": "2.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_unanet_updatelead": {
+                        "type": "object",
+                        "properties": {
+                            "federalAgency": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "companyId": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "externalId": {
+                                        "type": "string"
+                                    },
+                                    "acronym": {
+                                        "type": "string"
+                                    },
+                                    "address1": {
+                                        "type": "string"
+                                    },
+                                    "address2": {
+                                        "type": "string"
+                                    },
+                                    "address3": {
+                                        "type": "string"
+                                    },
+                                    "isHeadquarters": {
+                                        "type": "boolean"
+                                    },
+                                    "parentCompanyId": {
+                                        "type": "number"
+                                    },
+                                    "parentCompanyName": {
+                                        "type": "string"
+                                    },
+                                    "childCount": {
+                                        "type": "number"
+                                    },
+                                    "addrLat": {
+                                        "type": "number"
+                                    },
+                                    "addrLong": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "postedDate": {
+                                "type": "string"
+                            },
+                            "solicitationNumber": {
+                                "type": "string"
+                            },
+                            "naicsCategory": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ]
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "federalAgency",
+                            "name",
+                            "dueDate",
+                            "postedDate",
+                            "solicitationNumber",
+                            "naicsCategory",
+                            "city",
+                            "state",
+                            "country",
+                            "description",
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_unanet_updatelead": {
+                        "type": "object",
+                        "properties": {
+                            "federalAgency": {
+                                "type": "object",
+                                "properties": {
+                                    "city": {
+                                        "type": "string"
+                                    },
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "zip": {
+                                        "type": "string"
+                                    },
+                                    "companyId": {
+                                        "type": "number"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "externalId": {
+                                        "type": "string"
+                                    },
+                                    "acronym": {
+                                        "type": "string"
+                                    },
+                                    "address1": {
+                                        "type": "string"
+                                    },
+                                    "address2": {
+                                        "type": "string"
+                                    },
+                                    "address3": {
+                                        "type": "string"
+                                    },
+                                    "isHeadquarters": {
+                                        "type": "boolean"
+                                    },
+                                    "parentCompanyId": {
+                                        "type": "number"
+                                    },
+                                    "parentCompanyName": {
+                                        "type": "string"
+                                    },
+                                    "childCount": {
+                                        "type": "number"
+                                    },
+                                    "addrLat": {
+                                        "type": "number"
+                                    },
+                                    "addrLong": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": ["name"],
+                                "additionalProperties": false
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "postedDate": {
+                                "type": "string"
+                            },
+                            "solicitationNumber": {
+                                "type": "string"
+                            },
+                            "naicsCategory": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ]
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "country": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "federalAgency",
+                            "name",
+                            "dueDate",
+                            "postedDate",
+                            "solicitationNumber",
+                            "naicsCategory",
+                            "city",
+                            "state",
+                            "country",
+                            "description",
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

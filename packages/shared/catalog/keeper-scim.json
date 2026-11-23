@@ -1,0 +1,244 @@
+{
+    "providerConfigKey": "keeper-scim",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates a user in Keeper",
+            "endpoint": null,
+            "input": "ActionInput_keeper_scim_createuser",
+            "name": "create-user",
+            "output": ["ActionOutput_keeper_scim_createuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_keeper_scim_createuser", "ActionOutput_keeper_scim_createuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_keeper_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "externalId": {
+                                "type": "string"
+                            },
+                            "phoneNumbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "work"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "mobile"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "other"
+                                                }
+                                            ]
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "photos": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "const": "photo"
+                                                },
+                                                {
+                                                    "type": "string",
+                                                    "const": "thumbnail"
+                                                }
+                                            ]
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "work"
+                                        },
+                                        "streetAddress": {
+                                            "type": "string"
+                                        },
+                                        "locality": {
+                                            "type": "string"
+                                        },
+                                        "region": {
+                                            "type": "string"
+                                        },
+                                        "postalCode": {
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["type"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "title": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["firstName", "lastName", "email", "phoneNumbers", "photos", "addresses"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_keeper_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "email", "firstName", "lastName"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Deletes a user in Keeper",
+            "endpoint": null,
+            "input": "ActionInput_keeper_scim_deleteuser",
+            "name": "delete-user",
+            "output": ["ActionOutput_keeper_scim_deleteuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_keeper_scim_deleteuser", "ActionOutput_keeper_scim_deleteuser"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_keeper_scim_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_keeper_scim_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches the list of users from Keeper",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_keeper_scim_users",
+            "name": "users",
+            "output": ["User"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User", "SyncMetadata_keeper_scim_users"],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id", "email", "firstName", "lastName"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_keeper_scim_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

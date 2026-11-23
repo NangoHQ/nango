@@ -1,0 +1,595 @@
+{
+    "providerConfigKey": "meilisearch",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add or replace documents in a Meilisearch index (batch). Returns the enqueued task.",
+            "endpoint": null,
+            "input": "ActionInput_meilisearch_adddocuments",
+            "name": "add-documents",
+            "output": ["ActionOutput_meilisearch_adddocuments"],
+            "scopes": ["documents.add"],
+            "usedModels": ["ActionInput_meilisearch_adddocuments", "ActionOutput_meilisearch_adddocuments"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_meilisearch_adddocuments": {
+                        "type": "object",
+                        "properties": {
+                            "indexUid": {
+                                "type": "string",
+                                "description": "Uid of the Meilisearch index. Example: \"movies\""
+                            },
+                            "documents": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                },
+                                "description": "Documents to add or replace (batch)."
+                            },
+                            "primaryKey": {
+                                "description": "Primary key field of the index, only needed on first write.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["indexUid", "documents"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_meilisearch_adddocuments": {
+                        "type": "object",
+                        "properties": {
+                            "taskUid": {
+                                "type": "number"
+                            },
+                            "indexUid": {
+                                "type": ["string", "null"]
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "enqueuedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["taskUid", "indexUid", "status", "type", "enqueuedAt"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete documents from a Meilisearch index by ids or by filter (exactly one must be provided). Returns the enqueued task.",
+            "endpoint": null,
+            "input": "ActionInput_meilisearch_deletedocuments",
+            "name": "delete-documents",
+            "output": ["ActionOutput_meilisearch_deletedocuments"],
+            "scopes": ["documents.delete"],
+            "usedModels": ["ActionInput_meilisearch_deletedocuments", "ActionOutput_meilisearch_deletedocuments"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_meilisearch_deletedocuments": {
+                        "type": "object",
+                        "properties": {
+                            "indexUid": {
+                                "type": "string",
+                                "description": "Uid of the Meilisearch index. Example: \"movies\""
+                            },
+                            "ids": {
+                                "description": "Document ids to delete. Provide exactly one of \"ids\" or \"filter\".",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": ["string", "number"]
+                                }
+                            },
+                            "filter": {
+                                "description": "Filter expression selecting the documents to delete. Provide exactly one of \"ids\" or \"filter\".",
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "required": ["indexUid"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_meilisearch_deletedocuments": {
+                        "type": "object",
+                        "properties": {
+                            "taskUid": {
+                                "type": "number"
+                            },
+                            "indexUid": {
+                                "type": ["string", "null"]
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "enqueuedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["taskUid", "indexUid", "status", "type", "enqueuedAt"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Generate a Meilisearch tenant token: a scoped, signed search JWT carrying per-index ACL rules. Expires after 1 hour unless expiresAt or expiresInSeconds is set.",
+            "endpoint": null,
+            "input": "ActionInput_meilisearch_generatetenanttoken",
+            "name": "generate-tenant-token",
+            "output": ["ActionOutput_meilisearch_generatetenanttoken"],
+            "scopes": ["keys.get"],
+            "usedModels": ["ActionInput_meilisearch_generatetenanttoken", "ActionOutput_meilisearch_generatetenanttoken"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_meilisearch_generatetenanttoken": {
+                        "type": "object",
+                        "properties": {
+                            "searchRules": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "filter": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "array",
+                                                                        "items": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                },
+                                "description": "Per-index search rules (the ACL carried by the token), keyed by index uid or \"*\"."
+                            },
+                            "expiresAt": {
+                                "description": "Expiry as epoch seconds. Takes precedence over expiresInSeconds.",
+                                "type": "number"
+                            },
+                            "expiresInSeconds": {
+                                "description": "Expiry as a duration from now. Defaults to 3600 (1 hour) when neither field is set.",
+                                "type": "number"
+                            },
+                            "apiKeyUid": {
+                                "description": "Uid of the connection's API key. Must match the key used by this connection or Meilisearch will reject the token. When omitted, it is resolved by listing keys, which requires the keys.get action.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["searchRules"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_meilisearch_generatetenanttoken": {
+                        "type": "object",
+                        "properties": {
+                            "token": {
+                                "type": "string"
+                            },
+                            "expiresAt": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["token", "expiresAt"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch documents from a Meilisearch index, optionally filtered or by ids.",
+            "endpoint": null,
+            "input": "ActionInput_meilisearch_getdocuments",
+            "name": "get-documents",
+            "output": ["ActionOutput_meilisearch_getdocuments"],
+            "scopes": ["documents.get"],
+            "usedModels": ["ActionInput_meilisearch_getdocuments", "ActionOutput_meilisearch_getdocuments"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_meilisearch_getdocuments": {
+                        "type": "object",
+                        "properties": {
+                            "indexUid": {
+                                "type": "string",
+                                "description": "Uid of the Meilisearch index. Example: \"movies\""
+                            },
+                            "ids": {
+                                "description": "Specific document ids to fetch.",
+                                "type": "array",
+                                "items": {
+                                    "type": ["string", "number"]
+                                }
+                            },
+                            "filter": {
+                                "description": "Filter expression selecting the documents to fetch.",
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "offset": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": ["indexUid"],
+                        "additionalProperties": {}
+                    },
+                    "ActionOutput_meilisearch_getdocuments": {
+                        "type": "object",
+                        "properties": {
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "limit": {
+                                "type": "number"
+                            },
+                            "offset": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["results", "total", "limit", "offset"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch the status of a Meilisearch async task by its uid.",
+            "endpoint": null,
+            "input": "ActionInput_meilisearch_gettask",
+            "name": "get-task",
+            "output": ["ActionOutput_meilisearch_gettask"],
+            "scopes": ["tasks.get"],
+            "usedModels": ["ActionInput_meilisearch_gettask", "ActionOutput_meilisearch_gettask"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_meilisearch_gettask": {
+                        "type": "object",
+                        "properties": {
+                            "taskUid": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Uid of the async task returned by a write operation."
+                            }
+                        },
+                        "required": ["taskUid"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_meilisearch_gettask": {
+                        "type": "object",
+                        "properties": {
+                            "uid": {
+                                "type": "number"
+                            },
+                            "indexUid": {
+                                "type": ["string", "null"]
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "error": {
+                                "anyOf": [
+                                    {},
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "enqueuedAt": {
+                                "type": "string"
+                            },
+                            "startedAt": {
+                                "type": ["string", "null"]
+                            },
+                            "finishedAt": {
+                                "type": ["string", "null"]
+                            }
+                        },
+                        "required": ["uid", "indexUid", "status", "type", "enqueuedAt"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search documents in a Meilisearch index.",
+            "endpoint": null,
+            "input": "ActionInput_meilisearch_searchdocuments",
+            "name": "search-documents",
+            "output": ["ActionOutput_meilisearch_searchdocuments"],
+            "scopes": ["search"],
+            "usedModels": ["ActionInput_meilisearch_searchdocuments", "ActionOutput_meilisearch_searchdocuments"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_meilisearch_searchdocuments": {
+                        "type": "object",
+                        "properties": {
+                            "indexUid": {
+                                "type": "string",
+                                "description": "Uid of the Meilisearch index. Example: \"movies\""
+                            },
+                            "q": {
+                                "description": "Search query.",
+                                "type": "string"
+                            },
+                            "filter": {
+                                "description": "Filter expression applied to the search.",
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "sort": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "offset": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "attributesToRetrieve": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "facets": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["indexUid"],
+                        "additionalProperties": {}
+                    },
+                    "ActionOutput_meilisearch_searchdocuments": {
+                        "type": "object",
+                        "properties": {
+                            "hits": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "query": {
+                                "type": "string"
+                            },
+                            "processingTimeMs": {
+                                "type": "number"
+                            },
+                            "limit": {
+                                "type": "number"
+                            },
+                            "offset": {
+                                "type": "number"
+                            },
+                            "estimatedTotalHits": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["hits"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add or partially update documents in a Meilisearch index (batch). Returns the enqueued task.",
+            "endpoint": null,
+            "input": "ActionInput_meilisearch_updatedocuments",
+            "name": "update-documents",
+            "output": ["ActionOutput_meilisearch_updatedocuments"],
+            "scopes": ["documents.add"],
+            "usedModels": ["ActionInput_meilisearch_updatedocuments", "ActionOutput_meilisearch_updatedocuments"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_meilisearch_updatedocuments": {
+                        "type": "object",
+                        "properties": {
+                            "indexUid": {
+                                "type": "string",
+                                "description": "Uid of the Meilisearch index. Example: \"movies\""
+                            },
+                            "documents": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                },
+                                "description": "Partial documents to add or update (batch). Only provided fields change."
+                            },
+                            "primaryKey": {
+                                "description": "Primary key field of the index, only needed on first write.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["indexUid", "documents"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_meilisearch_updatedocuments": {
+                        "type": "object",
+                        "properties": {
+                            "taskUid": {
+                                "type": "number"
+                            },
+                            "indexUid": {
+                                "type": ["string", "null"]
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "enqueuedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["taskUid", "indexUid", "status", "type", "enqueuedAt"],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

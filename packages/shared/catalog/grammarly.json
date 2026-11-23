@@ -1,0 +1,102 @@
+{
+    "providerConfigKey": "grammarly",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Deletes a user in Grammarly",
+            "endpoint": null,
+            "input": "ActionInput_grammarly_deleteuser",
+            "name": "delete-user",
+            "output": ["ActionOutput_grammarly_deleteuser"],
+            "scopes": [],
+            "usedModels": ["ActionInput_grammarly_deleteuser", "ActionOutput_grammarly_deleteuser"],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_grammarly_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["email"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_grammarly_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from Grammarly",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_grammarly_users",
+            "name": "users",
+            "output": ["User"],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["User", "SyncMetadata_grammarly_users"],
+            "version": "1.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "__raw": {}
+                        },
+                        "required": ["id", "firstName", "lastName", "email", "__raw"],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_grammarly_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

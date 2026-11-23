@@ -1,0 +1,1275 @@
+{
+    "providerConfigKey": "zoom-cc",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Cancel a pending data export/deletion request.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_canceldatarequest",
+            "name": "cancel-data-request",
+            "output": ["ActionOutput_zoom_cc_canceldatarequest"],
+            "scopes": ["data_request:delete:request:admin"],
+            "usedModels": ["ActionInput_zoom_cc_canceldatarequest", "ActionOutput_zoom_cc_canceldatarequest"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_canceldatarequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "description": "The data compliance request ID to cancel. Example: \"2085327946910044162\""
+                            }
+                        },
+                        "required": ["requestId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_cc_canceldatarequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "errorCode": {
+                                "type": "number"
+                            },
+                            "errorMessage": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["requestId", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "File a GDPR-style data export or deletion request for a specific internal user by email",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_createdatarequest",
+            "name": "create-data-request",
+            "output": ["ActionOutput_zoom_cc_createdatarequest"],
+            "scopes": ["data_request:write:request:admin"],
+            "usedModels": ["ActionInput_zoom_cc_createdatarequest", "ActionOutput_zoom_cc_createdatarequest"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_createdatarequest": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "emails": {
+                                        "minItems": 1,
+                                        "maxItems": 10,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                        }
+                                    },
+                                    "request_type": {
+                                        "type": "string",
+                                        "const": "EXPORT"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "Start date in ISO 8601 format. Example: 2024-01-01T00:00:00Z"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                        "description": "End date in ISO 8601 format. Must be strictly after start_date. Example: 2024-12-31T23:59:59Z"
+                                    }
+                                },
+                                "required": ["emails", "request_type", "start_date", "end_date"],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "emails": {
+                                        "minItems": 1,
+                                        "maxItems": 10,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                        }
+                                    },
+                                    "request_type": {
+                                        "type": "string",
+                                        "const": "DELETE"
+                                    }
+                                },
+                                "required": ["emails", "request_type"],
+                                "additionalProperties": false
+                            }
+                        ]
+                    },
+                    "ActionOutput_zoom_cc_createdatarequest": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "request_id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["email", "request_id"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["data"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an information barrier policy.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_deleteinformationbarrierpolicy",
+            "name": "delete-information-barrier-policy",
+            "output": ["ActionOutput_zoom_cc_deleteinformationbarrierpolicy"],
+            "scopes": ["information_barrier:delete:policy:admin", "information_barrier:delete:policy:master"],
+            "usedModels": ["ActionInput_zoom_cc_deleteinformationbarrierpolicy", "ActionOutput_zoom_cc_deleteinformationbarrierpolicy"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_deleteinformationbarrierpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "policyId": {
+                                "type": "string",
+                                "description": "The ID of the information barrier policy to delete."
+                            }
+                        },
+                        "required": ["policyId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_cc_deleteinformationbarrierpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "policyId": {
+                                "type": "string",
+                                "description": "The ID of the deleted information barrier policy."
+                            },
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the deletion was successful."
+                            }
+                        },
+                        "required": ["policyId", "success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the connected account's own basic details (plan type, seats, owner, creation date).",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_getaccountdetails",
+            "name": "get-account-details",
+            "output": ["ActionOutput_zoom_cc_getaccountdetails"],
+            "scopes": ["account:read:admin"],
+            "usedModels": ["ActionInput_zoom_cc_getaccountdetails", "ActionOutput_zoom_cc_getaccountdetails"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_getaccountdetails": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_cc_getaccountdetails": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "account_name": {
+                                "type": "string"
+                            },
+                            "account_number": {
+                                "type": "number"
+                            },
+                            "owner_id": {
+                                "type": "string"
+                            },
+                            "owner_email": {
+                                "type": "string"
+                            },
+                            "account_type": {
+                                "type": "string"
+                            },
+                            "seats": {
+                                "type": "number"
+                            },
+                            "subscription_start_time": {
+                                "type": "string"
+                            },
+                            "subscription_end_time": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "reseller": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["id", "account_name", "owner_id", "owner_email", "account_type", "seats", "created_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get account-wide AI Companion return-on-investment KPI metrics",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_getaicroikpis",
+            "name": "get-aic-roi-kpis",
+            "output": ["ActionOutput_zoom_cc_getaicroikpis"],
+            "scopes": ["dashboard:read:aic_roi_kpi:admin"],
+            "usedModels": ["ActionInput_zoom_cc_getaicroikpis", "ActionOutput_zoom_cc_getaicroikpis"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_getaicroikpis": {
+                        "type": "object",
+                        "properties": {
+                            "from": {
+                                "type": "string",
+                                "description": "Start month of the date range (YYYY-MM). The month must fall within the last six months. Example: \"2024-01\""
+                            },
+                            "to": {
+                                "type": "string",
+                                "description": "End month of the date range (YYYY-MM). The month must fall within the last six months. Example: \"2024-03\""
+                            }
+                        },
+                        "required": ["from", "to"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_cc_getaicroikpis": {
+                        "type": "object",
+                        "properties": {
+                            "from": {
+                                "description": "Start date of the returned data range",
+                                "type": "string"
+                            },
+                            "to": {
+                                "description": "End date of the returned data range",
+                                "type": "string"
+                            },
+                            "total_minutes_saved": {
+                                "description": "Total estimated minutes saved by AI Companion Meeting Summary across the organization",
+                                "type": "number"
+                            },
+                            "host_minutes_saved": {
+                                "description": "Estimated minutes saved specifically by meeting hosts",
+                                "type": "number"
+                            },
+                            "participant_minutes_saved": {
+                                "description": "Estimated minutes saved for participants in meetings with shared summaries",
+                                "type": "number"
+                            },
+                            "unrealized_host_minutes": {
+                                "description": "Time hosts could have saved if they had created a meeting summary but did not",
+                                "type": "number"
+                            },
+                            "unrealized_participant_minutes": {
+                                "description": "Time participants could have saved if the host had created and shared a summary",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the downloadable export files produced by a completed EXPORT data request.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_getdatarequestfiles",
+            "name": "get-data-request-files",
+            "output": ["ActionOutput_zoom_cc_getdatarequestfiles"],
+            "scopes": ["data_request:read:download:admin"],
+            "usedModels": ["ActionInput_zoom_cc_getdatarequestfiles", "ActionOutput_zoom_cc_getdatarequestfiles"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_getdatarequestfiles": {
+                        "type": "object",
+                        "properties": {
+                            "request_id": {
+                                "type": "string",
+                                "description": "Data request ID. Example: \"2085327946910044162\""
+                            }
+                        },
+                        "required": ["request_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_cc_getdatarequestfiles": {
+                        "type": "object",
+                        "properties": {
+                            "request_id": {
+                                "type": "string"
+                            },
+                            "files_count": {
+                                "type": "number"
+                            },
+                            "files": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "file_name": {
+                                            "type": "string"
+                                        },
+                                        "file_size": {
+                                            "type": "number"
+                                        },
+                                        "download_url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["file_name"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["files"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get QoS data for one specific participant of a specific webinar.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_getwebinarparticipantqos",
+            "name": "get-webinar-participant-qos",
+            "output": ["ActionOutput_zoom_cc_getwebinarparticipantqos"],
+            "scopes": ["dashboard:read:webinar_participant_qos:admin"],
+            "usedModels": ["ActionInput_zoom_cc_getwebinarparticipantqos", "ActionOutput_zoom_cc_getwebinarparticipantqos"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_getwebinarparticipantqos": {
+                        "type": "object",
+                        "properties": {
+                            "webinarId": {
+                                "type": "string",
+                                "description": "The webinar ID or webinar UUID. Example: \"123456789\""
+                            },
+                            "participantId": {
+                                "type": "string",
+                                "description": "The participant ID. Example: \"abc123\""
+                            },
+                            "type": {
+                                "description": "The webinar type. Default: live.",
+                                "type": "string",
+                                "enum": ["past", "live"]
+                            }
+                        },
+                        "required": ["webinarId", "participantId"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_cc_getwebinarparticipantqos": {
+                        "type": "object",
+                        "properties": {
+                            "device": {
+                                "type": "string"
+                            },
+                            "domain": {
+                                "type": "string"
+                            },
+                            "harddisk_id": {
+                                "type": "string"
+                            },
+                            "ip_address": {
+                                "type": "string"
+                            },
+                            "join_time": {
+                                "type": "string"
+                            },
+                            "leave_time": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "mac_addr": {
+                                "type": "string"
+                            },
+                            "pc_name": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "user_name": {
+                                "type": "string"
+                            },
+                            "user_qos": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "as_input": {
+                                            "type": "object",
+                                            "properties": {
+                                                "avg_loss": {
+                                                    "type": "string"
+                                                },
+                                                "bitrate": {
+                                                    "type": "string"
+                                                },
+                                                "jitter": {
+                                                    "type": "string"
+                                                },
+                                                "latency": {
+                                                    "type": "string"
+                                                },
+                                                "max_loss": {
+                                                    "type": "string"
+                                                },
+                                                "frame_rate": {
+                                                    "type": "string"
+                                                },
+                                                "resolution": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "as_output": {
+                                            "type": "object",
+                                            "properties": {
+                                                "avg_loss": {
+                                                    "type": "string"
+                                                },
+                                                "bitrate": {
+                                                    "type": "string"
+                                                },
+                                                "jitter": {
+                                                    "type": "string"
+                                                },
+                                                "latency": {
+                                                    "type": "string"
+                                                },
+                                                "max_loss": {
+                                                    "type": "string"
+                                                },
+                                                "frame_rate": {
+                                                    "type": "string"
+                                                },
+                                                "resolution": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "audio_input": {
+                                            "type": "object",
+                                            "properties": {
+                                                "avg_loss": {
+                                                    "type": "string"
+                                                },
+                                                "bitrate": {
+                                                    "type": "string"
+                                                },
+                                                "jitter": {
+                                                    "type": "string"
+                                                },
+                                                "latency": {
+                                                    "type": "string"
+                                                },
+                                                "max_loss": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "audio_output": {
+                                            "type": "object",
+                                            "properties": {
+                                                "avg_loss": {
+                                                    "type": "string"
+                                                },
+                                                "bitrate": {
+                                                    "type": "string"
+                                                },
+                                                "jitter": {
+                                                    "type": "string"
+                                                },
+                                                "latency": {
+                                                    "type": "string"
+                                                },
+                                                "max_loss": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "cpu_usage": {
+                                            "type": "object",
+                                            "properties": {
+                                                "system_max_cpu_usage": {
+                                                    "type": "string"
+                                                },
+                                                "zoom_avg_cpu_usage": {
+                                                    "type": "string"
+                                                },
+                                                "zoom_max_cpu_usage": {
+                                                    "type": "string"
+                                                },
+                                                "zoom_min_cpu_usage": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "date_time": {
+                                            "type": "string"
+                                        },
+                                        "video_input": {
+                                            "type": "object",
+                                            "properties": {
+                                                "avg_loss": {
+                                                    "type": "string"
+                                                },
+                                                "bitrate": {
+                                                    "type": "string"
+                                                },
+                                                "jitter": {
+                                                    "type": "string"
+                                                },
+                                                "latency": {
+                                                    "type": "string"
+                                                },
+                                                "max_loss": {
+                                                    "type": "string"
+                                                },
+                                                "frame_rate": {
+                                                    "type": "string"
+                                                },
+                                                "resolution": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "video_output": {
+                                            "type": "object",
+                                            "properties": {
+                                                "avg_loss": {
+                                                    "type": "string"
+                                                },
+                                                "bitrate": {
+                                                    "type": "string"
+                                                },
+                                                "jitter": {
+                                                    "type": "string"
+                                                },
+                                                "latency": {
+                                                    "type": "string"
+                                                },
+                                                "max_loss": {
+                                                    "type": "string"
+                                                },
+                                                "frame_rate": {
+                                                    "type": "string"
+                                                },
+                                                "resolution": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "version": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the history of data export/deletion requests filed on this account.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_listdatarequests",
+            "name": "list-data-requests",
+            "output": ["ActionOutput_zoom_cc_listdatarequests"],
+            "scopes": ["data_request:read:history:admin"],
+            "usedModels": ["ActionInput_zoom_cc_listdatarequests", "ActionOutput_zoom_cc_listdatarequests"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_listdatarequests": {
+                        "type": "object",
+                        "properties": {
+                            "page_size": {
+                                "description": "Number of records returned per page. Example: 10",
+                                "type": "number"
+                            },
+                            "next_page_token": {
+                                "description": "Pagination token from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_cc_listdatarequests": {
+                        "type": "object",
+                        "properties": {
+                            "total_records": {
+                                "type": "number"
+                            },
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "request_id": {
+                                            "type": "string"
+                                        },
+                                        "request_type": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "start_at": {
+                                            "type": "string"
+                                        },
+                                        "end_at": {
+                                            "type": "string"
+                                        },
+                                        "requestor_user_id": {
+                                            "type": "string"
+                                        },
+                                        "requestor_name": {
+                                            "type": "string"
+                                        },
+                                        "account_id": {
+                                            "type": "string"
+                                        },
+                                        "user_identifier": {
+                                            "type": "string"
+                                        },
+                                        "data_type": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "files_count": {
+                                            "type": "number"
+                                        },
+                                        "failed_reason": {
+                                            "type": "string"
+                                        },
+                                        "is_current_user": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "request_id",
+                                        "request_type",
+                                        "created_at",
+                                        "start_at",
+                                        "end_at",
+                                        "requestor_user_id",
+                                        "requestor_name",
+                                        "account_id",
+                                        "user_identifier",
+                                        "data_type",
+                                        "state",
+                                        "files_count",
+                                        "is_current_user"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page_token": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["total_records", "records"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List sub-accounts managed by this master account.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_listsubaccounts",
+            "name": "list-sub-accounts",
+            "output": ["ActionOutput_zoom_cc_listsubaccounts"],
+            "scopes": ["account:read:sub_account:admin", "account:read:sub_account:master"],
+            "usedModels": ["ActionInput_zoom_cc_listsubaccounts", "ActionOutput_zoom_cc_listsubaccounts"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_listsubaccounts": {
+                        "type": "object",
+                        "properties": {
+                            "page_size": {
+                                "description": "The number of records returned within a single API call. Max: 300.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 300
+                            },
+                            "next_page_token": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_cc_listsubaccounts": {
+                        "type": "object",
+                        "properties": {
+                            "page_size": {
+                                "type": "number"
+                            },
+                            "total_records": {
+                                "type": "number"
+                            },
+                            "next_page_token": {
+                                "type": "string"
+                            },
+                            "accounts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "account_name": {
+                                            "type": "string"
+                                        },
+                                        "account_type": {
+                                            "type": "string"
+                                        },
+                                        "seats": {
+                                            "type": "number"
+                                        },
+                                        "subscription_start_time": {
+                                            "type": "string"
+                                        },
+                                        "subscription_end_time": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "owner_email": {
+                                            "type": "string"
+                                        },
+                                        "account_number": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List domains trusted by this account (used for auto-provisioning/SSO).",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_listtrusteddomains",
+            "name": "list-trusted-domains",
+            "output": ["ActionOutput_zoom_cc_listtrusteddomains"],
+            "scopes": ["account:read:trusted_domains:master"],
+            "usedModels": ["ActionInput_zoom_cc_listtrusteddomains", "ActionOutput_zoom_cc_listtrusteddomains"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_listtrusteddomains": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_cc_listtrusteddomains": {
+                        "type": "object",
+                        "properties": {
+                            "trusted_domains": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "A list of the account's trusted domains."
+                            }
+                        },
+                        "required": ["trusted_domains"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update account-wide locked settings.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_updatelocksettings",
+            "name": "update-lock-settings",
+            "output": ["ActionOutput_zoom_cc_updatelocksettings"],
+            "scopes": ["account:update:lock_settings:admin", "account:update:lock_settings:master"],
+            "usedModels": ["ActionInput_zoom_cc_updatelocksettings", "ActionOutput_zoom_cc_updatelocksettings"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_updatelocksettings": {
+                        "type": "object",
+                        "properties": {
+                            "schedule_meeting": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "in_meeting": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "email_notification": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "recording": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "telephony": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "feature": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "security": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "tsp": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            }
+                        },
+                        "additionalProperties": {}
+                    },
+                    "ActionOutput_zoom_cc_updatelocksettings": {
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "schedule_meeting": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    "in_meeting": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    "email_notification": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    "recording": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    "telephony": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    "feature": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    "security": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    "tsp": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "number"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["code", "message"],
+                                "additionalProperties": false
+                            }
+                        ]
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update account-wide webinar registration settings.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_updateregistrationsettings",
+            "name": "update-registration-settings",
+            "output": ["ActionOutput_zoom_cc_updateregistrationsettings"],
+            "scopes": ["account:update:registration_settings:admin", "account:update:registration_settings:master"],
+            "usedModels": ["ActionInput_zoom_cc_updateregistrationsettings", "ActionOutput_zoom_cc_updateregistrationsettings"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_updateregistrationsettings": {
+                        "type": "object",
+                        "properties": {
+                            "account_id": {
+                                "description": "The account ID. For master accounts, pass \"me\". Defaults to \"me\".",
+                                "type": "string"
+                            },
+                            "approve_type": {
+                                "description": "Approval type for the registration. Allowed values: 0, 1.",
+                                "anyOf": [
+                                    {
+                                        "type": "number",
+                                        "const": 0
+                                    },
+                                    {
+                                        "type": "number",
+                                        "const": 1
+                                    }
+                                ]
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "field_name": {
+                                            "type": "string",
+                                            "enum": [
+                                                "last_name",
+                                                "address",
+                                                "city",
+                                                "country",
+                                                "zip",
+                                                "state",
+                                                "phone",
+                                                "industry",
+                                                "org",
+                                                "job_title",
+                                                "purchasing_time_frame",
+                                                "role_in_purchase_process",
+                                                "no_of_employees",
+                                                "comments"
+                                            ]
+                                        },
+                                        "required": {
+                                            "type": "boolean"
+                                        },
+                                        "selected": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "custom_questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["short", "single_dropdown", "single_radio", "multiple"]
+                                        },
+                                        "required": {
+                                            "type": "boolean"
+                                        },
+                                        "selected": {
+                                            "type": "boolean"
+                                        },
+                                        "answers": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "options": {
+                                "type": "object",
+                                "properties": {
+                                    "host_email_notification": {
+                                        "type": "boolean"
+                                    },
+                                    "close_registration": {
+                                        "type": "boolean"
+                                    },
+                                    "allow_participants_to_join_from_multiple_devices": {
+                                        "type": "boolean"
+                                    },
+                                    "show_social_share_buttons": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_cc_updateregistrationsettings": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "error_code": {
+                                "type": "number"
+                            },
+                            "error_message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["success"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload a new account-wide virtual background image file. Must be implemented as a proxy script, not an action, due to multipart/form-data requirements.",
+            "endpoint": null,
+            "input": "ActionInput_zoom_cc_uploadvirtualbackgroundfile",
+            "name": "upload-virtual-background-file",
+            "output": ["ActionOutput_zoom_cc_uploadvirtualbackgroundfile"],
+            "scopes": ["account:write:virtual_background_files:master", "account:write:virtual_background_files:admin"],
+            "usedModels": ["ActionInput_zoom_cc_uploadvirtualbackgroundfile", "ActionOutput_zoom_cc_uploadvirtualbackgroundfile"],
+            "version": "2.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_zoom_cc_uploadvirtualbackgroundfile": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Informational message about using the proxy script"
+                            }
+                        },
+                        "required": ["message"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_zoom_cc_uploadvirtualbackgroundfile": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string"
+                            },
+                            "proxyScript": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["message", "proxyScript"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync the history of data export/deletion requests filed on this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "data_requests",
+            "output": ["DataRequest"],
+            "runs": "every hour",
+            "scopes": ["data_request:read:history:admin"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["DataRequest"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "DataRequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "request_id": {
+                                "type": "string"
+                            },
+                            "request_type": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "user_identifier": {
+                                "type": "string"
+                            },
+                            "files_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "failed_reason": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        },
+        {
+            "type": "sync",
+            "description": "Sync sub-accounts managed by this master account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sub_accounts",
+            "output": ["SubAccount"],
+            "runs": "every hour",
+            "scopes": ["account:read:sub_account:admin", "account:read:sub_account:master"],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": ["SubAccount"],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SubAccount": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "account_name": {
+                                "type": "string"
+                            },
+                            "account_number": {
+                                "type": "number"
+                            },
+                            "account_type": {
+                                "type": "string"
+                            },
+                            "seats": {
+                                "type": "number"
+                            },
+                            "sub_account_token": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["id"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": ["checkpoints"]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

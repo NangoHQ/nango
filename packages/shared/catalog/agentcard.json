@@ -1,0 +1,1252 @@
+{
+    "providerConfigKey": "agentcard",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Save a bank account a connected user can withdraw funds to.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_createwithdrawalrecipient",
+            "name": "create-withdrawal-recipient",
+            "output": ["ActionOutput_agentcard_createwithdrawalrecipient"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_createwithdrawalrecipient", "ActionOutput_agentcard_createwithdrawalrecipient"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_createwithdrawalrecipient": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The connected user's id. Example: \"usr_123\""
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": ["ach", "international_wire"],
+                                "description": "The recipient type. Either 'ach' or 'international_wire'."
+                            },
+                            "beneficiary_name": {
+                                "type": "string",
+                                "description": "The account holder's legal name."
+                            },
+                            "country_code": {
+                                "type": "string",
+                                "description": "ISO 3166-1 alpha-2 country of the bank account. Example: \"US\""
+                            },
+                            "nickname": {
+                                "description": "Optional nickname for this recipient.",
+                                "type": "string"
+                            },
+                            "email": {
+                                "description": "Optional email address.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "routing_number": {
+                                "description": "ACH: 9-digit ABA routing number.",
+                                "type": "string"
+                            },
+                            "account_number": {
+                                "description": "ACH: the account number.",
+                                "type": "string"
+                            },
+                            "account_type": {
+                                "description": "ACH only. Either 'checking' or 'savings'.",
+                                "type": "string",
+                                "enum": ["checking", "savings"]
+                            },
+                            "iban": {
+                                "description": "International wire: the IBAN (spaces ok, normalized on save).",
+                                "type": "string"
+                            },
+                            "swift_code": {
+                                "description": "International wire: the SWIFT/BIC.",
+                                "type": "string"
+                            },
+                            "bank_name": {
+                                "description": "Optional bank name.",
+                                "type": "string"
+                            },
+                            "address_line1": {
+                                "type": "string"
+                            },
+                            "address_line2": {
+                                "type": "string"
+                            },
+                            "city": {
+                                "type": "string"
+                            },
+                            "region": {
+                                "type": "string"
+                            },
+                            "postal_code": {
+                                "type": "string"
+                            },
+                            "country_specific": {
+                                "description": "Country-specific banking fields, e.g. {\"ifsc\": \"...\"} for India or {\"clabe\": \"...\"} for Mexico.",
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": ["user_id", "type", "beneficiary_name", "country_code"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_createwithdrawalrecipient": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string",
+                                "enum": ["withdrawal_recipient"]
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": ["ach", "international_wire"]
+                            },
+                            "nickname": {
+                                "type": "string"
+                            },
+                            "beneficiary_name": {
+                                "type": "string"
+                            },
+                            "country_code": {
+                                "type": "string"
+                            },
+                            "currency": {
+                                "type": "string"
+                            },
+                            "bank_name": {
+                                "type": "string"
+                            },
+                            "account_number_last4": {
+                                "type": "string"
+                            },
+                            "routing_number": {
+                                "type": "string"
+                            },
+                            "account_type": {
+                                "type": "string",
+                                "enum": ["checking", "savings"]
+                            },
+                            "iban_last4": {
+                                "type": "string"
+                            },
+                            "swift_code": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["object", "user_id", "id", "type", "beneficiary_name", "country_code", "created_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Soft-remove a saved bank destination.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_deletewithdrawalrecipient",
+            "name": "delete-withdrawal-recipient",
+            "output": ["ActionOutput_agentcard_deletewithdrawalrecipient"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_deletewithdrawalrecipient", "ActionOutput_agentcard_deletewithdrawalrecipient"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_deletewithdrawalrecipient": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The connected user's id. Example: \"cmseows7p000fk604g3qee8bs\""
+                            },
+                            "recipient_id": {
+                                "type": "string",
+                                "description": "The recipient id. Example: \"wrec_2deeccd030ecff23b947b1cf\""
+                            }
+                        },
+                        "required": ["user_id", "recipient_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_deletewithdrawalrecipient": {
+                        "type": "object",
+                        "properties": {
+                            "removed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["removed"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Poll a connected user's card attachment status.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_getattachmentstatus",
+            "name": "get-attachment-status",
+            "output": ["ActionOutput_agentcard_getattachmentstatus"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_getattachmentstatus", "ActionOutput_agentcard_getattachmentstatus"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_getattachmentstatus": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "Connected user ID. Example: \"cmsf6au26004ijl04v86y15yk\""
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_getattachmentstatus": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "attach_url": {
+                                "type": "string"
+                            },
+                            "expires_at": {
+                                "type": "string"
+                            },
+                            "card": {
+                                "type": "object",
+                                "properties": {
+                                    "network": {
+                                        "type": "string"
+                                    },
+                                    "brand": {
+                                        "type": "string"
+                                    },
+                                    "last4": {
+                                        "type": "string"
+                                    },
+                                    "art_url": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "reason": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["object", "id", "user_id", "status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a connected user's current identity verification status.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_getkycstatus",
+            "name": "get-kyc-status",
+            "output": ["ActionOutput_agentcard_getkycstatus"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_getkycstatus", "ActionOutput_agentcard_getkycstatus"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_getkycstatus": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The connected user ID. Example: \"cmseows7p000fk604g3qee8bs\""
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_getkycstatus": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "description": "Current KYC status. Examples: \"needs_information\", \"awaiting_documents\", \"approved\""
+                            },
+                            "required_fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Check which organization and mode (sandbox/live) the current platform token acts as.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_introspectcredential",
+            "name": "introspect-credential",
+            "output": ["ActionOutput_agentcard_introspectcredential"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_introspectcredential", "ActionOutput_agentcard_introspectcredential"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_introspectcredential": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_introspectcredential": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string"
+                            },
+                            "organization_id": {
+                                "type": "string"
+                            },
+                            "mode": {
+                                "type": "string",
+                                "enum": ["sandbox", "live"]
+                            },
+                            "test_mode": {
+                                "type": "boolean"
+                            },
+                            "plan": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["object", "organization_id", "mode", "test_mode", "plan"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List a connected user's saved, active withdrawal bank destinations.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_listwithdrawalrecipients",
+            "name": "list-withdrawal-recipients",
+            "output": ["ActionOutput_agentcard_listwithdrawalrecipients"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_listwithdrawalrecipients", "ActionOutput_agentcard_listwithdrawalrecipients"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_listwithdrawalrecipients": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_listwithdrawalrecipients": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string",
+                                "const": "list"
+                            },
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "object": {
+                                            "type": "string",
+                                            "const": "withdrawal_recipient"
+                                        },
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": ["ach", "international_wire"]
+                                        },
+                                        "nickname": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "beneficiary_name": {
+                                            "type": "string"
+                                        },
+                                        "country_code": {
+                                            "type": "string"
+                                        },
+                                        "currency": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "bank_name": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "account_number_last4": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "routing_number": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "account_type": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "enum": ["checking", "savings"]
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "iban_last4": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "swift_code": {
+                                            "type": ["string", "null"]
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "object",
+                                        "user_id",
+                                        "id",
+                                        "type",
+                                        "nickname",
+                                        "beneficiary_name",
+                                        "country_code",
+                                        "currency",
+                                        "bank_name",
+                                        "account_number_last4",
+                                        "routing_number",
+                                        "account_type",
+                                        "iban_last4",
+                                        "swift_code",
+                                        "created_at"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["object", "data"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List a connected user's most recent withdrawals across every rail.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_listwithdrawals",
+            "name": "list-withdrawals",
+            "output": ["ActionOutput_agentcard_listwithdrawals"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_listwithdrawals", "ActionOutput_agentcard_listwithdrawals"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_listwithdrawals": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The connected user's id. Example: \"usr_123\""
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_listwithdrawals": {
+                        "type": "object",
+                        "properties": {
+                            "withdrawals": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": ["requested", "processing", "completed", "rejected"]
+                                        },
+                                        "rail": {
+                                            "type": "string",
+                                            "enum": ["bank", "address"]
+                                        },
+                                        "amount_cents": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "destination_address": {
+                                            "type": "string"
+                                        },
+                                        "failure_code": {
+                                            "type": "string"
+                                        },
+                                        "completed_at": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "recipient": {
+                                            "type": "object",
+                                            "properties": {
+                                                "object": {
+                                                    "type": "string",
+                                                    "const": "withdrawal_recipient"
+                                                },
+                                                "user_id": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "enum": ["ach", "international_wire"]
+                                                },
+                                                "nickname": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "beneficiary_name": {
+                                                    "type": "string"
+                                                },
+                                                "country_code": {
+                                                    "type": "string"
+                                                },
+                                                "currency": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "bank_name": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "account_number_last4": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "routing_number": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "account_type": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string",
+                                                            "enum": ["checking", "savings"]
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                },
+                                                "iban_last4": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "swift_code": {
+                                                    "type": ["string", "null"]
+                                                },
+                                                "created_at": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": ["object", "user_id", "id", "type", "beneficiary_name", "country_code", "created_at"],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": ["id", "user_id", "status", "rail", "amount_cents", "created_at"],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": ["withdrawals"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Record that a connected user authorized your platform to act on their behalf.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_recordconsent",
+            "name": "record-consent",
+            "output": ["ActionOutput_agentcard_recordconsent"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_recordconsent", "ActionOutput_agentcard_recordconsent"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_recordconsent": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The connected user's id. Example: \"user_7g8h9i\""
+                            },
+                            "terms_version": {
+                                "description": "Optional. The version of your terms the user accepted, stored for your audit trail.",
+                                "type": "string",
+                                "maxLength": 64
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_recordconsent": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string",
+                                "const": "consent"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "terms_version": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["object", "id", "user_id", "created_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Exchange a connected user's refresh token for a new access/refresh token pair before the access token expires.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_refreshconnection",
+            "name": "refresh-connection",
+            "output": ["ActionOutput_agentcard_refreshconnection"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_refreshconnection", "ActionOutput_agentcard_refreshconnection"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_refreshconnection": {
+                        "type": "object",
+                        "properties": {
+                            "refresh_token": {
+                                "type": "string",
+                                "description": "The refresh token from the most recent verify or refresh call. Example: \"rct_4d5e6f…\""
+                            }
+                        },
+                        "required": ["refresh_token"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_refreshconnection": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string",
+                                "const": "connection"
+                            },
+                            "access_token": {
+                                "type": "string",
+                                "description": "The new connection access token."
+                            },
+                            "refresh_token": {
+                                "type": "string",
+                                "description": "The new refresh token. The old one is now invalid — replace the stored token every time."
+                            },
+                            "token_type": {
+                                "type": "string",
+                                "const": "Bearer"
+                            },
+                            "expires_in": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Seconds until the access token expires (3600 = one hour)."
+                            }
+                        },
+                        "required": ["object", "access_token", "refresh_token", "token_type", "expires_in"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Test-mode only: force a connected user's identity verification to a chosen terminal outcome instantly.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_simulatekycoutcome",
+            "name": "simulate-kyc-outcome",
+            "output": ["ActionOutput_agentcard_simulatekycoutcome"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_simulatekycoutcome", "ActionOutput_agentcard_simulatekycoutcome"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_simulatekycoutcome": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The connected user's id. Example: \"usr_123\""
+                            },
+                            "outcome": {
+                                "type": "string",
+                                "enum": ["approved", "rejected", "requires_input"],
+                                "description": "The verdict to apply."
+                            },
+                            "reason": {
+                                "description": "Optional end-user-safe explanation carried on non-approved outcomes.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["user_id", "outcome"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_simulatekycoutcome": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string"
+                            },
+                            "simulated": {
+                                "type": "boolean"
+                            },
+                            "reason": {
+                                "type": "string"
+                            },
+                            "required_fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "iframe_url": {
+                                "type": "string"
+                            },
+                            "warnings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "extracted": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Start attaching a connected user's own existing Visa/Mastercard so their agent's purchases charge it directly (no KYC, no balance funding required).",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_startcardattachment",
+            "name": "start-card-attachment",
+            "output": ["ActionOutput_agentcard_startcardattachment"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_startcardattachment", "ActionOutput_agentcard_startcardattachment"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_startcardattachment": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "Connected user ID. Example: \"cmseows7p000fk604g3qee8bs\""
+                            },
+                            "display": {
+                                "description": "Display mode for the attachment flow. Defaults to \"hosted\".",
+                                "type": "string",
+                                "enum": ["hosted", "headless"]
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_startcardattachment": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string",
+                                "description": "Attachment session ID. Example: \"cmsep31u10026k6040sirus9l\""
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "description": "Connected user ID."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Attachment status. Examples: \"pending\", \"active\", \"ineligible\""
+                            },
+                            "attach_url": {
+                                "description": "Hosted page URL to redirect the user to. Present when status is pending.",
+                                "type": "string"
+                            },
+                            "expires_at": {
+                                "description": "ISO 8601 timestamp when the session expires. Present when status is pending.",
+                                "type": "string"
+                            },
+                            "card": {
+                                "description": "Display details of the attached card. Present when status is active.",
+                                "type": "object",
+                                "properties": {
+                                    "network": {
+                                        "type": "string"
+                                    },
+                                    "brand": {
+                                        "type": "string"
+                                    },
+                                    "last4": {
+                                        "type": "string"
+                                    },
+                                    "art_url": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "reason": {
+                                "description": "Why the card cannot be attached. Present when status is ineligible.",
+                                "type": "string"
+                            },
+                            "message": {
+                                "description": "Human-readable guidance. Present when status is ineligible.",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["object", "id", "user_id", "status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Send a one-time code to a user by email or phone to begin connecting them to your platform.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_startconnect",
+            "name": "start-connect",
+            "output": ["ActionOutput_agentcard_startconnect"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_startconnect", "ActionOutput_agentcard_startconnect"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_startconnect": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "description": "The user's email address. Provide this or phone, not both.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "phone": {
+                                "description": "The user's phone number in E.164 format (e.g. +15551234567). Provide this or email, not both.",
+                                "type": "string",
+                                "format": "e164",
+                                "pattern": "^\\+[1-9]\\d{6,14}$"
+                            },
+                            "external_user_id": {
+                                "description": "Optional. Your own identifier for the user, stored on the attempt for your reference.",
+                                "type": "string",
+                                "maxLength": 255
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_startconnect": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string",
+                                "const": "connect_attempt"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "channel": {
+                                "type": "string"
+                            },
+                            "expires_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["object", "id", "channel", "expires_at"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Send a connected user a one-time code to their phone, required before wallet funding.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_startphoneverification",
+            "name": "start-phone-verification",
+            "output": ["ActionOutput_agentcard_startphoneverification"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_startphoneverification", "ActionOutput_agentcard_startphoneverification"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_startphoneverification": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "Connected user ID. Example: \"cmseows7p000fk604g3qee8bs\""
+                            },
+                            "phone_number": {
+                                "description": "E.164 phone number to send the verification code to. Only used if the user has no phone on file; otherwise the on-file number is used instead. Example: \"+15551234567\"",
+                                "type": "string",
+                                "format": "e164",
+                                "pattern": "^\\+[1-9]\\d{6,14}$"
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_startphoneverification": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "channel": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "expires_in_seconds": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["object", "status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Submit the extra identity fields Agentcard requests after document upload.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_submitkycinformation",
+            "name": "submit-kyc-information",
+            "output": ["ActionOutput_agentcard_submitkycinformation"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_submitkycinformation", "ActionOutput_agentcard_submitkycinformation"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_submitkycinformation": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The connected user id. Example: \"user_7g8h9i\""
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "date_of_birth": {
+                                "description": "ISO 8601 date, YYYY-MM-DD.",
+                                "type": "string"
+                            },
+                            "national_id_number": {
+                                "type": "string"
+                            },
+                            "phone_number": {
+                                "description": "E.164 format with country code. Example: \"+15551234567\"",
+                                "type": "string",
+                                "format": "e164",
+                                "pattern": "^\\+[1-9]\\d{6,14}$"
+                            },
+                            "address_line1": {
+                                "type": "string"
+                            },
+                            "address_line2": {
+                                "type": "string"
+                            },
+                            "address_city": {
+                                "type": "string"
+                            },
+                            "address_region": {
+                                "description": "State, province, or region.",
+                                "type": "string"
+                            },
+                            "address_postal_code": {
+                                "type": "string"
+                            },
+                            "address_country": {
+                                "description": "ISO 3166-1 alpha-2 country code. Example: \"US\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["user_id"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_submitkycinformation": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "required_fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "iframe_url": {
+                                "type": "string"
+                            },
+                            "warnings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "extracted": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            },
+                            "reason": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["object", "status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Verify the one-time code and complete connecting the user, returning their connection token pair.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_verifyconnect",
+            "name": "verify-connect",
+            "output": ["ActionOutput_agentcard_verifyconnect"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_verifyconnect", "ActionOutput_agentcard_verifyconnect"],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_verifyconnect": {
+                        "type": "object",
+                        "properties": {
+                            "connect_id": {
+                                "type": "string",
+                                "description": "The connect attempt id returned by start-connect. Example: \"ca_9f8e7d6c\""
+                            },
+                            "code": {
+                                "type": "string",
+                                "description": "The one-time code the user entered. Always \"111111\" in sandbox."
+                            }
+                        },
+                        "required": ["connect_id", "code"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_verifyconnect": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string",
+                                "const": "connection"
+                            },
+                            "access_token": {
+                                "type": "string"
+                            },
+                            "refresh_token": {
+                                "type": "string"
+                            },
+                            "token_type": {
+                                "type": "string",
+                                "const": "Bearer"
+                            },
+                            "expires_in": {
+                                "type": "number"
+                            },
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": ["string", "null"]
+                                    },
+                                    "phone": {
+                                        "type": ["string", "null"]
+                                    }
+                                },
+                                "required": ["id"],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": ["object", "access_token", "refresh_token", "token_type", "expires_in", "user"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Verify the one-time phone code, unlocking wallet funding for 60 days.",
+            "endpoint": null,
+            "input": "ActionInput_agentcard_verifyphonecode",
+            "name": "verify-phone-code",
+            "output": ["ActionOutput_agentcard_verifyphonecode"],
+            "scopes": [],
+            "usedModels": ["ActionInput_agentcard_verifyphonecode", "ActionOutput_agentcard_verifyphonecode"],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_agentcard_verifyphonecode": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The connected user's id. Example: \"usr_123\""
+                            },
+                            "code": {
+                                "type": "string",
+                                "description": "The one-time code the user entered. Always 111111 in sandbox."
+                            },
+                            "phone_number": {
+                                "description": "Required only when the code was sent to a number you provided. E.164 format (e.g. +14155550100).",
+                                "type": "string",
+                                "format": "e164",
+                                "pattern": "^\\+[1-9]\\d{6,14}$"
+                            }
+                        },
+                        "required": ["user_id", "code"],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_agentcard_verifyphonecode": {
+                        "type": "object",
+                        "properties": {
+                            "object": {
+                                "type": "string",
+                                "const": "phone_verification"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": ["sent", "already_verified", "verified"]
+                            },
+                            "channel": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "expires_in_seconds": {
+                                "type": "number"
+                            }
+                        },
+                        "required": ["object", "status"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}
