@@ -250,15 +250,21 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
             void refetchIntegrations();
         }
     }, [messages, labels, refetchIntegrations]);
-    const addedIntegrations = useMemo(
-        () =>
-            new Map(
-                (integrations?.data ?? [])
-                    .filter((integration) => integration.missing_fields.length === 0)
-                    .map((integration) => [integration.provider, integration.unique_key])
-            ),
-        [integrations]
-    );
+    const addedIntegrations = useMemo(() => {
+        // Matches the server's existingIntegrationFor, so the notice links to the integration the agent uses.
+        const rank = (key: string, provider: string) => [provider, `pg-${provider}`].indexOf(key) >>> 0;
+        const added = new Map<string, string>();
+        for (const integration of integrations?.data ?? []) {
+            const current = added.get(integration.provider);
+            if (
+                integration.missing_fields.length === 0 &&
+                (!current || rank(integration.unique_key, integration.provider) < rank(current, integration.provider))
+            ) {
+                added.set(integration.provider, integration.unique_key);
+            }
+        }
+        return added;
+    }, [integrations]);
     const integrationNames = useCallback((ids: string[]) => ids.map((id) => labelFor(id, labels).integrationName).join(' and '), [labels]);
 
     const [pendingConnections, setPendingConnections] = useState<string[]>([]);
