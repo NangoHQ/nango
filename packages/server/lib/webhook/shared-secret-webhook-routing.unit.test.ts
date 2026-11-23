@@ -148,9 +148,11 @@ describe('telegram', () => {
     it('only accepts the secret in its own header', async () => {
         const { nango, execute } = getNangoMock({ provider: 'telegram' });
 
-        const result = await telegramWebhookRouting(nango, { 'x-nango-webhook-secret': CONNECTION_SECRET }, TELEGRAM_BODY, rawBody, QUERY);
+        const viaNangoHeader = await telegramWebhookRouting(nango, { 'x-nango-webhook-secret': CONNECTION_SECRET }, TELEGRAM_BODY, rawBody, QUERY);
+        const viaQueryParam = await telegramWebhookRouting(nango, {}, TELEGRAM_BODY, rawBody, { ...QUERY, nangoWebhookSecret: CONNECTION_SECRET });
 
-        expect(result.isErr() && result.error).toMatchObject({ type: 'webhook_missing_signature' });
+        expect(viaNangoHeader.isErr() && viaNangoHeader.error).toMatchObject({ type: 'webhook_missing_signature' });
+        expect(viaQueryParam.isErr() && viaQueryParam.error).toMatchObject({ type: 'webhook_missing_signature' });
         expect(execute).not.toHaveBeenCalled();
     });
 
