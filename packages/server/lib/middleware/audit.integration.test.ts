@@ -9,8 +9,7 @@ import { envs } from '../env.js';
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
 import type { AuditAction, AuditResource } from '@nangohq/audit';
-import type * as FeatureFlags from '@nangohq/feature-flags';
-import type { ApiKeyScope } from '@nangohq/types';
+import type { ApiKeyScope, AuditTrailDataPlaneScope } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
 
 // The single audit integration suite: only the cases that genuinely need the live stack. Everything
@@ -27,15 +26,6 @@ import type { MockInstance } from 'vitest';
 //
 // connection.created is emitted from the connectionCreated hook rather than a middleware, so its
 // live-stack cases live in auditConnection.integration.test.ts.
-
-const dataPlaneRollout = vi.hoisted(() => vi.fn(() => Promise.resolve(false)));
-vi.mock('@nangohq/feature-flags', async (importOriginal) => {
-    const actual = await importOriginal<typeof FeatureFlags>();
-    return {
-        ...actual,
-        getFlags: () => ({ ...actual.getFlags(), shouldAuditDataPlaneCredentialRead: dataPlaneRollout })
-    };
-});
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
@@ -830,13 +820,9 @@ describe('audit middleware — live-stack contract', () => {
         });
     });
     describe('data-plane connection credentials read', () => {
-        afterEach(() => {
-            dataPlaneRollout.mockReset().mockResolvedValue(false);
-        });
-
-        async function seedConnection() {
+        async function seedConnection(dataPlaneScopes: AuditTrailDataPlaneScope[] = ['read_credentials']) {
             const seeded = await seeders.seedAccountEnvAndUser({
-                plan: { has_audit_trail_control_plane: true, audit_trail_data_plane_scopes: ['read_credentials'] }
+                plan: { has_audit_trail_control_plane: true, audit_trail_data_plane_scopes: dataPlaneScopes }
             });
             await seeders.createConfigSeed(seeded.env, 'algolia', 'algolia');
             const connection = await seeders.createConnectionSeed({
@@ -847,8 +833,7 @@ describe('audit middleware — live-stack contract', () => {
             return { ...seeded, connection };
         }
 
-        it('records the read when the rollout picks the request, on both routes', async () => {
-            dataPlaneRollout.mockResolvedValue(true);
+        it('records the read on both routes', async () => {
             const { account, env, apiKey, connection } = await seedConnection();
 
             for (const path of ['/connections/:connectionId', '/connection/:connectionId']) {
@@ -879,7 +864,6 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records a denial from the scope check, naming the connection from the path', async () => {
-            dataPlaneRollout.mockResolvedValue(true);
             const { account, env, apiKey, connection } = await seedConnection();
             (await customerKeyService.updateApiKeyScopes(db.knex, apiKey.id, ['environment:integrations:list'], env.id)).unwrap();
 
@@ -903,8 +887,8 @@ describe('audit middleware — live-stack contract', () => {
             });
         });
 
-        it('records nothing while the rollout leaves the request out', async () => {
-            const { account, apiKey, connection } = await seedConnection();
+        it('records nothing when the plan leaves the scope out', async () => {
+            const { apiKey, connection } = await seedConnection([]);
 
             const res = await api.fetch('/connection/:connectionId', {
                 method: 'GET',
@@ -914,10 +898,7 @@ describe('audit middleware — live-stack contract', () => {
             });
 
             expect(res.res.status).toBe(200);
-            // The rollout is the gate's last check: once it has said no, the request cannot record anything.
-            await vi.waitFor(() => {
-                expect(dataPlaneRollout).toHaveBeenCalledWith(account.uuid);
-            });
+            await new Promise((resolve) => setTimeout(resolve, 200));
             expect(auditEvent('connection', 'credentials_read')).toBeUndefined();
         });
     });
