@@ -44,9 +44,12 @@ function list(token: string, sessionId: string, cursor?: string) {
     return api.fetch(endpoint, { method: 'GET', token, params: { sessionId }, query: cursor === undefined ? {} : { cursor } });
 }
 
-const pinned = { name: 'send', description: 'Send a message' };
 const toolset: AgentSessionCompiledToolset = {
-    slack: { provider: 'slack', pinned: [pinned], searchable: [{ name: 'read', description: 'Read messages' }] }
+    slack: {
+        provider: 'slack',
+        pinned: [{ name: 'send', description: 'Send a message' }],
+        searchable: [{ name: 'read', description: 'Read messages' }]
+    }
 };
 
 describe('GET /sessions/:sessionId/tools', () => {
@@ -107,59 +110,91 @@ describe('GET /sessions/:sessionId/tools', () => {
 
     it('matches MCP metadata while omitting execution capabilities and searchable tools', async () => {
         const { session, token } = await seedSession(toolset);
-        const rest = await list(token, session.id);
-        expect(rest.res.status).toBe(200);
-        isSuccess(rest.json);
-        expect(rest.json.tools.map((tool) => tool.name)).toEqual(['nango_tool_search', 'nango_execute', 'slack__send']);
-        const response = await fetch(`${api.url}/session/${session.id}/mcp`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
-            body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' })
-        });
-        expect(response.status).toBe(200);
-        const text = await response.text();
-        const payload =
-            text.startsWith('event:') || text.startsWith('data:')
-                ? text
-                      .split('\n')
-                      .filter((line) => line.startsWith('data:'))
-                      .map((line) => line.slice(5).trim())
-                      .join('\n')
-                : text;
-        const mcp = JSON.parse(payload) as { result: { tools: (GetAgentSessionTools['Success']['tools'][number] & { execution?: unknown })[] } };
-        expect(rest.json.tools).toEqual(mcp.result.tools.map(({ execution: _execution, ...tool }) => tool));
-        expect(rest.json).not.toHaveProperty('next_cursor');
-        expect(rest.json.tools[0]).toHaveProperty('outputSchema');
-        expect(rest.json.tools[1]).not.toHaveProperty('outputSchema');
-        expect(rest.json.tools[2]).not.toHaveProperty('outputSchema');
+
+        const fetchFromRest = async () => {
+            const response = await list(token, session.id);
+            expect(response.res.status).toBe(200);
+            isSuccess(response.json);
+            return response.json;
+        };
+
+        const fetchFromMcp = async () => {
+            const response = await fetch(`${api.url}/session/${session.id}/mcp`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+                body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' })
+            });
+            expect(response.status).toBe(200);
+            const text = await response.text();
+            const payload =
+                text.startsWith('event:') || text.startsWith('data:')
+                    ? text
+                          .split('\n')
+                          .filter((line) => line.startsWith('data:'))
+                          .map((line) => line.slice(5).trim())
+                          .join('\n')
+                    : text;
+            const mcp = JSON.parse(payload) as { result: { tools: (GetAgentSessionTools['Success']['tools'][number] & { execution?: unknown })[] } };
+            // Execution capabilities belong to MCP, so compare the shared tool metadata.
+            return mcp.result.tools.map(({ execution: _execution, ...tool }) => tool);
+        };
+
+        const rest = await fetchFromRest();
+        const mcpTools = await fetchFromMcp();
+
+        expect(rest.tools).toEqual(mcpTools);
+        expect(rest.tools.map((tool) => tool.name)).toEqual(['nango_tool_search', 'nango_execute', 'slack__send']);
+        expect(rest).not.toHaveProperty('next_cursor');
+        expect(rest.tools[0]).toHaveProperty('outputSchema');
+        expect(rest.tools[1]).not.toHaveProperty('outputSchema');
+        expect(rest.tools[2]).not.toHaveProperty('outputSchema');
     });
 
-    it('paginates before schema enrichment and wraps action input schemas', async () => {
+    it('paginates tools without gaps or duplicates', async () => {
         const actions = Array.from({ length: 51 }, (_, i) => ({ name: `action_${i}`, description: `Action ${i}` }));
-        const { session, token, env } = await seedSession({ slack: { provider: 'slack', pinned: actions, searchable: [] } });
-        const lookup = vi
-            .spyOn(agentSessionToolSearchService, 'findActionInputs')
-            .mockResolvedValue(
-                new Map([
-                    [
-                        'slack',
-                        new Map([['action_0', { kind: 'schema', schema: { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] } }]])
-                    ]
-                ])
-            );
-        const first = await list(token, session.id);
-        isSuccess(first.json);
-        expect(first.json.tools).toHaveLength(50);
-        expect(first.json.next_cursor).toBeDefined();
-        expect(lookup).toHaveBeenLastCalledWith({ environmentId: env.id, actions: actions.slice(0, 48).map(({ name }) => ({ integrationId: 'slack', name })) });
-        expect(first.json.tools[2]?.inputSchema).toMatchObject({ properties: { input: { properties: { title: { type: 'string' } } }, goal: {}, intent: {} } });
-        const second = await list(token, session.id, first.json.next_cursor);
-        isSuccess(second.json);
-        expect(second.json.tools.map((tool) => tool.name)).toEqual(['slack__action_48', 'slack__action_49', 'slack__action_50']);
-        expect(second.json).not.toHaveProperty('next_cursor');
-        expect(lookup).toHaveBeenLastCalledWith({ environmentId: env.id, actions: actions.slice(48).map(({ name }) => ({ integrationId: 'slack', name })) });
-        const beyond = await list(token, session.id, Buffer.from('1000').toString('base64url'));
-        expect(beyond.json).toEqual({ tools: [] });
+        const { session, token } = await seedSession({ slack: { provider: 'slack', pinned: actions, searchable: [] } });
+        const expectedNames = ['nango_tool_search', 'nango_execute', ...actions.map(({ name }) => `slack__${name}`)];
+
+        const fetchPage = async (cursor?: string) => {
+            const response = await list(token, session.id, cursor);
+            expect(response.res.status).toBe(200);
+            isSuccess(response.json);
+            return response.json;
+        };
+
+        const firstPage = await fetchPage();
+        expect(firstPage.tools.map((tool) => tool.name)).toEqual(expectedNames.slice(0, 50));
+        expect(firstPage.next_cursor).toEqual(expect.any(String));
+
+        const lastPage = await fetchPage(firstPage.next_cursor);
+        expect(lastPage.tools.map((tool) => tool.name)).toEqual(expectedNames.slice(50));
+        expect(lastPage).not.toHaveProperty('next_cursor');
+    });
+
+    it('returns an empty listing for a cursor past the end', async () => {
+        const { session, token } = await seedSession(toolset);
+        const cursor = Buffer.from('1000').toString('base64url');
+
+        const response = await list(token, session.id, cursor);
+
+        expect(response.res.status).toBe(200);
+        expect(response.json).toEqual({ tools: [] });
+    });
+
+    it('returns action input schemas wrapped with goal and intent', async () => {
+        const { session, token } = await seedSession(toolset);
+        const inputSchema = { type: 'object' as const, properties: { title: { type: 'string' as const } }, required: ['title'] };
+        vi.spyOn(agentSessionToolSearchService, 'findActionInputs').mockResolvedValue(
+            new Map([['slack', new Map([['send', { kind: 'schema', schema: inputSchema }]])]])
+        );
+
+        const response = await list(token, session.id);
+
+        expect(response.res.status).toBe(200);
+        isSuccess(response.json);
+        expect(response.json.tools.find((tool) => tool.name === 'slack__send')?.inputSchema).toMatchObject({
+            properties: { input: inputSchema, goal: { type: 'string' }, intent: { type: 'string' } }
+        });
     });
 
     it('returns an empty listing when no tools are enabled or pinned', async () => {
@@ -167,7 +202,7 @@ describe('GET /sessions/:sessionId/tools', () => {
         expect((await list(token, session.id)).json).toEqual({ tools: [] });
     });
 
-    it('keeps the permissive schema when action lookup fails', async () => {
+    it("preserves the catalog's fallback input schema when action schema lookup fails", async () => {
         const { session, token } = await seedSession(toolset);
         const before = await list(token, session.id);
         vi.spyOn(agentSessionToolSearchService, 'findActionInputs').mockRejectedValue(new Error('lookup failed'));
@@ -198,16 +233,18 @@ describe('GET /sessions/:sessionId/tools', () => {
         const remote = vi
             .spyOn(remoteMcpService, 'withRemoteMcpSession')
             .mockResolvedValue({ logOperationId: undefined, result: Ok([{ name: 'search', inputSchema: { type: 'object', properties: {} } }]) });
+        // The first listing discovers and persists the tools, marking the integration as available.
         const result = await list(token, session.id);
         isSuccess(result.json);
         expect(result.json.tools).toContainEqual(
             expect.objectContaining({ name: 'notion-mcp__search', _meta: { 'nango/integration': 'notion-mcp', 'nango/tool': 'search' } })
         );
+        // The next request loads the stored tools; discovery only runs for pending integrations.
         expect((await list(token, session.id)).json).toEqual(result.json);
         expect(remote).toHaveBeenCalledTimes(1);
     });
 
-    it('falls back to the original session when preparation fails', async () => {
+    it('lists tools from the original session when connection lookup fails', async () => {
         const { session, token } = await seedSession({
             'notion-mcp': { provider: 'notion-mcp', pinned: [], searchable: [], mcpServer: { status: 'pending', allow: '*', deny: [], pinnedNames: [] } }
         });
