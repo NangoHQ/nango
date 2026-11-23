@@ -11958,7 +11958,6 @@ databricks-workspace:
             pattern: '^[a-z0-9_-]+(\.[a-z0-9_-]+)*$'
             example: dbc-a1b2345c-d6e7.cloud.databricks.com
 
-# Untested configuration. Please reach out if you have a test account that we can use to test it.
 datarobot:
     display_name: DataRobot
     categories:
@@ -12020,6 +12019,7 @@ datascope:
             example: q8m3******************************************t2vk
             doc_section: '#step-1-create-your-api-key'
 
+# Untested configuration. Please reach out if you have a test account that we can use to test it.
 datev:
     display_name: Datev
     categories:
