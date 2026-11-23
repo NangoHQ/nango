@@ -6,7 +6,7 @@ description: 'Connect AI tools to HONO HRMS via the Model Context Protocol (MCP)
 
 ## 🚀 Quickstart
 
-Connect to the HONO MCP server with Nango and call MCP tools in minutes. HONO MCP uses OAuth 2.0 with **dynamic client registration**, so no app registration is required.
+Connect to the HONO MCP server with Nango and call MCP tools in minutes. HONO MCP uses OAuth 2.1 with **dynamic client registration** and PKCE, so no app registration is required.
 
 <Steps>
     <Step title="Create the integration">
@@ -16,7 +16,7 @@ Connect to the HONO MCP server with Nango and call MCP tools in minutes. HONO MC
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to HONO. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call a HONO MCP tool">
-    Make your first MCP request (initialize handshake). Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Make your first MCP request (initialize handshake). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
