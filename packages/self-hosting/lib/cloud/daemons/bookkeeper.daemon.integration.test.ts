@@ -129,6 +129,14 @@ describe('bookkeeperTick', () => {
         ]);
     });
 
+    it('reports nothing when the registry cannot be read', async () => {
+        await installation('byoc-acme-production');
+
+        await bookkeeperTick({ knex, schema: 'self_hosting_missing' });
+
+        expect(gauge).not.toHaveBeenCalled();
+    });
+
     it('replaces the characters Datadog does not accept in a tag', async () => {
         const customerId = (await createCustomer(db, { name: 'Acme, Inc.' })).unwrap().id;
         await license(await installation('byoc acme|production', { customerId }), 40);
