@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { z } from 'zod';
+
 import { getFlags } from '@nangohq/feature-flags';
 import { getLogger, report } from '@nangohq/utils';
 
@@ -29,6 +31,34 @@ export interface CatalogCounts {
 function isAlias(entry: CatalogIndexProvider | CatalogIndexAlias): entry is CatalogIndexAlias {
     return 'aliasOf' in entry;
 }
+
+const catalogIndexSchema = z
+    .object({
+        formatVersion: z.literal(1),
+        providers: z.record(
+            z.string(),
+            z.union([
+                z.object({ aliasOf: z.string() }),
+                z.object({
+                    file: z.string(),
+                    sha256: z.string(),
+                    counts: z.object({ actions: z.number(), syncs: z.number(), functions: z.number(), tools: z.number() })
+                })
+            ])
+        )
+    })
+    .superRefine((index, ctx) => {
+        // An alias is read from its target's file, so the target needs one.
+        for (const [provider, summary] of Object.entries(index.providers)) {
+            if (!isAlias(summary)) {
+                continue;
+            }
+            const target = index.providers[summary.aliasOf];
+            if (!target || isAlias(target)) {
+                ctx.addIssue({ code: 'custom', path: ['providers', provider, 'aliasOf'], message: `'${summary.aliasOf}' has no file` });
+            }
+        }
+    }) satisfies z.ZodType<CatalogIndex>;
 
 /**
  * Reads the template catalog that integration-templates writes into `packages/shared`.
@@ -150,12 +180,28 @@ export class CatalogStore {
             logger.warning(`${indexPath} not found, reading flows.zero.json instead`);
             return null;
         }
-        const index = JSON.parse(fs.readFileSync(indexPath, 'utf8')) as CatalogIndex;
-        if (index.formatVersion !== 1) {
-            logger.warning(`${indexPath} has formatVersion ${String(index.formatVersion)}, expected 1; reading flows.zero.json instead`);
+
+        let json: unknown;
+        try {
+            json = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+        } catch (err) {
+            logger.error(`${indexPath} can't be read, reading flows.zero.json instead`, { err });
             return null;
         }
-        return index;
+
+        // A format this version of Nango doesn't know yet.
+        const formatVersion = (json as { formatVersion?: unknown } | null)?.formatVersion;
+        if (typeof formatVersion === 'number' && formatVersion !== 1) {
+            logger.warning(`${indexPath} has formatVersion ${formatVersion}, expected 1; reading flows.zero.json instead`);
+            return null;
+        }
+
+        const index = catalogIndexSchema.safeParse(json);
+        if (!index.success) {
+            logger.error(`${indexPath} is malformed, reading flows.zero.json instead:\n${z.prettifyError(index.error)}`);
+            return null;
+        }
+        return index.data;
     }
 
     private legacyEntries(): Map<string, FlowZeroJson> {
