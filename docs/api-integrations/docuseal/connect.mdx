@@ -1,0 +1,52 @@
+---
+title: 'DocuSeal - How do I link my account?'
+sidebarTitle: 'DocuSeal'
+---
+
+## Overview
+
+To authenticate with DocuSeal, you need:
+
+1. **Region** — the DocuSeal server your account is on.
+2. **API Key** — your DocuSeal API key (X-Auth-Token).
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A DocuSeal account. You can [sign up for free](https://docuseal.com/sign_up).
+- Every account includes a free Test mode (Developer Sandbox) with its own API key. Production API keys need at least one Pro seat. See [DocuSeal pricing](https://www.docuseal.com/pricing).
+
+### Step 1: Choose your region
+
+Select the API host matching where your DocuSeal account is hosted:
+
+| Region | Value to select |
+|--------|-----------------|
+| Global | `api.docuseal.com` |
+| EU | `api.docuseal.eu` |
+
+If you sign in at `docuseal.com`, select `api.docuseal.com`. If you sign in at `docuseal.eu`, select `api.docuseal.eu`. See [Get started with Pro](https://www.docuseal.com/resources/get-started-with-pro).
+
+### Step 2: Get your API key
+
+1. Sign in to DocuSeal and open the Console API page: [console.docuseal.com/api](https://console.docuseal.com/api) (Global) or [console.docuseal.eu/api](https://console.docuseal.eu/api) (EU).
+2. Select **API** in the left-hand menu, then click **Show** on the **X-Auth-Token** field.
+
+<img src="/api-integrations/docuseal/api_page_show_token.png" alt="DocuSeal Console API page with the Show button on the X-Auth-Token field"/>
+
+3. Enter the verification code DocuSeal emails you, then click **Copy** to copy the key.
+
+<img src="/api-integrations/docuseal/api_key_copy.png" alt="DocuSeal Console API page with the Copy button next to the revealed X-Auth-Token"/>
+
+To get the sandbox key instead, switch on **Test mode** in the top-right corner of the API page and copy the key shown there. Test mode keys only work with test data, and production keys only with production data. See [Use Test Mode](https://www.docuseal.com/resources/use-test-mode).
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with DocuSeal.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/docuseal/form.png" alt="DocuSeal connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to DocuSeal.
