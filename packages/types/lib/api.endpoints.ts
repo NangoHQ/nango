@@ -127,6 +127,7 @@ import type {
     PostAgentGettingStartedDismiss,
     PostAgentGettingStartedRestart
 } from './gettingStarted/api.js';
+import type { GetInstallation } from './installation/api.js';
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
@@ -337,6 +338,7 @@ export type PrivateApiEndpoints =
     | GetConnectionRecords
     | GetConnectionSyncs
     | GetInvite
+    | GetInstallation
     | GetMeta
     | GetEmailByExpiredToken
     | GetEmailByUuid
