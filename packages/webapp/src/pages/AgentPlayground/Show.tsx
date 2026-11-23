@@ -44,7 +44,7 @@ import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
 import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
-import { continuesAfterSetUp, createdIntegrationIds, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults } from './setUpTool';
+import { continueOncePerSetUp, createdIntegrationIds, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults } from './setUpTool';
 import { STARTER_PROMPTS } from './starterPrompts';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize, integrationLabels, labelFor } from './toolDisplay';
@@ -143,6 +143,7 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
     };
     const failure = useRef<string | undefined>(undefined);
     const leaving = useRef(false);
+    const [continuesAfterSetUp] = useState(continueOncePerSetUp);
     const { messages, setMessages, sendMessage, regenerate, status, stop, clearError, addToolApprovalResponse } = useChat<PlaygroundMessage>({
         transport,
         ...(storedMessages ? { messages: storedMessages } : {}),

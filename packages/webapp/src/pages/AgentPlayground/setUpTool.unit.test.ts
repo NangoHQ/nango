@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { continuesAfterSetUp, createdIntegrationIds, providersToAdd } from './setUpTool';
+import { continueOncePerSetUp, createdIntegrationIds, providersToAdd } from './setUpTool';
 
 import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
 import type { AgentPlaygroundIntegrationSetup } from '@nangohq/types';
@@ -19,7 +19,38 @@ const reply = (parts: PlaygroundMessage['parts']): PlaygroundMessage[] => [
     { id: 'reply', role: 'assistant', parts }
 ];
 
+const continuesAfterSetUp = (options: { messages: PlaygroundMessage[] }) => continueOncePerSetUp()(options);
+
 describe('continuesAfterSetUp', () => {
+    it('continues when another tool ran in the same step as the setup', () => {
+        const messages = reply([
+            { type: 'step-start' },
+            setUpPart([{ provider: 'linear', integrationId: 'linear', outcome: 'created' }]),
+            { type: 'dynamic-tool', toolName: 'nango_tool_search', toolCallId: 'call-2', state: 'output-available', input: {}, output: {} }
+        ]);
+
+        expect(continuesAfterSetUp({ messages })).toBe(true);
+    });
+
+    it('continues only once per setup, even when the continuation adds nothing', () => {
+        const continues = continueOncePerSetUp();
+        const messages = reply([{ type: 'step-start' }, setUpPart([{ provider: 'linear', integrationId: 'linear', outcome: 'created' }])]);
+
+        expect(continues({ messages })).toBe(true);
+        expect(continues({ messages })).toBe(false);
+    });
+
+    it('does not continue from a setup in an earlier step', () => {
+        const messages = reply([
+            { type: 'step-start' },
+            setUpPart([{ provider: 'linear', integrationId: 'linear', outcome: 'created' }]),
+            { type: 'step-start' },
+            { type: 'dynamic-tool', toolName: 'nango_tool_search', toolCallId: 'call-2', state: 'output-available', input: {}, output: {} }
+        ]);
+
+        expect(continuesAfterSetUp({ messages })).toBe(false);
+    });
+
     it('continues once an app is set up', () => {
         const messages = reply([
             { type: 'step-start' },
@@ -86,7 +117,9 @@ describe('continuesAfterSetUp', () => {
 
     it('does not continue again once the agent has replied after the setup', () => {
         const messages = reply([
+            { type: 'step-start' },
             setUpPart([{ provider: 'google-mail', integrationId: 'pg-google-mail', outcome: 'created' }]),
+            { type: 'step-start' },
             { type: 'text', text: 'Connect Gmail.' }
         ]);
 

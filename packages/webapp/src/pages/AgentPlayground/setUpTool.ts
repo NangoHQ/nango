@@ -45,12 +45,36 @@ export function providersToAdd(message: PlaygroundMessage | undefined): string[]
 }
 
 // A new integration's tools only reach the agent with the next request. An app the user still has to add waits for them.
-export function continuesAfterSetUp({ messages }: { messages: PlaygroundMessage[] }): boolean {
+function setUpToContinue(messages: PlaygroundMessage[]): string | undefined {
     const last = messages.at(-1);
-    const part = last?.role === 'assistant' ? last.parts.filter((candidate) => candidate.type !== 'step-start').at(-1) : undefined;
-    if (part?.type !== 'dynamic-tool' || !isSetUpPart(part)) {
-        return false;
+    if (last?.role !== 'assistant') {
+        return undefined;
+    }
+    const lastStep: PlaygroundMessage['parts'] = [];
+    for (const part of [...last.parts].reverse()) {
+        if (part.type !== 'step-start') {
+            lastStep.push(part);
+        } else if (lastStep.length > 0) {
+            break;
+        }
+    }
+    const part = lastStep.find((candidate): candidate is ToolPart => candidate.type === 'dynamic-tool' && isSetUpPart(candidate));
+    if (!part) {
+        return undefined;
     }
     const setups = setUpResults(part);
-    return setups.some((setup) => setup.outcome === 'created') && setups.every(isAdded);
+    return setups.some((setup) => setup.outcome === 'created') && setups.every(isAdded) ? part.toolCallId : undefined;
+}
+
+// A continuation that streams nothing leaves the messages unchanged, so only remembering the setup stops it resending forever.
+export function continueOncePerSetUp(): (options: { messages: PlaygroundMessage[] }) => boolean {
+    const continued = new Set<string>();
+    return ({ messages }) => {
+        const toolCallId = setUpToContinue(messages);
+        if (!toolCallId || continued.has(toolCallId)) {
+            return false;
+        }
+        continued.add(toolCallId);
+        return true;
+    };
 }
