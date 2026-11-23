@@ -106,7 +106,7 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                         <Meta label="Version" value={event.version} mono />
                     </dl>
 
-                    <div className="mx-6 mb-6 rounded bg-surface-panel-inset p-4 text-sm text-text-muted">
+                    <div className="mx-6 mb-6 rounded border border-border-muted bg-surface-code p-4 text-sm text-text-muted">
                         <Prism
                             language="json"
                             className="transparent-code"

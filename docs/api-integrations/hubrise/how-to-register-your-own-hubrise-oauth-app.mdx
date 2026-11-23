@@ -7,16 +7,16 @@ description: 'Create a HubRise OAuth app and connect its credentials to Nango'
 This guide shows you how to create an OAuth 2.0 client in HubRise to get OAuth credentials (client ID & secret).
 
 <Steps>
-  <Step title="Create an OAuth 2.0 client">
+  <Step id="create-oauth-client" title="Create an OAuth 2.0 client">
     1. Log in to the [HubRise back office](https://manager.hubrise.com) (create a free test account if needed).
     2. Go to **SETTINGS** > **DEVELOPER** and click **Create an OAuth 2.0 client**.
     3. Enter a name for your client, usually your app name, and click **Create**.
     4. Download the client secret JSON: it holds the `client_id` and `client_secret`.
   </Step>
-  <Step title="Add the credentials in Nango">
+  <Step id="add-credentials-in-nango" title="Add the credentials in Nango">
     Paste the client ID and secret into your HubRise integration in Nango, and add the scopes your app needs (see [OAuth scopes](https://www.hubrise.com/developers/api/authentication)). Write a scope as in HubRise, for example `location[orders.write,customer_list.read,catalog.read]`.
   </Step>
-  <Step title="Next">
+  <Step id="next" title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart).
   </Step>
 </Steps>

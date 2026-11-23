@@ -1,44 +1,25 @@
 import db from '@nangohq/database';
 import { Err, Ok } from '@nangohq/utils';
 
-import { resolveRunnableTool } from '../catalog/resolveTool.js';
-import { search } from './models/functions.js';
+import { getCatalogEntry } from '../catalog/actions.js';
+import { resolveLegacyAction } from '../catalog/resolveLegacyAction.js';
+import { isTool, search } from './models/functions.js';
 
-import type { ResolveRunnableToolResult } from '../catalog/resolveTool.js';
-import type { CurrentFunctionConfig } from './models/functions.js';
-import type { IntegrationConfig } from '@nangohq/types';
+import type { ResolvedLegacyAction } from '../catalog/resolveLegacyAction.js';
+import type { FunctionSource, IntegrationConfig } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-export type ResolvedTool = { kind: 'function'; fn: CurrentFunctionConfig } | ResolveRunnableToolResult;
-
-/**
- * Finds the tool a name resolves to.
- */
-export async function findTool({
-    environmentId,
-    integrationKey,
-    name
-}: {
-    environmentId: number;
-    integrationKey: string;
-    name: string;
-}): Promise<Result<CurrentFunctionConfig | null>> {
-    const functions = await search(db.knex, {
-        environmentId,
-        filter: { integrationKey, name, trigger: { kind: 'http', subscriptions: 'none' } }
-    });
-    if (functions.isErr()) {
-        return Err(functions.error);
-    }
-
-    return Ok(functions.value[0] ?? null);
-}
+export type ResolvedTool =
+    | { kind: 'function'; uuid: string; source: FunctionSource; inputSchemaRef: string | null }
+    | { kind: 'missing'; source?: FunctionSource }
+    | Exclude<ResolvedLegacyAction, { kind: 'missing' }>;
 
 /**
  * Resolves an enabled tool by name, by order of priority:
- * 1. tool functions, disabled ones resolving to missing so they shadow same-named actions
- * 2. deployed actions, disabled ones resolving to missing
- * 3. catalog tools
+ * 1. deployed tool functions
+ * 2. deployed legacy actions
+ * 3. legacy catalog actions (tools-catalog on)
+ * 4. catalog tool functions
  */
 export async function resolveTool({
     accountUuid,
@@ -51,21 +32,38 @@ export async function resolveTool({
     integration: Pick<IntegrationConfig, 'id' | 'provider' | 'unique_key'>;
     name: string;
 }): Promise<Result<ResolvedTool>> {
-    const fn = await findTool({ environmentId, integrationKey: integration.unique_key, name });
-    if (fn.isErr()) {
-        return Err(fn.error);
+    const functions = await search(db.knex, {
+        environmentId,
+        filter: { integrationKey: integration.unique_key, name, trigger: { kind: 'http', subscriptions: 'none' } }
+    });
+    if (functions.isErr()) {
+        return Err(functions.error);
     }
 
-    if (fn.value) {
-        return Ok(fn.value.config.enabled ? { kind: 'function', fn: fn.value } : { kind: 'missing' });
+    const fn = functions.value[0];
+    if (fn) {
+        const { config, currentVersion } = fn;
+        return Ok(
+            config.enabled
+                ? { kind: 'function', uuid: config.uuid, source: currentVersion.source, inputSchemaRef: currentVersion.input_schema_ref }
+                : { kind: 'missing', source: currentVersion.source }
+        );
     }
 
     try {
-        const tool = await resolveRunnableTool({ accountUuid, environmentId, integration, name });
+        const tool = await resolveLegacyAction({ accountUuid, environmentId, integration, name });
         if (tool.kind === 'deployed' && !tool.config.enabled) {
+            return Ok({ kind: 'missing', source: tool.config.source });
+        }
+        if (tool.kind !== 'missing') {
+            return Ok(tool);
+        }
+
+        const definition = getCatalogEntry(integration.provider, name);
+        if (!definition || !('trigger' in definition) || !isTool(definition)) {
             return Ok({ kind: 'missing' });
         }
-        return Ok(tool);
+        return Ok({ kind: 'function', uuid: definition.uuid, source: definition.source, inputSchemaRef: definition.input_schema_ref });
     } catch (err) {
         return Err(new Error('failed_to_resolve_tool', { cause: err }));
     }

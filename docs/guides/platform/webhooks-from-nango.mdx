@@ -434,6 +434,8 @@ Existing users of deprecated async actions can enable **Async action completed**
 
 Forwarded external webhooks use the same webhook URLs, signing, retries, and logs as other Nango webhooks. See [Webhook forwarding](/guides/triggers/webhook-forwarding) for setup, routing behavior, and payload shapes.
 
+<a id="webhook-retries-debugging"></a>
+
 ## Webhook retries & debugging
 
 Nango retries each webhook with non-2xx responses 2 times with exponential backoff (starting delay: 100ms, time multiple: 2, view details in the [code](https://github.com/NangoHQ/nango/blob/master/packages/webhooks/lib/utils.ts)).

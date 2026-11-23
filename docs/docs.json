@@ -191,7 +191,7 @@
     },
     {
       "source": "/guides/auth/share-connect-link",
-      "destination": "/guides/auth/setup#share-a-connect-link"
+      "destination": "/guides/auth/setup#auth-from-a-link-you-share"
     },
     {
       "source": "/guides/platform/proxy-requests",
@@ -586,7 +586,7 @@
             ]
           },
           {
-            "group": "1,300+ APIs & Integrations",
+            "group": "1,400+ APIs & Integrations",
             "pages": [
               "api-integrations/0codekit",
               "api-integrations/1password-events",
@@ -769,6 +769,7 @@
               "api-integrations/better-proposals",
               "api-integrations/better-stack",
               "api-integrations/bettercontact",
+              "api-integrations/beyondtrust-pra",
               "api-integrations/bidsketch",
               "api-integrations/bigchange",
               "api-integrations/bigcommerce",
@@ -1006,6 +1007,7 @@
               "api-integrations/demio",
               "api-integrations/demodesk",
               "api-integrations/dentally",
+              "api-integrations/deputy",
               "api-integrations/desktime",
               "api-integrations/detrack",
               "integrations/all/devin",
@@ -1201,6 +1203,7 @@
               "integrations/all/front",
               "api-integrations/front-api-key",
               "api-integrations/fuentio",
+              "api-integrations/fuentio-mcp",
               "api-integrations/fullenrich",
               "integrations/all/gainsight-cc",
               "api-integrations/gamma",
@@ -1461,6 +1464,7 @@
               "integrations/all/microsoft-entra-id",
               "integrations/all/microsoft-excel",
               "api-integrations/microsoft-excel-oauth2-cc",
+              "api-integrations/microsoft-exchange-online-cc",
               "api-integrations/microsoft-intune",
               "api-integrations/microsoft-oauth2-cc",
               "api-integrations/microsoft-oauth2-cc-cert",

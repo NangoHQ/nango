@@ -24,7 +24,7 @@
         "@types/json-schema": "7.0.15",
         "axios": "1.20.0",
         "json-schema": "0.4.0",
-        "vitest": "4.1.11"
+        "vitest": "4.1.12"
     },
     "peerDependencies": {
         "zod": "4.6.7"

@@ -1,13 +1,14 @@
 import { envs } from '../env.js';
 import { installationsClickhouseClient } from './clickhouse/clickhouse.js';
 import { migrate as migrateClickhouse } from './clickhouse/migrate.js';
+import { bookkeeperDaemon } from './daemons/bookkeeper.daemon.js';
 import { cloudDb } from './db/client.js';
 import { migrate } from './db/migrate.js';
 
 import type { RegistryDb } from './services/db.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 
-export async function boot(): Promise<{ db: RegistryDb; clickhouse: ClickHouseClient }> {
+export async function boot(): Promise<{ db: RegistryDb; clickhouse: ClickHouseClient; bookkeeper: ReturnType<typeof bookkeeperDaemon> }> {
     if (!envs.CLICKHOUSE_URL) {
         throw new Error('CLICKHOUSE_URL is required to store what installations upload');
     }
@@ -20,5 +21,6 @@ export async function boot(): Promise<{ db: RegistryDb; clickhouse: ClickHouseCl
     if (clickhouse.isErr()) {
         throw clickhouse.error;
     }
-    return { db: { knex }, clickhouse: installationsClickhouseClient(envs.CLICKHOUSE_URL) };
+    const db = { knex };
+    return { db, clickhouse: installationsClickhouseClient(envs.CLICKHOUSE_URL), bookkeeper: bookkeeperDaemon(db) };
 }

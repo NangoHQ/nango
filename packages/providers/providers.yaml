@@ -5063,6 +5063,9 @@ bamboohr:
         request: token
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+    webhook_routing_script: bambooHrWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/bamboohr
     setup_guide_url: https://nango.dev/docs/api-integrations/bamboohr/how-to-register-your-own-bamboohr-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/bamboohr/connect
@@ -5090,6 +5093,9 @@ bamboohr-basic:
             method: GET
             endpoints:
                 - /v1/meta/fields
+    webhook_routing_script: bambooHrWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/integrations/all/bamboohr-basic
     docs_connect: https://nango.dev/docs/integrations/all/bamboohr-basic/connect
     connection_config:
@@ -5646,6 +5652,44 @@ bettercontact:
             example: f1a9b2c3d4e5f6g7h8i9j0
             pattern: '^[a-z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
+
+beyondtrust-pra:
+    display_name: BeyondTrust Privileged Remote Access
+    categories:
+        - iam
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        retry:
+            remaining: 'x-ratelimit-remaining'
+    docs: https://nango.dev/docs/api-integrations/beyondtrust-pra
+    docs_connect: https://nango.dev/docs/api-integrations/beyondtrust-pra/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Site Hostname
+            description: The public hostname of your BeyondTrust PRA site.
+            format: hostname
+            prefix: https://
+            example: access.example.com
+            order: 1
+            doc_section: '#step-2-find-your-site-hostname'
+    credentials:
+        client_id:
+            type: string
+            title: OAuth Client ID
+            description: The OAuth client ID of your PRA API account.
+            doc_section: '#step-1-create-an-api-account'
+        client_secret:
+            type: string
+            title: OAuth Client Secret
+            description: The OAuth client secret of your PRA API account.
+            secret: true
+            doc_section: '#step-1-create-an-api-account'
 
 bidsketch:
     display_name: Bidsketch
@@ -12186,6 +12230,34 @@ dentally:
                 - api.ca.dentally.com
             doc_section: '#step-1-choose-your-environment'
 
+deputy:
+    display_name: Deputy
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://once.deputy.com/my/oauth/login
+    token_url: https://once.deputy.com/my/oauth/access_token
+    refresh_url: https://${connectionConfig.endpoint}/oauth/access_token
+    disable_pkce: true
+    default_scopes:
+        - longlife_refresh_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+        scope: longlife_refresh_token
+    refresh_params:
+        grant_type: refresh_token
+        scope: longlife_refresh_token
+    token_response_metadata:
+        - endpoint
+    refresh_token_response_metadata:
+        - endpoint
+    proxy:
+        base_url: https://${connectionConfig.endpoint}/api
+    docs: https://nango.dev/docs/api-integrations/deputy
+    setup_guide_url: https://nango.dev/docs/api-integrations/deputy/how-to-register-your-own-deputy-oauth-app
+
 desktime:
     display_name: DeskTime
     categories:
@@ -16594,6 +16666,50 @@ fleetbase:
             example: flb_live_Kp7d************************w3Zq
             doc_section: '#step-1-create-an-api-key'
 
+fleetio:
+    display_name: Fleetio
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://secure.fleetio.com/api
+        headers:
+            authorization: 'Token ${credentials.username}'
+            account-token: ${credentials.password}
+            x-api-version: ${connectionConfig.version} || 2025-05-05
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users/me
+    docs: https://nango.dev/docs/api-integrations/fleetio
+    docs_connect: https://nango.dev/docs/api-integrations/fleetio/connect
+    connection_config:
+        version:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Fleetio API key.
+            secret: true
+            example: k2ay********************************zb2b
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-create-an-api-key'
+        password:
+            type: string
+            title: Account Token
+            description: Your Fleetio account token.
+            secret: true
+            example: vjca**ssxc
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-2-copy-your-account-token'
+
 flexisign:
     display_name: FlexiSign
     categories:
@@ -17141,40 +17257,6 @@ fillout:
             title: ''
             description: ''
             automated: true
-
-fleetio:
-    display_name: Fleetio
-    categories:
-        - other
-    auth_mode: BASIC
-    proxy:
-        base_url: https://secure.fleetio.com/api
-        headers:
-            authorization: 'Token ${credentials.username}'
-            account-token: ${credentials.password}
-        retry:
-            after:
-                - 'retry-after'
-    credentials_verification_script: fleetioCredentialsVerification
-    docs: https://nango.dev/docs/api-integrations/fleetio
-    docs_connect: https://nango.dev/docs/api-integrations/fleetio/connect
-    credentials:
-        username:
-            type: string
-            title: API Key
-            description: Your Fleetio API key.
-            secret: true
-            example: k2ay********************************zb2b
-            pattern: '^[A-Za-z0-9]+$'
-            doc_section: '#step-1-create-an-api-key'
-        password:
-            type: string
-            title: Account Token
-            description: Your Fleetio account token.
-            secret: true
-            example: vjca**ssxc
-            pattern: '^[A-Za-z0-9]+$'
-            doc_section: '#step-2-copy-your-account-token'
 
 float:
     display_name: Float
@@ -17840,6 +17922,28 @@ fuentio:
             pattern: '^sk_[a-z]+_[A-Za-z0-9_-]{16,}$'
             example: sk_live_Qm7x************************Tz9K
             doc_section: '#step-1-get-your-free-api-key'
+
+fuentio-mcp:
+    display_name: Fuentio (MCP)
+    categories:
+        - mcp
+        - other
+    alias: fuentio
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://api.fuentio.com
+        headers:
+            x-api-key: ${apiKey}
+            accept: application/json,text/event-stream
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/usage
+    docs: https://nango.dev/docs/api-integrations/fuentio-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/fuentio-mcp/connect
 
 fullenrich:
     display_name: FullEnrich
@@ -18873,6 +18977,8 @@ google:
     setup_guide_url: https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-api-oauth-app
     webhook_routing_script: googleWebhookRouting
     webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoWebhookSecret
 
 google-analytics:
     display_name: Google Analytics
@@ -19213,6 +19319,14 @@ google-service-account:
             example: 'some.user@example.com'
             optional: true
             doc_section: '#step-2-generate-a-service-account-key'
+    integration_config:
+        scopes:
+            type: string
+            title: Scopes
+            description: Space-separated scopes requested for every connection. When set, end users aren't asked for scopes in Connect UI.
+            pattern: '^https://[^\s]+( https://[^\s]+)*$'
+            example: 'https://www.googleapis.com/auth/drive'
+            optional: true
 
 gorgias:
     display_name: Gorgias
@@ -20542,6 +20656,29 @@ hover:
         base_url: https://api.hover.to
     docs: https://nango.dev/docs/integrations/all/hover
 
+hubrise:
+    display_name: HubRise
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://manager.hubrise.com/oauth2/v1/authorize
+    token_url: https://manager.hubrise.com/oauth2/v1/token
+    token_request_auth_method: basic
+    scope_separator: ','
+    token_params:
+        grant_type: authorization_code
+    token_response_metadata:
+        - account_id
+        - location_id
+        - catalog_id
+        - customer_list_id
+    proxy:
+        base_url: https://api.hubrise.com
+        headers:
+            x-access-token: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/hubrise
+    setup_guide_url: https://nango.dev/docs/api-integrations/hubrise/how-to-register-your-own-hubrise-oauth-app
+
 humaans-io:
     display_name: Humaans.io
     categories:
@@ -20618,29 +20755,6 @@ huntress:
             pattern: '^hs_[A-Za-z0-9]+$'
             example: hs_XXXXXXXXXXXXXXXX
             doc_section: '#step-1-generate-api-keys'
-
-hubrise:
-    display_name: HubRise
-    categories:
-        - e-commerce
-    auth_mode: OAUTH2
-    authorization_url: https://manager.hubrise.com/oauth2/v1/authorize
-    token_url: https://manager.hubrise.com/oauth2/v1/token
-    token_request_auth_method: basic
-    scope_separator: ','
-    token_params:
-        grant_type: authorization_code
-    token_response_metadata:
-        - account_id
-        - location_id
-        - catalog_id
-        - customer_list_id
-    proxy:
-        base_url: https://api.hubrise.com
-        headers:
-            x-access-token: ${accessToken}
-    docs: https://nango.dev/docs/api-integrations/hubrise
-    setup_guide_url: https://nango.dev/docs/api-integrations/hubrise/how-to-register-your-own-hubrise-oauth-app
 
 hubspot:
     display_name: HubSpot
@@ -20787,6 +20901,42 @@ hyperline:
             example: prod_7fe2****************80f9
             pattern: '^(prod|test)_.+$'
             doc_section: '#step-2-create-an-api-key'
+
+hyperspell-mcp:
+    display_name: Hyperspell (MCP)
+    categories:
+        - mcp
+    auth_mode: API_KEY
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://${connectionConfig.region}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /auth/me
+    docs: https://nango.dev/docs/api-integrations/hyperspell-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/hyperspell-mcp/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The Hyperspell region your account was created in.
+            format: hostname
+            enum:
+                - api.hyperspell.com
+                - api.eu.hyperspell.com
+            order: 1
+            doc_section: '#step-1-find-your-region'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Hyperspell API key.
+            example: hs2-m4Tq************************8vZc
+            pattern: '^hs2-.+$'
+            doc_section: '#step-2-get-your-api-key'
 
 imanage:
     display_name: iManage Work
@@ -21136,42 +21286,6 @@ instagram:
         base_url: https://graph.instagram.com
     docs: https://nango.dev/docs/api-integrations/instagram
     setup_guide_url: https://nango.dev/docs/api-integrations/instagram/how-to-register-your-own-instagram-api-oauth-app
-
-hyperspell-mcp:
-    display_name: Hyperspell (MCP)
-    categories:
-        - mcp
-    auth_mode: API_KEY
-    mcp_endpoint: /mcp
-    proxy:
-        base_url: https://${connectionConfig.region}
-        headers:
-            authorization: Bearer ${apiKey}
-        verification:
-            method: GET
-            endpoints:
-                - /auth/me
-    docs: https://nango.dev/docs/api-integrations/hyperspell-mcp
-    docs_connect: https://nango.dev/docs/api-integrations/hyperspell-mcp/connect
-    connection_config:
-        region:
-            type: string
-            title: Region
-            description: The Hyperspell region your account was created in.
-            format: hostname
-            enum:
-                - api.hyperspell.com
-                - api.eu.hyperspell.com
-            order: 1
-            doc_section: '#step-1-find-your-region'
-    credentials:
-        apiKey:
-            type: string
-            title: API Key
-            description: Your Hyperspell API key.
-            example: hs2-m4Tq************************8vZc
-            pattern: '^hs2-.+$'
-            doc_section: '#step-2-get-your-api-key'
 
 icypeas:
     display_name: Icypeas
@@ -24611,6 +24725,31 @@ microsoft-admin-cert:
             format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+
+microsoft-exchange-online-cc:
+    display_name: Microsoft Exchange Online Admin (Client Credentials)
+    categories:
+        - iam
+        - communication
+    auth_mode: OAUTH2_CC
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - https://outlook.office365.com/.default
+    proxy:
+        base_url: https://outlook.office365.com/adminapi
+    docs: https://nango.dev/docs/api-integrations/microsoft-exchange-online-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-exchange-online-cc/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: Your Microsoft Entra tenant ID.
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-register-an-app-in-microsoft-entra-id'
             order: 1
 
 microsoft-teams-bot:
@@ -29944,7 +30083,7 @@ podscribe:
             type: string
             title: API Key
             description: The API key for your Podscribe account
-            pattern: '^[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9_-]+$'
+            pattern: '^([a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9_-]+|ps_api_[A-Za-z0-9._-]+)$'
             example: xkPqbW**********.*********.*******T8mz
             doc_section: '#step-1-generating-your-api-key'
 
@@ -31875,6 +32014,38 @@ rydoo:
             description: Your Rydoo Client Secret.
             secret: true
 
+samsara:
+    display_name: Samsara
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.region}/oauth2/authorize
+    token_url: https://${connectionConfig.region}/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.region}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/samsara
+    setup_guide_url: https://nango.dev/docs/api-integrations/samsara/how-to-register-your-own-samsara-oauth-app
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The cloud region of your Samsara dashboard (US, EU or Canada).
+            enum:
+                - api.samsara.com
+                - api.eu.samsara.com
+                - api.ca.samsara.com
+            default_value: api.samsara.com
+
 segment:
     display_name: Segment
     categories:
@@ -32630,38 +32801,6 @@ salesmsg-oauth2:
         base_url: https://api.salesmessage.com/pub/
     docs: https://nango.dev/docs/api-integrations/salesmsg-oauth2
     setup_guide_url: https://nango.dev/docs/api-integrations/salesmsg-oauth2/how-to-register-your-own-salesmsg-oauth-app
-
-samsara:
-    display_name: Samsara
-    categories:
-        - other
-    auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.region}/oauth2/authorize
-    token_url: https://${connectionConfig.region}/oauth2/token
-    token_request_auth_method: basic
-    authorization_params:
-        response_type: code
-    token_params:
-        grant_type: authorization_code
-    refresh_params:
-        grant_type: refresh_token
-    proxy:
-        base_url: https://${connectionConfig.region}
-        retry:
-            after:
-                - 'retry-after'
-    docs: https://nango.dev/docs/api-integrations/samsara
-    setup_guide_url: https://nango.dev/docs/api-integrations/samsara/how-to-register-your-own-samsara-oauth-app
-    connection_config:
-        region:
-            type: string
-            title: Region
-            description: The cloud region of your Samsara dashboard (US, EU or Canada).
-            enum:
-                - api.samsara.com
-                - api.eu.samsara.com
-                - api.ca.samsara.com
-            default_value: api.samsara.com
 
 sanity-mcp:
     display_name: Sanity (MCP)

@@ -127,8 +127,8 @@ export function isMcp(provider: Pick<ApiProviderListItem, 'categories'>): boolea
     return provider.categories?.includes('mcp') ?? false;
 }
 
-export function formatFunctionCounts({ actions, syncs }: ApiProviderFunctionCounts): string | null {
-    const parts = [actions > 0 && pluralize(actions, 'tool'), syncs > 0 && pluralize(syncs, 'sync')].filter((part) => typeof part === 'string');
+export function formatFunctionCounts({ tools, syncs }: ApiProviderFunctionCounts): string | null {
+    const parts = [tools > 0 && pluralize(tools, 'tool'), syncs > 0 && pluralize(syncs, 'sync')].filter((part) => typeof part === 'string');
     return parts.length > 0 ? parts.join(' · ') : null;
 }
 

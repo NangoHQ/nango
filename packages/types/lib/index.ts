@@ -131,6 +131,7 @@ export type * from './mcp/api.js';
 export type * from './mfa/api.js';
 export type * from './mfa/credential.js';
 export type * from './mfa/db.js';
+export type * from './function/catalog.js';
 export type * from './function/config.js';
 export type * from './function/db.js';
 export type * from './function/trigger.js';

@@ -1,11 +1,11 @@
-import { getFlowsJson, TEMPLATES_ZERO_PREFIX } from './actions.js';
+import { getCatalogEntry, getFlowsJson, TEMPLATES_ZERO_PREFIX } from './actions.js';
 
-import type { ScriptTypeLiteral } from '@nangohq/types';
+import type { FunctionListType, ScriptTypeLiteral } from '@nangohq/types';
 
 export interface CatalogFunction {
-    type: ScriptTypeLiteral;
+    type: FunctionListType;
     name: string;
-    /** TypeScript source under `templates-zero/`. */
+    /** TypeScript source storage key. */
     sourceLocation: string;
 }
 
@@ -17,9 +17,9 @@ const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-ev
 
 /**
  * Catalog functions of a provider matching a name, one per type.
- * Aliased providers resolve to the folder of the provider they point to.
+ * Legacy entries use the canonical provider folder; Functions use their published locations.
  */
-export function findCatalogFunctions({ provider, name, type }: { provider: string; name: string; type?: ScriptTypeLiteral | undefined }): CatalogFunction[] {
+export function findCatalogFunctions({ provider, name, type }: { provider: string; name: string; type?: FunctionListType | undefined }): CatalogFunction[] {
     const integration = getFlowsJson().find((entry) => entry.providerConfigKey === provider);
     if (!integration) {
         return [];
@@ -41,6 +41,11 @@ export function findCatalogFunctions({ provider, name, type }: { provider: strin
     }
     if (onEventNames.includes(name)) {
         addMatch('on-event');
+    }
+
+    const entry = getCatalogEntry(provider, name);
+    if (entry?.type === 'tool') {
+        matches.push({ type: 'tool', name, sourceLocation: entry.location.ts });
     }
 
     return type ? matches.filter((match) => match.type === type) : matches;

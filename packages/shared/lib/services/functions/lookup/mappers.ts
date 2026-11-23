@@ -2,7 +2,7 @@ import { Err, Ok, resolveSchemaRef } from '@nangohq/utils';
 
 import { eventTypeMapper } from '../../on-event-scripts.service.js';
 
-import type { FunctionRow } from './models/functions.js';
+import type { FunctionRow } from './models/listing.js';
 import type {
     DBOnEventScript,
     FunctionTagValue,

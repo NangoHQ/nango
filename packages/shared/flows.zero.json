@@ -1012462,7 +1012462,7 @@
                 "output": ["ActionOutput_slack_postmessage"],
                 "scopes": ["chat:write"],
                 "usedModels": ["ActionInput_slack_postmessage", "ActionOutput_slack_postmessage"],
-                "version": "2.0.1",
+                "version": "2.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_slack_postmessage": {
@@ -1012474,11 +1012474,20 @@
                                 },
                                 "text": {
                                     "type": "string",
-                                    "description": "Text of the message to send"
+                                    "description": "Text of the message to send. When blocks is provided, text becomes the fallback text for notifications."
                                 },
                                 "thread_ts": {
                                     "description": "Timestamp of parent message to reply in thread. Example: \"1234567890.123456\"",
                                     "type": "string"
+                                },
+                                "blocks": {
+                                    "description": "A JSON array of Block Kit blocks to use as the message content. Example: [{\"type\": \"section\", \"text\": {\"type\": \"mrkdwn\", \"text\": \"Hello\"}}]",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    }
                                 }
                             },
                             "required": ["channel", "text"],
@@ -1012758,7 +1012767,7 @@
                 "output": ["ActionOutput_slack_schedulemessage"],
                 "scopes": ["chat:write"],
                 "usedModels": ["ActionInput_slack_schedulemessage", "ActionOutput_slack_schedulemessage"],
-                "version": "2.0.1",
+                "version": "2.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_slack_schedulemessage": {
@@ -1012770,7 +1012779,7 @@
                                 },
                                 "text": {
                                     "type": "string",
-                                    "description": "The message text to schedule"
+                                    "description": "The message text to schedule. When blocks is provided, text becomes the fallback text for notifications."
                                 },
                                 "post_at": {
                                     "type": "number",
@@ -1012779,6 +1012788,15 @@
                                 "thread_ts": {
                                     "description": "Optional thread timestamp to post in a thread. Example: \"1234567890.123456\"",
                                     "type": "string"
+                                },
+                                "blocks": {
+                                    "description": "A JSON array of Block Kit blocks to use as the message content. Example: [{\"type\": \"section\", \"text\": {\"type\": \"mrkdwn\", \"text\": \"Hello\"}}]",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    }
                                 }
                             },
                             "required": ["channel_id", "text", "post_at"],
@@ -1013016,7 +1013034,7 @@
                 "output": ["ActionOutput_slack_sendephemeralmessage"],
                 "scopes": ["chat:write"],
                 "usedModels": ["ActionInput_slack_sendephemeralmessage", "ActionOutput_slack_sendephemeralmessage"],
-                "version": "1.0.1",
+                "version": "1.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_slack_sendephemeralmessage": {
@@ -1013032,11 +1013050,20 @@
                                 },
                                 "text": {
                                     "type": "string",
-                                    "description": "Text of the message to send. Supports Slack formatting."
+                                    "description": "Text of the message to send. Supports Slack formatting. When blocks is provided, text becomes the fallback text for notifications."
                                 },
                                 "thread_ts": {
                                     "description": "Thread timestamp to reply to a specific thread. Example: \"1234567890.123456\"",
                                     "type": "string"
+                                },
+                                "blocks": {
+                                    "description": "A JSON array of Block Kit blocks to use as the message content. Example: [{\"type\": \"section\", \"text\": {\"type\": \"mrkdwn\", \"text\": \"Hello\"}}]",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    }
                                 }
                             },
                             "required": ["channel_id", "user_id", "text"],
@@ -1013071,7 +1013098,7 @@
                 "output": ["ActionOutput_slack_sendmessage"],
                 "scopes": ["chat:write"],
                 "usedModels": ["ActionInput_slack_sendmessage", "ActionOutput_slack_sendmessage"],
-                "version": "3.0.1",
+                "version": "3.1.0",
                 "json_schema": {
                     "definitions": {
                         "ActionInput_slack_sendmessage": {
@@ -1013083,7 +1013110,16 @@
                                 },
                                 "text": {
                                     "type": "string",
-                                    "description": "Text content of the message to send. Example: \"Hello world\""
+                                    "description": "Text content of the message to send. When blocks is provided, text becomes the fallback text for notifications. Example: \"Hello world\""
+                                },
+                                "blocks": {
+                                    "description": "A JSON array of Block Kit blocks to use as the message content. Example: [{\"type\": \"section\", \"text\": {\"type\": \"mrkdwn\", \"text\": \"Hello\"}}]",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    }
                                 }
                             },
                             "required": ["channel_id", "text"],
