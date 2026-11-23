@@ -3,9 +3,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import { configService, seeders } from '@nangohq/shared';
 
-import { ensurePlaygroundIntegration } from './agentPlayground.service.js';
+import { setUpPlaygroundIntegration } from './agentPlayground.service.js';
 
-describe('ensurePlaygroundIntegration', () => {
+describe('setUpPlaygroundIntegration', () => {
     beforeAll(async () => {
         await multipleMigrations();
     });
@@ -13,7 +13,7 @@ describe('ensurePlaygroundIntegration', () => {
     it('adds an app that needs no developer app, such as an API key app, named after the provider', async () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
 
-        const setup = await ensurePlaygroundIntegration({ account, environment: env }, 'resend');
+        const setup = await setUpPlaygroundIntegration({ account, environment: env }, 'resend');
 
         expect(setup).toEqual({ provider: 'resend', displayName: 'Resend', integrationId: 'resend', outcome: 'created', usesSharedCredentials: false });
         const integrations = await configService.listProviderConfigs(db.knex, env.id);
@@ -24,7 +24,7 @@ describe('ensurePlaygroundIntegration', () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
         const sharedCredentials = await seeders.createSharedCredentialsSeed('github');
 
-        const setup = await ensurePlaygroundIntegration({ account, environment: env }, 'github');
+        const setup = await setUpPlaygroundIntegration({ account, environment: env }, 'github');
 
         expect(setup).toEqual({
             provider: 'github',
@@ -43,7 +43,7 @@ describe('ensurePlaygroundIntegration', () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'resend', 'hubspot');
 
-        const setup = await ensurePlaygroundIntegration({ account, environment: env }, 'resend');
+        const setup = await setUpPlaygroundIntegration({ account, environment: env }, 'resend');
 
         expect(setup).toMatchObject({ provider: 'resend', outcome: 'created', integrationId: expect.stringMatching(/^resend-[a-z0-9_-]{4}$/) });
     });
@@ -51,7 +51,7 @@ describe('ensurePlaygroundIntegration', () => {
     it("adds nothing for an OAuth app Nango hosts no app for, since it needs the user's own", async () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
 
-        const setup = await ensurePlaygroundIntegration({ account, environment: env }, 'outlook');
+        const setup = await setUpPlaygroundIntegration({ account, environment: env }, 'outlook');
 
         expect(setup).toEqual({ provider: 'outlook', displayName: 'Outlook', outcome: 'needs_developer_app' });
         expect(await configService.listProviderConfigs(db.knex, env.id)).toEqual([]);
@@ -60,7 +60,7 @@ describe('ensurePlaygroundIntegration', () => {
     it('leaves adding an instant setup app to the user in a production environment', async () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
 
-        const setup = await ensurePlaygroundIntegration({ account, environment: { ...env, is_production: true } }, 'resend');
+        const setup = await setUpPlaygroundIntegration({ account, environment: { ...env, is_production: true } }, 'resend');
 
         expect(setup).toEqual({ provider: 'resend', displayName: 'Resend', outcome: 'needs_confirmation' });
         expect(await configService.listProviderConfigs(db.knex, env.id)).toEqual([]);

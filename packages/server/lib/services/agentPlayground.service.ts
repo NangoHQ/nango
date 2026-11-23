@@ -122,7 +122,7 @@ function playgroundConnectionScope(user: Pick<DBUser, 'email'>): Tags {
     return { end_user_email: user.email };
 }
 
-export async function ensurePlaygroundIntegration(
+export async function setUpPlaygroundIntegration(
     { environment, account, auditAttribution }: Pick<PlaygroundContext, 'environment' | 'account' | 'auditAttribution'>,
     providerName: string
 ): Promise<AgentPlaygroundIntegrationSetup> {
@@ -437,7 +437,7 @@ export async function startTurn({
     const requestedStarter = lastMessage?.role === 'user' ? lastMessage.metadata?.starterProvider : undefined;
     // The provider comes from the browser, so only the playground's own providers are set up or tracked.
     const starterProvider = requestedStarter && PLAYGROUND_PROVIDERS.includes(requestedStarter) ? requestedStarter : undefined;
-    const integrationSetup = starterProvider ? await ensurePlaygroundIntegration(ctx, starterProvider) : undefined;
+    const integrationSetup = starterProvider ? await setUpPlaygroundIntegration(ctx, starterProvider) : undefined;
     if (integrationSetup) {
         trackIntegrationSetup(ctx, integrationSetup, 'starter');
     }
@@ -515,7 +515,7 @@ export async function startTurn({
     tools[SET_UP_INTEGRATIONS_TOOL] = setUpIntegrationsTool({
         catalog: providerCatalog(),
         setUp: async (provider) => {
-            const setup = await ensurePlaygroundIntegration(ctx, provider);
+            const setup = await setUpPlaygroundIntegration(ctx, provider);
             trackIntegrationSetup(ctx, setup, 'agent');
             return setup;
         }
