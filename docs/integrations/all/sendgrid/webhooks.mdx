@@ -41,7 +41,7 @@ curl -X PATCH "https://api.nango.dev/connections/metadata" \
   }'
 ```
 
-See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+Use a Nango **Environment API key** from **Environment Settings > API Keys** with the `environment:connections:update` scope. See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
 
 <Note>
 The webhook secret on the integration's Settings page is not used for SendGrid. Nango only verifies with the connection's `webhookSecret`.
