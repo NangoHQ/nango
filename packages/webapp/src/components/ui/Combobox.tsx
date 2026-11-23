@@ -348,7 +348,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
     };
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={setOpen} modal>
             <PopoverTrigger asChild>{trigger}</PopoverTrigger>
             <PopoverContent
                 align={props.allowMultiple ? 'end' : 'start'}
