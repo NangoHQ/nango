@@ -7,7 +7,7 @@ description: 'Learn how to receive real-time Pylon issue and account events in y
 ## How it works
 
 1. Pylon sends a POST request to your Nango webhook URL when a trigger or macro that calls the webhook runs.
-2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's `X-Pylon-Signature-V2` against that connection's own webhook secret. The signature is an HMAC-SHA256 of the `X-Pylon-Timestamp` header and the request body, and Nango rejects deliveries signed more than 5 minutes ago. The legacy `X-Pylon-Signature`, which signs the body alone, is not accepted.
+2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's `X-Pylon-Signature-V2` against that connection's own webhook secret. The signature is an HMAC-SHA256 of `<timestamp>.<raw body>`: the `X-Pylon-Timestamp` value, a literal `.`, then the raw request body, and Nango rejects deliveries signed more than 5 minutes ago. The legacy `X-Pylon-Signature`, which signs the body alone, is not accepted.
 3. Nango routes the event to that connection. Pylon webhook bodies are templates you write in a trigger or macro, so they have no event type.
 
 Pylon webhook bodies are templates you write, so they don't say which account they come from. So each connection needs its own webhook in Pylon and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected.
@@ -39,7 +39,7 @@ curl -X PATCH "https://api.nango.dev/connections/metadata" \
   }'
 ```
 
-See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+Use a Nango **Environment API key** from **Environment Settings > API Keys** with the `environment:connections:update` scope. See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
 
 <Note>
 The webhook secret on the integration's Settings page is not used for Pylon. Nango only verifies against the connection's `webhookSecret`.

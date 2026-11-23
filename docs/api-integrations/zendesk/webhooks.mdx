@@ -38,7 +38,7 @@ curl -X PATCH "https://api.nango.dev/connections/metadata" \
   }'
 ```
 
-See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+Use a Nango **Environment API key** from **Environment Settings > API Keys** with the `environment:connections:update` scope. See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
 
 <Note>
 Zendesk signs a test sent while you are still creating a webhook with a fixed public test secret, not the webhook's own, so Nango rejects it. Create the webhook first and set its secret in Nango, then test it: a test of an existing webhook is signed with its own secret.

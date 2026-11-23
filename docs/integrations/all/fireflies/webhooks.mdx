@@ -12,7 +12,7 @@ description: 'Learn how to receive real-time Fireflies meeting events in your ap
 
 Fireflies payloads don't say which account they come from, so each connection needs its own webhook in Fireflies and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected. Fireflies only signs deliveries when the webhook has a secret, so set one.
 
-Fireflies doesn't sign a timestamp, so Nango can't reject a replayed delivery. Fireflies payloads only carry a meeting ID, so fetch the meeting from the Fireflies API before acting on it.
+Fireflies doesn't sign a timestamp, so Nango can't reject a replayed delivery. Fireflies payloads carry the meeting ID and event details but not the meeting's contents, so fetch the meeting from the Fireflies API before acting on it.
 
 ## Setup
 
@@ -49,7 +49,7 @@ curl -X PATCH "https://api.nango.dev/connections/metadata" \
   }'
 ```
 
-See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+Use a Nango **Environment API key** from **Environment Settings > API Keys** with the `environment:connections:update` scope. See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
 
 <Note>
 The webhook secret on the integration's Settings page is not used for Fireflies. Nango only verifies against the connection's `webhookSecret`.
@@ -60,7 +60,7 @@ The webhook secret on the integration's Settings page is not used for Fireflies.
 Once routed, you have two options:
 
 - **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
-- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to event types like `meeting.transcribed`. See [Real-time syncs](/guides/syncs/realtime-syncs).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to the events your webhook sends, such as `meeting.transcribed` for Webhooks V2 or `Transcription completed` for the original webhook. See [Real-time syncs](/guides/syncs/realtime-syncs).
 
 ## Rollback strategy
 
