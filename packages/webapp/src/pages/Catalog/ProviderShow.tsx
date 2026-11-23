@@ -241,7 +241,7 @@ function getCalloutState(provider: ApiProviderListItem, configuredIntegrationIds
     if (configuredIntegrationIds.length > 0) {
         return { kind: 'configured', integrationIds: configuredIntegrationIds };
     }
-    if (instantSetup === 'managed') {
+    if (instantSetup === 'nango-managed-app') {
         return { kind: 'instant-managed' };
     }
     if (instantSetup === 'no-dev-app') {

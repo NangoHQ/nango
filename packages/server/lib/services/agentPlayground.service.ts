@@ -4,7 +4,7 @@ import { convertToModelMessages, dynamicTool, jsonSchema, stepCountIs, streamTex
 
 import db from '@nangohq/database';
 import { buildTagsFromEndUser, configService, connectionService, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
-import { Err, getLogger, metrics, Ok, report, stringifyError } from '@nangohq/utils';
+import { Err, getLogger, metrics, nanoid, Ok, report, stringifyError } from '@nangohq/utils';
 
 import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { createAgentSessionMcpServer, TOOL_NAME_SEPARATOR } from '../controllers/agent/mcp/sessionServer.js';
@@ -21,7 +21,7 @@ import { isUsableOutcome, trackIntegrationSetup, trackPlaygroundTurn } from './a
 import * as agentSessionService from './agentSession.service.js';
 import { trackAgentSessionCreated } from './agentSessionAnalytics.service.js';
 import { getInstantSetup, needsSetupFields } from './instantSetup.js';
-import { createIntegration, CreateIntegrationError } from './integrationCreate.service.js';
+import integrationService from './integration.service.js';
 
 import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
 import type { PlaygroundRequest } from './agentPlaygroundRequest.js';
@@ -39,7 +39,6 @@ import type {
     DBPlan,
     DBTeam,
     DBUser,
-    IntegrationConfig,
     PostAgentSessionsBody,
     Provider,
     Tags
@@ -123,7 +122,7 @@ function playgroundConnectionScope(user: Pick<DBUser, 'email'>): Tags {
     return { end_user_email: user.email };
 }
 
-export async function setUpPlaygroundIntegration(
+export async function ensurePlaygroundIntegration(
     { environment, account, auditAttribution }: Pick<PlaygroundContext, 'environment' | 'account' | 'auditAttribution'>,
     providerName: string
 ): Promise<AgentPlaygroundIntegrationSetup> {
@@ -153,7 +152,7 @@ export async function setUpPlaygroundIntegration(
         return { ...base, outcome: 'needs_confirmation' };
     }
 
-    const useSharedCredentials = instantSetup === 'managed';
+    const useSharedCredentials = instantSetup === 'nango-managed-app';
     const created = await createPlaygroundIntegration({ environment, account, providerName, provider, useSharedCredentials });
     if (!created) {
         return { ...base, outcome: 'not_created' };
@@ -183,46 +182,45 @@ async function createPlaygroundIntegration({
     useSharedCredentials: boolean;
 }): Promise<{ integrationId: string; inserted: boolean } | null> {
     const integrationId = providerName;
-    const create = async (withId: boolean): Promise<Result<IntegrationConfig, CreateIntegrationError>> => {
-        try {
-            return await createIntegration({
-                body: { provider: providerName, useSharedCredentials, ...(withId && { integrationId }), displayName: provider.display_name },
-                provider,
-                environment,
-                account
-            });
-        } catch (err) {
-            // The insert throws on a duplicate key rather than returning an error.
-            return Err(new CreateIntegrationError('server_error', stringifyError(err)));
-        }
-    };
-    let created = await create(true);
-    if (created.isErr()) {
+    const create = (uniqueKey: string) =>
+        integrationService.create({
+            environmentId: environment.id,
+            provider: providerName,
+            uniqueKey,
+            credentialSource: useSharedCredentials ? 'nango' : 'own',
+            displayName: provider.display_name,
+            environment,
+            team: account
+        });
+    let result = await create(integrationId);
+    if (result.isErr()) {
         // A concurrent request that inserted the same key first makes this one fail on the unique constraint.
         const concurrent = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
         if (concurrent) {
             return { integrationId: concurrent.unique_key, inserted: false };
         }
-        // Another app's integration holds the name, so let the dashboard's naming pick a free one.
-        created = await create(false);
+        if (result.error.code === 'integration_exists') {
+            result = await create(`${integrationId}-${nanoid(4).toLowerCase()}`);
+        }
     }
-    if (created.isErr()) {
-        logger.error(`Agent Playground could not create the ${providerName} integration: ${created.error.message}`);
+    if (result.isErr()) {
+        logger.error(`Agent Playground could not create the ${providerName} integration: ${result.error.message}`);
         return null;
     }
-    if (created.value.unique_key === integrationId || !created.value.id) {
-        return { integrationId: created.value.unique_key, inserted: true };
+    const created = result.value.integration;
+    if (created.unique_key === integrationId || !created.id) {
+        return { integrationId: created.unique_key, inserted: true };
     }
 
     // Keep our own row in the list: concurrent requests must all pick the same winner, or each deletes its own.
     const winner = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
-    if (!winner || winner.unique_key === created.value.unique_key) {
-        return { integrationId: created.value.unique_key, inserted: true };
+    if (!winner || winner.unique_key === created.unique_key) {
+        return { integrationId: created.unique_key, inserted: true };
     }
     await configService.deleteProviderConfig({
-        id: created.value.id,
+        id: created.id,
         environmentId: environment.id,
-        providerConfigKey: created.value.unique_key,
+        providerConfigKey: created.unique_key,
         orchestrator: getOrchestrator()
     });
     return { integrationId: winner.unique_key, inserted: false };
@@ -439,7 +437,7 @@ export async function startTurn({
     const requestedStarter = lastMessage?.role === 'user' ? lastMessage.metadata?.starterProvider : undefined;
     // The provider comes from the browser, so only the playground's own providers are set up or tracked.
     const starterProvider = requestedStarter && PLAYGROUND_PROVIDERS.includes(requestedStarter) ? requestedStarter : undefined;
-    const integrationSetup = starterProvider ? await setUpPlaygroundIntegration(ctx, starterProvider) : undefined;
+    const integrationSetup = starterProvider ? await ensurePlaygroundIntegration(ctx, starterProvider) : undefined;
     if (integrationSetup) {
         trackIntegrationSetup(ctx, integrationSetup, 'starter');
     }
@@ -517,7 +515,7 @@ export async function startTurn({
     tools[SET_UP_INTEGRATIONS_TOOL] = setUpIntegrationsTool({
         catalog: providerCatalog(),
         setUp: async (provider) => {
-            const setup = await setUpPlaygroundIntegration(ctx, provider);
+            const setup = await ensurePlaygroundIntegration(ctx, provider);
             trackIntegrationSetup(ctx, setup, 'agent');
             return setup;
         }

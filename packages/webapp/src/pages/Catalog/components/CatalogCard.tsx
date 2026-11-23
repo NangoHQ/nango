@@ -39,7 +39,7 @@ export const CatalogCard = memo(function CatalogCard({ provider, env, isConfigur
 });
 
 const INSTANT_SETUP_TOOLTIPS: Record<NonNullable<ProviderInstantSetup>, string> = {
-    managed: 'Instant setup · Nango-managed OAuth app',
+    'nango-managed-app': 'Instant setup · Nango-managed OAuth app',
     'no-dev-app': 'Instant setup · No developer app needed'
 };
 

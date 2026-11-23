@@ -29,7 +29,7 @@ export interface ApiProviderFunctionCounts {
     syncs: number;
 }
 
-export type ProviderInstantSetup = 'managed' | 'no-dev-app' | null;
+export type ProviderInstantSetup = 'nango-managed-app' | 'no-dev-app' | null;
 
 export interface ApiProviderListItem {
     name: string;

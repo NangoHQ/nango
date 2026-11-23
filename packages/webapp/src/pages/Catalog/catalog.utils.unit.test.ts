@@ -28,8 +28,11 @@ function provider(overrides: Partial<ApiProviderListItem> & Pick<ApiProviderList
 }
 
 describe('getOneClickSetupBody', () => {
-    it('uses Nango’s credentials when the provider is managed', () => {
-        expect(getOneClickSetupBody(provider({ name: 'hubspot', instantSetup: 'managed' }))).toEqual({ provider: 'hubspot', useSharedCredentials: true });
+    it('uses Nango’s credentials when Nango manages the app', () => {
+        expect(getOneClickSetupBody(provider({ name: 'hubspot', instantSetup: 'nango-managed-app' }))).toEqual({
+            provider: 'hubspot',
+            useSharedCredentials: true
+        });
     });
 
     it.each(['API_KEY', 'BASIC', 'OAUTH2_CC', 'JWT', 'NONE'] as const)('creates a %s integration without credentials', (authMode) => {

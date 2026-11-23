@@ -7,7 +7,7 @@ export type CatalogSort = 'popular' | 'alphabetical';
 
 export function getOneClickSetupBody(provider: Pick<ApiProviderListItem, 'name' | 'instantSetup' | 'authMode'>): PostIntegration['Body'] | null {
     const { instantSetup } = provider;
-    if (instantSetup === 'managed') {
+    if (instantSetup === 'nango-managed-app') {
         return { provider: provider.name, useSharedCredentials: true };
     }
     if (instantSetup !== 'no-dev-app') {

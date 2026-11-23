@@ -13,8 +13,9 @@ export function getInstantSetup(provider: Provider, preConfigured: boolean): Pro
     if (needsSetupFields(provider)) {
         return null;
     }
-    if (preConfigured) {
-        return 'managed';
+    // Nango's own app can't carry integration settings, even optional ones.
+    if (preConfigured && !provider.integration_config) {
+        return 'nango-managed-app';
     }
     if (AUTH_MODES_NEEDING_DEV_APP.includes(provider.auth_mode)) {
         return null;

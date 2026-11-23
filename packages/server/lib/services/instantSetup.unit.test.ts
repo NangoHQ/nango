@@ -9,8 +9,16 @@ function provider(auth_mode: AuthModeType, extra: Record<string, unknown> = {}):
 }
 
 describe('getInstantSetup', () => {
-    it('is managed when Nango has preconfigured credentials, even for OAuth 2', () => {
-        expect(getInstantSetup(provider('OAUTH2'), true)).toBe('managed');
+    it('uses Nango’s app when Nango has preconfigured credentials, even for OAuth 2', () => {
+        expect(getInstantSetup(provider('OAUTH2'), true)).toBe('nango-managed-app');
+    });
+
+    it('is not instant on Nango’s app when the provider has optional integration settings', () => {
+        const withOptionalConfig = provider('OAUTH2', {
+            integration_config: { appDomain: { type: 'string', title: 'App domain', description: '', order: 0, optional: true } }
+        });
+
+        expect(getInstantSetup(withOptionalConfig, true)).toBeNull();
     });
 
     it.each(['OAUTH1', 'OAUTH2', 'APP', 'CUSTOM'] as const)('is not instant for %s without preconfigured credentials', (authMode) => {
