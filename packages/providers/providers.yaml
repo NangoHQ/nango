@@ -34151,6 +34151,9 @@ sendgrid:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://api.sendgrid.com
+    webhook_routing_script: sendGridWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/integrations/all/sendgrid
     docs_connect: https://nango.dev/docs/integrations/all/sendgrid/connect
     credentials:

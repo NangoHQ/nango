@@ -47,5 +47,6 @@ export { default as woocommerceWebhookRouting } from './woocommerce-webhook-rout
 export { default as commandAlkonWebhookRouting } from './command-alkon-webhook-routing.js';
 export { default as docusignWebhookRouting } from './docusign-webhook-routing.js';
 export { default as layloWebhookRouting } from './laylo-webhook-routing.js';
+export { default as sendGridWebhookRouting } from './sendgrid-webhook-routing.js';
 export { default as bambooHrWebhookRouting } from './bamboohr-webhook-routing.js';
 export type * from './types.js';
