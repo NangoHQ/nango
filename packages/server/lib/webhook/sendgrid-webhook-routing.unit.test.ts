@@ -153,8 +153,10 @@ describe('SendGrid webhook routing', () => {
 
     it('rejects a changed timestamp, which is part of what is signed', async () => {
         const { nango, execute } = getNangoMock();
-        const headers = sign(RAW_BODY, { timestamp: '1763900000' });
-        headers['x-twilio-email-event-webhook-timestamp'] = '1763900001';
+        // Both timestamps are fresh, so only the signature can reject the request.
+        const signedAt = Math.floor(Date.now() / 1000) - 60;
+        const headers = sign(RAW_BODY, { timestamp: String(signedAt) });
+        headers['x-twilio-email-event-webhook-timestamp'] = String(signedAt + 1);
 
         const result = await route(nango, headers, BODY, RAW_BODY, QUERY);
 
