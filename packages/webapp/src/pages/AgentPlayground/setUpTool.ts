@@ -3,7 +3,7 @@ import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundSetUpToolName, Age
 
 type ToolPart = Extract<PlaygroundMessage['parts'][number], { type: 'dynamic-tool' }>;
 
-export const SET_UP_INTEGRATIONS_TOOL: AgentPlaygroundSetUpToolName = 'set_up_integrations';
+const SET_UP_INTEGRATIONS_TOOL: AgentPlaygroundSetUpToolName = 'set_up_integrations';
 
 export function isSetUpPart(part: ToolPart): boolean {
     return part.toolName === SET_UP_INTEGRATIONS_TOOL;
@@ -44,7 +44,7 @@ export function providersToAdd(message: PlaygroundMessage | undefined): string[]
     return [...new Set(setups.filter((setup) => !isAdded(setup)).map((setup) => setup.provider))];
 }
 
-// A new integration's tools only reach the agent with the next request. An app the user still has to add waits for them.
+// The agent sees a new integration's tools only in its next request. If the user still has to add an app, wait for them instead.
 function setUpToContinue(messages: PlaygroundMessage[]): string | undefined {
     const last = messages.at(-1);
     if (last?.role !== 'assistant') {

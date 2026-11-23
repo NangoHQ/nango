@@ -48,6 +48,7 @@ import { continueOncePerSetUp, createdIntegrationIds, isAdded, isSetUpPart, prov
 import { STARTER_PROMPTS } from './starterPrompts';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize, integrationLabels, labelFor } from './toolDisplay';
+import { useResumeAfterSetUp } from './useResumeAfterSetUp';
 
 import type { PendingApproval } from './approvalTracking';
 import type { PlaygroundDraft } from './draft';
@@ -286,29 +287,15 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
         [pendingConnections, messages]
     );
 
-    const awaitingSetUp = useRef<{ messageId: string; since: number; resumed: boolean } | undefined>(undefined);
-    useEffect(() => {
-        const last = messages.at(-1);
-        const providers = providersToAdd(last);
-        if (!last || providers.length === 0 || busy || awaitingApproval) {
-            return;
-        }
-        if (awaitingSetUp.current?.messageId !== last.id) {
-            awaitingSetUp.current = { messageId: last.id, since: Date.now(), resumed: false };
-        }
-        // A list fetched before the setup reply can still hold an integration that was deleted since.
-        if (!integrations || integrationsUpdatedAt <= awaitingSetUp.current.since || awaitingSetUp.current.resumed) {
-            return;
-        }
-        if (providers.every((provider) => addedIntegrations.has(provider))) {
-            awaitingSetUp.current.resumed = true;
-            const names = providers.map(providerName).join(' and ');
-            void sendMessage({
-                text: `I've added the ${names} integration, so it no longer needs setting up. Carry on with my request.`,
-                metadata: { hidden: true }
-            });
-        }
-    }, [messages, integrations, integrationsUpdatedAt, addedIntegrations, busy, awaitingApproval, sendMessage]);
+    useResumeAfterSetUp({
+        messages,
+        integrationsLoaded: Boolean(integrations),
+        integrationsUpdatedAt,
+        addedIntegrations,
+        canSend: !busy && !awaitingApproval,
+        providerName,
+        sendMessage
+    });
 
     const [newLinkRequests, setNewLinkRequests] = useState<string[]>([]);
     const onRequestNewLink = useCallback((integrationId: string) => {
