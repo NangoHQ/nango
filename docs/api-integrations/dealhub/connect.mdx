@@ -1,0 +1,36 @@
+---
+title: 'DealHub - How do I link my account?'
+sidebarTitle: 'DealHub'
+---
+
+## Overview
+
+To authenticate with DealHub, you need:
+
+1. **Instance** — the part of your DealHub URL before `.dealhub.io`.
+2. **API Token** — a DealHub API token created by a CPQ admin.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A DealHub account with CPQ admin access. Only CPQ admins can create API tokens.
+
+### Step 1: Find your DealHub instance
+
+1. Sign in to DealHub.
+2. Look at the address bar of your browser. Your DealHub URL looks like `https://<instance>.dealhub.io`. For example, if the URL is `https://app.dealhub.io`, your instance is `app`. Accounts hosted in the EU may use an instance such as `service-eu1`.
+
+### Step 2: Create an API token
+
+1. In DealHub, go to **Control Panel** > **System Settings** > **API Settings**.
+2. Click **Add** to create a new DealHub authentication token.
+3. Copy the token right away. DealHub does not show it again.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with DealHub.
+2. Enter your instance in the **Instance** field and your token in the **API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to DealHub.

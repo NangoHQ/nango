@@ -12366,6 +12366,41 @@ datto-rmm-password-grant:
             doc_section: '#step-1-enable-api-access-and-generate-api-keys'
             description: Your Datto RMM Secret Key
 
+dealhub:
+    display_name: DealHub
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.dealhub.io
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/versions
+    docs: https://nango.dev/docs/api-integrations/dealhub
+    docs_connect: https://nango.dev/docs/api-integrations/dealhub/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Instance
+            description: The part of your DealHub URL before .dealhub.io, for example app or service-eu1
+            example: app
+            default_value: app
+            pattern: '^[a-z0-9-]+$'
+            prefix: https://
+            suffix: .dealhub.io
+            order: 1
+            doc_section: '#step-1-find-your-dealhub-instance'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: A DealHub API token created by a CPQ admin
+            secret: true
+            doc_section: '#step-2-create-an-api-token'
+
 deel:
     display_name: Deel
     categories:
