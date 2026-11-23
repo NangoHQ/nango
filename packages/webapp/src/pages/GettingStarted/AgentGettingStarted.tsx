@@ -25,6 +25,7 @@ import { ChecklistRow } from '@/components/patterns/ChecklistRow';
 import { PromptCard } from '@/components/patterns/PromptCard';
 import { ProviderLogo } from '@/components/patterns/ProviderLogo';
 import { CompactStepCard, StepCard, StepList } from '@/components/patterns/StepCard';
+import { Separator } from '@/components/ui/Separator';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAgentGettingStarted, useRestartAgentGettingStarted } from '@/hooks/useAgentGettingStarted';
 import { useApiKeys } from '@/hooks/useApiKeys';
@@ -154,13 +155,12 @@ export const AgentGettingStarted: React.FC = () => {
             <Helmet>
                 <title>Getting started - Nango</title>
             </Helmet>
-            <div className="flex flex-col gap-10">
-                <div className="flex flex-col gap-7">
-                    <h1 className="text-ds-3xl font-ds-regular leading-ds-tight tracking-ds-tight text-text-strong">Get started with Nango</h1>
-                    <ExploreIntegrationsPanel env={env} />
-                </div>
+            <div className="flex flex-col gap-8">
+                <ExploreIntegrationsPanel env={env} />
 
-                <section aria-labelledby="add-nango-title" className="flex flex-col gap-3.5">
+                <Separator className="bg-border-default" />
+
+                <section aria-labelledby="add-nango-title" className="flex flex-col gap-3">
                     <h2 id="add-nango-title" className="type-heading-sm text-text-strong">
                         Add Nango to your agent
                     </h2>
@@ -245,7 +245,7 @@ export const AgentGettingStarted: React.FC = () => {
 
 const CopyApiKeyButton: React.FC<{ size: 'sm' | 'md'; disabled: boolean; copied: boolean; onClick: () => void }> = ({ size, disabled, copied, onClick }) => {
     return (
-        <Button variant="ghost" size={size} disabled={disabled} onClick={onClick}>
+        <Button variant="outline" size={size} disabled={disabled} onClick={onClick}>
             {copied ? <Check /> : <KeyRound />}
             {copied ? 'Copied' : 'Copy API key'}
         </Button>
@@ -341,7 +341,7 @@ const ExploreIntegrationsPanel: React.FC<{ env: string }> = ({ env }) => {
 
     return (
         <section aria-labelledby="explore-integrations-title">
-            <div className="flex min-w-0 flex-col gap-3.5">
+            <div className="flex min-w-0 flex-col gap-3">
                 <div className="flex flex-col gap-0.5">
                     <h2 id="explore-integrations-title" className="type-heading-sm text-text-strong">
                         Explore integrations
@@ -376,7 +376,7 @@ const ExploreIntegrationsPanel: React.FC<{ env: string }> = ({ env }) => {
                         ))}
                     <Link
                         to={`/${env}/catalog`}
-                        className={cn(TILE_CLASS, 'border-ds-1 border-border-selected hover:border-border-selected')}
+                        className={cn(TILE_CLASS, 'border-dashed border-border-default text-text-default')}
                         onClick={() => track('onboarding:catalog_link_click')}
                     >
                         <LibraryBig className="size-[18px] shrink-0 text-icon-secondary" aria-hidden />
