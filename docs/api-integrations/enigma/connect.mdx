@@ -1,0 +1,40 @@
+---
+title: 'Enigma - How do I link my account?'
+sidebarTitle: 'Enigma'
+---
+
+## Overview
+
+To authenticate with Enigma, you need:
+
+1. **API Key** — a personal or service API key from Enigma Console.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- An Enigma account on a plan with API access: Pro, Max, or Enterprise.
+
+### Step 1: Create an API key
+
+1. Sign in to [Enigma Console](https://console.enigma.com/), then go to **Settings**, then **Account**, then **API keys**.
+2. Click **Add API Key** and pick the **API key type**:
+    - **Service**: belongs to the workspace and keeps working when the person who created it leaves. Use it for production systems.
+    - **Personal**: belongs to you. Your workspace also has a default personal key you can use instead.
+3. Enter a **Name** (and a **Description** for a service key), then click **Add API key**.
+
+<img src="/api-integrations/enigma/add_api_key_dialog.png" alt="Enigma Console Add API key dialog with the API key type, Name and Description fields and the Add API key button" />
+
+4. Click the copy button next to your new key in the **Key** column to copy it.
+
+<img src="/api-integrations/enigma/copy_api_key.png" alt="Enigma Console API Keys page with the copy button next to the new key highlighted" />
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Enigma.
+2. Enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/enigma/form.png" alt="Enigma Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Enigma.
