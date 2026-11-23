@@ -52,7 +52,7 @@ const logger = getLogger('AgentPlayground');
 const MAX_STEPS = 10;
 
 export const PLAYGROUND_PROVIDERS = ['google-calendar', 'google-mail', 'github', 'google-drive', 'linear', 'notion'];
-// Integrations the playground created before it switched to plain provider names still use this prefix.
+// Older playground integrations carry this prefix, so keep matching it to reuse them.
 const LEGACY_PLAYGROUND_PREFIX = 'pg-';
 
 function providerCatalog(): CatalogEntry[] {
