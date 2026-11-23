@@ -42839,6 +42839,9 @@ zoho-crm:
     categories:
         - crm
     alias: zoho
+    webhook_routing_script: zohoCrmWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/zoho-crm
     setup_guide_url: https://nango.dev/docs/api-integrations/zoho-crm/how-to-register-your-own-zoho-crm-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/zoho-crm/connect
