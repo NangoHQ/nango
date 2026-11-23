@@ -13899,7 +13899,6 @@ facebook-login-for-business:
     authorization_params:
         config_id: ${connectionConfig.configId}
         override_default_response_type: 'true'
-    # config_id replaces scope; this drops the otherwise-empty `scope=` from the authorization URL
     authorization_url_skip_encode:
         - scopes
     proxy:
@@ -13912,7 +13911,6 @@ facebook-login-for-business:
             title: Configuration ID
             description: The ID of your Facebook Login for Business configuration, from your Meta app's dashboard.
             pattern: '^[0-9]+$'
-    # Copied from integration_config at auth time so authorization_params can read it; never asked of end users
     connection_config:
         configId:
             type: string
@@ -18469,7 +18467,7 @@ instagram:
 
 instagram-login-for-business:
     alias: facebook-login-for-business
-    display_name: Instagram (Facebook Login for Business)
+    display_name: Instagram (Login for Business)
     docs: https://nango.dev/docs/api-integrations/instagram-login-for-business
     setup_guide_url: https://nango.dev/docs/api-integrations/instagram-login-for-business/how-to-register-your-own-instagram-login-for-business-api-oauth-app
 
