@@ -168,6 +168,12 @@ describe('payloads', () => {
         expect(describeDiff(desired, { changed: [{ kind: 'text', name: 'text/md', current }] })).toEqual(['~ text text/md: s 13 → 14']);
     });
 
+    it('flags a result item that tokens.json no longer has', () => {
+        expect(describeDiff(desired, { changed: [{ kind: 'variable', name: 'surface/gone', current: null }] })).toEqual([
+            '! variable surface/gone is no longer in tokens.json; run prepare-figma-diff again'
+        ]);
+    });
+
     it('flags a description change with or without a value change', () => {
         const text = desired.styles.find((s) => s.name === 'text/md');
         const changed = [

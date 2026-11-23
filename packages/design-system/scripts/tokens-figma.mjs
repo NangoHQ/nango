@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
+import { createHash } from 'crypto';
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import os from 'os';
 import path from 'path';
@@ -8,7 +9,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TOKENS_PATH = path.resolve(__dirname, '../tokens/tokens.json');
 const RUNTIME_PATH = path.resolve(__dirname, 'tokens-figma-runtime.js');
-const OUT_DIR = path.join(os.tmpdir(), 'ds-figma-sync');
+const OUT_DIR = path.join(os.tmpdir(), `ds-figma-sync-${createHash('sha256').update(TOKENS_PATH).digest('hex').slice(0, 8)}`);
 
 export const FIGMA_FILE_KEY = 'T8aoiWC73uCiM5eucb0syk';
 // use_figma rejects code over 50,000 characters.
@@ -424,6 +425,10 @@ export function describeDiff(desired, figmaState) {
     ]);
     for (const item of figmaState.changed ?? []) {
         const desiredCanon = want.get(`${item.kind}|${item.name}`);
+        if (!desiredCanon) {
+            lines.push(`! ${item.kind} ${item.name} is no longer in tokens.json; run prepare-figma-diff again`);
+            continue;
+        }
         if (!item.current) {
             lines.push(`+ create ${item.kind} ${item.name}`);
             continue;
@@ -453,13 +458,13 @@ function readFigma() {
     console.log(`Figma file: ${FIGMA_FILE_KEY}`);
     console.log(`${desired.variables.length} variables, ${desired.styles.length} styles`);
     console.log(`\nRun with use_figma (reads only): ${file}`);
-    console.log(`Save its JSON result to a file, then run: npm run tokens:figma -- diff <that file>`);
+    console.log(`Save its JSON result to a file, then run: npm run tokens:figma --workspace=@nangohq/design-system -- diff <that file>`);
 }
 
 function diff([resultFile]) {
     if (!resultFile) throw new Error('Pass the file holding the prepare-figma-diff result.');
     const { desired, runtime } = loadDesired();
-    const result = JSON.parse(readFileSync(resultFile, 'utf8'));
+    const result = JSON.parse(readFileSync(path.resolve(process.env.INIT_CWD ?? process.cwd(), resultFile), 'utf8'));
     const lines = describeDiff(desired, result);
     mkdirSync(OUT_DIR, { recursive: true });
     for (const old of readdirSync(OUT_DIR).filter((f) => /^apply-\d+\.js$/.test(f))) rmSync(path.join(OUT_DIR, old));

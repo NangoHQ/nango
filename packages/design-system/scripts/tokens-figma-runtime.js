@@ -201,9 +201,9 @@ async function applyTokens(input) {
                     radius: e.blur,
                     spread: e.spread,
                     visible: true,
-                    blendMode: 'NORMAL',
-                    showShadowBehindNode: false
+                    blendMode: 'NORMAL'
                 };
+                if (e.type === 'DROP_SHADOW') effect.showShadowBehindNode = false;
                 const target = e.colorAlias && findVariable(e.colorAlias);
                 if (e.colorAlias && !target) errors.push(`${want.name}: color alias ${e.colorAlias} doesn't exist yet; sync again`);
                 return target ? figma.variables.setBoundVariableForEffect(effect, 'color', target) : effect;
