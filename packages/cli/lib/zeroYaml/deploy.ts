@@ -1,6 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
 import chalk from 'chalk';
 import columnify from 'columnify';
 import promptly from 'promptly';
@@ -11,14 +8,14 @@ import { getCliHeaders, parseSecretKey, printDebug, resolveHostport } from '../u
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { NANGO_VERSION } from '../version.js';
-import { tsToJsPath } from './compile.js';
 import { parseIntegrationDefinitions } from './definitions.js';
-import { resolveEntryPoint, resolveProjectPath } from './project-path.js';
+import { createFunctionsBundle, loadScriptFiles, resolveDeploySource } from './functions.js';
+import { resolveEntryPoint } from './project-path.js';
 import { ReadableError } from './utils.js';
 
 import type { DeployOptions } from '../types.js';
-import type { FunctionConfig, ParsedIntegrationDefinitions } from './definitions.js';
-import type { ResolvedProjectPath } from './project-path.js';
+import type { ParsedIntegrationDefinitions } from './definitions.js';
+import type { FunctionsBundle } from './functions.js';
 import type {
     ApiError,
     CLIDeployFlowConfig,
@@ -32,12 +29,10 @@ import type {
     PostFunctionDeploymentBundle,
     PostFunctionDeploymentBundlePreview,
     Result,
-    ScriptDifferences,
-    ScriptFileType
+    ScriptDifferences
 } from '@nangohq/types';
 
 type LegacyPackage = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'reconciliationScope'>;
-type FunctionsBundle = PostFunctionDeploymentBundle['Body'];
 type Deployment = { kind: 'legacy'; package: LegacyPackage } | { kind: 'functions'; bundle: FunctionsBundle };
 type DeploymentPlan = Deployment[];
 type DeploymentConfirmation =
@@ -356,54 +351,6 @@ function planFileDeployment({ fullPath, file, parsed }: { fullPath: string; file
     }
 }
 
-async function createFunctionsBundle({
-    fullPath,
-    functionConfigs,
-    reconciliationScope,
-    source
-}: {
-    fullPath: string;
-    functionConfigs: FunctionConfig[];
-    reconciliationScope: FunctionReconciliationScope;
-    source: 'standalone' | 'repo';
-}): Promise<Result<FunctionsBundle>> {
-    const selectedConfigs = functionConfigs.filter((config) => {
-        switch (reconciliationScope.kind) {
-            case 'environment':
-                return true;
-            case 'function':
-                return config.integrationId === reconciliationScope.integrationId && config.name === reconciliationScope.name;
-            case 'integration':
-                return config.integrationId === reconciliationScope.integrationId;
-        }
-    });
-    if (reconciliationScope.kind === 'function' && selectedConfigs.length === 0) {
-        return Err(new Error(`No compiled function found for "${reconciliationScope.name}"`));
-    }
-
-    const functions: FunctionsBundle['functions'] = [];
-    for (const config of selectedConfigs) {
-        const { filePath, ...artifact } = config;
-        const sourcePath = resolveProjectPath({ projectRoot: fullPath, filePath });
-        if (!sourcePath) {
-            return Err(new Error(`Function source path "${filePath}" must be within the project directory`));
-        }
-        const fileBody = await loadScriptFiles({
-            fullPath,
-            scriptName: config.name,
-            providerConfigKey: config.integrationId,
-            type: 'functions',
-            sourcePath
-        });
-        if (!fileBody) {
-            return Err(new Error(`No function files found for "${config.name}"`));
-        }
-        functions.push({ ...artifact, fileBody, source });
-    }
-
-    return Ok({ reconciliationScope, functions });
-}
-
 /**
  * Maps NangoYamlParsed (which is a list of integrations and its function definitions) into the shape expected by the API,
  * while also loading the content of the related script files.
@@ -554,104 +501,6 @@ async function createLegacyPackage({
     }
 
     return Ok([{ flowConfigs: postData, onEventScriptsByProvider, reconciliationScope }]);
-}
-
-/**
- * Load source and bundled files
- */
-async function loadScriptFiles({
-    fullPath,
-    scriptName,
-    providerConfigKey,
-    type,
-    sourcePath
-}: {
-    fullPath: string;
-    scriptName: string;
-    providerConfigKey: string;
-    type: ScriptFileType;
-    sourcePath?: ResolvedProjectPath;
-}): Promise<{ js: string; ts: string } | null> {
-    const js = await loadScriptJsFile({
-        fullPath,
-        scriptName,
-        providerConfigKey,
-        type,
-        ...(sourcePath ? { sourcePath: sourcePath.relative } : {})
-    });
-    if (!js) {
-        return null;
-    }
-
-    const ts = await loadScriptTsFile({
-        fullPath,
-        scriptName,
-        providerConfigKey,
-        type,
-        ...(sourcePath ? { sourceFilePath: sourcePath.absolute } : {})
-    });
-    if (!ts) {
-        return null;
-    }
-
-    return { js, ts };
-}
-
-/**
- * Load bundled file
- */
-async function loadScriptJsFile({
-    scriptName,
-    providerConfigKey,
-    fullPath,
-    type,
-    sourcePath
-}: {
-    scriptName: string;
-    type: ScriptFileType;
-    providerConfigKey: string;
-    fullPath: string;
-    sourcePath?: string;
-}): Promise<string | null> {
-    const filePath = sourcePath
-        ? path.join(fullPath, 'build', tsToJsPath(sourcePath.replace(/\.ts$/, '.js')))
-        : path.join(fullPath, 'build', `${providerConfigKey}_${type}_${scriptName}.cjs`);
-
-    try {
-        const content = await fs.promises.readFile(filePath, 'utf8');
-        return content;
-    } catch (err) {
-        console.error(chalk.red(`Error loading file ${filePath}`), err instanceof Error ? err.message : err);
-        return null;
-    }
-}
-
-/**
- * Load main source file
- * nb: this is a legacy thing but it should bundle every import too otherwise it's useless
- */
-async function loadScriptTsFile({
-    fullPath,
-    scriptName,
-    providerConfigKey,
-    type,
-    sourceFilePath
-}: {
-    fullPath: string;
-    scriptName: string;
-    providerConfigKey: string;
-    type: ScriptFileType;
-    sourceFilePath?: string;
-}): Promise<string | null> {
-    const filePath = sourceFilePath || path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
-
-    try {
-        const content = await fs.promises.readFile(filePath, 'utf8');
-        return content;
-    } catch (err) {
-        console.error(chalk.red(`Error loading file ${filePath}`), err instanceof Error ? err.message : err);
-        return null;
-    }
 }
 
 /**
@@ -1016,9 +865,4 @@ function summaryMessageColumns({
 }
 function shortSummaryMessage({ name, newItems, deleteItems }: { name: string; newItems: unknown[]; deleteItems: unknown[] }): string {
     return ` [${name} ${chalk.green(`+${newItems.length}`)} ${chalk.red(`-${deleteItems.length}`)}]`;
-}
-
-function resolveDeploySource(): 'standalone' | 'repo' {
-    const val = process.env['NANGO_DEPLOY_SOURCE'];
-    return val === 'standalone' ? 'standalone' : 'repo';
 }

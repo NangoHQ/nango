@@ -127,7 +127,7 @@ describe('shouldRefreshCredentials', () => {
             expect(res).toStrictEqual({ should: true, reason: 'expired_oauth2_with_refresh_token' });
         });
 
-        it.each(['microsoft-admin', 'shopline-oauth'])(
+        it.each(['microsoft-admin', 'microsoft-admin-cert', 'shopline-oauth'])(
             'should return true for %s even without a refresh token since it re-authenticates instead of refreshing',
             async (provider) => {
                 const connection = getTestConnection();

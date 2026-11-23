@@ -97,8 +97,8 @@ export const DevToolPanel: React.FC = () => {
                     {/* Header */}
                     <div className="flex shrink-0 items-center justify-between border-b border-border-muted px-4 py-3">
                         <span className="font-medium text-text-default">Dev Tools</span>
-                        <IconButton variant="ghost" size="2xs" label="Close" onClick={close} className="text-text-muted hover:text-text-default">
-                            <X className="size-3.5" />
+                        <IconButton variant="ghost" size="sm" label="Close" onClick={close} className="text-text-muted hover:text-text-default">
+                            <X />
                         </IconButton>
                     </div>
 

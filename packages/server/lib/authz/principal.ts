@@ -34,7 +34,7 @@ function grantsForKey(key: ApiKeyPrincipal): Grant[] {
 function subjectForKey(key: ApiKeyPrincipal): PrincipalSubject {
     return {
         type: key.source === 'connect_session' ? 'connect_session' : 'api_key',
-        id: String(key.keyId ?? key.source),
+        id: key.subjectId ?? String(key.keyId ?? key.source),
         ...(key.displayName ? { display: key.displayName } : {})
     };
 }

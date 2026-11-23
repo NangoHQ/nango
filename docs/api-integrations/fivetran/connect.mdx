@@ -1,0 +1,42 @@
+---
+title: 'Fivetran - How do I link my account?'
+sidebarTitle: 'Fivetran'
+---
+
+## Overview
+
+To authenticate with Fivetran, you need:
+
+1. **API Key** — the key half of a Fivetran API key and secret pair.
+2. **API Secret** — the secret generated together with that key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Fivetran account. You can [sign up](https://fivetran.com/signup) for a 14-day free trial.
+
+### Step 1: Generate an API key
+
+1. Log in to the [Fivetran dashboard](https://fivetran.com/login). If the setup wizard opens, you can leave it and go to the dashboard.
+2. Click your user name at the bottom of the left sidebar, then choose **API Key**.
+3. Click **Generate API key**. If you already have a key, the button reads **Generate new secret**, and clicking it replaces your current secret.
+
+<img src="/api-integrations/fivetran/api_key_page.png" alt="Fivetran API Key page with the Generate API key button" />
+
+4. Copy the **API Key** and the **API Secret** and store them securely.
+
+<img src="/api-integrations/fivetran/api_key_created.png" alt="Fivetran API Key page showing the API Key, API Secret and Base64-encoded API key fields with copy buttons" />
+
+<Tip>Fivetran shows the key and secret only once: they disappear when you close the page or navigate away.</Tip>
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Fivetran.
+2. In the **API Key** field, enter your **API Key**.
+3. In the **API Secret** field, enter the matching **API Secret**. Do not enter the Base64-encoded value in either field.
+4. Submit the form. Nango checks the key and secret with Fivetran, and you should be successfully authenticated.
+
+<img src="/api-integrations/fivetran/form.png" alt="Fivetran Connect UI form with the API Key and API Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Fivetran.

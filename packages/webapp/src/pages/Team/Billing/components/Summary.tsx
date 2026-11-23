@@ -75,8 +75,8 @@ export const Summary: React.FC = () => {
                         card: state.payment.card,
                         action: (
                             <PaymentMethodDialog replace>
-                                <IconButton variant="ghost" size="2xs" label="Edit payment method">
-                                    <Pencil className="size-3" />
+                                <IconButton variant="ghost" size="sm" inline label="Edit payment method">
+                                    <Pencil />
                                 </IconButton>
                             </PaymentMethodDialog>
                         )

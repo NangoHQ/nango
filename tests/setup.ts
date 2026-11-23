@@ -81,11 +81,11 @@ async function setupPostgres() {
     const port = pg.getMappedPort(5432);
 
     process.env['NANGO_DB_PASSWORD'] = password;
-    process.env['NANGO_DB_HOST'] = 'localhost';
+    process.env['NANGO_DB_HOST'] = pg.getHost();
     process.env['NANGO_DB_USER'] = user;
     process.env['NANGO_DB_PORT'] = port.toString();
     process.env['NANGO_DB_NAME'] = dbName;
-    process.env['RECORDS_DATABASE_URL'] = `postgres://${user}:${password}@localhost:${port}/${dbName}`;
+    process.env['RECORDS_DATABASE_URL'] = `postgres://${user}:${password}@${pg.getHost()}:${port}/${dbName}`;
 }
 
 export async function setupActiveMQ() {

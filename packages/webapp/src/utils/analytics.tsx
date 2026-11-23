@@ -7,8 +7,8 @@ import { globalEnv } from './env';
 import type { AccountGroupProperties, AnalyticsEventNameFor, AnalyticsEventPropertiesArgs, ApiUser, GetMeta } from '@nangohq/types';
 
 /** Uses the `posthog` singleton so it works outside React components too. */
-export function track<E extends AnalyticsEventNameFor<'web'>>(event: E, ...[properties]: AnalyticsEventPropertiesArgs<E>) {
-    posthog?.capture(event, { ...properties, surface: 'web' });
+export function track<E extends AnalyticsEventNameFor<'app'>>(event: E, ...[properties]: AnalyticsEventPropertiesArgs<E>) {
+    posthog?.capture(event, { ...properties, surface: 'app' });
 }
 
 export function analyticsSessionHeaders(url: URL): Record<string, string> {

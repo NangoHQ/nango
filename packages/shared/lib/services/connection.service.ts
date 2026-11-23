@@ -82,6 +82,7 @@ import type {
     DBEndUser,
     DBEnvironment,
     DBTeam,
+    EnvironmentWithoutSecrets,
     JwtCredentials,
     MaybePromise,
     Metadata,
@@ -655,7 +656,11 @@ export class ConnectionService {
 
     public async search(
         db: Knex,
-        { environmentId, filter, limit }: { environmentId: number; filter: { connectionId?: string; integrationId?: string | undefined }; limit?: number }
+        {
+            environmentId,
+            filter,
+            limit
+        }: { environmentId: number; filter: { connectionId?: string; integrationId?: string | undefined; provider?: string | undefined }; limit?: number }
     ): Promise<Result<DBConnection[]>> {
         try {
             const query = db.from<DBConnection>('_nango_connections').select('*').where({ environment_id: environmentId, deleted: false }).orderBy('id');
@@ -664,6 +669,17 @@ export class ConnectionService {
             }
             if (filter.integrationId !== undefined) {
                 query.where('provider_config_key', filter.integrationId);
+            }
+            if (filter.provider !== undefined) {
+                query.whereExists(
+                    db
+                        .select(db.raw('1'))
+                        .from('_nango_configs')
+                        .whereRaw('_nango_configs.id = _nango_connections.config_id')
+                        .whereRaw('_nango_configs.environment_id = _nango_connections.environment_id')
+                        .where('_nango_configs.provider', filter.provider)
+                        .where('_nango_configs.deleted', false)
+                );
             }
             if (limit !== undefined) {
                 query.limit(limit);
@@ -797,7 +813,7 @@ export class ConnectionService {
         refreshGithubAppJwtToken = false
     }: {
         account: DBTeam;
-        environment: DBEnvironment;
+        environment: EnvironmentWithoutSecrets;
         connectionId: string;
         integrationId: string;
         forceRefresh?: boolean;
@@ -2092,6 +2108,7 @@ export class ConnectionService {
         integrationConfig?: Record<string, string> | null
     ): Promise<ServiceResponse<TwoStepCredentials>> {
         const preconfiguredFields = getPreconfiguredTwoStepFields(provider, integrationConfig);
+        const ownPreconfiguredValues = pickDefinedFields(dynamicCredentials, preconfiguredFields);
         dynamicCredentials = applyIntegrationConfigToTwoStepCredentials(provider, dynamicCredentials, integrationConfig);
 
         if (provider.signature) {
@@ -2349,6 +2366,13 @@ export class ConnectionService {
             for (const [key, value] of Object.entries(dynamicCredentials)) {
                 if (value !== undefined && !preconfiguredFields.has(key)) {
                     parsedCreds[key] = value;
+                }
+            }
+            Object.assign(parsedCreds, ownPreconfiguredValues);
+            for (const field of preconfiguredFields) {
+                const schema = provider.integration_config?.[field];
+                if (parsedCreds[field] === undefined && schema?.optional && !schema.secret) {
+                    parsedCreds[field] = integrationConfig![field];
                 }
             }
 
@@ -2693,8 +2717,19 @@ export class ConnectionService {
     }
 }
 
+function pickDefinedFields(values: Record<string, unknown>, fields: Set<string>): Record<string, unknown> {
+    const picked: Record<string, unknown> = {};
+    for (const field of fields) {
+        if (values[field] !== undefined) {
+            picked[field] = values[field];
+        }
+    }
+    return picked;
+}
+
 // Names of `integration_config` fields that have a value set on the integration itself (`custom`) —
-// these take precedence over anything submitted per-connection and must never be persisted onto a connection.
+// these take precedence over anything submitted per-connection. A connection's own value for the field is kept
+// as is; the integration's value is only persisted as a fallback for optional, non-secret fields.
 export function getPreconfiguredTwoStepFields(provider: ProviderTwoStep, integrationConfig: Record<string, string> | null | undefined): Set<string> {
     if (!integrationConfig || !provider.integration_config) {
         return new Set();

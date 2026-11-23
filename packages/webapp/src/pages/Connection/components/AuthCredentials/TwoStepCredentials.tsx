@@ -1,9 +1,8 @@
 import { RefreshCwIcon } from 'lucide-react';
 
-import { Button, FieldLabel } from '@nangohq/design-system';
+import { Button, FieldLabel, SecretInput } from '@nangohq/design-system';
 
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { SecretInput } from '@/components/patterns/SecretInput';
+import { PERMISSION_DENIED_REASON, PermissionGate } from '@/components/patterns/PermissionGate';
 import { useRefreshConnectionWithToast } from '@/hooks/useRefreshConnectionWithToast';
 import { formatKeyToLabel } from '@/utils/utils';
 
@@ -23,7 +22,7 @@ export const TwoStepCredentialsComponent: React.FC<{
                 <div className="flex flex-col gap-2">
                     <FieldLabel htmlFor="token">Token</FieldLabel>
                     <div className="flex gap-2 items-center">
-                        <SecretInput id="token" value={credentials.token} disabled copy canRead={canRead} />
+                        <SecretInput id="token" value={credentials.token} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
                         <PermissionGate condition={canRead} asChild>
                             {(allowed) => (
                                 <Button variant="outline" size="md" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
@@ -39,7 +38,7 @@ export const TwoStepCredentialsComponent: React.FC<{
             {credentials.refresh_token && (
                 <div className="flex flex-col gap-2">
                     <FieldLabel htmlFor="refresh_token">Refresh token</FieldLabel>
-                    <SecretInput id="refresh_token" value={credentials.refresh_token} disabled copy canRead={canRead} />
+                    <SecretInput id="refresh_token" value={credentials.refresh_token} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
                 </div>
             )}
 
@@ -54,7 +53,7 @@ export const TwoStepCredentialsComponent: React.FC<{
                 return (
                     <div className="flex flex-col gap-2" key={key}>
                         <FieldLabel htmlFor={key}>{label}</FieldLabel>
-                        <SecretInput id={key} value={value} disabled copy canRead={canRead} />
+                        <SecretInput id={key} value={value} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
                     </div>
                 );
             })}

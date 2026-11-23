@@ -1,0 +1,83 @@
+---
+title: 'ClassMarker'
+sidebarTitle: 'ClassMarker'
+description: 'Integrate your application with the ClassMarker API'
+---
+
+## 🚀 Quickstart
+
+Connect to ClassMarker with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _ClassMarker_.
+    </Step>
+    <Step id="authorize-classmarker" title="Authorize ClassMarker">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your ClassMarker API Key and API Secret. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-classmarker-api" title="Call the ClassMarker API">
+    Let's make your first request to the ClassMarker API to list the groups, links and exams your API key can access. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1.json" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1.json',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Nango adds your API key, a SHA256 signature and the current timestamp to every request URL for you.
+
+    <Note>
+    ClassMarker returns API errors with a `200` status. Check the response's `status` field: `error` means the request failed.
+    </Note>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 ClassMarker integration guides
+
+- [How do I link my account?](/api-integrations/classmarker/connect)  
+Create an API key and secret in your ClassMarker account to connect it.
+
+Official docs: [ClassMarker API documentation](https://www.classmarker.com/online-testing/docs/api/)
+
+## 🧩 Pre-built syncs & tools for ClassMarker
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/classmarker/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -52,7 +52,7 @@ The SDK forwards these headers to Slack, replacing the default bot token. The sa
 
 ## When Creating Connections in Nango
 
-If you need user tokens for your integration, you can specify [user scopes](/reference/api/connect/sessions/create#body-integrations-config-defaults-key-user_scopes) when creating a connect session:
+If you need user tokens for your integration, you can specify [user scopes](/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults) when creating a connect session:
 
 ```typescript
 const { data } = await nango.createConnectSession({

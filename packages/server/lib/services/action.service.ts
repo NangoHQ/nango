@@ -1,5 +1,5 @@
 import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
-import { configService, connectionService, pubsub, resolveRunnableTool } from '@nangohq/shared';
+import { configService, connectionService, pubsub, resolveLegacyAction } from '@nangohq/shared';
 import { Err, Ok, truncateJson } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -7,7 +7,7 @@ import { getOrchestrator } from '../utils/utils.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { NangoError } from '@nangohq/shared';
-import type { AsyncActionResponse, DBEnvironment, DBTeam, FunctionSource, OperationActor, Result } from '@nangohq/types';
+import type { AsyncActionResponse, DBTeam, EnvironmentWithoutSecrets, FunctionSource, OperationActor, Result } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 
 export type ActionExecutionSuccess = AsyncActionResponse | { data: unknown };
@@ -54,7 +54,7 @@ export async function executeAction({
     logMeta
 }: {
     account: DBTeam;
-    environment: DBEnvironment;
+    environment: EnvironmentWithoutSecrets;
     connectionId: string;
     providerConfigKey: string;
     actionName: string;
@@ -79,7 +79,7 @@ export async function executeAction({
             return { logCtx, result: Err(new ActionExecutionError({ code: 'unknown_provider', message: 'Failed to find provider' })) };
         }
 
-        const resolved = await resolveRunnableTool({ accountUuid: account.uuid, environmentId: environment.id, integration: provider, name: actionName });
+        const resolved = await resolveLegacyAction({ accountUuid: account.uuid, environmentId: environment.id, integration: provider, name: actionName });
         if (resolved.kind === 'missing') {
             return { logCtx, result: Err(new ActionExecutionError({ code: 'unknown_action', message: 'Action not found' })) };
         }

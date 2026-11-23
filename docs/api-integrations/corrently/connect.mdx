@@ -1,0 +1,39 @@
+---
+title: 'Corrently - How do I link my account?'
+sidebarTitle: 'Corrently'
+---
+
+## Overview
+
+To authenticate with Corrently, you need:
+
+1. **Access Token** — a free Corrently access token (a JSON Web Token).
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- None. The free tier needs no account or payment details.
+
+### Step 1: Request an access token
+
+1. Open the [Corrently developer console](https://console.corrently.io/).
+2. Under **Free Tier (No Charge)**, find **Anonymous Access Token** and click **Request**. To get a token tied to your email instead, click **Request** on **Email Secured Access Token** and follow the email verification.
+
+<img src="/api-integrations/corrently/request_anonymous_token.png" alt="Corrently developer console with the Request button of Anonymous Access Token highlighted under Free Tier (No Charge)"/>
+
+3. The token appears in the **Token** field under **Your Access Token**, with its expiration date below it. Click the copy button next to the token.
+
+<img src="/api-integrations/corrently/access_token_created.png" alt="Corrently developer console showing the Token field, its expiration date and the copy button"/>
+
+Anonymous tokens have a short expiration time. When the token expires, request a new one and update the connection.
+
+### Step 2: Enter your access token in the Connect UI
+
+1. Open the form where you need to authenticate with Corrently.
+2. Paste the token you copied in Step 1 into the **Access Token** field.
+3. Submit the form.
+
+<img src="/api-integrations/corrently/form.png" alt="Corrently Connect UI form with the Access Token field" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the token. If the token is wrong or expired, it shows up as an authentication error on the first API request.

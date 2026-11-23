@@ -33,7 +33,7 @@ import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { BasicApiCredentials, PostPublicBasicAuthorization } from '@nangohq/types';
+import type { BasicApiCredentials, Metadata, PostPublicBasicAuthorization } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
 const queryStringValidation = z
@@ -79,6 +79,7 @@ export const postPublicBasicAuthorization = asyncWrapperWithEnvironment<PostPubl
     const queryString: PostPublicBasicAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBasicAuthorization['Params'] = paramsVal.data;
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let metadata: Metadata = {};
     const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
@@ -148,6 +149,7 @@ export const postPublicBasicAuthorization = asyncWrapperWithEnvironment<PostPubl
                 return;
             }
             connectionId = connection?.connection_id;
+            metadata = connection.metadata ?? {};
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
@@ -173,7 +175,7 @@ export const postPublicBasicAuthorization = asyncWrapperWithEnvironment<PostPubl
             credentials,
             connectionConfig,
             webhookUrlOverride,
-            metadata: {},
+            metadata,
             config,
             environment,
             tags: connectSession?.tags

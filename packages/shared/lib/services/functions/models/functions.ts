@@ -3,7 +3,7 @@ import { Err, Ok } from '@nangohq/utils';
 import { whereHttpTrigger } from './filters.js';
 import { CONFIGS_TABLE, INTEGRATIONS_TABLE, VERSIONS_TABLE } from './tables.js';
 
-import type { DBFunctionConfig, DBFunctionConfigVersion, DBIntegrationDecrypted, OnEventType } from '@nangohq/types';
+import type { DBFunctionConfig, DBFunctionConfigVersion, DBIntegrationDecrypted, FunctionTriggerDefinition, OnEventType } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
@@ -185,6 +185,10 @@ type FunctionSearchFilter = {
     enabled?: boolean | undefined;
     trigger?: { kind: 'http'; subscriptions?: 'some' | 'none' | 'any' } | { kind: 'event'; event?: OnEventType } | { kind: 'schedule' } | { kind: 'none' };
 } & FunctionIdentity;
+
+export function isTool({ trigger }: { trigger: FunctionTriggerDefinition }): boolean {
+    return trigger.kind === 'http' && !trigger.subscriptions?.length;
+}
 
 export interface FunctionSearchOptions {
     limit?: number | undefined;

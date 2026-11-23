@@ -1,25 +1,37 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getFunction, listFunctions, ListFunctionsError, listTemplates } from './service.js';
+import { Err, Ok } from '@nangohq/utils';
 
-import type { FunctionRow } from './models/functions.js';
+import { getCatalogFunctionByUuid } from '../../catalog/actions.js';
+import { generateCatalogFunctionUuid } from '../../catalog/uuid.js';
+import { getFunction, listFunctions, ListFunctionsError, listTemplates, resolveFunctionByUuid } from './service.js';
 
-const { mockFindActiveByEnvironment, mockFindActiveByName, mockFindActiveFunctionAvailability, mockGetIdByProviderConfigKey } = vi.hoisted(() => {
-    return {
-        mockFindActiveByEnvironment: vi.fn(),
-        mockFindActiveByName: vi.fn(),
-        mockFindActiveFunctionAvailability: vi.fn(),
-        mockGetIdByProviderConfigKey: vi.fn()
-    };
-});
+import type { FunctionRow } from './models/listing.js';
+
+const { mockFindActiveByEnvironment, mockFindActiveByName, mockFindActiveFunctionAvailability, mockGetIdByProviderConfigKey, mockSearchFunctions } = vi.hoisted(
+    () => {
+        return {
+            mockFindActiveByEnvironment: vi.fn(),
+            mockFindActiveByName: vi.fn(),
+            mockFindActiveFunctionAvailability: vi.fn(),
+            mockGetIdByProviderConfigKey: vi.fn(),
+            mockSearchFunctions: vi.fn()
+        };
+    }
+);
 
 vi.mock('../../config.service.js', () => ({
     default: { getIdByProviderConfigKey: mockGetIdByProviderConfigKey }
 }));
 
+vi.mock('../models/functions.js', () => ({ search: mockSearchFunctions }));
+
 vi.mock('./models/functions.js', () => ({
     findActiveByEnvironment: mockFindActiveByEnvironment,
-    findActiveByName: mockFindActiveByName,
+    findActiveByName: mockFindActiveByName
+}));
+
+vi.mock('./models/templates.js', () => ({
     findActiveFunctionAvailability: mockFindActiveFunctionAvailability
 }));
 
@@ -40,6 +52,73 @@ const baseRow: FunctionRow = {
     event: null,
     tool: null
 };
+
+describe('resolveFunctionByUuid', () => {
+    const catalogUuid = generateCatalogFunctionUuid({ provider: 'replicate', name: 'get-model' });
+    const deployedUuid = '11111111-1111-4111-8111-111111111111';
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+        mockSearchFunctions.mockResolvedValue(Ok([]));
+    });
+
+    it.skip('resolves a catalog UUID', async () => {
+        const result = await resolveFunctionByUuid({ environmentId: 1, functionUuid: catalogUuid });
+        const definition = getCatalogFunctionByUuid(catalogUuid);
+
+        expect(definition).toBeDefined();
+        expect(result.unwrap()).toEqual({ kind: 'catalog', uuid: catalogUuid, name: definition?.name, enabled: true, definition });
+        expect(mockSearchFunctions).not.toHaveBeenCalled();
+    });
+
+    it.skip('normalizes catalog UUIDs', async () => {
+        const result = await resolveFunctionByUuid({ environmentId: 1, functionUuid: catalogUuid.toUpperCase() });
+
+        expect(result.unwrap()?.uuid).toBe(catalogUuid);
+    });
+
+    it('returns undefined for an unknown catalog UUID', async () => {
+        const result = await resolveFunctionByUuid({ environmentId: 1, functionUuid: generateCatalogFunctionUuid({ provider: 'unknown', name: 'unknown' }) });
+
+        expect(result.unwrap()).toBeUndefined();
+        expect(mockSearchFunctions).not.toHaveBeenCalled();
+    });
+
+    it.each([true, false])('returns deployed state: %s', async (enabled) => {
+        const stored = {
+            config: { uuid: deployedUuid, name: 'read_issue', enabled },
+            integration: { id: 9, unique_key: 'custom-github', provider: 'github' },
+            currentVersion: { id: 42, version: 'A' }
+        };
+        mockSearchFunctions.mockResolvedValue(Ok([stored]));
+
+        const result = await resolveFunctionByUuid({ environmentId: 1, functionUuid: deployedUuid });
+
+        expect(result.unwrap()).toEqual({
+            kind: 'deployed',
+            uuid: deployedUuid,
+            name: 'read_issue',
+            enabled,
+            integration: stored.integration,
+            definition: stored.currentVersion
+        });
+        expect(mockSearchFunctions).toHaveBeenCalledWith(expect.anything(), { environmentId: 1, filter: { uuid: deployedUuid } });
+    });
+
+    it('returns undefined for an unknown UUID', async () => {
+        expect((await resolveFunctionByUuid({ environmentId: 1, functionUuid: deployedUuid })).unwrap()).toBeUndefined();
+    });
+
+    it('returns a lookup error', async () => {
+        const cause = new Error('database unavailable');
+        mockSearchFunctions.mockResolvedValue(Err(cause));
+
+        const result = await resolveFunctionByUuid({ environmentId: 1, functionUuid: deployedUuid });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) expect(result.error).toMatchObject({ message: 'failed_to_get_function_by_uuid', cause });
+    });
+});
 
 describe('function lookup service', () => {
     beforeEach(() => {

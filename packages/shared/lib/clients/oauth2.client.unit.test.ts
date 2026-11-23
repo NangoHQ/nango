@@ -99,6 +99,26 @@ describe('getSimpleOAuth2ClientConfig', () => {
         expect(agents.https).toBe(getOAuthSafeHttpAgents().httpsAgent);
     });
 
+    it('passes a secret without line breaks unchanged', () => {
+        const provider = makeProvider({ token_url: 'https://api.example.com/token', authorization_url: 'https://api.example.com/authorize' });
+        const cfg = getSimpleOAuth2ClientConfig(makeConfig({ oauth_client_secret: 'a-secret value' }), provider, {});
+        expect(cfg.client.secret).toBe('a-secret value');
+    });
+
+    // microsoft-admin-cert stores a PEM private key as the secret and signs its own client assertion.
+    it('keeps a private_key_jwt secret away from simple-oauth2', () => {
+        const provider = makeProvider({
+            token_url: 'https://api.example.com/token',
+            authorization_url: 'https://api.example.com/authorize',
+            token_request_auth_method: 'private_key_jwt'
+        });
+        const pem = '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADAN\n-----END PRIVATE KEY-----\n';
+        const cfg = getSimpleOAuth2ClientConfig(makeConfig({ oauth_client_secret: pem }), provider, {});
+        expect(cfg.client.secret).toBe('');
+        const authorizeUrl = new AuthorizationCode(cfg).authorizeURL({ redirect_uri: 'https://cb', state: 's' });
+        expect(authorizeUrl).not.toContain('MIIEvQIBADAN');
+    });
+
     describe('zoho token host', () => {
         const provider = makeProvider({
             token_url: 'https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token || ${connectionConfig.accounts-server}/oauth/v2/token'

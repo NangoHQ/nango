@@ -1,9 +1,8 @@
 import { RefreshCwIcon } from 'lucide-react';
 
-import { Button, FieldLabel } from '@nangohq/design-system';
+import { Button, FieldLabel, SecretInput } from '@nangohq/design-system';
 
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { SecretInput } from '@/components/patterns/SecretInput';
+import { PERMISSION_DENIED_REASON, PermissionGate } from '@/components/patterns/PermissionGate';
 import { useRefreshConnectionWithToast } from '@/hooks/useRefreshConnectionWithToast';
 
 import type { ApiConnectionFull, SignatureCredentials } from '@nangohq/types';
@@ -20,19 +19,19 @@ export const SignatureCredentialsComponent: React.FC<{
         <>
             <div className="flex flex-col gap-2">
                 <FieldLabel htmlFor="username">Username</FieldLabel>
-                <SecretInput id="username" value={credentials.username} disabled copy canRead={canRead} />
+                <SecretInput id="username" value={credentials.username} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
             </div>
 
             <div className="flex flex-col gap-2">
                 <FieldLabel htmlFor="password">Password</FieldLabel>
-                <SecretInput id="password" value={credentials.password} disabled copy canRead={canRead} />
+                <SecretInput id="password" value={credentials.password} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
             </div>
 
             {credentials.token && (
                 <div className="flex flex-col gap-2">
                     <FieldLabel htmlFor="token">Token</FieldLabel>
                     <div className="flex gap-2 items-center">
-                        <SecretInput id="token" value={credentials.token} disabled copy canRead={canRead} />
+                        <SecretInput id="token" value={credentials.token} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
                         <PermissionGate condition={canRead} asChild>
                             {(allowed) => (
                                 <Button variant="outline" size="md" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
