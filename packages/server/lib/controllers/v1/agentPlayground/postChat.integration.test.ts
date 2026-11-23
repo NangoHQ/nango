@@ -454,16 +454,16 @@ describe('POST /api/v1/agent-playground/chat', () => {
 
         const track = vi.spyOn(productTracking, 'track');
 
-        const turn = await chat(session, { messages: [userMessage('Show my 5 newest HubSpot contacts', { starterProvider: 'hubspot' })] });
+        const turn = await chat(session, { messages: [userMessage('What Linear issues are assigned to me?', { starterProvider: 'linear' })] });
 
         expect(turn.status).toBe(200);
-        expect(turn.integrationSetup).toEqual({ provider: 'hubspot', outcome: 'not_created' });
+        expect(turn.integrationSetup).toEqual({ provider: 'linear', outcome: 'not_created' });
         expect(turn.sessionId).toBeUndefined();
         expect(turn.sessionCreated).toBeUndefined();
         expect(turn.text).not.toContain('Mock reply');
         expect(await integrationsIn(env.id)).toEqual([]);
         expect(eventsNamed(track, 'playground:integration_create')).toEqual([
-            { provider: 'hubspot', is_success: false, error_code: 'not_created', is_existing: false }
+            { provider: 'linear', is_success: false, error_code: 'not_created', is_existing: false }
         ]);
         expect(playgroundTurnEvents(track)).toEqual([]);
     });

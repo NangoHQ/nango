@@ -43,22 +43,15 @@ import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
 import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
+import { STARTER_PROMPTS } from './starterPrompts';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize, integrationLabels, labelFor } from './toolDisplay';
 
 import type { PendingApproval } from './approvalTracking';
+import type { PlaygroundDraft } from './draft';
 import type { IntegrationLabels } from './toolDisplay';
 import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundReplyOutcome, AgentPlaygroundSessionCreated } from '@nangohq/types';
-
-const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
-    { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
-    { prompt: 'Summarize my 3 latest emails in Gmail', provider: 'google-mail', name: 'Gmail' },
-    { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
-    { prompt: 'Send me "Hello, world!" on Slack', provider: 'slack', name: 'Slack' },
-    { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
-    { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot', name: 'HubSpot' }
-];
 
 function providerName(provider: string): string {
     return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
@@ -109,7 +102,7 @@ export const AgentPlayground: React.FC = () => {
             <Chat
                 key={`${env}-${chatKey}`}
                 env={env}
-                draft={chatKey === 0 && draft?.env === env ? draft.text : undefined}
+                draft={chatKey === 0 && draft?.env === env ? draft : undefined}
                 toolbarSlot={toolbarSlot}
                 onNewChat={() => setChatKey((key) => key + 1)}
             />
@@ -117,14 +110,15 @@ export const AgentPlayground: React.FC = () => {
     );
 };
 
-const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({
+const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({
     env,
-    draft,
+    draft: playgroundDraft,
     toolbarSlot,
     onNewChat
 }) => {
     const { user } = useUser();
     const userId = user?.uuid;
+    const draft = playgroundDraft?.text;
     const [{ chatId, messages: storedMessages }] = useState(() =>
         userId && draft === undefined ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
     );
@@ -310,9 +304,20 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
 
     const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
 
-    // The composer remounts when the first message appears, so passing the draft after that would refill it.
+    const sendFromComposer = (text: string): boolean => {
+        // An edited draft may ask about another app. Only an unedited one sets up its starter's integration.
+        const isUneditedDraft = messages.length === 0 && playgroundDraft !== undefined && text.trim() === playgroundDraft.text.trim();
+        return send(text, isUneditedDraft ? playgroundDraft.starterProvider : undefined);
+    };
     const composer = (
-        <Composer draft={messages.length === 0 ? draft : undefined} busy={busy} awaitingApproval={awaitingApproval} onSend={send} onStop={() => void stop()} />
+        <Composer
+            // The composer remounts when the first message appears, so passing the draft after that would refill it.
+            draft={messages.length === 0 ? draft : undefined}
+            busy={busy}
+            awaitingApproval={awaitingApproval}
+            onSend={sendFromComposer}
+            onStop={() => void stop()}
+        />
     );
 
     if (messages.length === 0) {
