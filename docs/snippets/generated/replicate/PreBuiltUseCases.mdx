@@ -1,3 +1,39 @@
-_No pre-built syncs or tools available yet._
+### Others
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/platform/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type |
+| - | - | - |
+| `cancel-prediction` | Request cancellation of a running prediction and return its provider-reported current state. | [Tool](/guides/tools/customize-tools) |
+| `cancel-training` | Request cancellation of a training and return the provider-reported current training state. | [Tool](/guides/tools/customize-tools) |
+| `create-deployment` | Create a deployment of a model version with explicit hardware and scaling bounds. Provisioned instances may incur charges. | [Tool](/guides/tools/customize-tools) |
+| `create-deployment-prediction` | Start a prediction using a deployment's current model and return its initial or briefly awaited state. Predictions may incur model execution charges. | [Tool](/guides/tools/customize-tools) |
+| `create-model` | Create a public or private model container with chosen hardware and descriptive metadata; this does not upload a runnable version. | [Tool](/guides/tools/customize-tools) |
+| `create-prediction` | Start one prediction using an official model or a specific model version and return its immediate state, not a promise of completed output. | [Tool](/guides/tools/customize-tools) |
+| `create-training` | Start training from a specified model version and publish its successful result as a new version of an existing destination model. | [Tool](/guides/tools/customize-tools) |
+| `delete-deployment` | Delete a deployment that has been offline and unused for at least 15 minutes. No restore capability is documented. | [Tool](/guides/tools/customize-tools) |
+| `delete-file` | Delete an uploaded file so subsequent file-resource requests return not found. No restore capability is documented. | [Tool](/guides/tools/customize-tools) |
+| `delete-model` | Delete an owned private model that has no associated versions. No restoration is promised. | [Tool](/guides/tools/customize-tools) |
+| `delete-model-version` | Request deletion of an owned private model version and all associated predictions and output files. Returns acceptance, not completed deletion. | [Tool](/guides/tools/customize-tools) |
+| `download-file` | Download up to 10 MiB of original file bytes using an existing signed Replicate file download URL. | [Tool](/guides/tools/customize-tools) |
+| `get-account` | Identify the user or organization associated with the connection. | [Tool](/guides/tools/customize-tools) |
+| `get-collection` | Get a model collection, its full Markdown description, and its models. | [Tool](/guides/tools/customize-tools) |
+| `get-default-webhook-signing-secret` | Get the connection's default webhook signing secret for verifying existing incoming Replicate webhook requests. | [Tool](/guides/tools/customize-tools) |
+| `get-deployment` | Get a deployment and its current release configuration. | [Tool](/guides/tools/customize-tools) |
+| `get-file` | Get an uploaded file's metadata, size, checksums and expiration. | [Tool](/guides/tools/customize-tools) |
+| `get-model` | Get model metadata, latest-version input/output schema, and default example content. | [Tool](/guides/tools/customize-tools) |
+| `get-model-readme` | Get a model's README as directly usable Markdown text. | [Tool](/guides/tools/customize-tools) |
+| `get-model-version` | Get a specific model version and its OpenAPI input/output schema. | [Tool](/guides/tools/customize-tools) |
+| `get-prediction` | Get a prediction's current lifecycle state, model output, logs and available timing metrics. | [Tool](/guides/tools/customize-tools) |
+| `get-training` | Get a training's current state, logs, timing metrics, and trained version or weights references when available. | [Tool](/guides/tools/customize-tools) |
+| `list-collections` | Browse one page of model collection summaries. | [Tool](/guides/tools/customize-tools) |
+| `list-deployments` | List one page of the connected account's deployments, including current release configuration. | [Tool](/guides/tools/customize-tools) |
+| `list-files` | List one page of files created by the connected user or organization. | [Tool](/guides/tools/customize-tools) |
+| `list-hardware` | List available model hardware names and SKUs. | [Tool](/guides/tools/customize-tools) |
+| `list-model-examples` | Get one page of predictions saved by a model author as illustrative examples. | [Tool](/guides/tools/customize-tools) |
+| `list-model-versions` | Get one page of a model's versions, newest first, including available input/output schemas. | [Tool](/guides/tools/customize-tools) |
+| `list-models` | Browse one page of public models, ordered by model creation or latest-version creation. | [Tool](/guides/tools/customize-tools) |
+| `list-predictions` | Get one newest-first page of the connection's user or organization predictions, with optional creation-time and website-source filters. | [Tool](/guides/tools/customize-tools) |
+| `list-trainings` | Get one newest-first page of trainings created by the connection's user or organization through the API or website. | [Tool](/guides/tools/customize-tools) |
+| `search-resources` | Search public models, collections, and documentation with a text query using Replicate's beta search. | [Tool](/guides/tools/customize-tools) |
+| `update-deployment` | Partially update a deployment's model version, hardware, or scaling bounds. Each update creates a new current release number and can affect capacity and charges. | [Tool](/guides/tools/customize-tools) |
+| `update-model` | Partially update an existing model's description, README, and documentation links without changing its identity. | [Tool](/guides/tools/customize-tools) |
+| `upload-file` | Upload original file bytes and optional metadata to create an expiring file resource. This bounded tool accepts at most 10 MiB per upload. | [Tool](/guides/tools/customize-tools) |
