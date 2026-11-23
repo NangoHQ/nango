@@ -2,11 +2,15 @@ import { isInterrupted, isShown } from './replyOutcome';
 import { isSetUpPart } from './setUpTool';
 
 import type { PlaygroundMessage } from '../../store/agentPlaygroundChat';
+import type { AgentPlaygroundSessionCreated } from '@nangohq/types';
 import type { DynamicToolUIPart, TextUIPart } from 'ai';
 
 export type ReplyEntry = { kind: 'text'; key: string; part: TextUIPart } | { kind: 'tool'; key: string; part: DynamicToolUIPart };
 
-export type ReplyItem = ReplyEntry | { kind: 'group'; key: string; calls: DynamicToolUIPart[]; entries: ReplyEntry[] };
+export type ReplyItem =
+    | ReplyEntry
+    | { kind: 'group'; key: string; calls: DynamicToolUIPart[]; entries: ReplyEntry[] }
+    | { kind: 'session'; key: string; created: AgentPlaygroundSessionCreated };
 
 // A call the user has to act on, or acted on, stays on its own row.
 export function needsOwnRow(part: DynamicToolUIPart, stoppedToolCall: DynamicToolUIPart | undefined): boolean {
@@ -41,6 +45,11 @@ export function groupReplyParts(parts: PlaygroundMessage['parts'], stoppedToolCa
             if (isShown(part)) {
                 run.push({ kind: 'text', key: `text-${index}`, part });
             }
+            return;
+        }
+        if (part.type === 'data-session') {
+            flush();
+            items.push({ kind: 'session', key: `session-${index}`, created: part.data });
             return;
         }
         if (part.type !== 'dynamic-tool') {

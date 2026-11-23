@@ -4,6 +4,7 @@ import { INTERRUPTED_CALL } from '../../store/agentPlaygroundChat.js';
 import { groupReplyParts } from './toolGroups.js';
 
 import type { PlaygroundMessage } from '../../store/agentPlaygroundChat.js';
+import type { PostAgentSessionsBody } from '@nangohq/types';
 import type { DynamicToolUIPart } from 'ai';
 
 type Part = PlaygroundMessage['parts'][number];
@@ -81,6 +82,16 @@ describe('groupReplyParts', () => {
         const setUp = call('setup', { toolName: 'set_up_integrations' });
 
         expect(shape([call('a'), call('b'), setUp, call('c'), call('d')])).toEqual([['a', 'b'], 'setup', ['c', 'd']]);
+    });
+
+    it('keeps each session where it started, after the set-up step that restarted it', () => {
+        const session = (reason?: 'integrations_changed'): Part => ({
+            type: 'data-session',
+            data: { request: { toolset: '*' } as unknown as PostAgentSessionsBody, ...(reason ? { reason } : {}) }
+        });
+        const setUp = call('setup', { toolName: 'set_up_integrations' });
+
+        expect(shape([session(), setUp, session('integrations_changed'), call('a'), call('b')])).toEqual(['session-0', 'setup', 'session-2', ['a', 'b']]);
     });
 
     it('groups calls the server approved automatically', () => {

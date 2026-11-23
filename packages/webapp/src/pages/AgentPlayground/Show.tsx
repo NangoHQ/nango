@@ -334,7 +334,10 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
         }
     }, [messages]);
 
-    const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
+    const firstSession = messages.flatMap((message) => [
+        ...(message.metadata?.sessionCreated ? [message.metadata.sessionCreated] : []),
+        ...message.parts.flatMap((part) => (part.type === 'data-session' ? [part.data] : []))
+    ])[0];
 
     const sendFromComposer = (text: string): boolean => {
         // An edited draft may ask about another app. Only an unedited one sets up its starter's integration.
@@ -394,8 +397,7 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                     if (!hasVisibleContent(message)) {
                         return null;
                     }
-                    const sessionCreated = message.metadata?.sessionCreated;
-                    const sessionNotice = sessionCreated && <SessionNotice created={sessionCreated} replaced={message.id !== firstSessionMessageId} />;
+                    const savedSession = message.metadata?.sessionCreated;
                     const chatActive = message === lastMessage && busy;
                     const approvalSending = message === lastMessage && status === 'ready';
                     const renderEntry = (entry: ReplyEntry) => {
@@ -421,6 +423,9 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                         );
                     };
                     const renderItem = (item: ReplyItem) => {
+                        if (item.kind === 'session') {
+                            return <SessionNotice key={item.key} created={item.created} replaced={item.created !== firstSession} />;
+                        }
                         if (item.kind !== 'group') {
                             return renderEntry(item);
                         }
@@ -447,7 +452,7 @@ const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarS
                                     onTryAgain={message.id === lastMessage?.id && !busy ? () => void regenerate() : undefined}
                                 />
                             )}
-                            {sessionNotice}
+                            {savedSession && <SessionNotice created={savedSession} replaced={savedSession !== firstSession} />}
                             {groupReplyParts(message.parts, stoppedToolCall).map((item) => {
                                 if (item.kind === 'tool' && isSetUpPart(item.part)) {
                                     const part = item.part;

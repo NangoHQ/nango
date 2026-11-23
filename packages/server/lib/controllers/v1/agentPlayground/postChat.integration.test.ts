@@ -104,9 +104,17 @@ async function chat(
     const chunks = text
         .split('\n')
         .filter((line) => line.startsWith('data: {'))
-        .map((line) => JSON.parse(line.slice('data: '.length)) as { type: string; messageMetadata?: AgentPlaygroundMessageMetadata });
+        .map(
+            (line) =>
+                JSON.parse(line.slice('data: '.length)) as {
+                    type: string;
+                    messageMetadata?: AgentPlaygroundMessageMetadata;
+                    data?: AgentPlaygroundSessionCreated;
+                }
+        );
     const start = chunks.find((chunk) => chunk.type === 'start')?.messageMetadata;
-    return { status: res.status, sessionId: start?.sessionId, integrationSetup: start?.integrationSetup, sessionCreated: start?.sessionCreated, text };
+    const sessionCreated = chunks.find((chunk) => chunk.type === 'data-session')?.data;
+    return { status: res.status, sessionId: start?.sessionId, integrationSetup: start?.integrationSetup, sessionCreated, text };
 }
 
 async function integrationsIn(environmentId: number): Promise<{ unique_key: string; shared_credentials_id: number | null }[]> {
