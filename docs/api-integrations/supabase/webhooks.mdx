@@ -1,0 +1,60 @@
+---
+title: 'How to set up webhooks with Supabase on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Supabase database changes in your app using Nango webhooks'
+---
+
+## How it works
+
+1. Supabase sends a POST request to your Nango webhook URL when a row is inserted, updated or deleted in a table with a database webhook.
+2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and checks that the `X-Nango-Webhook-Secret` header matches that connection's own webhook secret. Supabase doesn't sign database webhooks, so the webhook sends the secret as a header.
+3. Nango routes the event to that connection, using the payload's `type` field (`INSERT`, `UPDATE` or `DELETE`) as the webhook type.
+
+Supabase payloads don't say which project they come from, so each connection needs its own webhook in Supabase and its own `webhookSecret` in Nango. Webhooks without the right secret are rejected, unless the connection has no secret and **Allow unverified webhooks** is on in the integration's settings.
+
+## Setup
+
+### 1. Choose a webhook secret
+
+Generate a random secret of at least 16 characters, for example with `openssl rand -hex 24`, and store it as `webhookSecret` in the connection's metadata:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<WEBHOOK-SECRET>" }
+  }'
+```
+
+See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+### 2. Get your Nango webhook URL
+
+In the Nango dashboard, open your Supabase integration and copy the **Webhook URL**. Append `?nangoConnectionId=<CONNECTION-ID>` for the connection you are registering the webhook for. URL-encode the connection ID if it contains characters like `+`, `/` or spaces.
+
+### 3. Create the database webhook in Supabase
+
+1. In the Supabase dashboard, go to **Database** → **Webhooks** and create a webhook.
+2. Pick the table and the events to send.
+3. Choose **HTTP Request**, set the method to `POST` and the URL to the URL from step 2.
+4. Add an HTTP header named `X-Nango-Webhook-Secret` with the secret from step 1, and save.
+
+<Note>
+The webhook secret on the integration's Settings page is not used for Supabase. Nango only checks the connection's `webhookSecret`.
+</Note>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to event types like `INSERT`. See [Real-time syncs](/guides/syncs/realtime-syncs).
+
+## Rollback strategy
+
+Delete the webhook in Supabase, then clear `webhookSecret` from the connection's metadata.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

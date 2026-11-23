@@ -84,7 +84,9 @@ export const NON_FORWARDABLE_HEADERS = [
     'www-authenticate',
     'server',
     UNVERIFIED_WEBHOOK_HEADER.toLowerCase(),
-    'x-nango-webhook-secret'
+    // Headers carrying a connection's webhook secret: keep in sync with WEBHOOK_SECRET_HEADERS in packages/server/lib/webhook/nango-webhook-secret.ts.
+    'x-nango-webhook-secret',
+    'x-telegram-bot-api-secret-token'
 ];
 
 const circuitBreaker = await (async () => {

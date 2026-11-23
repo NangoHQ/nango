@@ -3,11 +3,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { logContextGetter } from '@nangohq/logs';
 import { connectionService, seeders } from '@nangohq/shared';
 import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
+import { redactHeaders } from '@nangohq/utils';
 
 import * as AffinityWebhookRouting from './affinity-webhook-routing.js';
 import * as FilloutWebhookRouting from './fillout-webhook-routing.js';
 import { InternalNango } from './internal-nango.js';
-import { connectionsWithValidSecret, rejectUnverifiedWebhook, verifyNangoWebhookSecret, withoutNangoWebhookSecret } from './nango-webhook-secret.js';
+import {
+    connectionsWithValidSecret,
+    rejectUnverifiedWebhook,
+    verifyNangoWebhookSecret,
+    WEBHOOK_SECRET_HEADERS,
+    withoutNangoWebhookSecret
+} from './nango-webhook-secret.js';
 import * as ShipstationWebhookRouting from './shipstation-webhook-routing.js';
 
 import type { affinityWebhookResponse } from './types.js';
@@ -355,5 +362,18 @@ describe('allow unverified webhooks setting', () => {
         const result = await ShipstationWebhookRouting.default(nango, {}, body, JSON.stringify(body), {});
 
         expect(routedTo(result)).toEqual(['secretless']);
+    });
+});
+
+describe('WEBHOOK_SECRET_HEADERS', () => {
+    it('redacts every header that carries a connection secret from the logged request, in any casing', () => {
+        const redacted = redactHeaders({
+            headers: { 'X-Nango-Webhook-Secret': SECRET, 'X-Telegram-Bot-Api-Secret-Token': OTHER_SECRET, 'x-provider-event': 'created' },
+            headersToFilter: WEBHOOK_SECRET_HEADERS
+        });
+
+        expect(JSON.stringify(redacted)).not.toContain(SECRET);
+        expect(JSON.stringify(redacted)).not.toContain(OTHER_SECRET);
+        expect(redacted).toMatchObject({ 'x-provider-event': 'created' });
     });
 });

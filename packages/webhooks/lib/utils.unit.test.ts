@@ -164,6 +164,21 @@ describe('deliver request shape', () => {
         expect(Object.keys(headers).map((key) => key.toLowerCase())).not.toContain('x-nango-webhook-secret');
         expect(headers).toMatchObject({ 'x-provider-event': 'created' });
     });
+
+    it("never forwards Telegram's secret token, which is the connection's webhook secret", async () => {
+        await deliver({
+            webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],
+            body: { update_id: 1 },
+            webhookType: 'forward',
+            secret,
+            incomingHeaders: { 'X-Telegram-Bot-Api-Secret-Token': 'shh', 'x-provider-event': 'created' },
+            outbound: allowAll
+        });
+
+        const headers = postSpy.mock.calls[0]?.[2]?.headers as Record<string, string>;
+        expect(Object.keys(headers).map((key) => key.toLowerCase())).not.toContain('x-telegram-bot-api-secret-token');
+        expect(headers).toMatchObject({ 'x-provider-event': 'created' });
+    });
 });
 
 describe('resolveWebhookSettings', () => {

@@ -22,6 +22,13 @@ import type { Result } from '@nangohq/utils';
  */
 export const NANGO_WEBHOOK_SECRET_HEADER = 'x-nango-webhook-secret';
 export const NANGO_WEBHOOK_SECRET_QUERY_PARAM = 'nangoWebhookSecret';
+/** Telegram sends a bot's webhook secret back in its own header, so that header carries the connection's secret too. */
+export const TELEGRAM_SECRET_TOKEN_HEADER = 'x-telegram-bot-api-secret-token';
+/**
+ * Incoming headers that carry a connection's webhook secret. They are redacted from the request Nango logs and
+ * hands to webhook functions, and `NON_FORWARDABLE_HEADERS` in `@nangohq/webhooks` keeps them out of forwards.
+ */
+export const WEBHOOK_SECRET_HEADERS = [NANGO_WEBHOOK_SECRET_HEADER, TELEGRAM_SECRET_TOKEN_HEADER];
 
 // Customer chosen, so a short one would be guessable from the public webhook URL.
 const MIN_SECRET_LENGTH = 16;
