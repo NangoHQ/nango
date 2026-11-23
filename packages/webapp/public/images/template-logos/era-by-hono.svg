@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_13" data-name="Layer 13" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #f17fa8;
+      }
+
+      .cls-2 {
+        fill: url(#radial-gradient);
+      }
+
+      .cls-3 {
+        fill: #ffc20e;
+      }
+
+      .cls-4 {
+        fill: #78c8a1;
+      }
+
+      .cls-5 {
+        fill: #1fc1f2;
+      }
+    </style>
+    <radialGradient id="radial-gradient" cx="83.15" cy="80.42" fx="83.15" fy="80.42" r="848.64" gradientTransform="translate(1000 1000) rotate(-180)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8429d6"/>
+      <stop offset="1" stop-color="#360b62"/>
+    </radialGradient>
+  </defs>
+  <path class="cls-2" d="M100,0h806.95C958.3,0,1000,41.7,1000,93.05v813.9c0,51.36-41.7,93.05-93.05,93.05H93.05c-51.36,0-93.05-41.7-93.05-93.05V100C0,44.81,44.81,0,100,0Z" transform="translate(1000 1000) rotate(-180)"/>
+  <g>
+    <path class="cls-4" d="M763.97,588.01h-175.96v175.96h175.96v-175.96Z"/>
+    <path class="cls-1" d="M763.97,236.03h-175.96v175.96h175.96v-175.96Z"/>
+    <path class="cls-1" d="M411.99,588.01h-175.96v175.96h175.96v-175.96Z"/>
+    <path class="cls-3" d="M411.99,411.9h-175.96v175.96h175.96v-175.96Z"/>
+    <path class="cls-5" d="M411.99,236.03h-175.96v175.96h175.96v-175.96Z"/>
+  </g>
+</svg>

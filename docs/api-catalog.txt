@@ -5,7 +5,7 @@
 - [OpenAPI spec](https://nango.dev/docs/spec.yaml): Exact HTTP API schemas for code generation or typed clients.
 - [Docs MCP server](https://nango.dev/docs/mcp): Live docs context without authentication. The Management MCP server includes the same docs tools.
 
-Provider count: 1442
+Provider count: 1443
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -524,6 +524,7 @@ URL patterns:
 | `epic-games` | Epic Games | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/epic-games.md) |  |  | gaming |
 | `epicor-prophet-21` | Epicor Prophet 21 | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/epicor-prophet-21.md) | [connect](https://nango.dev/docs/api-integrations/epicor-prophet-21/connect.md) |  | erp |
 | `epost-klara` | ePost (KLARA) | API_KEY | [docs](https://nango.dev/docs/api-integrations/epost-klara.md) | [connect](https://nango.dev/docs/api-integrations/epost-klara/connect.md) |  | other |
+| `era-by-hono` | ERA by HONO | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/era-by-hono.md) |  |  | hr, mcp |
 | `ergo` | Ergo | API_KEY | [docs](https://nango.dev/docs/api-integrations/ergo.md) | [connect](https://nango.dev/docs/api-integrations/ergo/connect.md) |  | productivity |
 | `erpnext` | ERPNext | BASIC | [docs](https://nango.dev/docs/api-integrations/erpnext.md) | [connect](https://nango.dev/docs/api-integrations/erpnext/connect.md) |  | erp |
 | `esignatures-io` | eSignatures.io | BASIC | [docs](https://nango.dev/docs/api-integrations/esignatures-io.md) | [connect](https://nango.dev/docs/api-integrations/esignatures-io/connect.md) |  | legal |
