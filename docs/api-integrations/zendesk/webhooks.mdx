@@ -1,0 +1,62 @@
+---
+title: 'How to set up webhooks with Zendesk on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Zendesk ticket, user and organization events in your app using Nango webhooks'
+---
+
+## How it works
+
+1. Zendesk sends a POST request to your Nango webhook URL when an event happens, for example `zen:event-type:ticket.created`, or when a trigger or automation calls it.
+2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's `X-Zendesk-Webhook-Signature` against that connection's own webhook secret. The signature is an HMAC-SHA256 of the `X-Zendesk-Webhook-Signature-Timestamp` header and the request body, and Nango rejects deliveries signed more than 5 minutes ago.
+3. Nango routes the event to that connection, using the payload's `type` field as the webhook type. Webhooks subscribed to Zendesk events carry a `type` like `zen:event-type:ticket.created`; webhooks fired by a trigger or automation send the body you write, which has no type unless you add a `type` field.
+
+Each Zendesk webhook has its own signing secret. So each connection needs its own webhook in Zendesk and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Zendesk integration and copy the **Webhook URL**. Append `?nangoConnectionId=<CONNECTION-ID>` for the connection you are registering the webhook for. URL-encode the connection ID if it contains characters like `+`, `/` or spaces.
+
+### 2. Register the webhook in Zendesk
+
+1. In Zendesk Admin Center, go to **Apps and integrations** → **Webhooks** and create a webhook with the URL from step 1, either subscribed to Zendesk events or connected to triggers and automations.
+2. Open the webhook and click **Reveal secret** to copy its signing secret. You can also read it with the [Show webhook signing secret](https://developer.zendesk.com/api-reference/webhooks/webhooks-api/webhooks/#show-webhook-signing-secret) API.
+
+### 3. Set the webhook secret in Nango
+
+Store the Zendesk secret as `webhookSecret` in the connection's metadata:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<ZENDESK-WEBHOOK-SECRET>" }
+  }'
+```
+
+See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+<Note>
+Zendesk signs a test sent while you are still creating a webhook with a fixed public test secret, not the webhook's own, so Nango rejects it. Create the webhook first and set its secret in Nango, then test it: a test of an existing webhook is signed with its own secret.
+</Note>
+
+<Note>
+The webhook secret on the integration's Settings page is not used for Zendesk. Nango only verifies against the connection's `webhookSecret`.
+</Note>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to event types like `zen:event-type:ticket.created`, or `*` for trigger webhooks without a type. See [Real-time syncs](/guides/syncs/realtime-syncs).
+
+## Rollback strategy
+
+Delete the webhook in Zendesk, then clear `webhookSecret` from the connection's metadata.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

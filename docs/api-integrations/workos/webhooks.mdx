@@ -1,0 +1,59 @@
+---
+title: 'How to set up webhooks with WorkOS on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time WorkOS directory, user and organization events in your app using Nango webhooks'
+---
+
+## How it works
+
+1. WorkOS sends a POST request to your Nango webhook URL when an event happens, for example `dsync.user.created`.
+2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's `WorkOS-Signature` against that connection's own webhook secret. The signature is an HMAC-SHA256 of its timestamp and the request body, and Nango rejects deliveries signed more than 3 minutes ago, the window WorkOS' own SDK uses.
+3. Nango routes the event to that connection, using the payload's `event` field as the webhook type.
+
+WorkOS payloads don't say which environment they come from. So each connection needs its own webhook in WorkOS and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your WorkOS integration and copy the **Webhook URL**. Append `?nangoConnectionId=<CONNECTION-ID>` for the connection you are registering the webhook for. URL-encode the connection ID if it contains characters like `+`, `/` or spaces.
+
+### 2. Register the webhook in WorkOS
+
+1. In the WorkOS dashboard, go to **Webhooks** and create an endpoint with the URL from step 1.
+2. Pick the events to receive.
+3. Copy the endpoint's **Signing secret**.
+
+### 3. Set the webhook secret in Nango
+
+Store the WorkOS secret as `webhookSecret` in the connection's metadata:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<WORKOS-WEBHOOK-SECRET>" }
+  }'
+```
+
+See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+<Note>
+The webhook secret on the integration's Settings page is not used for WorkOS. Nango only verifies against the connection's `webhookSecret`.
+</Note>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to event types like `dsync.user.created`. See [Real-time syncs](/guides/syncs/realtime-syncs).
+
+## Rollback strategy
+
+Delete the webhook in WorkOS, then clear `webhookSecret` from the connection's metadata.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

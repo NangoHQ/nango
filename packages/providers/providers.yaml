@@ -14935,6 +14935,9 @@ elevenlabs:
                 content-type: application/json
             endpoints:
                 - /v1/user
+    webhook_routing_script: elevenLabsWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/integrations/all/elevenlabs
     credentials:
         apiKey:
@@ -17812,6 +17815,9 @@ fireflies:
                 content-type: application/json
             endpoints:
                 - /graphql?query=%7B__schema%7Btypes%7Bname%7D%7D%7D
+    webhook_routing_script: firefliesWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/integrations/all/fireflies
     credentials:
         apiKey:
@@ -30282,6 +30288,9 @@ pylon:
             method: GET
             endpoints:
                 - /me
+    webhook_routing_script: pylonWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/pylon
     docs_connect: https://nango.dev/docs/api-integrations/pylon/connect
     credentials:
@@ -40957,6 +40966,9 @@ workos:
             method: GET
             endpoints:
                 - /organizations?limit=1
+    webhook_routing_script: workOSWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/workos
     docs_connect: https://nango.dev/docs/api-integrations/workos/connect
     credentials:
@@ -41619,6 +41631,9 @@ zendesk:
             type: link
             limit_name_in_request: per_page
             link_path_in_response_body: next_page
+    webhook_routing_script: zendeskWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/zendesk
     setup_guide_url: https://nango.dev/docs/api-integrations/zendesk/how-to-register-your-own-zendesk-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/zendesk/connect
