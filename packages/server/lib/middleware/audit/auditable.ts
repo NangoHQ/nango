@@ -227,9 +227,9 @@ async function auditedAccountPlan(account: { id: number }, locals: Partial<Reque
     return account.id === locals.account?.id ? locals.plan : await getPlanSafe(db.knex, { accountId: account.id });
 }
 
-async function canRecordSpec(policy: AuditPolicy, account: { id: number; uuid: string }, locals: Partial<RequestLocals>): Promise<boolean> {
+async function canRecordSpec(policy: AuditPolicy, account: { id: number }, locals: Partial<RequestLocals>): Promise<boolean> {
     const plan = await auditedAccountPlan(account, locals);
-    return await canRecordAuditTrail(plan, policy.dataPlaneScope ? { scope: policy.dataPlaneScope, accountUuid: account.uuid } : undefined);
+    return await canRecordAuditTrail(plan, policy.dataPlaneScope);
 }
 
 interface AuditSubject {
