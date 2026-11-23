@@ -9,6 +9,8 @@ import {
     createInstallation,
     deleteInstallation,
     deleteInstallationPreview,
+    INSTALLATION_MODES,
+    INSTALLATION_STAGES,
     requireInstallation,
     searchInstallations,
     updateInstallation
@@ -73,8 +75,6 @@ function date(name: string, value: string | undefined): Date {
     return parsed;
 }
 
-const MODES = ['byoc', 'self_managed'] as const;
-const STAGES = ['production', 'staging', 'development'] as const;
 const ALERTS = ['off', 'slack', 'oncall'] as const;
 
 const installation = (db: RegistryDb, { includeDeleted = false }: { includeDeleted?: boolean } = {}) =>
@@ -121,8 +121,8 @@ installation list    [--customer <name>] [--all]`,
                 createInstallation(db, {
                     customerId: (await requireCustomer(db, { name: required('customer', values.customer) })).unwrap().id,
                     name: required('name', values.name),
-                    mode: oneOf('mode', values.mode, MODES),
-                    stage: oneOf('stage', values.stage, STAGES),
+                    mode: oneOf('mode', values.mode, INSTALLATION_MODES),
+                    stage: oneOf('stage', values.stage, INSTALLATION_STAGES),
                     ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
                     ...(values.alerts && { alerts: oneOf('alerts', values.alerts, ALERTS) })
                 }),
@@ -130,8 +130,8 @@ installation list    [--customer <name>] [--all]`,
                 updateInstallation(db, {
                     id: (await installation(db)).unwrap().id,
                     ...(values.name !== undefined && { name: required('name', values.name) }),
-                    ...(values.mode && { mode: oneOf('mode', values.mode, MODES) }),
-                    ...(values.stage && { stage: oneOf('stage', values.stage, STAGES) }),
+                    ...(values.mode && { mode: oneOf('mode', values.mode, INSTALLATION_MODES) }),
+                    ...(values.stage && { stage: oneOf('stage', values.stage, INSTALLATION_STAGES) }),
                     ...(values.telemetry !== undefined && { telemetry: values.telemetry }),
                     ...(values.alerts && { alerts: oneOf('alerts', values.alerts, ALERTS) })
                 }),
