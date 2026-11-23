@@ -12,6 +12,12 @@ const TICK_INTERVAL_MS = 10_000;
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 
+const NOT_ALLOWED_IN_A_TAG = /[^a-z0-9_./-]/gi;
+
+function sanitizedTagValue(value: string): string {
+    return value.replaceAll(NOT_ALLOWED_IN_A_TAG, '_');
+}
+
 export function bookkeeperDaemon(db: RegistryDb): { abort: () => Promise<void> } {
     return cancellableDaemon({
         tickIntervalMs: TICK_INTERVAL_MS,
@@ -33,7 +39,7 @@ export async function bookkeeperTick(db: RegistryDb): Promise<void> {
 
         const now = Date.now();
         for (const { name, customer, telemetry, last_seen_at, license_expires_at } of installations.value) {
-            const tags = { installation: name, customer };
+            const tags = { installation: sanitizedTagValue(name), customer: sanitizedTagValue(customer) };
             if (license_expires_at) {
                 metrics.gauge(metrics.Types.SELF_HOSTING_LICENSE_EXPIRES_IN_DAYS, (license_expires_at.getTime() - now) / DAY_MS, tags);
             }

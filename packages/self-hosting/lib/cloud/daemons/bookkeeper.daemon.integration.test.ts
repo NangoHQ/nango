@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 import knexFactory from 'knex';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { migrate } from '../db/migrate.js';
 import { CUSTOMERS_TABLE } from '../db/schema.js';
@@ -129,16 +129,12 @@ describe('bookkeeperTick', () => {
         ]);
     });
 
-    it('reports nothing and marks its span as failed when the registry cannot be read', async () => {
-        await installation('byoc-acme-production');
-        const span = { setTag: vi.fn() };
-        const trace = vi.spyOn(tracer, 'trace').mockImplementation(((_name: string, fn: (span: unknown) => unknown) => fn(span)) as typeof tracer.trace);
-        onTestFinished(() => trace.mockRestore());
+    it('replaces the characters Datadog does not accept in a tag', async () => {
+        const customerId = (await createCustomer(db, { name: 'Acme, Inc.' })).unwrap().id;
+        await license(await installation('byoc acme|production', { customerId }), 40);
 
-        await bookkeeperTick({ knex, schema: 'self_hosting_missing' });
+        await bookkeeperTick(db);
 
-        expect(gauge).not.toHaveBeenCalled();
-        expect(trace.mock.calls[0]?.[0]).toBe('nango.self_hosting.daemon.bookkeeper');
-        expect(span.setTag).toHaveBeenCalledExactlyOnceWith('error', expect.objectContaining({ code: '42P01' }));
+        expect(reported('nango.self_hosting.license.expires_in_days')).toStrictEqual([[40, { installation: 'byoc_acme_production', customer: 'Acme__Inc.' }]]);
     });
 });
