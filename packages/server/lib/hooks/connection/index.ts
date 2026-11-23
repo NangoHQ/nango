@@ -74,3 +74,5 @@ export { default as classmarkerCredentialsVerification } from './providers/class
 export { default as data247CredentialsVerification } from './providers/data247/credentials-verification.js';
 export { default as eterminCredentialsVerification } from './providers/etermin/credentials-verification.js';
 export { default as zerobounceCredentialsVerification } from './providers/zerobounce/credentials-verification.js';
+export { default as financialDatasetsCredentialsVerification } from './providers/financial-datasets/credentials-verification.js';
+export { default as clientaryCredentialsVerification } from './providers/clientary/credentials-verification.js';

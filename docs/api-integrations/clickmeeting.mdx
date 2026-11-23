@@ -1,0 +1,77 @@
+---
+title: 'ClickMeeting'
+sidebarTitle: 'ClickMeeting'
+description: 'Integrate your application with the ClickMeeting API'
+---
+
+## 🚀 Quickstart
+
+Connect to ClickMeeting with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _ClickMeeting_.
+    </Step>
+    <Step id="authorize-clickmeeting" title="Authorize ClickMeeting">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your ClickMeeting API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-clickmeeting-api" title="Call the ClickMeeting API">
+    Let's make your first request to the ClickMeeting API to check the API status. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/ping" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/ping',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 ClickMeeting integration guides
+
+- [How do I link my account?](/api-integrations/clickmeeting/connect)  
+Generate an API key in ClickMeeting to connect your account.
+
+Official docs: [ClickMeeting API documentation](https://dev.clickmeeting.com/api-doc/)
+
+## 🧩 Pre-built syncs & tools for ClickMeeting
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/clickmeeting/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
