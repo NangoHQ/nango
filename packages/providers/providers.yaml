@@ -16112,6 +16112,7 @@ fathom:
             description: The API key for your Fathom account.
             pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
             example: zEqdWLo1************CQ.GUMvH9T6*****************************MFUJAw
+            doc_section: '#step-1-finding-your-api-key'
 
 fathom-oauth:
     display_name: Fathom (OAuth)
