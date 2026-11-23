@@ -1310,6 +1310,7 @@
               "api-integrations/homeworks",
               "api-integrations/honeybadger",
               "integrations/all/hover",
+              "api-integrations/hubrise",
               "api-integrations/hubspot",
               "api-integrations/hubspot-mcp",
               "api-integrations/hubstaff",

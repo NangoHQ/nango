@@ -15875,6 +15875,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `homeworks` | Homeworks | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/homeworks.md) |  | [setup](https://nango.dev/docs/api-integrations/homeworks/how-to-register-your-own-homeworks-oauth-app.md) | crm |
 | `honeybadger` | Honeybadger | BASIC | [docs](https://nango.dev/docs/api-integrations/honeybadger.md) | [connect](https://nango.dev/docs/api-integrations/honeybadger/connect.md) |  | dev-tools |
 | `hover` | Hover | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/hover.md) |  |  | productivity |
+| `hubrise` | HubRise | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hubrise.md) |  | [setup](https://nango.dev/docs/api-integrations/hubrise/how-to-register-your-own-hubrise-oauth-app.md) | e-commerce |
 | `hubspot` | HubSpot | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hubspot.md) |  | [setup](https://nango.dev/docs/api-integrations/hubspot/how-to-register-your-own-hubspot-api-oauth-app.md) | marketing, support, crm, popular |
 | `hubspot-mcp` | HubSpot (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hubspot-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app.md) | marketing, support, crm, mcp |
 | `hubstaff` | Hubstaff | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hubstaff.md) |  | [setup](https://nango.dev/docs/api-integrations/hubstaff/how-to-register-your-own-hubstaff-oauth-app.md) | hr, productivity |
