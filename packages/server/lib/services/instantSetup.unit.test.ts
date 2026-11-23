@@ -34,6 +34,15 @@ describe('getInstantSetup', () => {
         expect(needsSetupFields(withConfig)).toBe(true);
     });
 
+    it('stays instant when every integration setting is optional', () => {
+        const withOptionalConfig = provider('API_KEY', {
+            integration_config: { scopes: { type: 'string', title: 'Scopes', description: '', order: 0, optional: true } }
+        });
+
+        expect(getInstantSetup(withOptionalConfig, false)).toBe('no-dev-app');
+        expect(needsSetupFields(withOptionalConfig)).toBe(false);
+    });
+
     it('is not instant for MCP OAuth with a static client', () => {
         expect(getInstantSetup(provider('MCP_OAUTH2', { client_registration: 'static' }), false)).toBeNull();
         expect(getInstantSetup(provider('MCP_OAUTH2', { client_registration: 'dynamic' }), false)).toBe('no-dev-app');
