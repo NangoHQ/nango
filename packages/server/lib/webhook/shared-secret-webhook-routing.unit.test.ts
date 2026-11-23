@@ -163,4 +163,14 @@ describe('telegram', () => {
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalledWith(expect.objectContaining({ webhookTypeValue: 'callback_query' }));
     });
+
+    it('routes an authenticated request without a parsed body, with no webhook type', async () => {
+        const { nango, execute } = getNangoMock({ provider: 'telegram' });
+
+        const result = await telegramWebhookRouting(nango, { 'x-telegram-bot-api-secret-token': CONNECTION_SECRET }, undefined as never, '', QUERY);
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledTimes(1);
+        expect(execute.mock.calls[0]?.[0]).not.toHaveProperty('webhookTypeValue');
+    });
 });

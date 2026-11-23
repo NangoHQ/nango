@@ -47,6 +47,10 @@ In the Nango dashboard, open your PostHog integration and copy the **Webhook URL
 The webhook secret on the integration's Settings page is not used for PostHog. Nango only checks the connection's `webhookSecret`.
 </Note>
 
+<Warning>
+If you edit the body and drop `event.event`, Nango still routes and forwards the webhook, but without a webhook type, so no sync's `webhookSubscriptions` match it and no sync runs.
+</Warning>
+
 ## Handle the webhook
 
 Once routed, you have two options:
@@ -56,6 +60,19 @@ Once routed, you have two options:
 
 ## Rollback strategy
 
-Delete the webhook in PostHog, then clear `webhookSecret` from the connection's metadata.
+Delete the webhook in PostHog, then clear `webhookSecret` from the connection's metadata by setting it to `null`:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": null }
+  }'
+```
+
+Nango then rejects webhooks for that connection, unless the integration [allows unverified webhooks](/guides/triggers/webhook-forwarding#unverified-webhooks).
 
 <Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

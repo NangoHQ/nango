@@ -34,7 +34,8 @@ const route: WebhookHandler<TelegramWebhookPayload> = async (nango, headers, bod
         return rejectUnverifiedWebhook(presented);
     }
 
-    const kind = Object.keys(body).find((key) => key !== 'update_id');
+    // An authenticated request may still come without a JSON body, which Express leaves undefined.
+    const kind = body && typeof body === 'object' ? Object.keys(body).find((key) => key !== 'update_id') : undefined;
     const response = await nango.executeScriptForWebhooks({
         payload: body,
         ...(kind ? { webhookTypeValue: kind } : {}),

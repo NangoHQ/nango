@@ -63,6 +63,19 @@ Once routed, you have two options:
 
 ## Rollback strategy
 
-Delete the webhook in Telegram, then clear `webhookSecret` from the connection's metadata.
+Delete the webhook in Telegram, then clear `webhookSecret` from the connection's metadata by setting it to `null`:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": null }
+  }'
+```
+
+Nango then rejects webhooks for that connection, unless the integration [allows unverified webhooks](/guides/triggers/webhook-forwarding#unverified-webhooks).
 
 <Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
