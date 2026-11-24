@@ -424,8 +424,12 @@ function textOf(message: PlaygroundUIMessage | undefined): string {
         .trim();
 }
 
+export function isEmptyReply(message: PlaygroundUIMessage): boolean {
+    return message.role === 'assistant' && message.parts.every((part) => part.type.startsWith('data-'));
+}
+
 export function describeTurn(messages: PlaygroundUIMessage[], starterProvider: string | undefined): PlaygroundTurn {
-    const isFirstTurn = !messages.some((message) => message.role === 'assistant' && message.parts.length > 0);
+    const isFirstTurn = !messages.some((message) => message.role === 'assistant' && !isEmptyReply(message));
 
     return {
         isFirstTurn,
@@ -504,8 +508,8 @@ export async function startTurn({
         [tools, modelMessages] = await Promise.all([
             buildMcpTools(client),
             convertToModelMessages(
-                // A setup-only reply, or a Stop before the first part, leaves an assistant message with no parts. OpenAI rejects an empty turn.
-                messages.filter((message) => message.role !== 'assistant' || message.parts.length > 0),
+                // A setup-only reply, or a Stop before the first part, leaves an assistant message the model can't see. OpenAI rejects an empty turn.
+                messages.filter((message) => !isEmptyReply(message)),
                 // A tool call left unanswered by Stop or an ignored approval would make OpenAI reject every later turn.
                 { ignoreIncompleteToolCalls: true }
             )
