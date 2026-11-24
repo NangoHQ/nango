@@ -16,6 +16,8 @@ export interface AgentSessionMetaTools {
     readonly nangoExecute: boolean;
     readonly nangoProxy: boolean;
     readonly nangoCreateConnection: AgentSessionCreateConnectionConfig;
+    /** Stores tool results over the inline threshold for the agent to run code over. Absent on sessions created before it, which read as off. */
+    readonly nangoRunCode?: boolean;
 }
 
 /** Nango's own tools, as opposed to the integration tools an account deploys. */

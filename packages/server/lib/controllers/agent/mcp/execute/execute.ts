@@ -6,6 +6,7 @@ import { Err, Ok } from '@nangohq/utils';
 import { executeAction } from '../../../../services/action.service.js';
 import * as agentGettingStartedService from '../../../../services/agentGettingStarted.service.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
+import { toolResultForAgent } from '../../../../services/agentSessionResults.service.js';
 import { callRemoteTool, withRemoteMcpSession } from '../../../../services/remoteMcp.service.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
@@ -151,6 +152,8 @@ export async function executeSessionTool({
         });
     }
 
+    const resultForAgent = (data: unknown) => toolResultForAgent({ environmentId: environment.id, plan: context.plan, session, connection, toolName, data });
+
     return await tracer.trace<Promise<Result<unknown>>>('server.mcp.agentSession.execute', async (span: Span) => {
         // The same keys executeAction sets, so one concept is not queried under two names. It tags
         // only after its lookups, and those can fail, so a failed execution is attributable either way.
@@ -208,7 +211,7 @@ export async function executeSessionTool({
             }
 
             track({ logOperationId: logCtx?.id, functionSource });
-            return Ok('data' in result.value ? result.value.data : null);
+            return Ok(await resultForAgent('data' in result.value ? result.value.data : null));
         }
 
         const { logCtx, functionSource, result } = await executeAction({
@@ -232,7 +235,7 @@ export async function executeSessionTool({
         }
 
         track({ logOperationId: logCtx?.id, functionSource });
-        return Ok('data' in result.value ? result.value.data : null);
+        return Ok(await resultForAgent('data' in result.value ? result.value.data : null));
     });
 }
 

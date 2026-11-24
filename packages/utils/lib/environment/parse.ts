@@ -887,6 +887,20 @@ const ENVS_SHAPE = z.object({
     PLAIN_APP_ID: z.string().optional(),
     PLAIN_HMAC_SECRET: z.string().optional(),
 
+    // Agent session tool results over the inline size are stored as records and returned as a reference. Results over the stored size are returned in full.
+    AGENT_SESSION_RESULT_INLINE_MAX_BYTES: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(8 * 1024),
+    AGENT_SESSION_RESULT_STORED_MAX_BYTES: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(2 * 1024 * 1024),
+
     NANGO_AGENT_PLAYGROUND_MODEL: z.string().optional().default('gpt-6-luna'),
     // Without it the Agent Playground answers from a mock model.
     OPENAI_API_KEY: z.string().optional(),
