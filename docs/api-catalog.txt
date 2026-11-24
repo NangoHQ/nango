@@ -5,7 +5,7 @@
 - [OpenAPI spec](https://nango.dev/docs/spec.yaml): Exact HTTP API schemas for code generation or typed clients.
 - [Docs MCP server](https://nango.dev/docs/mcp): Live docs context without authentication. The Management MCP server includes the same docs tools.
 
-Provider count: 1473
+Provider count: 1474
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -35,6 +35,7 @@ URL patterns:
 | `addressfinder` | Addressfinder | API_KEY | [docs](https://nango.dev/docs/api-integrations/addressfinder.md) | [connect](https://nango.dev/docs/api-integrations/addressfinder/connect.md) |  | other |
 | `addresszen` | AddressZen | API_KEY | [docs](https://nango.dev/docs/api-integrations/addresszen.md) | [connect](https://nango.dev/docs/api-integrations/addresszen/connect.md) |  | other |
 | `adobe` | Adobe | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/adobe.md) |  |  | design |
+| `adobe-analytics` | Adobe Analytics | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/adobe-analytics.md) |  | [setup](https://nango.dev/docs/api-integrations/adobe-analytics/how-to-register-your-own-adobe-analytics-api-oauth-app.md) | analytics, marketing |
 | `adobe-commerce` | Adobe Commerce | API_KEY | [docs](https://nango.dev/docs/api-integrations/adobe-commerce.md) | [connect](https://nango.dev/docs/api-integrations/adobe-commerce/connect.md) |  | e-commerce |
 | `adobe-umapi` | UMAPI (Adobe User Management API) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adobe-umapi.md) | [connect](https://nango.dev/docs/integrations/all/adobe-umapi/connect.md) |  | other |
 | `adobe-workfront` | Adobe Workfront | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/adobe-workfront.md) | [connect](https://nango.dev/docs/integrations/all/adobe-workfront/connect.md) |  | productivity |
