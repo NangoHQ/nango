@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
@@ -34,17 +36,22 @@ describe('inline functions', () => {
     it('stores the code of a session under a new inline uuid and reads it back', async () => {
         const { env, agentSessionId } = await seedSession();
 
+        const resultRecordId = randomUUID();
+
         const created = (
-            await create(db.knex, { environmentId: env.id, agentSessionId, code: 'return result.value;', description: 'Read the value' })
+            await create(db.knex, { environmentId: env.id, agentSessionId, code: 'return result.value;', description: 'Read the value', resultRecordId })
         ).unwrap();
 
         expect(isInlineFunctionUuid(created.uuid)).toBe(true);
+        expect(created.resultRecordId).toBe(resultRecordId);
         expect((await get(db.knex, { environmentId: env.id, uuid: created.uuid })).unwrap()).toStrictEqual(created);
     });
 
     it('resolves an inline uuid as a function only for callers that ask for inline functions', async () => {
         const { env, agentSessionId } = await seedSession();
-        const created = (await create(db.knex, { environmentId: env.id, agentSessionId, code: 'return 1;', description: 'One' })).unwrap();
+        const created = (
+            await create(db.knex, { environmentId: env.id, agentSessionId, resultRecordId: randomUUID(), code: 'return 1;', description: 'One' })
+        ).unwrap();
 
         expect((await resolveFunctionByUuid({ environmentId: env.id, functionUuid: created.uuid, includeInline: true })).unwrap()).toStrictEqual({
             kind: 'inline',
@@ -60,7 +67,7 @@ describe('inline functions', () => {
     it('only reads the code from the environment that stored it', async () => {
         const { env, agentSessionId } = await seedSession();
         const { env: otherEnv } = await seedSession();
-        const created = (await create(db.knex, { environmentId: env.id, agentSessionId, code: 'return 1;' })).unwrap();
+        const created = (await create(db.knex, { environmentId: env.id, agentSessionId, resultRecordId: randomUUID(), code: 'return 1;' })).unwrap();
 
         expect((await get(db.knex, { environmentId: otherEnv.id, uuid: created.uuid })).unwrap()).toBeUndefined();
     });
@@ -78,7 +85,7 @@ describe('inline functions', () => {
     ])('rejects %s', async (_name, input) => {
         const { env, agentSessionId } = await seedSession();
 
-        const res = await create(db.knex, { environmentId: env.id, agentSessionId, ...input });
+        const res = await create(db.knex, { environmentId: env.id, agentSessionId, resultRecordId: randomUUID(), ...input });
 
         expect(res.isErr()).toBe(true);
         expect(await db.knex(INLINE_FUNCTIONS_TABLE).where({ agent_session_id: agentSessionId })).toHaveLength(0);
@@ -86,7 +93,7 @@ describe('inline functions', () => {
 
     it('deletes the code with its session', async () => {
         const { env, agentSessionId } = await seedSession();
-        const created = (await create(db.knex, { environmentId: env.id, agentSessionId, code: 'return 1;' })).unwrap();
+        const created = (await create(db.knex, { environmentId: env.id, agentSessionId, resultRecordId: randomUUID(), code: 'return 1;' })).unwrap();
 
         await db.knex('agent_sessions').where({ id: agentSessionId }).delete();
 

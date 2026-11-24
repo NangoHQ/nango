@@ -13,6 +13,7 @@ exports.up = async function (knex) {
             agent_session_id UUID NOT NULL REFERENCES agent_sessions(id) ON DELETE CASCADE,
             code TEXT NOT NULL,
             description TEXT,
+            result_record_id UUID NOT NULL,
             created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
         );
 
