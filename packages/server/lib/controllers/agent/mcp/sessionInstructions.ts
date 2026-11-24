@@ -7,7 +7,7 @@ const MAX_ACCOUNT_LABEL_LENGTH = 100;
  * nothing about a tool the session does not have.
  */
 export function buildSessionInstructions(session: AgentSession): string {
-    const { nangoToolSearch, nangoExecute, nangoProxy, nangoCreateConnection } = session.metaTools;
+    const { nangoToolSearch, nangoExecute, nangoProxy, nangoCreateConnection, nangoQueryResult } = session.metaTools;
 
     const sections = [
         `# Nango agent session
@@ -47,6 +47,14 @@ export function buildSessionInstructions(session: AgentSession): string {
     sections.push(`## Running a tool
 ${howToRun}
 - Ask tools for no more results than the task needs, and page through results rather than requesting everything at once.`);
+
+    if (nangoQueryResult) {
+        sections.push(`## Large results
+- A result too large to return in full comes back as a result_id, with its shape and a sample of the first items.
+- Call nango_query_result with that result_id and JavaScript that reads the stored result from \`result\` and returns only what the task needs, such as the matching items or a count.
+- The code is the body of an async function with only the language built-ins. It cannot call APIs or tools.
+- If the stored result is gone, call the tool that returned it again.`);
+    }
 
     if (nangoProxy) {
         sections.push(`## Calling an API directly

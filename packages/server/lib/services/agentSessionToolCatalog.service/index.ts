@@ -2,6 +2,7 @@ export { actionInputSchemaOf, buildSessionTools, listSessionTools, TOOL_NAME_SEP
 export { createConnectionToolDefinition } from './metaTools/createConnection.js';
 export { executeInputSchema, executeToolDefinition } from './metaTools/execute.js';
 export { proxyInputSchema, proxyToolDefinition } from './metaTools/proxy.js';
+export { queryResultInputSchema, queryResultToolDefinition } from './metaTools/queryResult.js';
 export { toolSearchOutputSchema, toolSearchToolDefinition } from './metaTools/toolSearch.js';
 export { directCallInputSchema, directCallSchema } from './directCallSchema.js';
 

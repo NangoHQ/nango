@@ -728,6 +728,16 @@ export class NangoError extends NangoInternalError {
                 this.message = `An internal error occurred during the script execution`;
                 break;
 
+            case 'invalid_inline_source':
+                this.status = 400;
+                this.message = 'The inline code is not a valid function body';
+                break;
+
+            case 'agent_session_result_not_found':
+                this.status = 404;
+                this.message = 'The stored agent session result was not found';
+                break;
+
             case 'wsse_token_generation_error':
                 this.status = 500;
                 this.message = `An error occurred while generating an WSSE token`;

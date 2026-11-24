@@ -55,6 +55,8 @@ export interface ResolvedInlineFunction {
     code: string;
     description: string | null;
     definition: InlineFunctionDefinition;
+    agentSessionId: string;
+    resultRecordId: string;
 }
 
 export type ListFunctionsErrorCode = 'integration_not_found' | 'list_failed';
@@ -238,7 +240,7 @@ export async function resolveFunctionByUuid({
             if (!inlineFunction.value) {
                 return Ok(undefined);
             }
-            const { code, description } = inlineFunction.value;
+            const { code, description, agentSessionId, resultRecordId } = inlineFunction.value;
             return Ok({
                 kind: 'inline',
                 uuid,
@@ -246,7 +248,9 @@ export async function resolveFunctionByUuid({
                 enabled: true,
                 code,
                 description,
-                definition: { uuid, version: '0.0.0', trigger: { kind: 'http' }, input_schema_ref: null, json_schema: {}, limits: {} }
+                definition: { uuid, version: '0.0.0', trigger: { kind: 'http' }, input_schema_ref: null, json_schema: {}, limits: {} },
+                agentSessionId,
+                resultRecordId
             });
         }
         if (isCatalogFunctionUuid(uuid)) {
