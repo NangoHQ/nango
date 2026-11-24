@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import { configService, seeders } from '@nangohq/shared';
 
-import { setUpPlaygroundIntegration } from './agentPlayground.service.js';
+import { setUpPlaygroundIntegration } from './service.js';
 
 describe('setUpPlaygroundIntegration', () => {
     beforeAll(async () => {

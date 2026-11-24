@@ -1,8 +1,8 @@
 import { MockLanguageModelV4 } from 'ai/test';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ModelKeyMissingError } from './agentPlaygroundModelError.js';
-import { labelFirstMessage, resolveApps } from './agentPlaygroundRequest.js';
+import { ModelKeyMissingError } from './modelError.js';
+import { labelFirstMessage, resolveApps } from './request.js';
 
 import type * as Utils from '@nangohq/utils';
 

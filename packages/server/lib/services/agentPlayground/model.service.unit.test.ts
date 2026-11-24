@@ -1,8 +1,8 @@
 import { generateText, streamText } from 'ai';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
-import { modelErrorCategory } from './agentPlaygroundModelError.js';
+import { createPlaygroundModel } from './model.service.js';
+import { modelErrorCategory } from './modelError.js';
 
 import type * as Utils from '@nangohq/utils';
 
@@ -11,7 +11,7 @@ const runtime = vi.hoisted(() => ({
     isDocker: false
 }));
 
-vi.mock('../env.js', () => ({ envs: runtime.envs }));
+vi.mock('../../env.js', () => ({ envs: runtime.envs }));
 vi.mock('@nangohq/utils', async (importOriginal) => {
     const original = await importOriginal<typeof Utils>();
     return {

@@ -1,4 +1,4 @@
-import { SET_UP_INTEGRATIONS_TOOL } from './agentPlaygroundSetUpTool.js';
+import { SET_UP_INTEGRATIONS_TOOL } from './setUpTool.js';
 
 const PERSONA = `You are the Nango Agent Playground assistant. You act on the user's connected apps through the Nango tools you are given. The agent session below is how you reach them, and the playground rules after it come first where they differ.`;
 

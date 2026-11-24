@@ -7,8 +7,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { seeders, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
-import { postAgentSessionsBodySchema } from '../controllers/agent/postSessions.js';
+import { createAgentSessionMcpServer } from '../../controllers/agent/mcp/sessionServer.js';
+import { postAgentSessionsBodySchema } from '../../controllers/agent/postSessions.js';
 import {
     buildMcpTools,
     describeTurn,
@@ -18,14 +18,14 @@ import {
     playgroundSessionRequest,
     sessionChange,
     toolNeedsApproval
-} from './agentPlayground.service.js';
-import { sessionOwner } from './agentPlaygroundTags.js';
+} from './service.js';
+import { sessionOwner } from './tags.js';
 
-import type { PlaygroundUIMessage } from './agentPlayground.service.js';
+import type { PlaygroundUIMessage } from './service.js';
 import type { AgentPlaygroundSessionCreated, AgentSession, DBSyncConfig } from '@nangohq/types';
 
 const executeAction = vi.hoisted(() => vi.fn());
-vi.mock('./action.service.js', () => ({ executeAction }));
+vi.mock('../action.service.js', () => ({ executeAction }));
 
 const usage = {
     inputTokens: { total: 1, noCache: 1, cacheRead: undefined, cacheWrite: undefined },

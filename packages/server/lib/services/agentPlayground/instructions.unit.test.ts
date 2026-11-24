@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildInstructions } from './agentPlayground.instructions.js';
+import { buildInstructions } from './instructions.js';
 
 const base = { timeZone: 'UTC', now: new Date('2026-09-29T15:00:00Z'), sessionInstructions: undefined, environmentName: 'dev' };
 

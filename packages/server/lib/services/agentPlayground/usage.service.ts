@@ -1,8 +1,8 @@
 import { productTracking } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
-import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
-import type { PlaygroundRequest } from './agentPlaygroundRequest.js';
+import type { ModelErrorCategory } from './modelError.js';
+import type { PlaygroundRequest } from './request.js';
 import type { AgentPlaygroundIntegrationSetup, AnalyticsEventProperties, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 import type { LanguageModelUsage } from 'ai';
 

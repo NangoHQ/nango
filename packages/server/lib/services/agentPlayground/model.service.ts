@@ -4,9 +4,9 @@ import { MockLanguageModelV4 } from 'ai/test';
 
 import { isDocker } from '@nangohq/utils';
 
-import { envs } from '../env.js';
-import { createMockModel } from './agentPlaygroundMockModel.js';
-import { ModelKeyMissingError } from './agentPlaygroundModelError.js';
+import { envs } from '../../env.js';
+import { createMockModel } from './mockModel.js';
+import { ModelKeyMissingError } from './modelError.js';
 
 import type { LanguageModel } from 'ai';
 
