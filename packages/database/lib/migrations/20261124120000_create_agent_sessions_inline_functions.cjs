@@ -16,6 +16,9 @@ exports.up = async function (knex) {
             created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
         );
 
+        CREATE INDEX IF NOT EXISTS agent_sessions_inline_functions_environment_id_idx
+            ON ${table} (environment_id);
+
         CREATE INDEX IF NOT EXISTS agent_sessions_inline_functions_agent_session_id_idx
             ON ${table} (agent_session_id);
 
