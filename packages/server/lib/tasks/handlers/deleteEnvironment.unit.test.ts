@@ -71,7 +71,7 @@ describe('deleteEnvironment task', () => {
         expect(deleteEnvironmentData).toHaveBeenCalledTimes(1);
         expect(deleteEnvironmentData).toHaveBeenCalledWith(
             expect.objectContaining({ id: 42, deleted: true }),
-            expect.objectContaining({ sleepMs: 0, limit: 100, deadline: expect.any(Date) })
+            expect.objectContaining({ sleepMs: 0, limit: 100, deadline: expect.any(Date) as unknown as Date })
         );
         expect(enqueue).not.toHaveBeenCalled();
     });

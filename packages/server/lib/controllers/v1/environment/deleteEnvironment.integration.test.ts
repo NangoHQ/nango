@@ -133,12 +133,24 @@ describe(`DELETE ${endpoint}`, () => {
             type: 'sync'
         });
 
+        const [connectSession] = await db
+            .knex('connect_sessions')
+            .insert({
+                environment_id: testEnv.id,
+                connection_id: connection.id
+            })
+            .returning<{ id: number }[]>('id');
+        if (!connectSession) {
+            throw new Error('Failed to seed connect session');
+        }
+
         await db.knex('_nango_oauth_sessions').insert({
             id: randomUUID(),
             connection_id: connection.connection_id,
             provider_config_key: providerName,
             provider: providerName,
             environment_id: testEnv.id,
+            connect_session_id: connectSession.id,
             callback_url: 'http://localhost/oauth/callback',
             auth_mode: 'OAUTH2'
         });
@@ -168,6 +180,7 @@ describe(`DELETE ${endpoint}`, () => {
         expect(await db.knex.from('_nango_sync_configs').where({ id: syncConfig.id }).first()).toBeUndefined();
         expect(await db.knex.from('_nango_syncs').where({ id: sync.id }).first()).toBeUndefined();
         expect(await db.knex.from('_nango_connections').where({ id: connection.id }).first()).toBeUndefined();
+        expect(await db.knex.from('connect_sessions').where({ id: connectSession.id }).first()).toBeUndefined();
         expect(await db.knex.from('_nango_oauth_sessions').where({ environment_id: testEnv.id }).first()).toBeUndefined();
     });
 

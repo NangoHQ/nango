@@ -1,24 +1,45 @@
 import db from '@nangohq/database';
 import { environmentService } from '@nangohq/shared';
 
-import { batchDelete } from './batchDelete.js';
+import { assertWithinDeadline, batchDelete } from './batchDelete.js';
+import { deleteConnectionData } from './deleteConnectionData.js';
 import { deleteProviderConfigData } from './deleteProviderConfigData.js';
 
+import type { DBConnectSession } from '../services/connectSession.service.js';
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
-import type { Config } from '@nangohq/shared';
-import type { DBEndUser, DBEnvironment, DBEnvironmentVariable, DBExternalWebhook, DBOAuthSession, DBSlackNotification } from '@nangohq/types';
+import type {
+    DBConnection,
+    DBEndUser,
+    DBEnvironment,
+    DBEnvironmentVariable,
+    DBExternalWebhook,
+    DBOAuthSession,
+    DBSlackNotification,
+    IntegrationConfig
+} from '@nangohq/types';
 
 export async function deleteEnvironmentData(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {
     const { logger } = opts;
     logger.info('Deleting environment...', { environmentId: environment.id, environmentName: environment.name });
 
+    // Delete OAuth sessions before connect_sessions (unindexed ON DELETE SET NULL FK on connect_session_id),
+    // and delete connect_sessions before connections (connect_sessions.connection_id has NO ACTION FK).
+    await deleteOAuthSessionsByEnvironmentId(environment, opts);
+    await deleteConnectSessionsByEnvironmentId(environment, opts);
+
     await batchDelete({
         ...opts,
         name: 'providerConfigs < environments',
         deleteFn: async () => {
-            const providerConfigs = await db.knex.from<Config>('_nango_configs').where({ environment_id: environment.id }).limit(opts.limit);
+            const providerConfigs = await db.knex
+                .from<IntegrationConfig, IntegrationConfig[]>('_nango_configs')
+                .where({ environment_id: environment.id })
+                .limit(opts.limit);
 
-            for (const providerConfig of providerConfigs) {
+            for (const [index, providerConfig] of providerConfigs.entries()) {
+                if (index > 0) {
+                    assertWithinDeadline(opts.deadline, logger);
+                }
                 await deleteProviderConfigData(providerConfig, opts);
             }
 
@@ -26,13 +47,57 @@ export async function deleteEnvironmentData(environment: DBEnvironment, opts: Ba
         }
     });
 
+    await deleteRemainingConnectionsByEnvironmentId(environment, opts);
     await deleteEndUserData(environment, opts);
-    await deleteOAuthSessionsByEnvironmentId(environment, opts);
     await deleteExternalWebhooksByEnvironmentId(environment, opts);
     await deleteSlackNotificationsByEnvironmentId(environment, opts);
     await deleteEnvironmentVariablesByEnvironmentId(environment, opts);
 
     await environmentService.hardDelete(environment.id);
+}
+
+async function deleteConnectSessionsByEnvironmentId(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {
+    const { logger } = opts;
+    logger.info('Deleting all connect sessions in environment...', { environmentId: environment.id, environmentName: environment.name });
+
+    await batchDelete({
+        ...opts,
+        name: 'connect_sessions < environment',
+        deleteFn: async () => {
+            const connectSessions = await db.knex
+                .from<DBConnectSession>('connect_sessions')
+                .whereIn('id', function (sub) {
+                    sub.select('id').from<DBConnectSession>('connect_sessions').where({ environment_id: environment.id }).limit(opts.limit);
+                })
+                .delete();
+
+            return connectSessions;
+        }
+    });
+}
+
+async function deleteRemainingConnectionsByEnvironmentId(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {
+    const { logger } = opts;
+
+    await batchDelete({
+        ...opts,
+        name: 'connections < environment',
+        deleteFn: async () => {
+            const connections = await db.knex
+                .from<DBConnection, DBConnection[]>('_nango_connections')
+                .where({ environment_id: environment.id })
+                .limit(opts.limit);
+
+            for (const [index, connection] of connections.entries()) {
+                if (index > 0) {
+                    assertWithinDeadline(opts.deadline, logger);
+                }
+                await deleteConnectionData(connection, opts);
+            }
+
+            return connections.length;
+        }
+    });
 }
 
 async function deleteEndUserData(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {

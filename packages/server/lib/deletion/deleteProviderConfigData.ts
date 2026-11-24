@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { configService, functionConfigService } from '@nangohq/shared';
 
-import { batchDelete } from './batchDelete.js';
+import { assertWithinDeadline, batchDelete } from './batchDelete.js';
 import { deleteConnectionData } from './deleteConnectionData.js';
 import { deleteFunctionConfigData } from './deleteFunctionConfigData.js';
 import { deleteSyncConfigData } from './deleteSyncConfigData.js';
@@ -31,7 +31,10 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
                 throw functionConfigs.error;
             }
 
-            for (const functionConfig of functionConfigs.value) {
+            for (const [index, functionConfig] of functionConfigs.value.entries()) {
+                if (index > 0) {
+                    assertWithinDeadline(deadline, logger);
+                }
                 await deleteFunctionConfigData(functionConfig, opts);
             }
 
@@ -40,14 +43,18 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
     });
 
     await batchDelete({
+        ...opts,
         name: 'syncConfigs < providerConfigs',
-        deadline,
-        limit,
-        logger,
         deleteFn: async () => {
-            const syncConfigs = await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ nango_config_id: providerConfigId }).limit(opts.limit);
+            const syncConfigs = await db.knex
+                .from<DBSyncConfig, DBSyncConfig[]>('_nango_sync_configs')
+                .where({ nango_config_id: providerConfigId })
+                .limit(opts.limit);
 
-            for (const syncConfig of syncConfigs || []) {
+            for (const [index, syncConfig] of (syncConfigs || []).entries()) {
+                if (index > 0) {
+                    assertWithinDeadline(deadline, logger);
+                }
                 await deleteSyncConfigData({ syncConfigId: syncConfig.id, environmentId: syncConfig.environment_id, models: syncConfig.models }, opts);
             }
 
@@ -59,9 +66,12 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
         ...opts,
         name: 'connections < providerConfigs',
         deleteFn: async () => {
-            const connections = await db.knex.from<DBConnection>('_nango_connections').where({ config_id: providerConfigId }).limit(opts.limit);
+            const connections = await db.knex.from<DBConnection, DBConnection[]>('_nango_connections').where({ config_id: providerConfigId }).limit(opts.limit);
 
-            for (const connection of connections) {
+            for (const [index, connection] of connections.entries()) {
+                if (index > 0) {
+                    assertWithinDeadline(deadline, logger);
+                }
                 await deleteConnectionData(connection, opts);
             }
 

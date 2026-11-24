@@ -15,6 +15,9 @@ export interface EnvironmentDeletionParams {
  * per-environment advisory lock. Serializes concurrent `DELETE` requests, rolls back the
  * soft-delete if enqueuing fails, and blocks `deleteEnvironmentTask` until this transaction
  * settles so the worker never reads a pre-commit `deleted = false` snapshot.
+ *
+ * Note: `tasks.enqueue` writes through its own pg pool rather than `trx`; if `trx` commit itself
+ * fails after `enqueue` succeeds, `deleteEnvironmentTask` sees `deleted = false` and no-ops.
  */
 export async function startEnvironmentDeletion(params: EnvironmentDeletionParams): Promise<Result<void>> {
     try {

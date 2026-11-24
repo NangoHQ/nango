@@ -9,6 +9,7 @@ import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
 import { createSyncSeeds } from '../seeders/sync.seeder.js';
 import { ConnectionCreationCappedError } from '../utils/error.js';
 import connectionService from './connection.service.js';
+import environmentService from './environment.service.js';
 import { errorNotificationService } from './notification/error.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
@@ -702,6 +703,27 @@ describe('Connection service integration tests', () => {
             }
 
             expect(paginatedConnections).toEqual(connectionIds);
+
+            const metricCountsBefore = (await connectionService.countMetric()).unwrap();
+            const countBefore = Number(metricCountsBefore.find((row) => Number(row.accountId) === env.account_id)?.count ?? 0);
+            expect(countBefore).toBeGreaterThanOrEqual(3);
+
+            await environmentService.softDelete(db.knex, { environmentId: env.id });
+
+            const afterSoftDelete: number[] = [];
+            for await (const res of connectionService.paginateConnections({ connectionIds, batchSize: 2 })) {
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                for (const c of res.value) {
+                    afterSoftDelete.push(c.connection.id);
+                }
+            }
+            expect(afterSoftDelete).toEqual([]);
+
+            const metricCountsAfter = (await connectionService.countMetric()).unwrap();
+            const countAfter = Number(metricCountsAfter.find((row) => Number(row.accountId) === env.account_id)?.count ?? 0);
+            expect(countAfter).toBe(countBefore - 3);
         });
     });
 
@@ -736,6 +758,10 @@ describe('Connection service integration tests', () => {
             expect(match).toBeDefined();
             expect(match?.integration.oauth_client_id).toBe(sharedCredentials.credentials.oauth_client_id);
             expect(match?.integration.oauth_client_secret).toBe(sharedCredentials.credentials.oauth_client_secret);
+
+            await environmentService.softDelete(db.knex, { environmentId: env.id });
+            const staleAfterSoftDelete = await connectionService.getStaleConnections({ days: 1, limit: 5000 });
+            expect(staleAfterSoftDelete.find((row) => row.connection.id === connection.id)).toBeUndefined();
         });
     });
 });

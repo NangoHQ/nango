@@ -13,6 +13,8 @@ import {
 } from '@nangohq/shared';
 import { Err } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
+import { tasks } from '../../tasks/index.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 import type { AccountApiKeyScope, DBCustomerKey } from '@nangohq/types';
@@ -533,6 +535,37 @@ describe('Public environment management', () => {
                 params: { environmentUuid: created.json.data.uuid }
             });
             expect(deleted.res.status).toBe(204);
+
+            const enqueued = await db.knex
+                .withSchema(envs.TASKS_DATABASE_SCHEMA)
+                .from('tasks')
+                .whereRaw("name LIKE 'deleteEnvironment:%' AND payload->>'environmentId' = ?", [String(created.json.data.id)])
+                .first<{ id: string }>();
+            expect(enqueued).toBeDefined();
+        });
+
+        it('should roll back the soft-delete and return 500 when enqueuing environment deletion fails', async () => {
+            const { account } = await seedAccount();
+            const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'delete-enqueue-failure' })).unwrap()
+                .environment;
+            const deleteKey = await createAccountKey(account.id, ['account:environments:delete']);
+
+            vi.spyOn(tasks, 'enqueue').mockResolvedValueOnce(Err(new Error('queue unavailable')));
+
+            const res = await api.fetch('/environments/:environmentUuid', {
+                method: 'DELETE',
+                token: deleteKey.secret,
+                params: { environmentUuid: environment.uuid }
+            });
+
+            expect(res.res.status).toBe(500);
+            expect(res.json).toStrictEqual({
+                error: {
+                    code: 'server_error',
+                    message: 'Failed to enqueue environment deletion'
+                }
+            });
+            expect(await environmentService.getById(environment.id)).not.toBeNull();
         });
     });
 });

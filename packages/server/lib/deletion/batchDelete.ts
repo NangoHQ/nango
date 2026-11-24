@@ -22,6 +22,13 @@ export interface BatchDeleteOptions {
 
 export type BatchDeleteSharedOptions = Omit<BatchDeleteOptions, 'name' | 'deleteFn'>;
 
+export function assertWithinDeadline(deadline: Date, logger: StrictLogger): void {
+    if (Date.now() > deadline.getTime()) {
+        logger.info(`Time limit reached, stopping`);
+        throw new DeletionBudgetExceeded();
+    }
+}
+
 export async function batchDelete({ name, deleteFn, deadline, limit, logger, sleepMs = 1000 }: BatchDeleteOptions) {
     while (true) {
         const deleted = await deleteFn();
@@ -31,10 +38,7 @@ export async function batchDelete({ name, deleteFn, deadline, limit, logger, sle
         if (deleted < limit) {
             break;
         }
-        if (Date.now() > deadline.getTime()) {
-            logger.info(`Time limit reached, stopping`);
-            throw new DeletionBudgetExceeded();
-        }
+        assertWithinDeadline(deadline, logger);
         if (sleepMs > 0) {
             await setTimeout(sleepMs);
         }
