@@ -2,13 +2,10 @@ import * as vm from 'node:vm';
 
 import { SDKError } from '@nangohq/runner-sdk';
 
+import type { CreateAnyResponse } from '@nangohq/runner-sdk';
+
 export class InvalidTransformError extends SDKError {
     code = 'invalid_inline_source';
-}
-
-export interface TransformFunction {
-    type: 'function';
-    exec: (nango: unknown, trigger: { input?: unknown }) => Promise<unknown>;
 }
 
 const AsyncFunction = vm.runInNewContext('(async function () {}).constructor') as new (...args: string[]) => unknown;
@@ -20,7 +17,7 @@ const driver = `(run) => async (input) => {
 }`;
 
 // The code is an async function body. It reads the invocation input as `record` and its return value is the output.
-export function compileTransform({ code, filename }: { code: string; filename: string }): TransformFunction {
+export function compileTransform({ code, filename }: { code: string; filename: string }): CreateAnyResponse {
     let script: vm.Script;
     try {
         script = new vm.Script(`(async function (record) {\n${code}\n})`, { filename, lineOffset: -1 });
@@ -39,6 +36,8 @@ export function compileTransform({ code, filename }: { code: string; filename: s
 
     return {
         type: 'function',
+        description: 'Inline function',
+        capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
         exec: async (_nango, trigger) => {
             const output = await invoke(JSON.stringify(trigger.input ?? null));
             return output === undefined ? null : (JSON.parse(output) as unknown);
