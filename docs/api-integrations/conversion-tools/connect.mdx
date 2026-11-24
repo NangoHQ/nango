@@ -1,0 +1,37 @@
+---
+title: 'Conversion Tools - How do I link my account?'
+sidebarTitle: 'Conversion Tools'
+---
+
+## Overview
+
+To authenticate with Conversion Tools, you need:
+
+1. **API Token** - the API token of your Conversion Tools account.
+
+This guide shows you how to get it.
+
+### Prerequisites
+
+- A Conversion Tools account. You can [sign up](https://conversiontools.io/signup) for free; the free plan includes API access. Activate your account with the link in the confirmation email before you continue.
+
+### Step 1: Copy your API token
+
+Conversion Tools generates an API token when your account is created.
+
+1. Sign in and open your [Profile page](https://conversiontools.io/profile).
+2. Under **API Access**, find **API Token** and click **Copy**.
+
+<img src="/api-integrations/conversion-tools/profile_api_token.png" alt="Conversion Tools Profile page with the Copy button next to API Token highlighted"/>
+
+Clicking **Regenerate** creates a new token and the previous one stops working immediately, so any connection using it must be updated.
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Conversion Tools.
+2. Enter your **API Token** in the designated field.
+3. Click **Connect**. Nango checks the token with Conversion Tools and rejects it if it is wrong.
+
+<img src="/api-integrations/conversion-tools/form.png" alt="Nango Connect UI form for entering the Conversion Tools API token" style={{maxWidth: "450px" }}/>
+
+You are now connected to Conversion Tools.

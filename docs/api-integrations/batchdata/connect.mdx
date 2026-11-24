@@ -1,0 +1,46 @@
+---
+title: 'BatchData - How do I link my account?'
+sidebarTitle: 'BatchData'
+---
+
+## Overview
+
+To authenticate with BatchData, you need:
+
+1. **API Token** — a Server Side Token or a Sandbox API Token from your BatchData account.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A BatchData account. You can register at [app.batchdata.com](https://app.batchdata.com/).
+
+### Step 1: Create an API token
+
+1. Log in to your [BatchData account](https://app.batchdata.com/).
+2. Click **API Tokens** (the key icon) in the left-hand menu. The **Server Side Tokens** tab opens.
+3. Click **Add New Token**.
+
+<img src="/api-integrations/batchdata/server_side_tokens_page.png" alt="BatchData API Tokens page with the Server Side Tokens tab and the Add New Token button"/>
+
+4. Enter a token name using letters and numbers only.
+5. Under **Permissions**, select the API endpoints the token may call. For Property Search and Lookup, also assign the datasets.
+6. Click **Create**.
+
+<img src="/api-integrations/batchdata/add_server_token_dialog.png" alt="BatchData Add New Server Token dialog with the token name, Permissions list and Create button"/>
+
+7. Copy the token from the **API Token** dialog. BatchData shows it only once.
+
+<img src="/api-integrations/batchdata/server_token_created.png" alt="BatchData API Token dialog showing the new Server Side Token to copy"/>
+
+To test without charges, create a Sandbox API Token instead: open the **Sandbox API Tokens** tab on the same page and click **Add New Token**. Sandbox tokens call all synchronous API endpoints and return mock data at no cost.
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with BatchData.
+2. Paste the token you copied in Step 1 into the **API Token** field.
+3. Submit the form.
+
+<img src="/api-integrations/batchdata/form.png" alt="BatchData Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the token. If the token is wrong, the first API request returns an authentication error.
