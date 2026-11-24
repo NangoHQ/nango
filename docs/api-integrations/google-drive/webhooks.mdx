@@ -44,7 +44,7 @@ With no secret saved, Nango has nothing to check the channel token against and f
 
 ### 3. Create a notification channel (watch the Drive)
 
-You can automate creating the channel for new connections with a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler):
+You can automate creating the channel for new connections with a [post-connection-creation script](/getting-started/use-cases/implement-event-handler):
 
 ```typescript
 import { createOnEvent, ProxyConfiguration } from 'nango';
@@ -292,7 +292,7 @@ With webhooks driving real-time updates, you can run syncs less often (e.g. `1d`
 <Note>
 If you prefer Nango to automatically run a sync when the webhook arrives (instead of forwarding it to your app), you can enable webhook processing in a sync script using `webhookSubscriptions` and `onWebhook`. For Google Drive, subscribe to `'*'` and use the forwarded headers (e.g. `x-goog-resource-state`, `x-goog-resource-uri`) to decide what to fetch.
 
-See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
+See: [Real-time syncs](/guides/syncs/realtime-syncs)
 </Note>
 
 ## Connection matching

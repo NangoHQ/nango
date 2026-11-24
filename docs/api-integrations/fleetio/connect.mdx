@@ -1,0 +1,54 @@
+---
+title: 'Fleetio - How do I link my account?'
+sidebarTitle: 'Fleetio'
+---
+
+## Overview
+
+To authenticate with Fleetio, you need:
+
+1. **API Key** — an API key you create on the Manage API Keys page in Fleetio.
+2. **Account Token** — the token that identifies your Fleetio account, listed on the same page.
+
+This guide will show you how to get both.
+
+### Prerequisites
+
+- A Fleetio account on the Professional or Premium plan. API access is only available on these plans. You can start a free trial without a credit card.
+
+### Step 1: Create an API key
+
+1. Log in to [Fleetio](https://secure.fleetio.com) and open **Settings**.
+2. In the Settings sidebar, click **Manage API Keys**.
+
+<img src="/api-integrations/fleetio/settings_manage_api_keys.png" alt="Fleetio Settings sidebar with Manage API Keys highlighted" />
+
+3. On the **API Keys** page, click **Add API Key**.
+
+<img src="/api-integrations/fleetio/add_api_key.png" alt="Fleetio API Keys page with the Add API Key button highlighted and the Account Tokens table below" />
+
+4. Enter a **Label** (for example, the name of your app), select an **API Version** from the drop-down, then click **Save**.
+
+<img src="/api-integrations/fleetio/add_api_key_dialog.png" alt="Fleetio Add API Key dialog with the Label and API Version fields and the Save button" />
+
+5. Fleetio shows the new key in the **Token** column of the **Keys** table. Copy it: this is your **API Key**.
+
+<img src="/api-integrations/fleetio/api_key_created.png" alt="Fleetio API Keys page with the new key in the Token column and the Account Tokens table below" />
+
+### Step 2: Copy your Account Token
+
+1. On the same **API Keys** page, scroll down to the **Account Tokens** table.
+2. Copy the value in the **Token** column for the account you want to connect: this is your **Account Token**.
+
+<Tip>The Account Token is also the first path segment of any Fleetio URL. For example, in `https://secure.fleetio.com/abc123/dashboard`, the Account Token is `abc123`.</Tip>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Fleetio.
+2. Enter your API key in the **API Key** field.
+3. Enter your Account Token in the **Account Token** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/fleetio/form.png" alt="Fleetio Connect UI form with the API Key and Account Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Fleetio.

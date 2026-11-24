@@ -1,0 +1,55 @@
+---
+title: 'Docupilot - How do I link my account?'
+sidebarTitle: 'Docupilot'
+---
+
+## Overview
+
+To authenticate with Docupilot, you need:
+
+1. **Workspace ID** - the ID of the Docupilot workspace to connect.
+2. **API Key** - an API key you create in your Docupilot API Settings.
+3. **API Secret** - the secret Docupilot creates together with the API key.
+
+This guide will show you how to find them.
+
+### Prerequisites
+
+- A Docupilot account. [Sign up](https://accounts.docupilot.app/signup/) if you don't have one.
+
+### Step 1: Find your workspace ID
+
+1. [Log in](https://accounts.docupilot.app/login/) to Docupilot and open your workspace.
+2. Click the **Settings** icon in the left-side menu.
+3. On the **Workspace** details page, copy the **Workspace ID** (for example `7f3c90ab`). It is also the part of the app URL after `/workspace/`.
+
+### Step 2: Create an API key
+
+1. In **Settings**, open **API Settings** and click **Add API Key**.
+
+<img src="/api-integrations/docupilot/api_settings_add_key.png" alt="Docupilot API Settings page with the Add API Key button highlighted"/>
+
+2. In the **Create new API Key pair** dialog, enter a name for the key and click **Generate**.
+
+<img src="/api-integrations/docupilot/create_api_key_pair.png" alt="Docupilot Create new API Key pair dialog with the Generate button highlighted"/>
+
+### Step 3: Copy your API key and secret
+
+1. The **Generated API credentials** dialog shows your **API Key** and **API Secret**. Copy both, or click **Download** to save them.
+2. Click **Close**.
+
+<img src="/api-integrations/docupilot/api_key_secret_created.png" alt="Docupilot Generated API credentials dialog with the API Key and API Secret fields"/>
+
+<Tip>Docupilot shows the API Secret only once. Store it securely: it cannot be retrieved again.</Tip>
+
+### Step 4: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Docupilot.
+2. Paste the **Workspace ID** from Step 1 into the **Workspace ID** field.
+3. Paste the **API Key** from Step 3 into the **API Key** field.
+4. Paste the **API Secret** from Step 3 into the **API Secret** field.
+5. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/docupilot/form.png" alt="Docupilot Connect UI form with the Workspace ID, API Key and API Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Docupilot.

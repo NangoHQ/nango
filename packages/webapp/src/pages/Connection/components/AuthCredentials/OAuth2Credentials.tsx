@@ -1,9 +1,8 @@
 import { RefreshCwIcon } from 'lucide-react';
 
-import { Button, FieldLabel } from '@nangohq/design-system';
+import { Button, FieldLabel, SecretInput } from '@nangohq/design-system';
 
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { SecretInput } from '@/components/patterns/SecretInput';
+import { PERMISSION_DENIED_REASON, PermissionGate } from '@/components/patterns/PermissionGate';
 import { useRefreshConnectionWithToast } from '@/hooks/useRefreshConnectionWithToast';
 
 import type { ApiConnectionFull, OAuth2Credentials } from '@nangohq/types';
@@ -21,7 +20,7 @@ export const OAuth2CredentialsComponent: React.FC<{
             <div className="flex flex-col gap-2">
                 <FieldLabel htmlFor="access_token">Access token</FieldLabel>
                 <div className="flex gap-2 items-center">
-                    <SecretInput id="access_token" value={credentials.access_token} disabled copy canRead={canRead} />
+                    <SecretInput id="access_token" value={credentials.access_token} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
                     {credentials.refresh_token && (
                         <PermissionGate condition={canRead} asChild>
                             {(allowed) => (
@@ -38,7 +37,7 @@ export const OAuth2CredentialsComponent: React.FC<{
             {credentials.refresh_token && (
                 <div className="flex flex-col gap-2">
                     <FieldLabel htmlFor="refresh_token">Refresh token</FieldLabel>
-                    <SecretInput id="refresh_token" value={credentials.refresh_token} disabled copy canRead={canRead} />
+                    <SecretInput id="refresh_token" value={credentials.refresh_token} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
                 </div>
             )}
 
@@ -47,14 +46,24 @@ export const OAuth2CredentialsComponent: React.FC<{
                     {credentials.config_override.client_id && (
                         <div className="flex flex-col gap-2">
                             <FieldLabel htmlFor="client_id_override">Client ID override</FieldLabel>
-                            <SecretInput id="client_id_override" value={credentials.config_override.client_id} disabled copy canRead={canRead} />
+                            <SecretInput
+                                id="client_id_override"
+                                value={credentials.config_override.client_id}
+                                canReveal={canRead}
+                                disabledReason={PERMISSION_DENIED_REASON}
+                            />
                         </div>
                     )}
 
                     {credentials.config_override.client_secret && (
                         <div className="flex flex-col gap-2">
                             <FieldLabel htmlFor="client_secret_override">Client secret override</FieldLabel>
-                            <SecretInput id="client_secret_override" value={credentials.config_override.client_secret} disabled copy canRead={canRead} />
+                            <SecretInput
+                                id="client_secret_override"
+                                value={credentials.config_override.client_secret}
+                                canReveal={canRead}
+                                disabledReason={PERMISSION_DENIED_REASON}
+                            />
                         </div>
                     )}
                 </>

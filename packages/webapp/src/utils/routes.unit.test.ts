@@ -30,6 +30,7 @@ describe('isNonEnvPath', () => {
             expect(isNonEnvPath('/team')).toBe(true);
             expect(isNonEnvPath('/profile')).toBe(true);
             expect(isNonEnvPath('/team/audit')).toBe(true);
+            expect(isNonEnvPath('/team/installation')).toBe(true);
             expect(isNonEnvPath('/team-settings')).toBe(true);
             expect(isNonEnvPath('/user-settings')).toBe(true);
             expect(isNonEnvPath('/team/billing')).toBe(true);

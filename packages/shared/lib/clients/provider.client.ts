@@ -83,6 +83,7 @@ class ProviderClient {
             case 'scrollstash-mcp':
             case 'shopline-oauth':
             case 'threads':
+            case 'deputy':
                 return true;
             default:
                 return false;
@@ -217,6 +218,14 @@ class ProviderClient {
                 return this.createRevolutToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'shopline-oauth':
                 return this.createShoplineToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
+            case 'deputy':
+                return this.deputyTokenRequest(tokenUrl, {
+                    ...(provider.token_params as Record<string, string>),
+                    client_id: config.oauth_client_id,
+                    client_secret: config.oauth_client_secret,
+                    redirect_uri: callBackUrl,
+                    code
+                });
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -426,6 +435,17 @@ class ProviderClient {
                 return this.refreshAttioMcpToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
             case 'scrollstash-mcp':
                 return this.refreshScrollstashMcpToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
+            case 'deputy':
+                if (!interpolatedRefreshUrl) {
+                    throw new NangoError('deputy_token_request_error', { message: 'Missing the Deputy install endpoint in the connection config' });
+                }
+                return this.deputyTokenRequest(interpolatedRefreshUrl.href, {
+                    ...(provider.refresh_params as Record<string, string>),
+                    client_id: config.oauth_client_id,
+                    client_secret: config.oauth_client_secret,
+                    redirect_uri: callbackUrl || getGlobalOAuthCallbackUrl(),
+                    refresh_token: credentials.refresh_token!
+                });
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -1822,6 +1842,27 @@ class ProviderClient {
         } catch (err: any) {
             throw new NangoError('posthog_oauth_token_request_error', stringifyError(err));
         }
+    }
+
+    private async deputyTokenRequest(url: string, params: Record<string, string>): Promise<RefreshTokenResponse> {
+        let response;
+        try {
+            response = await axios.post(url, new URLSearchParams(params).toString(), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+        } catch (err: any) {
+            throw new NangoError('deputy_token_request_error', stringifyError(err));
+        }
+
+        if (response.status !== 200 || !response.data?.access_token) {
+            throw new NangoError('deputy_token_request_error', stringifyError({ message: 'No access token in the Deputy response', response }));
+        }
+
+        const { endpoint } = response.data;
+        return {
+            ...response.data,
+            ...(typeof endpoint === 'string' ? { endpoint: endpoint.replace(/^https?:\/\//, '').replace(/\/+$/, '') } : {})
+        };
     }
 
     private async refreshPosthogOauthToken(tokenUrl: string, refreshToken: string, client_id: string): Promise<RefreshTokenResponse> {

@@ -198,7 +198,7 @@ export const TeamMembers: React.FC = () => {
                                                 <div className="flex items-start justify-between gap-3">
                                                     <p className="text-body-medium-medium text-text-strong">Role access changed</p>
                                                     <PopoverClose asChild>
-                                                        <IconButton variant="ghost" size="2xs" label="Close role access warning">
+                                                        <IconButton variant="ghost" size="sm" inline label="Close role access warning">
                                                             <X />
                                                         </IconButton>
                                                     </PopoverClose>
@@ -244,7 +244,7 @@ export const TeamMembers: React.FC = () => {
                                         <PermissionGate condition={canManageTeam}>
                                             {(allowed) => (
                                                 <DropdownMenuTrigger asChild disabled={!allowed}>
-                                                    <IconButton variant="ghost" size="2xs" disabled={!allowed} label="Member actions">
+                                                    <IconButton variant="ghost" size="sm" disabled={!allowed} label="Member actions">
                                                         <Ellipsis />
                                                     </IconButton>
                                                 </DropdownMenuTrigger>

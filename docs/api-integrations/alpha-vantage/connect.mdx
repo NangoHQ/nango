@@ -1,0 +1,41 @@
+---
+title: 'Alpha Vantage - How do I link my account?'
+sidebarTitle: 'Alpha Vantage'
+---
+
+## Overview
+
+To authenticate with Alpha Vantage, you need:
+
+1. **API Key** — a free Alpha Vantage API key, or a premium API key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A valid email address. The free API key allows 25 requests per day and covers most datasets.
+- For higher limits or premium endpoints, a [premium plan](https://www.alphavantage.co/premium/).
+
+### Step 1: Claim your API key
+
+1. Open the [Claim your Free API Key](https://www.alphavantage.co/support/#api-key) form on the Alpha Vantage support page.
+2. Under **Which of the following best describes you?**, choose the option that fits you.
+3. Enter your organization and a valid email address, then click **GET FREE API KEY**.
+
+<img src="/api-integrations/alpha-vantage/claim_free_api_key_form.png" alt="Alpha Vantage support page with the Claim your Free API Key form"/>
+
+4. Your API key appears right below the form. Copy it and keep it somewhere safe: there is no dashboard where you can see it again.
+
+<img src="/api-integrations/alpha-vantage/api_key_created.png" alt="Alpha Vantage support page showing the new API key below the form"/>
+
+To use a premium API key instead, subscribe to a plan on the [premium page](https://www.alphavantage.co/premium/) and copy the key you receive.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Alpha Vantage.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form.
+
+<img src="/api-integrations/alpha-vantage/form.png" alt="Alpha Vantage Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the key. If the key is wrong, the first API request returns an authentication error.

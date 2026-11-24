@@ -21,10 +21,10 @@
     "dependencies": {
         "@ai-sdk/openai": "4.0.81",
         "@aws-sdk/client-sqs": "3.993.0",
-        "@modelcontextprotocol/client": "2.3.1",
-        "@modelcontextprotocol/core": "2.3.1",
-        "@modelcontextprotocol/node": "2.1.1",
-        "@modelcontextprotocol/server": "2.3.1",
+        "@modelcontextprotocol/client": "2.4.0",
+        "@modelcontextprotocol/core": "2.4.0",
+        "@modelcontextprotocol/node": "2.1.2",
+        "@modelcontextprotocol/server": "2.4.0",
         "@nangohq/audit": "file:../audit",
         "@nangohq/authz": "file:../authz",
         "@nangohq/billing": "file:../billing",
@@ -65,7 +65,7 @@
         "exponential-backoff": "3.1.1",
         "express": "5.1.0",
         "express-session": "1.18.2",
-        "fast-xml-parser": "5.10.1",
+        "fast-xml-parser": "5.12.1",
         "fuse.js": "7.1.0",
         "he": "1.2.0",
         "helmet": "7.1.0",
@@ -112,6 +112,6 @@
         "nodemon": "3.1.10",
         "type-fest": "4.41.0",
         "typescript": "5.8.3",
-        "vitest": "4.1.11"
+        "vitest": "4.1.12"
     }
 }

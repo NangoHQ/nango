@@ -194,9 +194,12 @@ describe('pullFromCatalog', () => {
         fetchMock.mockReset();
     });
 
-    it('writes the function for the target integration', async () => {
+    it.each([
+        { type: 'action', folder: 'actions' },
+        { type: 'tool', folder: 'tools' }
+    ])('writes the function for the target integration', async ({ type, folder }) => {
         stubSecretKeys({ NANGO_SECRET_KEY_DEV: 'secret-dev' });
-        mockResponse(200, { type: 'action', code: 'action code' });
+        mockResponse(200, { type, code: 'function source' });
         const writeSpy = mockFsForWriting();
 
         const success = await pullFromCatalog({ ...baseOptions, target: 'my-github' });
@@ -204,8 +207,8 @@ describe('pullFromCatalog', () => {
         expect(success).toBe(true);
         expect(requestedUrl().pathname).toBe('/providers/github/templates/list-repos/code');
         expect(writeSpy.mock.calls).toEqual([
-            ['/project/my-github/actions/list-repos.ts', 'action code', 'utf-8'],
-            ['/project/index.ts', "\nimport './my-github/actions/list-repos.js';\n", 'utf-8']
+            [`/project/my-github/${folder}/list-repos.ts`, 'function source', 'utf-8'],
+            ['/project/index.ts', `\nimport './my-github/${folder}/list-repos.js';\n`, 'utf-8']
         ]);
     });
 

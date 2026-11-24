@@ -42,7 +42,7 @@ import { cn, formatDateToUSFormat } from '@/utils/utils';
 
 import type { ConnectionRecordModel, NangoRecord } from '@nangohq/types';
 
-const RECORDS_DOCS_URL = 'https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync';
+const RECORDS_DOCS_URL = 'https://nango.dev/docs/guides/syncs/sync-functions';
 const RECORDS_PAGE_SIZE = 20;
 const RECORD_ROW_HEIGHT_PX = 44;
 const RECORD_HEADER_HEIGHT_PX = 44;

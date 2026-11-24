@@ -6,6 +6,7 @@ import { Helmet } from 'react-helmet';
 import { Badge, Button } from '@nangohq/design-system';
 
 import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
+import { NoticePanel } from '@/components/patterns/NoticePanel';
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { Separator } from '@/components/ui/Separator';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -124,10 +125,7 @@ export const AuditShow: React.FC = () => {
                 <Helmet>
                     <title>Audit trail - Nango</title>
                 </Helmet>
-                <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
-                    <h2 className="text-xl text-center">Audit trail not enabled</h2>
-                    <div className="text-sm text-text-muted">The audit trail is not enabled for this account.</div>
-                </div>
+                <NoticePanel title="Audit trail not enabled">The audit trail is not enabled for this account.</NoticePanel>
             </DashboardLayout>
         );
     }
@@ -138,10 +136,7 @@ export const AuditShow: React.FC = () => {
                 <Helmet>
                     <title>Audit trail - Nango</title>
                 </Helmet>
-                <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
-                    <h2 className="text-xl text-center">Access denied</h2>
-                    <div className="text-sm text-text-muted">Your role does not have access to the audit trail.</div>
-                </div>
+                <NoticePanel title="Access denied">Your role does not have access to the audit trail.</NoticePanel>
             </DashboardLayout>
         );
     }

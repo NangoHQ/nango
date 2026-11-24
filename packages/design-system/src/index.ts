@@ -64,6 +64,7 @@ export {
     inlineCodeVariants
 } from './components/ui/inline-code';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
+export { SecretInput, type SecretInputProps } from './components/ui/secret-input';
 export { LinkButton, type LinkButtonProps, linkButtonVariants } from './components/ui/link-button';
 export { Textarea, type TextareaProps } from './components/ui/textarea';
 export {
@@ -72,11 +73,16 @@ export {
     inputGroupAddonVariants,
     InputGroupButton,
     InputGroupInput,
+    type InputGroupInputProps,
+    InputGroupKbd,
+    type InputGroupProps,
+    InputGroupSwatch,
     InputGroupText,
     InputGroupTextarea
 } from './components/ui/input-group';
 export {
     Field,
+    FieldContent,
     FieldDescription,
     FieldError,
     type FieldErrorProps,
@@ -90,6 +96,7 @@ export {
     FieldSet,
     fieldVariants
 } from './components/ui/field';
+export { useFieldControl } from './components/ui/field-context';
 export {
     SegmentedControl,
     SegmentedControlItem,

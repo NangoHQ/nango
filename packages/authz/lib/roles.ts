@@ -27,7 +27,7 @@ export const ROLES: Record<Role, Grant[]> = {
             ],
             where: ['env:production']
         },
-        { can: ['account:audit_trail:read'], where: ['account'] }
+        { can: ['account:audit_trail:read', 'account:installation:read'], where: ['account'] }
     ],
 
     development_full_access: [{ can: ['environment:*'], where: ['env:non-production'] }]

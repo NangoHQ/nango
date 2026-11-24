@@ -232,9 +232,13 @@ export const analyticsEventCatalogue = defineCatalogue({
     'playground:try_button_click': {
         surface: 'app',
         insight:
-            'How often catalog, integration and connection pages send people to the Agent Playground, and whether a provider-specific starter prompt was ready for them',
-        fires: 'When someone clicks Try in Playground',
-        properties: z.object({ provider: z.string(), source: z.enum(['catalog', 'integration', 'connection']), has_starter_prompt: z.boolean() })
+            'How often Getting Started, catalog, integration and connection pages send people to the Agent Playground, and whether a provider-specific starter prompt was ready for them',
+        fires: 'When someone clicks Try in Playground, or a Playground prompt on the Getting Started page',
+        properties: z.object({
+            provider: z.string(),
+            source: z.enum(['getting_started', 'catalog', 'integration', 'connection']),
+            has_starter_prompt: z.boolean()
+        })
     },
     'playground:agent_turn_complete': {
         surface: 'server',
@@ -302,10 +306,10 @@ export const analyticsEventCatalogue = defineCatalogue({
         fires: 'When someone copies the API key on the Getting Started page',
         properties: none
     },
-    'onboarding:playground_link_click': {
+    'onboarding:catalog_link_click': {
         surface: 'app',
-        insight: 'How many accounts try the Agent Playground before installing Nango in their own agent',
-        fires: 'When someone follows the Agent Playground link on the Getting Started page',
+        insight: 'How many accounts go from Getting Started to the catalog, the first step of the Getting Started to Playground funnel',
+        fires: 'When someone follows the catalog link on the Getting Started page',
         properties: none
     },
     'onboarding:try_prompt_button_click': {
@@ -318,7 +322,7 @@ export const analyticsEventCatalogue = defineCatalogue({
         surface: 'app',
         insight: 'Where accounts go after finishing Getting Started',
         fires: 'When someone opens a Go further link on the Getting Started page',
-        properties: z.object({ destination: z.enum(['catalog', 'agent_sessions_docs', 'logs', 'syncs_docs']) })
+        properties: z.object({ destination: z.enum(['agent_sessions_docs', 'logs', 'syncs_docs']) })
     },
     'onboarding:restart_button_click': {
         surface: 'app',

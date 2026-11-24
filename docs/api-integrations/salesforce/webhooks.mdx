@@ -37,7 +37,7 @@ The body must be JSON with a `nango` object. Everything else is up to you and is
 
 ### 1. Give each connection a webhook secret
 
-Generate a random secret of at least 16 characters when the connection is created and store it as `webhookSecret` in the connection metadata. A [post-connection-creation function](/guides/functions/event-functions) does this for every new connection:
+Generate a random secret of at least 16 characters when the connection is created and store it as `webhookSecret` in the connection metadata. A [post-connection-creation function](/guides/platform/functions/event-functions) does this for every new connection:
 
 ```typescript
 import { randomBytes } from 'crypto';
@@ -111,7 +111,7 @@ Admins of the org can read the secret wherever the trigger can. That is why each
 
 Once routed, you have two options:
 
-- **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
-- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+- **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/syncs/realtime-syncs).
 
 <Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

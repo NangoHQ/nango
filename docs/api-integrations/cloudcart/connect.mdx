@@ -1,0 +1,46 @@
+---
+title: 'CloudCart - How do I link my account?'
+sidebarTitle: 'CloudCart'
+---
+
+## Overview
+
+To authenticate with CloudCart, you need:
+
+1. **Store domain** — the domain of your CloudCart store, such as `mystore.cloudcart.net` or your custom domain.
+2. **API Key** — an API key created in your CloudCart admin panel.
+
+This guide will show you where to find each of them.
+
+### Prerequisites
+
+- A CloudCart store on a plan that includes API access. On a plan without API access, every API request returns `429`.
+
+### Step 1: Find your store domain
+
+1. Log in to your CloudCart admin panel and go to **Settings** > **API Keys**.
+2. The banner at the top of the page shows your **API Base URL**, for example `https://mystore.cloudcart.net/api/v2`. Your store domain is the part between `https://` and `/api/v2`: here, `mystore.cloudcart.net`. If your store uses a custom domain, you can enter that instead.
+
+<img src="/api-integrations/cloudcart/api_keys_page.png" alt="CloudCart API Keys settings page showing the plan's API rate limit, the API Base URL banner and the Add API Key button"/>
+
+### Step 2: Create an API key
+
+1. On the **API Keys** page, click **Add API Key**.
+2. Enter a descriptive name for the key (for example, `Nango`), optionally add a description, and click **Generate**.
+
+<img src="/api-integrations/cloudcart/add_api_key_dialog.png" alt="CloudCart Add new API key dialog with the name field and the Generate button"/>
+
+3. The new key appears in the list. Click the key value to copy it to your clipboard.
+
+<img src="/api-integrations/cloudcart/copy_api_key.png" alt="CloudCart API Keys list with the new key's value highlighted for copying"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with CloudCart.
+2. In **Store domain**, enter your store domain from Step 1, without `https://` (for example, `mystore.cloudcart.net`).
+3. In **API Key**, paste the key you copied in Step 2.
+4. Submit the form. Nango checks the key with CloudCart before saving the connection.
+
+<img src="/api-integrations/cloudcart/form.png" alt="CloudCart Connect UI form with the Store domain and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to CloudCart.

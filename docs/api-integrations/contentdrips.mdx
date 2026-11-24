@@ -1,0 +1,80 @@
+---
+title: 'Contentdrips'
+sidebarTitle: 'Contentdrips'
+description: 'Integrate your application with the Contentdrips API'
+---
+
+## 🚀 Quickstart
+
+Connect to Contentdrips with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Contentdrips_.
+    </Step>
+    <Step id="authorize-contentdrips" title="Authorize Contentdrips">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Contentdrips API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-contentdrips-api" title="Call the Contentdrips API">
+    Let's make your first request to the Contentdrips API: get your render queue statistics. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), your integration ID (from the **Integrations** tab), and your connection ID (from the **Connections** tab):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/queue/stats" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/queue/stats',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Contentdrips integration guides
+
+- [How do I link my account?](/api-integrations/contentdrips/connect)  
+Generate an API token in Contentdrips to connect your account.
+
+Official docs: [Contentdrips API documentation](https://developer.contentdrips.com/)
+
+## 🧩 Pre-built syncs & tools for Contentdrips
+
+import PreBuiltUseCases from "/snippets/generated/contentdrips/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Contentdrips' MCP server is on `https://mcp.contentdrips.com` and takes the same API token. Send MCP requests to `/mcp` with `baseUrlOverride` set to `https://mcp.contentdrips.com`; Nango keeps the connection's credentials and headers. See [ContentDrips MCP](https://developer.contentdrips.com/mcp).
+- Nango does not check the API token when a connection is created, so a wrong or revoked token still connects and fails on its first call.
+
+---

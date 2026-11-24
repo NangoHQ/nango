@@ -27,7 +27,7 @@ import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { PostPublicTbaAuthorization, TbaCredentials } from '@nangohq/types';
+import type { Metadata, PostPublicTbaAuthorization, TbaCredentials } from '@nangohq/types';
 
 const queryStringValidation = z
     .object({
@@ -83,6 +83,7 @@ export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublic
     const queryString = queryStringVal.data satisfies PostPublicTbaAuthorization['Querystring'];
     const { providerConfigKey } = paramVal.data satisfies PostPublicTbaAuthorization['Params'];
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    let metadata: Metadata = {};
     const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
@@ -157,6 +158,7 @@ export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublic
                 return;
             }
             connectionId = connection?.connection_id;
+            metadata = connection.metadata ?? {};
         }
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
@@ -207,7 +209,7 @@ export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublic
                 oauth_client_secret: config.oauth_client_secret
             },
             webhookUrlOverride,
-            metadata: {},
+            metadata,
             config,
             environment,
             tags: connectSession?.tags

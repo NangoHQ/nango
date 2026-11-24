@@ -1,0 +1,45 @@
+---
+title: 'Data247 - How do I link my account?'
+sidebarTitle: 'Data247'
+---
+
+## Overview
+
+To authenticate with Data247, you need:
+
+1. **API Key** — an API version 3 key from your Data247 account.
+
+This guide will show you how to generate it.
+
+### Prerequisites
+
+- A Data247 account. [Register](https://www.data247.com/register/main) if you don't have one.
+- Access to the main account user. Sub-account users cannot create their own API keys; the main account user creates them.
+
+### Step 1: Generate an API key
+
+1. [Log in](https://www.data247.com/login) to your Data247 account, open the **Account** menu and click **API Key/Password**.
+
+<img src="/api-integrations/data247/account_menu_api_key.png" alt="Data247 Account menu with the API Key/Password item highlighted"/>
+
+2. Stay on the **API Version 3** tab, optionally enter a key description, and click **GENERATE API KEY**. Nango uses API version 3; versions 1 and 2 use a username and password instead of a key.
+
+<img src="/api-integrations/data247/generate_api_key.png" alt="Data247 API Version 3 tab with the key description field and the Generate API Key button"/>
+
+3. Copy the new API key from the **NEW API KEY CREATED!** message right away. It is shown only once.
+
+<img src="/api-integrations/data247/api_key_created.png" alt="Data247 page with the NEW API KEY CREATED! message that shows the new API key"/>
+
+<Note>
+If IP authentication is turned on for your Data247 account, the API only accepts requests from the IP addresses you listed and rejects all others.
+</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Data247.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/data247/form.png" alt="Data247 Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Data247.

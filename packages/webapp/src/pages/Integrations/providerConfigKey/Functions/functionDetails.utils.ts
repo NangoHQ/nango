@@ -2,7 +2,7 @@ import { resolveSchemaReference } from '@/features/Playground/input.utils';
 import { buildPullCommand, isRunnableFunction, isSyncOrAction } from '@/utils/scripts';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 
-import type { FunctionListSource, FunctionListType, FunctionType, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
+import type { FunctionListSource, FunctionListType, FunctionType, ListedNangoFunction, NangoFunctionTemplate, NangoToolFunction } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 export type DetailsFunction = ListedNangoFunction | NangoFunctionTemplate;
@@ -26,7 +26,7 @@ export interface FunctionSchemas {
     outputSchemas: { name: string; schema: JSONSchema7 }[];
 }
 
-export function toFunctionSchemas(fn: DetailsFunction): FunctionSchemas {
+export function toFunctionSchemas(fn: DetailsFunction | NangoToolFunction): FunctionSchemas {
     if (fn.type === 'tool') {
         const outputSchema = displaySchema(fn.output_json_schema);
         return {

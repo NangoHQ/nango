@@ -1,0 +1,46 @@
+---
+title: 'DataRobot - How do I link my account?'
+sidebarTitle: 'DataRobot'
+---
+
+## Overview
+
+To authenticate with DataRobot, you need:
+
+1. **DataRobot Host**: the host you use to open DataRobot.
+2. **Personal API Key**: a personal API key from your DataRobot account.
+
+This guide shows you how to get them.
+
+### Prerequisites
+
+- A DataRobot account. You can [start a free trial](https://www.datarobot.com/trial/).
+
+### Step 1: Find your DataRobot host
+
+Your host is the address you sign in to DataRobot on, without `https://` or a path:
+
+| Deployment | Host |
+| - | - |
+| US | `app.datarobot.com` |
+| EU | `app.eu.datarobot.com` |
+| JP | `app.jp.datarobot.com` |
+| Self-Managed | Your organization's DataRobot host |
+
+### Step 2: Create a personal API key
+
+1. Sign in to DataRobot on your host.
+2. Click the user icon and select **API keys and tools**.
+3. Stay on the **Personal API keys** tab and click **Create new key**.
+4. Name the key and confirm. The key is active immediately.
+5. Copy the key value.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with DataRobot.
+2. Enter your **DataRobot Host** and **Personal API Key** in the designated fields.
+3. Submit the form. Nango checks the key against your DataRobot host, so a wrong key, or a host that doesn't match where you created the key, is rejected.
+
+<img src="/api-integrations/datarobot/form.png" alt="DataRobot connection form in the Nango Connect UI with DataRobot Host and Personal API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to DataRobot.

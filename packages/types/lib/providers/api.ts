@@ -25,7 +25,7 @@ export type GetPublicProvider = ApiEndpoint<{
 }>;
 
 export interface ApiProviderFunctionCounts {
-    actions: number;
+    tools: number;
     syncs: number;
 }
 
