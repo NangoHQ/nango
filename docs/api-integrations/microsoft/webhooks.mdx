@@ -13,6 +13,23 @@ description: 'Learn how to receive Microsoft Graph change notifications, such as
 
 One Microsoft integration has one webhook URL. Mail, calendar, and other Graph subscriptions all use it, and are told apart by their `subscriptionId`.
 
+## Graph-based integrations
+
+The same setup works for integrations built on Microsoft Graph whose resources support [change notifications](https://learn.microsoft.com/en-us/graph/change-notifications-overview#supported-resources). Follow the steps below on that integration, and in [step 3](#3-subscribe-when-a-connection-is-created) use its resource, change types, and permission:
+
+| Integration | Resource | `changeType` | Permission | Maximum subscription lifetime |
+| - | - | - | - | - |
+| Microsoft (Outlook mail and calendar) | `me/messages`, `me/events` | `created,updated,deleted` | `Mail.Read`, `Calendars.Read` | 10,080 minutes (7 days) |
+| OneDrive for Business | `me/drive/root` or `drives/{drive-id}/root` | `updated` | `Files.Read.All` | 42,300 minutes |
+| SharePoint Online | `sites/{site-id}/lists/{list-id}`, or `drives/{drive-id}/root` for a document library | `updated` | `Sites.Read.All` | 42,300 minutes |
+| Microsoft Word, Excel, and PowerPoint | `me/drive/root` or `drives/{drive-id}/root` | `updated` | `Files.Read.All` | 42,300 minutes |
+| Microsoft People | `me/contacts` | `created,updated,deleted` | `Contacts.Read` | 10,080 minutes (7 days) |
+| Microsoft Entra ID | `users`, `groups` | `updated,deleted` (`updated` also covers created users and groups) | `User.Read.All`, `Group.Read.All` | 41,760 minutes |
+
+Drive items, including Word, Excel, and PowerPoint files, only support `updated`, and a notification says that something changed in the drive, not which file. Use [delta](https://learn.microsoft.com/en-us/graph/api/driveitem-delta) to fetch the changed files, for example from a sync triggered by the webhook.
+
+Outlook has its [own webhooks guide](/api-integrations/outlook/webhooks), and Microsoft Teams verifies requests differently.
+
 ## Setup
 
 ### 1. Get your Nango webhook URL
@@ -65,7 +82,11 @@ Graph validates the URL with a `validationToken` request when you create a subsc
                 }
             });
 
-            await nango.updateMetadata({ subscriptionIds: [response.data.id] });
+            // updateMetadata replaces the whole array, so keep the connection's existing subscription IDs.
+            const metadata = await nango.getMetadata<z.infer<typeof Metadata>>();
+            const subscriptionIds = new Set(metadata?.subscriptionIds ?? []);
+            subscriptionIds.add(response.data.id);
+            await nango.updateMetadata({ subscriptionIds: [...subscriptionIds] });
         }
     });
     ```
