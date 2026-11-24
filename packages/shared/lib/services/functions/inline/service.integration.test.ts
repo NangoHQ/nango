@@ -35,7 +35,7 @@ describe('inline functions', () => {
         const { env, agentSessionId } = await seedSession();
 
         const created = (
-            await create(db.knex, { environmentId: env.id, agentSessionId, code: 'return record.value;', description: 'Read the value' })
+            await create(db.knex, { environmentId: env.id, agentSessionId, code: 'return result.value;', description: 'Read the value' })
         ).unwrap();
 
         expect(isInlineFunctionUuid(created.uuid)).toBe(true);

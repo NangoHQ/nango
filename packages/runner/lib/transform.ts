@@ -16,16 +16,16 @@ const driver = `(run) => async (input) => {
     return output === undefined ? undefined : JSON.stringify(output);
 }`;
 
-// The code is an async function body. It reads the invocation input as `record` and its return value is the output.
+// The code is an async function body. It reads the invocation input as `result` and its return value is the output.
 export function compileTransform({ code, filename }: { code: string; filename: string }): CreateAnyResponse {
     let script: vm.Script;
     try {
-        script = new vm.Script(`(async function (record) {\n${code}\n})`, { filename, lineOffset: -1 });
+        script = new vm.Script(`(async function (result) {\n${code}\n})`, { filename, lineOffset: -1 });
     } catch (err) {
         throw new InvalidTransformError(describeSyntaxError({ err, code, filename }));
     }
     try {
-        new AsyncFunction('record', code);
+        new AsyncFunction('result', code);
     } catch {
         throw new InvalidTransformError({ message: 'The code must be a single function body' });
     }
