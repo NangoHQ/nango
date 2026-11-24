@@ -684,6 +684,33 @@ adobe:
         base_url: https://ims-na1.adobelogin.com/ims
     docs: https://nango.dev/docs/integrations/all/adobe
 
+adobe-analytics:
+    display_name: Adobe Analytics
+    categories:
+        - analytics
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
+    token_url: https://ims-na1.adobelogin.com/ims/token/v3
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://analytics.adobe.io
+        headers:
+            x-api-key: ${clientId}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/adobe-analytics
+    setup_guide_url: https://nango.dev/docs/api-integrations/adobe-analytics/how-to-register-your-own-adobe-analytics-api-oauth-app
+    post_connection_script: adobeAnalyticsPostConnection
+
 adobe-umapi:
     display_name: UMAPI (Adobe User Management API)
     categories:

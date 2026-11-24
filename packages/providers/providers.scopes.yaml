@@ -91,6 +91,15 @@ adobe:
     - workflow_read
     - workflow_write
 
+# source: https://developer.adobe.com/developer-console/docs/guides/authentication/UserAuthentication/ims (scopes the Developer Console assigns to the Adobe Analytics OAuth Web App credential)
+adobe-analytics:
+    - additional_info.job_function
+    - additional_info.projectedProductContext
+    - AdobeID
+    - offline_access
+    - openid
+    - read_organizations
+
 # source: https://adobe-apiplatform.github.io/umapi-documentation/en/UM_Authentication.html
 adobe-umapi:
     - AdobeID
