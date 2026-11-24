@@ -114,14 +114,17 @@ export const queryResultTool = makeAgentSessionMcpTool({
                 track({ integrationId, logOperationId: logCtx.id, errorCode: error instanceof PublicMcpError ? error.code : 'internal_error' });
                 return Err(error);
             }
-            void logCtx.success();
-
             const output = 'data' in run.value ? run.value.data : null;
-            if (Buffer.byteLength(JSON.stringify(output ?? null), 'utf8') > envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES) {
+            const outputBytes = Buffer.byteLength(JSON.stringify(output ?? null), 'utf8');
+            if (outputBytes > envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES) {
+                const limit = `${Math.round(envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES / 1024)} KB`;
+                void logCtx.error(`The code returned ${outputBytes} bytes, over the ${limit} limit`);
+                void logCtx.failed();
                 track({ integrationId, logOperationId: logCtx.id, errorCode: 'output_too_large' });
-                return Err(outputTooLargeError(`${Math.round(envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES / 1024)} KB`));
+                return Err(outputTooLargeError(limit));
             }
 
+            void logCtx.success();
             track({ integrationId, logOperationId: logCtx.id });
             return Ok(output);
         });

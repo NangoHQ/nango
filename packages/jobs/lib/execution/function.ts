@@ -171,7 +171,8 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             scriptType: 'function',
             ...(fn.kind === 'inline' && {
                 execMode: 'transform' as const,
-                lifecycle: { interruptAfterMs: inlineFunctionTimeoutMs, killAfterMs: inlineFunctionTimeoutMs }
+                lifecycle: { interruptAfterMs: inlineFunctionTimeoutMs, killAfterMs: inlineFunctionTimeoutMs },
+                agentSessionResult: { sessionId: fn.agentSessionId, recordId: fn.resultRecordId }
             }),
             host: getApiUrl(),
             team: {
