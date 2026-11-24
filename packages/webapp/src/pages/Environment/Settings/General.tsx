@@ -47,8 +47,8 @@ export const General: React.FC = () => {
             await deleteEnvironmentAsync();
             setShowDeleteAlert(false);
             await navigate(`/${PROD_ENVIRONMENT_NAME}/environment-settings`, { replace: true });
-            setEnv(PROD_ENVIRONMENT_NAME);
             await refetchMeta();
+            setEnv(PROD_ENVIRONMENT_NAME);
         } catch {
             toast({
                 title: 'Failed to delete environment',
