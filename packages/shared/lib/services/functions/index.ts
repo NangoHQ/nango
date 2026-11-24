@@ -6,7 +6,7 @@ export * as functionLookupService from './lookup/index.js';
 export * as inlineFunctionService from './inline/service.js';
 export type { InlineFunction, InlineFunctionError } from './inline/service.js';
 export { generateInlineFunctionUuid, isInlineFunctionUuid } from './inline/uuid.js';
-export type { ListFunctionsError, ListFunctionsErrorCode, ResolvedFunction } from './lookup/service.js';
+export type { ListFunctionsError, ListFunctionsErrorCode, ResolvedFunction, ResolvedInlineFunction } from './lookup/service.js';
 export type { ActionInputSchemaRow, ToolsetInventoryRow } from './lookup/models/tools.js';
 export * as functionConfigService from './models/functions.js';
 export * as functionInstanceService from './models/instances.js';

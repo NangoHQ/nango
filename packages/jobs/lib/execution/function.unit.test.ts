@@ -10,7 +10,7 @@ import { handleFunctionSuccess, startFunction } from './function.js';
 import type { startScript as startScriptFn } from './operations/start.js';
 import type { setTaskSuccess as setTaskSuccessFn } from './operations/state.js';
 import type * as logs from '@nangohq/logs';
-import type { Config, ResolvedFunction } from '@nangohq/shared';
+import type { Config, ResolvedFunction, ResolvedInlineFunction } from '@nangohq/shared';
 import type { DBAPISecret, NangoProps, TelemetryBag } from '@nangohq/types';
 
 const INLINE_FUNCTION_UUID = shared.generateInlineFunctionUuid();
@@ -101,16 +101,16 @@ function task(functionUuid = deployedFunction().uuid, input: Record<string, stri
 }
 
 function inlineTask(code: string): TaskFunction {
-    vi.spyOn(shared.inlineFunctionService, 'get').mockResolvedValue(
-        Ok({
-            uuid: INLINE_FUNCTION_UUID,
-            environmentId: 2,
-            agentSessionId: '33333333-3333-4333-8333-333333333333',
-            code,
-            description: 'Names of the open issues',
-            createdAt: new Date()
-        })
-    );
+    const fn: ResolvedInlineFunction = {
+        kind: 'inline',
+        uuid: INLINE_FUNCTION_UUID,
+        name: 'inline',
+        enabled: true,
+        code,
+        description: 'Names of the open issues'
+    };
+    // vi.mocked only types the last overload, the one without inline functions.
+    vi.mocked(shared.functionLookupService.resolveFunctionByUuid).mockResolvedValue(Ok(fn) as never);
     return task(INLINE_FUNCTION_UUID);
 }
 
@@ -220,12 +220,15 @@ describe('startFunction', () => {
         expect(startScript).not.toHaveBeenCalled();
     });
 
-    it('starts an inline function without looking up a deployed one', async () => {
+    it('starts an inline function', async () => {
         const code = 'return record.issueNumber;';
 
         expect((await startFunction(inlineTask(code))).isOk()).toBe(true);
-        expect(shared.functionLookupService.resolveFunctionByUuid).not.toHaveBeenCalled();
-        expect(shared.inlineFunctionService.get).toHaveBeenCalledWith(expect.anything(), { environmentId: 2, uuid: INLINE_FUNCTION_UUID });
+        expect(shared.functionLookupService.resolveFunctionByUuid).toHaveBeenCalledWith({
+            environmentId: 2,
+            functionUuid: INLINE_FUNCTION_UUID,
+            includeInline: true
+        });
         const args = startScript.mock.calls[0]?.[0];
         if (!args) throw new Error('Missing script invocation');
         expect(args.code).toBe(code);
@@ -239,7 +242,7 @@ describe('startFunction', () => {
     });
 
     it('returns function not found when the inline code is gone', async () => {
-        vi.spyOn(shared.inlineFunctionService, 'get').mockResolvedValue(Ok(undefined));
+        vi.mocked(shared.functionLookupService.resolveFunctionByUuid).mockResolvedValue(Ok(undefined));
 
         expect((await startFunction(task(INLINE_FUNCTION_UUID))).isErr()).toBe(true);
         expect(startScript).not.toHaveBeenCalled();
