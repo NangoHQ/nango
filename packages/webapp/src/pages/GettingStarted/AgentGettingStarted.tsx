@@ -23,21 +23,28 @@ import { Button, copyText, LinkButton } from '@nangohq/design-system';
 
 import { ChecklistRow } from '@/components/patterns/ChecklistRow';
 import { PromptCard } from '@/components/patterns/PromptCard';
+import { ProviderLogo } from '@/components/patterns/ProviderLogo';
 import { CompactStepCard, StepCard, StepList } from '@/components/patterns/StepCard';
+import { Separator } from '@/components/ui/Separator';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAgentGettingStarted, useRestartAgentGettingStarted } from '@/hooks/useAgentGettingStarted';
 import { useApiKeys } from '@/hooks/useApiKeys';
+import { useCanUseAgentPlayground } from '@/hooks/useCanUseAgentPlayground';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useProviders } from '@/hooks/useProviders';
 import { useToast } from '@/hooks/useToast';
 import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
+import { hasStarterPrompt, playgroundDraftState } from '@/pages/AgentPlayground/draft';
+import { STARTER_PROMPTS } from '@/pages/AgentPlayground/starterPrompts';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { globalEnv } from '@/utils/env';
 import { LocalStorageKeys } from '@/utils/local-storage';
+import { cn } from '@/utils/utils';
 import { deriveAgentProgress } from './agentProgress';
 import { getInstallPrompt, pickPromptApiKey } from './agentPrompt';
 
@@ -65,7 +72,6 @@ export const AgentGettingStarted: React.FC = () => {
     const { confirm, DialogComponent } = useConfirmDialog();
 
     const canReadSecret = can('environment:settings:read_secret');
-    const showPlaygroundLink = Boolean(meta?.data.agentPlayground) && can('environment:agent_sessions:write');
     const { data: apiKeys, isLoading: isLoadingApiKeys, error: apiKeysError } = useApiKeys(canReadSecret ? env : '');
     const { data: environment, isLoading: isLoadingEnvironment, error: environmentError } = useEnvironment(canReadSecret ? env : '');
     // Permissions and keys decide what the prompt contains, so it can't be copied before they're known.
@@ -149,90 +155,86 @@ export const AgentGettingStarted: React.FC = () => {
             <Helmet>
                 <title>Getting started - Nango</title>
             </Helmet>
-            <div className="flex flex-col gap-7">
-                <h2 className="text-ds-3xl font-ds-regular leading-ds-tight tracking-ds-tight text-text-strong">Add Nango to your agent</h2>
+            <div className="flex flex-col gap-8">
+                <ExploreIntegrationsPanel env={env} />
 
-                {error && !data ? (
-                    <p className="type-text-regular-sm text-text-secondary">Could not load your progress. Refresh the page to try again.</p>
-                ) : (
-                    <StepList label="Setup steps">
-                        {!progress || isLoadingPrompt ? (
-                            <StepCard state="current" icon={MessageSquareCode} title="Install Nango">
-                                <div className="flex gap-2">
-                                    <Skeleton className="h-8 w-56" />
-                                    <Skeleton className="h-8 w-32" />
-                                </div>
-                            </StepCard>
-                        ) : progress.install === 'done' ? (
-                            <CompactStepCard
-                                icon={Check}
-                                title="Install Nango"
-                                summary={promptCopied ? 'Prompt copied' : 'Installed'}
-                                actions={
-                                    <>
-                                        <Button variant="ghost" size="sm" onClick={() => void copyPrompt()}>
+                <Separator className="bg-border-default" />
+
+                <section aria-labelledby="add-nango-title" className="flex flex-col gap-3">
+                    <h2 id="add-nango-title" className="type-heading-sm text-text-strong">
+                        Add Nango to your agent
+                    </h2>
+                    {error && !data ? (
+                        <p className="type-text-regular-sm text-text-secondary">Could not load your progress. Refresh the page to try again.</p>
+                    ) : (
+                        <StepList label="Setup steps">
+                            {!progress || isLoadingPrompt ? (
+                                <StepCard state="current" icon={MessageSquareCode} title="Install Nango">
+                                    <div className="flex gap-2">
+                                        <Skeleton className="h-8 w-56" />
+                                        <Skeleton className="h-8 w-32" />
+                                    </div>
+                                </StepCard>
+                            ) : progress.install === 'done' ? (
+                                <CompactStepCard
+                                    icon={Check}
+                                    title="Install Nango"
+                                    summary={promptCopied ? 'Prompt copied' : 'Installed'}
+                                    actions={
+                                        <>
+                                            <Button variant="ghost" size="sm" onClick={() => void copyPrompt()}>
+                                                {justCopied === 'prompt' ? <Check /> : <Copy />}
+                                                {justCopied === 'prompt' ? 'Copied' : 'Copy prompt again'}
+                                            </Button>
+                                            <CopyApiKeyButton size="sm" disabled={!apiKey} copied={justCopied === 'key'} onClick={() => void copyApiKey()} />
+                                        </>
+                                    }
+                                />
+                            ) : (
+                                <StepCard
+                                    state="current"
+                                    icon={MessageSquareCode}
+                                    title="Install Nango"
+                                    description="Copy the prompt and paste it into your coding agent. It adds Nango to your agent in a few minutes."
+                                >
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Button variant="primary" size="md" onClick={() => void copyPrompt()}>
                                             {justCopied === 'prompt' ? <Check /> : <Copy />}
-                                            {justCopied === 'prompt' ? 'Copied' : 'Copy prompt again'}
+                                            {justCopied === 'prompt' ? 'Copied' : 'Copy prompt for your agent'}
                                         </Button>
-                                        <CopyApiKeyButton size="sm" disabled={!apiKey} copied={justCopied === 'key'} onClick={() => void copyApiKey()} />
-                                    </>
-                                }
+                                        <CopyApiKeyButton size="md" disabled={!apiKey} copied={justCopied === 'key'} onClick={() => void copyApiKey()} />
+                                    </div>
+                                    {!apiKey && (
+                                        <p className="flex items-center gap-2 type-text-regular-xs text-text-secondary">
+                                            <Lock className="size-3.5 text-icon-secondary" aria-hidden />
+                                            {!canReadSecret
+                                                ? 'Only admins can view secret keys, so the prompt leaves the key out. Your agent will ask for it.'
+                                                : apiKeysError || environmentError
+                                                  ? 'Could not load your API key, so the prompt leaves it out. Your agent will ask for it.'
+                                                  : 'No full-access API key in this environment, so the prompt leaves the key out. Your agent will ask for it.'}
+                                        </p>
+                                    )}
+                                </StepCard>
+                            )}
+
+                            <TryIntegrationsStep
+                                progress={progress}
+                                env={env}
+                                justCopied={justCopied}
+                                onCopy={(prompt, provider) => void copyTryPrompt(prompt, provider)}
                             />
-                        ) : (
-                            <StepCard
-                                state="current"
-                                icon={MessageSquareCode}
-                                title="Install Nango"
-                                description="Copy the prompt and paste it into your coding agent. It adds Nango to your agent in a few minutes."
-                            >
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <Button variant="primary" size="md" onClick={() => void copyPrompt()}>
-                                        {justCopied === 'prompt' ? <Check /> : <Copy />}
-                                        {justCopied === 'prompt' ? 'Copied' : 'Copy prompt for your agent'}
-                                    </Button>
-                                    <CopyApiKeyButton size="md" disabled={!apiKey} copied={justCopied === 'key'} onClick={() => void copyApiKey()} />
-                                </div>
-                                {!apiKey && (
-                                    <p className="flex items-center gap-2 type-text-regular-xs text-text-secondary">
-                                        <Lock className="size-3.5 text-icon-secondary" aria-hidden />
-                                        {!canReadSecret
-                                            ? 'Only admins can view secret keys, so the prompt leaves the key out. Your agent will ask for it.'
-                                            : apiKeysError || environmentError
-                                              ? 'Could not load your API key, so the prompt leaves it out. Your agent will ask for it.'
-                                              : 'No full-access API key in this environment, so the prompt leaves the key out. Your agent will ask for it.'}
-                                    </p>
-                                )}
-                                {showPlaygroundLink && (
-                                    <p className="type-text-regular-xs text-text-muted">
-                                        Not ready? Try it first in the{' '}
-                                        <LinkButton asChild size="sm">
-                                            <Link to={`/${env}/playground`} onClick={() => track('onboarding:playground_link_click')}>
-                                                Agent Playground
-                                                <ArrowRight />
-                                            </Link>
-                                        </LinkButton>
-                                    </p>
-                                )}
-                            </StepCard>
-                        )}
+                        </StepList>
+                    )}
 
-                        <TryIntegrationsStep
-                            progress={progress}
-                            env={env}
-                            justCopied={justCopied}
-                            onCopy={(prompt, provider) => void copyTryPrompt(prompt, provider)}
-                        />
-                    </StepList>
-                )}
-
-                {progress?.install === 'done' && (
-                    <div className="-mt-4 flex justify-end">
-                        <Button variant="ghost" size="sm" onClick={restart}>
-                            <RotateCcw />
-                            Restart getting started
-                        </Button>
-                    </div>
-                )}
+                    {progress?.install === 'done' && (
+                        <div className="-mt-1.5 flex justify-end">
+                            <Button variant="ghost" size="sm" onClick={restart}>
+                                <RotateCcw />
+                                Restart getting started
+                            </Button>
+                        </div>
+                    )}
+                </section>
 
                 {progress?.install === 'done' && <GoFurther env={env} />}
             </div>
@@ -243,7 +245,7 @@ export const AgentGettingStarted: React.FC = () => {
 
 const CopyApiKeyButton: React.FC<{ size: 'sm' | 'md'; disabled: boolean; copied: boolean; onClick: () => void }> = ({ size, disabled, copied, onClick }) => {
     return (
-        <Button variant="ghost" size={size} disabled={disabled} onClick={onClick}>
+        <Button variant="outline" size={size} disabled={disabled} onClick={onClick}>
             {copied ? <Check /> : <KeyRound />}
             {copied ? 'Copied' : 'Copy API key'}
         </Button>
@@ -325,17 +327,74 @@ const TryIntegrationsStep: React.FC<{
     );
 };
 
+const FEATURED_STARTERS = STARTER_PROMPTS.filter(({ provider }) => provider !== 'google-drive');
+
+const TILE_CLASS =
+    'group flex items-center gap-2.5 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-2.5 text-left type-text-medium-sm text-text-strong transition-[background-color,border-color,box-shadow] hover:border-border-strong hover:bg-surface-panel hover:shadow-container-panel focus-visible:outline-none focus-visible:shadow-focus-outline-default';
+
+const TileArrow: React.FC = () => <ArrowRight aria-hidden className="size-3.5 shrink-0 text-text-muted transition-colors group-hover:text-text-default" />;
+
+const ExploreIntegrationsPanel: React.FC<{ env: string }> = ({ env }) => {
+    const canUseAgentPlayground = useCanUseAgentPlayground();
+    const { data: providers } = useProviders(env);
+    const apiCount = providers?.data.length;
+
+    return (
+        <section aria-labelledby="explore-integrations-title">
+            <div className="flex min-w-0 flex-col gap-3">
+                <div className="flex flex-col gap-0.5">
+                    <h2 id="explore-integrations-title" className="type-heading-sm text-text-strong">
+                        Explore integrations
+                    </h2>
+                    <p className="type-text-regular-sm text-text-secondary">
+                        {canUseAgentPlayground
+                            ? 'Pick an app and chat with an agent that connects to your account. No code needed.'
+                            : 'Browse the APIs your agent can use, with their pre-built tools.'}
+                    </p>
+                </div>
+                <div className="grid grid-cols-3 gap-2 max-sm:grid-cols-2">
+                    {canUseAgentPlayground &&
+                        FEATURED_STARTERS.map(({ prompt, provider, name }) => (
+                            <Link
+                                key={provider}
+                                to={`/${env}/playground/agent`}
+                                state={playgroundDraftState(prompt, env, provider)}
+                                title={prompt}
+                                className={TILE_CLASS}
+                                onClick={() =>
+                                    track('playground:try_button_click', {
+                                        provider,
+                                        source: 'getting_started',
+                                        has_starter_prompt: hasStarterPrompt(provider)
+                                    })
+                                }
+                            >
+                                <ProviderLogo provider={provider} />
+                                <span className="min-w-0 flex-1 truncate">{name}</span>
+                                <TileArrow />
+                            </Link>
+                        ))}
+                    <Link
+                        to={`/${env}/catalog`}
+                        className={cn(TILE_CLASS, 'border-dashed border-border-default text-text-default')}
+                        onClick={() => track('onboarding:catalog_link_click')}
+                    >
+                        <LibraryBig className="size-[18px] shrink-0 text-icon-secondary" aria-hidden />
+                        <span className="min-w-0 flex-1 truncate">
+                            {apiCount !== undefined ? `Browse all ${apiCount.toLocaleString('en-US')} APIs` : 'Browse all APIs'}
+                        </span>
+                        <TileArrow />
+                    </Link>
+                </div>
+            </div>
+        </section>
+    );
+};
+
 type GoFurtherDestination = AnalyticsEventProperties<'onboarding:go_further_link_click'>['destination'];
 
 const GoFurther: React.FC<{ env: string }> = ({ env }) => {
     const links: { destination: GoFurtherDestination; icon: LucideIcon; title: string; description: string; to: string; external?: boolean }[] = [
-        {
-            destination: 'catalog',
-            icon: LibraryBig,
-            title: 'Explore the catalog',
-            description: 'Pre-built tools your agent can use right away.',
-            to: `/${env}/catalog`
-        },
         {
             destination: 'agent_sessions_docs',
             icon: BookOpen,

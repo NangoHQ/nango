@@ -11,8 +11,6 @@ import type * as NangoUtils from '@nangohq/utils';
 const planFlag = vi.hoisted(() => ({ enabled: true }));
 const backendFlag = vi.hoisted(() => ({ configured: true }));
 vi.mock('../audit.js', () => ({ auditBackend: backendFlag }));
-const rolloutMock = vi.hoisted(() => vi.fn());
-vi.mock('@nangohq/feature-flags', () => ({ getFlags: () => ({ shouldAuditDataPlaneCredentialRead: rolloutMock }) }));
 vi.mock('@nangohq/utils', async () => {
     const actual: typeof NangoUtils = await vi.importActual('@nangohq/utils');
     return {
@@ -39,7 +37,6 @@ describe('audit trail entitlement', () => {
         flags.hasAuditTrail = false;
         planFlag.enabled = true;
         backendFlag.configured = true;
-        rolloutMock.mockReset();
         envs.FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES = ['read_credentials'];
         vi.restoreAllMocks();
     });
@@ -116,64 +113,47 @@ describe('audit trail entitlement', () => {
     });
 
     describe('a data-plane event', () => {
-        const dataPlane = { scope: 'read_credentials' as const, accountUuid: 'acc-uuid' };
         const covered = { has_audit_trail_control_plane: true, audit_trail_data_plane_scopes: ['read_credentials' as const] };
 
-        it('records when the plan covers the scope and the rollout picks the request', async () => {
+        it('records when the plan covers the scope', async () => {
             setup({ optIn: false, hasPlan: true });
-            rolloutMock.mockResolvedValue(true);
 
-            await expect(canRecordAuditTrail(covered, dataPlane)).resolves.toBe(true);
-            expect(rolloutMock).toHaveBeenCalledWith('acc-uuid');
-        });
-
-        it('stays off when the rollout does not pick the request', async () => {
-            setup({ optIn: false, hasPlan: true });
-            rolloutMock.mockResolvedValue(false);
-
-            await expect(canRecordAuditTrail(covered, dataPlane)).resolves.toBe(false);
+            await expect(canRecordAuditTrail(covered, 'read_credentials')).resolves.toBe(true);
         });
 
         it.each([
             { name: 'a missing plan', plan: null },
             { name: 'a plan that is not recorded', plan: { ...covered, has_audit_trail_control_plane: false } },
             { name: 'a plan without the scope', plan: { ...covered, audit_trail_data_plane_scopes: [] } }
-        ])('stays off for $name, without asking the rollout', async ({ plan }) => {
+        ])('stays off for $name', async ({ plan }) => {
             setup({ optIn: false, hasPlan: true });
-            rolloutMock.mockResolvedValue(true);
 
-            await expect(canRecordAuditTrail(plan, dataPlane)).resolves.toBe(false);
-            expect(rolloutMock).not.toHaveBeenCalled();
+            await expect(canRecordAuditTrail(plan, 'read_credentials')).resolves.toBe(false);
         });
 
-        it('without plans, records the scopes the deployment enables, without asking the rollout', async () => {
+        it('without plans, records the scopes the deployment enables', async () => {
             setup({ optIn: true, hasPlan: false });
-            rolloutMock.mockResolvedValue(false);
 
-            await expect(canRecordAuditTrail(null, dataPlane)).resolves.toBe(true);
-            expect(rolloutMock).not.toHaveBeenCalled();
+            await expect(canRecordAuditTrail(null, 'read_credentials')).resolves.toBe(true);
         });
 
-        it('without plans, stays off when the deployment disables the scope, whatever the rollout says', async () => {
+        it('without plans, stays off when the deployment disables the scope', async () => {
             setup({ optIn: true, hasPlan: false });
             envs.FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES = [];
-            rolloutMock.mockResolvedValue(true);
 
-            await expect(canRecordAuditTrail(null, dataPlane)).resolves.toBe(false);
-            expect(rolloutMock).not.toHaveBeenCalled();
+            await expect(canRecordAuditTrail(null, 'read_credentials')).resolves.toBe(false);
         });
 
         it('without plans, stays off when the audit trail itself is off', async () => {
             setup({ optIn: false, hasPlan: false });
 
-            await expect(canRecordAuditTrail(null, dataPlane)).resolves.toBe(false);
+            await expect(canRecordAuditTrail(null, 'read_credentials')).resolves.toBe(false);
         });
 
         it('leaves a control-plane event to the plan alone', async () => {
             setup({ optIn: false, hasPlan: true });
 
             await expect(canRecordAuditTrail({ has_audit_trail_control_plane: true, audit_trail_data_plane_scopes: [] })).resolves.toBe(true);
-            expect(rolloutMock).not.toHaveBeenCalled();
         });
     });
 });

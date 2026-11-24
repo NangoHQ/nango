@@ -1,0 +1,38 @@
+---
+title: 'Contentdrips - How do I link my account?'
+sidebarTitle: 'Contentdrips'
+---
+
+## Overview
+
+To authenticate with Contentdrips, you need:
+
+1. **API Token** — an API key from your Contentdrips account.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Contentdrips account. You can [sign up](https://app.contentdrips.com/signup) without a card. See [Contentdrips pricing](https://contentdrips.com/pricing) for the API calls each plan includes.
+
+### Step 1: Generate an API token
+
+1. Log in to [Contentdrips](https://app.contentdrips.com/login).
+2. In the left sidebar, click **Contentdrips API**, then open the **API Keys** tab.
+3. Enter a name in **API Key Name** and click **Generate API Key**.
+
+<img src="/api-integrations/contentdrips/create_api_key.png" alt="Contentdrips API Keys tab with a key name entered and the Generate API Key button"/>
+
+4. Under **Your API Keys**, click the copy icon next to your new key.
+
+<img src="/api-integrations/contentdrips/copy_api_key.png" alt="Contentdrips Your API Keys list with the copy icon next to the new key"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Contentdrips.
+2. Paste the key you copied in Step 1 into the **API Token** field.
+3. Submit the form.
+
+<img src="/api-integrations/contentdrips/form.png" alt="Contentdrips Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the key. If the key is wrong, the first API request returns an authentication error.

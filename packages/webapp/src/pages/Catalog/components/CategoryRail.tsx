@@ -6,7 +6,7 @@ import type { CategoryOption } from '../catalog.utils';
 
 interface CategoryRailProps {
     categories: CategoryOption[];
-    totalCount: number;
+    totalCount: number | undefined;
     selected: string | null;
     onSelect: (category: string | null) => void;
 }
@@ -29,15 +29,17 @@ export const CategoryRail: React.FC<CategoryRailProps> = ({ categories, totalCou
     </SecondaryNav>
 );
 
-const RailItem: React.FC<{ label: string; count: number; isSelected: boolean; onClick: () => void }> = ({ label, count, isSelected, onClick }) => (
+const RailItem: React.FC<{ label: string; count: number | undefined; isSelected: boolean; onClick: () => void }> = ({ label, count, isSelected, onClick }) => (
     <SecondaryNavItem
         isFilter
         isSelected={isSelected}
         onClick={onClick}
         trailing={
-            <span className={cn(isSelected ? 'block' : 'hidden group-hover:block')}>
-                <CountBadge count={count} tone="panel" />
-            </span>
+            count === undefined ? undefined : (
+                <span className={cn(isSelected ? 'block' : 'hidden group-hover:block')}>
+                    <CountBadge count={count} tone="panel" />
+                </span>
+            )
         }
     >
         {label}

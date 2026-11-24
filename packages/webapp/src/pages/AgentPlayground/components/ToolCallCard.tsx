@@ -367,7 +367,7 @@ const Value: React.FC<{ value: unknown }> = ({ value }) => {
         return <p className="whitespace-pre-wrap wrap-anywhere text-body-small-regular text-text-default">{value}</p>;
     }
     return (
-        <code className="box-decoration-clone whitespace-pre-wrap break-all rounded-ds-xs bg-surface-panel-inset px-1 py-0.5 font-mono text-[0.9em] text-text-default">
+        <code className="box-decoration-clone whitespace-pre-wrap break-all rounded-ds-xs border border-border-muted bg-surface-panel-muted px-1 py-0.5 font-mono text-[0.9em] text-text-default">
             {String(value)}
         </code>
     );

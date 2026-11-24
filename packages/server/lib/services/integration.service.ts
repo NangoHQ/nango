@@ -13,6 +13,7 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 import { normalizeMcpOAuth2Scopes } from '../controllers/v1/integrations/buildIntegrationConfig.js';
 import { getIntegrationCredentials } from '../utils/integrations.js';
 import { getOrchestrator } from '../utils/utils.js';
+import { NANGO_APP_AUTH_MODES } from './instantSetup.js';
 import { resolveIntegrationConfig } from './integrationConfig.js';
 import {
     cleanupMcpClientRegistration,
@@ -167,7 +168,6 @@ export interface UpdateIntegrationParams {
     environment?: DBEnvironment | undefined;
 }
 
-const nangoCredentialsAuthModes = new Set(['OAUTH1', 'OAUTH2', 'APP']);
 const machineErrorCodePattern = /^(?:E[A-Z0-9_]{2,63}|[0-9A-Z]{5})$/;
 const defaultLogger = getLogger('Server.IntegrationService');
 
@@ -326,7 +326,7 @@ export class IntegrationService {
                         );
                     }
                 }
-            } else if (!nangoCredentialsAuthModes.has(provider.auth_mode)) {
+            } else if (!NANGO_APP_AUTH_MODES.has(provider.auth_mode)) {
                 return Err(
                     new IntegrationServiceError({
                         code: 'nango_credentials_unsupported',

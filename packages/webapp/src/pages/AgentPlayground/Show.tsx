@@ -38,27 +38,23 @@ import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
 import { approvalProperties, pendingApprovals } from './approvalTracking';
 import { describeChatError } from './chatError';
+import { AddIntegrationCard } from './components/AddIntegrationCard';
 import { HeroIllustration } from './components/HeroIllustration';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
 import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
+import { continueOncePerSetUp, createdIntegrationIds, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults } from './setUpTool';
+import { STARTER_PROMPTS } from './starterPrompts';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize, integrationLabels, labelFor } from './toolDisplay';
+import { useResumeAfterSetUp } from './useResumeAfterSetUp';
 
 import type { PendingApproval } from './approvalTracking';
+import type { PlaygroundDraft } from './draft';
 import type { IntegrationLabels } from './toolDisplay';
 import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundReplyOutcome, AgentPlaygroundSessionCreated } from '@nangohq/types';
-
-const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
-    { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
-    { prompt: 'Summarize my 3 latest emails in Gmail', provider: 'google-mail', name: 'Gmail' },
-    { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
-    { prompt: 'Send me "Hello, world!" on Slack', provider: 'slack', name: 'Slack' },
-    { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
-    { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot', name: 'HubSpot' }
-];
 
 function providerName(provider: string): string {
     return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
@@ -109,7 +105,7 @@ export const AgentPlayground: React.FC = () => {
             <Chat
                 key={`${env}-${chatKey}`}
                 env={env}
-                draft={chatKey === 0 && draft?.env === env ? draft.text : undefined}
+                draft={chatKey === 0 && draft?.env === env ? draft : undefined}
                 toolbarSlot={toolbarSlot}
                 onNewChat={() => setChatKey((key) => key + 1)}
             />
@@ -117,14 +113,15 @@ export const AgentPlayground: React.FC = () => {
     );
 };
 
-const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({
+const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({
     env,
-    draft,
+    draft: playgroundDraft,
     toolbarSlot,
     onNewChat
 }) => {
     const { user } = useUser();
     const userId = user?.uuid;
+    const draft = playgroundDraft?.text;
     const [{ chatId, messages: storedMessages }] = useState(() =>
         userId && draft === undefined ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
     );
@@ -147,10 +144,11 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
     };
     const failure = useRef<string | undefined>(undefined);
     const leaving = useRef(false);
+    const [continuesAfterSetUp] = useState(continueOncePerSetUp);
     const { messages, setMessages, sendMessage, regenerate, status, stop, clearError, addToolApprovalResponse } = useChat<PlaygroundMessage>({
         transport,
         ...(storedMessages ? { messages: storedMessages } : {}),
-        sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
+        sendAutomaticallyWhen: (options) => lastAssistantMessageIsCompleteWithApprovalResponses(options) || continuesAfterSetUp(options),
         onError: (err) => {
             failure.current = err.message;
         },
@@ -242,8 +240,32 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
         }
     };
 
-    const { data: integrations } = useListIntegrations(env);
+    const isAwaitingSetUp = providersToAdd(messages.at(-1)).length > 0;
+    const { data: integrations, dataUpdatedAt: integrationsUpdatedAt, refetch: refetchIntegrations } = useListIntegrations(env, { watch: isAwaitingSetUp });
     const labels = useMemo(() => (integrations ? integrationLabels(integrations.data) : undefined), [integrations]);
+    const refetchedFor = useRef(new Set<string>());
+    useEffect(() => {
+        const unlabelled = createdIntegrationIds(messages).filter((id) => labels && !labels.has(id) && !refetchedFor.current.has(id));
+        if (unlabelled.length > 0) {
+            unlabelled.forEach((id) => refetchedFor.current.add(id));
+            void refetchIntegrations();
+        }
+    }, [messages, labels, refetchIntegrations]);
+    const addedIntegrations = useMemo(() => {
+        // Matches the server's existingIntegrationFor, so the notice links to the integration the agent uses.
+        const rank = (key: string, provider: string) => [provider, `pg-${provider}`].indexOf(key) >>> 0;
+        const added = new Map<string, string>();
+        for (const integration of integrations?.data ?? []) {
+            const current = added.get(integration.provider);
+            if (
+                integration.missing_fields.length === 0 &&
+                (!current || rank(integration.unique_key, integration.provider) < rank(current, integration.provider))
+            ) {
+                added.set(integration.provider, integration.unique_key);
+            }
+        }
+        return added;
+    }, [integrations]);
     const integrationNames = useCallback((ids: string[]) => ids.map((id) => labelFor(id, labels).integrationName).join(' and '), [labels]);
 
     const [pendingConnections, setPendingConnections] = useState<string[]>([]);
@@ -264,6 +286,16 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
         () => new Set([...pendingConnections, ...messages.flatMap((message) => message.metadata?.connectedIntegrations ?? [])]),
         [pendingConnections, messages]
     );
+
+    useResumeAfterSetUp({
+        messages,
+        integrationsLoaded: Boolean(integrations),
+        integrationsUpdatedAt,
+        addedIntegrations,
+        canSend: !busy && !awaitingApproval,
+        providerName,
+        sendMessage
+    });
 
     const [newLinkRequests, setNewLinkRequests] = useState<string[]>([]);
     const onRequestNewLink = useCallback((integrationId: string) => {
@@ -310,9 +342,20 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
 
     const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
 
-    // The composer remounts when the first message appears, so passing the draft after that would refill it.
+    const sendFromComposer = (text: string): boolean => {
+        // An edited draft may ask about another app. Only an unedited one sets up its starter's integration.
+        const isUneditedDraft = messages.length === 0 && playgroundDraft !== undefined && text.trim() === playgroundDraft.text.trim();
+        return send(text, isUneditedDraft ? playgroundDraft.starterProvider : undefined);
+    };
     const composer = (
-        <Composer draft={messages.length === 0 ? draft : undefined} busy={busy} awaitingApproval={awaitingApproval} onSend={send} onStop={() => void stop()} />
+        <Composer
+            // The composer remounts when the first message appears, so passing the draft after that would refill it.
+            draft={messages.length === 0 ? draft : undefined}
+            busy={busy}
+            awaitingApproval={awaitingApproval}
+            onSend={sendFromComposer}
+            onStop={() => void stop()}
+        />
     );
 
     if (messages.length === 0) {
@@ -364,6 +407,7 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
                                     env={env}
                                     setup={message.metadata.integrationSetup}
                                     labels={labels}
+                                    addedIntegrations={addedIntegrations}
                                     onTryAgain={message.id === lastMessage?.id && !busy ? () => void regenerate() : undefined}
                                 />
                             )}
@@ -375,6 +419,17 @@ const Chat: React.FC<{ env: string; draft: string | undefined; toolbarSlot: HTML
                                     return part.text ? (
                                         <Markdown key={index}>{part.state === 'streaming' ? hideTrailingLink(part.text) : part.text}</Markdown>
                                     ) : null;
+                                }
+                                if (part.type === 'dynamic-tool' && isSetUpPart(part)) {
+                                    return setUpResults(part).map((setup) => (
+                                        <IntegrationSetupNotice
+                                            key={`${part.toolCallId}-${setup.provider}`}
+                                            env={env}
+                                            setup={setup}
+                                            labels={labels}
+                                            addedIntegrations={addedIntegrations}
+                                        />
+                                    ));
                                 }
                                 if (part.type === 'dynamic-tool') {
                                     return (
@@ -562,6 +617,10 @@ function workingLabel(messages: PlaygroundMessage[]): string | null {
     if (part?.type === 'text') {
         return null;
     }
+    if (part?.type === 'dynamic-tool' && isSetUpPart(part) && (part.state === 'input-streaming' || part.state === 'input-available')) {
+        const apps = setUpApps(part);
+        return apps.length > 0 ? `Adding ${apps.map(providerName).join(' and ')}…` : 'Adding integrations…';
+    }
     if (part?.type === 'dynamic-tool') {
         if (
             part.state === 'approval-requested' ||
@@ -597,59 +656,64 @@ const IntegrationSetupNotice: React.FC<{
     env: string;
     setup: AgentPlaygroundIntegrationSetup;
     labels: IntegrationLabels | undefined;
+    addedIntegrations: Map<string, string>;
     onTryAgain?: (() => void) | undefined;
-}> = ({ env, setup, labels, onTryAgain }) => {
-    const name = (setup.integrationId && labels?.get(setup.integrationId)?.integrationName) || providerName(setup.provider);
-    const href = setup.integrationId ? `/${env}/integrations/${setup.integrationId}` : `/${env}/integrations/create/${setup.provider}`;
+}> = ({ env, setup, labels, addedIntegrations, onTryAgain }) => {
+    const addedSince = isAdded(setup) ? undefined : addedIntegrations.get(setup.provider);
+    const integrationId = addedSince ?? setup.integrationId;
+    const name = (integrationId && labels?.get(integrationId)?.integrationName) || setup.displayName || providerName(setup.provider);
+    const href = integrationId ? `/${env}/integrations/${integrationId}` : `/${env}/integrations/create/${setup.provider}`;
 
-    if (setup.outcome === 'created' || setup.outcome === 'existing') {
+    if (addedSince) {
+        return <AddedIntegrationRow provider={setup.provider} text={`Using your ${name} integration`} href={href} />;
+    }
+
+    if (setup.outcome === 'missing_credentials') {
         return (
-            <div className="flex min-h-7 items-center gap-2 pr-[17px] text-body-medium-regular text-text-secondary" role="status">
-                <IntegrationLogo provider={setup.provider} className="-mx-0.5 size-5 shrink-0 border-0 bg-transparent p-0" />
-                <span className="min-w-0 truncate">{setup.outcome === 'created' ? `Created the ${name} integration` : `Using your ${name} integration`}</span>
-                <span className="ml-auto flex shrink-0 items-center gap-2 pl-2">
-                    <ButtonLink to={href} variant="outline" size="sm">
-                        View integration
-                    </ButtonLink>
-                </span>
-            </div>
+            <Alert variant="warning">
+                <CircleAlert />
+                <AlertTitle>{`Finish setting up your ${name} integration`}</AlertTitle>
+                <AlertDescription>It&apos;s missing its client ID or secret. Add them, then try again.</AlertDescription>
+                <AlertActions>
+                    <AlertButton asChild>
+                        <Link to={href}>
+                            <Settings2 /> Open integration
+                        </Link>
+                    </AlertButton>
+                    {onTryAgain && (
+                        <AlertButton onClick={onTryAgain}>
+                            <RotateCcw /> Try again
+                        </AlertButton>
+                    )}
+                </AlertActions>
+            </Alert>
         );
     }
 
+    if (!isAdded(setup)) {
+        return <AddIntegrationCard provider={setup.provider} name={name} outcome={setup.outcome} href={href} />;
+    }
+
     return (
-        <Alert variant="warning">
-            <CircleAlert />
-            <AlertTitle>
-                {setup.outcome === 'missing_credentials' ? `Finish setting up your ${name} integration` : `Create a ${name} integration to continue`}
-            </AlertTitle>
-            <AlertDescription>
-                {setup.outcome === 'missing_credentials'
-                    ? "It's missing its client ID or secret. Add them, then try again."
-                    : `This session needs a ${name} integration in this environment.`}
-            </AlertDescription>
-            <AlertActions>
-                <AlertButton asChild>
-                    <Link to={href}>
-                        {setup.outcome === 'missing_credentials' ? (
-                            <>
-                                <Settings2 /> Open integration
-                            </>
-                        ) : (
-                            <>
-                                <Plus /> Create integration
-                            </>
-                        )}
-                    </Link>
-                </AlertButton>
-                {onTryAgain && (
-                    <AlertButton onClick={onTryAgain}>
-                        <RotateCcw /> Try again
-                    </AlertButton>
-                )}
-            </AlertActions>
-        </Alert>
+        <AddedIntegrationRow
+            provider={setup.provider}
+            text={setup.outcome === 'created' ? `Created the ${name} integration` : `Using your ${name} integration`}
+            href={href}
+        />
     );
 };
+
+const AddedIntegrationRow: React.FC<{ provider: string; text: string; href: string }> = ({ provider, text, href }) => (
+    <div className="flex min-h-7 items-center gap-2 pr-[17px] text-body-medium-regular text-text-secondary" role="status">
+        <IntegrationLogo provider={provider} className="-mx-0.5 size-5 shrink-0 border-0 bg-transparent p-0" />
+        <span className="min-w-0 truncate">{text}</span>
+        <span className="ml-auto flex shrink-0 items-center gap-2 pl-2">
+            <ButtonLink to={href} variant="outline" size="sm">
+                View integration
+            </ButtonLink>
+        </span>
+    </div>
+);
 
 function sessionNoticeText(reason: AgentPlaygroundSessionCreated['reason'], replaced: boolean): string {
     switch (reason) {

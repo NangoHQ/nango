@@ -5016,6 +5016,35 @@ hive:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 hover: []
 
+# source: https://www.hubrise.com/developers/api/authentication
+hubrise:
+    - account[all_catalogs.read]
+    - account[all_catalogs.write]
+    - account[all_customer_lists.read]
+    - account[all_customer_lists.write]
+    - account[catalog.read]
+    - account[catalog.write]
+    - account[customer_list.read]
+    - account[customer_list.write]
+    - account[inventory.read]
+    - account[inventory.write]
+    - account[orders.read]
+    - account[orders.write]
+    - location[all_catalogs.read]
+    - location[all_catalogs.write]
+    - location[all_customer_lists.read]
+    - location[all_customer_lists.write]
+    - location[catalog.read]
+    - location[catalog.write]
+    - location[customer_list.read]
+    - location[customer_list.write]
+    - location[inventory.read]
+    - location[inventory.write]
+    - location[orders.read]
+    - location[orders.write]
+    - profile
+    - profile_with_email
+
 # source: https://developers.hubspot.com/docs/guides/apps/authentication/scopes
 hubspot:
     - account-info.security.read

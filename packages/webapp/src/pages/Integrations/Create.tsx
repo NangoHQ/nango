@@ -1,7 +1,7 @@
 import { BookOpen } from 'lucide-react';
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { Badge } from '@nangohq/design-system';
 
@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { returnsToPlayground } from '../AgentPlayground/returnToPlayground';
 import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
 import { AuthCreateForm } from './components/forms/AuthCreateForm';
 import { getDisplayName } from './utils';
@@ -24,6 +25,7 @@ export const CreateIntegration = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const navigate = useNavigate();
+    const location = useLocation();
     const { mutateAsync: postIntegration } = usePostIntegration(env);
 
     const { providerConfigKey } = useParams();
@@ -45,6 +47,10 @@ export const CreateIntegration = () => {
 
         try {
             const response = await postIntegration(data);
+            if (returnsToPlayground(location.state)) {
+                void navigate(`/${env}/playground/agent`);
+                return;
+            }
             const tab = data.useSharedCredentials ? 'functions' : 'settings';
             navigate(`/${env}/integrations/${response.data.unique_key}/${tab}`);
         } catch {

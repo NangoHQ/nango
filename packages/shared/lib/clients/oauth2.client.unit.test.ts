@@ -189,6 +189,41 @@ describe('OAuth2 token generation and refresh', () => {
         );
     });
 
+    it('getFreshOAuth2Credentials keeps a public client ID override across refreshes', async () => {
+        const receivedClientIds: (string | null)[] = [];
+        await withServer(
+            (req, res) => {
+                let body = '';
+                req.on('data', (chunk) => (body += chunk));
+                req.on('end', () => {
+                    receivedClientIds.push(new URLSearchParams(body).get('client_id'));
+                    res.writeHead(200, { 'content-type': 'application/json' });
+                    res.end(JSON.stringify({ access_token: 'refreshed-access-token', token_type: 'bearer', expires_in: 3600, refresh_token: 'rotated' }));
+                });
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ token_url: `${baseUrl}/token`, token_request_auth_method: 'none' });
+                const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                let credentials: Record<string, unknown> = {
+                    type: 'OAUTH2',
+                    access_token: 'stale-access-token',
+                    refresh_token: 'the-refresh-token',
+                    expires_at: new Date(Date.now() - 60_000),
+                    config_override: { client_id: 'override-client-id' }
+                };
+
+                for (let i = 0; i < 2; i++) {
+                    const connection = { id: 1, environment_id: 1, connection_config: {}, credentials } as unknown as DBConnectionDecrypted;
+                    const result = await getFreshOAuth2Credentials({ connection, config: makeConfig(), provider, logCtx: buffer });
+                    expect(result.success).toBe(true);
+                    credentials = result.response as unknown as Record<string, unknown>;
+                }
+
+                expect(receivedClientIds).toEqual(['override-client-id', 'override-client-id']);
+            }
+        );
+    });
+
     it.each([
         {
             description: 'interpolates connection_config placeholders in refresh_params before refreshing',

@@ -52,8 +52,8 @@ describe('production_support', () => {
         expect(denied('production_support', ENVIRONMENT_SCOPES, dev)).toEqual([]);
     });
 
-    it('holds the audit trail and nothing else on the account', () => {
-        expect(allowed('production_support', ACCOUNT_SCOPES, dev)).toEqual(['account:audit_trail:read']);
+    it('holds the audit trail and the installation info and nothing else on the account', () => {
+        expect(allowed('production_support', ACCOUNT_SCOPES, dev)).toEqual(['account:audit_trail:read', 'account:installation:read']);
     });
 });
 

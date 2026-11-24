@@ -83,6 +83,7 @@ import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.j
 import { postInvokeFunction } from './controllers/v1/functions/postInvoke.js';
 import { getGettingStarted } from './controllers/v1/gettingStarted/getGettingStarted.js';
 import { patchGettingStarted } from './controllers/v1/gettingStarted/patchGettingStarted.js';
+import { getInstallation } from './controllers/v1/installation/getInstallation.js';
 import { getIntegrations } from './controllers/v1/integrations/getIntegrations.js';
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
@@ -275,6 +276,7 @@ if (flagHasManagedAuth) {
 
 // --- Protected
 web.route('/meta').get(webAuth, getMeta);
+web.route('/installation').get(webAuth, can('account:installation:read'), getInstallation);
 web.route('/account/onboarding/hear-about-us').get(webAuth, getOnboardingHearAboutUs);
 web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearAboutUs);
 web.route('/account/onboarding/account-discovery').get(webAuth, getOnboardingAccountDiscovery);

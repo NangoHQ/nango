@@ -30,6 +30,7 @@ import { ShowRecordModel as ConnectionShowRecordModel } from '@/pages/Connection
 import { EnvironmentSettings } from '@/pages/Environment/Settings/Show';
 import { AgentGettingStarted } from '@/pages/GettingStarted/AgentGettingStarted';
 import { Homepage } from '@/pages/Homepage/Show';
+import { InstallationShow } from '@/pages/Installation/Show';
 import { CreateIntegration } from '@/pages/Integrations/Create';
 import { ShowIntegration } from '@/pages/Integrations/providerConfigKey/Show';
 import { IntegrationsList } from '@/pages/Integrations/Show';
@@ -228,6 +229,11 @@ const routes: RouteObject[] = [
                 path: '/team/audit',
                 element: <AuditShow />,
                 handle: { breadcrumb: 'Audit trail' } as BreadcrumbHandle
+            },
+            {
+                path: '/team/installation',
+                element: <InstallationShow />,
+                handle: { breadcrumb: 'Installation info' } as BreadcrumbHandle
             },
             {
                 path: '/:env',

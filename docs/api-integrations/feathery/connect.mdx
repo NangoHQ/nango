@@ -1,0 +1,55 @@
+---
+title: 'Feathery - How do I link my account?'
+sidebarTitle: 'Feathery'
+---
+
+## Overview
+
+To authenticate with Feathery, you need:
+
+1. **Client ID** and **Client Secret**: the credentials of a Feathery OAuth app.
+2. **Region**: the Feathery region your account is hosted in.
+
+This guide shows you how to get them.
+
+### Prerequisites
+
+- A Feathery account on a paid plan. The developer API requires a paid plan.
+- The Admin role in Feathery. Only Admins can create OAuth apps.
+
+### Step 1: Create an OAuth app
+
+1. Log in to [Feathery](https://app.feathery.io) as an Admin.
+2. Open your Feathery settings and go to the **Developer** tab.
+3. Open **OAuth apps** and choose **New OAuth app**.
+4. Name the app after the integration and choose the **Live** or **Test** mode.
+5. Choose the app's access (scopes), and choose when the secret expires.
+6. Click **Create**, then copy the **Client ID** (it starts with `fthr_cid_`) and the **Client secret** (it starts with `fthr_cs_`).
+
+<Note>
+Feathery only shows the client secret once. Save it somewhere secure before closing the dialog.
+</Note>
+
+### Step 2: Select your region
+
+Feathery hosts each account in one region, and each region has its own API host. Select the **Region** your account is hosted in:
+
+| Region | Value |
+| - | - |
+| United States (default) | `api.feathery.io` |
+| Canada | `api-ca.feathery.io` |
+| Europe | `api-eu.feathery.io` |
+| Japan | `api-jp.feathery.io` |
+| Australia | `api-au.feathery.io` |
+
+If you aren't sure which region your account is in, ask your Feathery Admin.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Feathery.
+2. Select your **Region**, then enter your **Client ID** and **Client Secret**.
+3. Submit the form. Nango requests an access token from Feathery, so a wrong, revoked or expired client ID or secret is rejected right away.
+
+<img src="/api-integrations/feathery/form.png" alt="Nango Connect UI form with Region, Client ID, and Client Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Feathery.
