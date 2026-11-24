@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { format, records } from '@nangohq/records';
-import { seeders } from '@nangohq/shared';
+import { agentSessionResultModel, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../../utils/tests.js';
 
@@ -46,6 +46,24 @@ describe(`GET ${route}`, () => {
                 code: 'invalid_query_params',
                 errors: [{ code: 'invalid_type', message: 'Invalid input: expected string, received undefined', path: ['model'] }]
             }
+        });
+    });
+
+    it('should not read agent session results', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { connectionId: connection.connection_id },
+            query: { env: env.name, provider_config_key: 'github', model: agentSessionResultModel('0b5ff4f1-8d3b-4e0a-9d4c-3f0d6c1b2a10') }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: { code: 'invalid_query_params', errors: [{ code: 'custom', message: 'Invalid model', path: ['model'] }] }
         });
     });
 

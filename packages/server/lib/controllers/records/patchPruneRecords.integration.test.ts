@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { format, records } from '@nangohq/records';
-import { seeders } from '@nangohq/shared';
+import { agentSessionResultModel, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
@@ -45,6 +45,19 @@ describe(`PATCH ${route}`, () => {
                 ]
             }
         });
+    });
+
+    it('should reject an agent session result model', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(route, {
+            method: 'PATCH',
+            token: apiKey.secret,
+            headers: { 'connection-id': 'a', 'provider-config-key': 'github' },
+            body: { model: agentSessionResultModel('0b5ff4f1-8d3b-4e0a-9d4c-3f0d6c1b2a10'), until_cursor: 'cursor' }
+        });
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json.error.code).toBe('invalid_body');
     });
 
     it('should require headers', async () => {
