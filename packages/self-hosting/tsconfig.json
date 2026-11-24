@@ -18,6 +18,9 @@
             "path": "../migrations"
         },
         {
+            "path": "../shared"
+        },
+        {
             "path": "../types"
         },
         {

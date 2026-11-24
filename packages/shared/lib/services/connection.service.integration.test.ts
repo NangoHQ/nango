@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
+import { createAccount } from '../seeders/account.seeder.js';
 import { createConfigSeed, createConfigSeeds, createPreprovisionedProviderConfigSeed } from '../seeders/config.seeder.js';
 import { createConnectionSeed, createConnectionSeeds, getTestConnection } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
@@ -12,7 +13,7 @@ import connectionService from './connection.service.js';
 import { errorNotificationService } from './notification/error.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { Metadata } from '@nangohq/types';
+import type { DBEnvironment, Metadata } from '@nangohq/types';
 
 describe('Connection service integration tests', () => {
     beforeAll(async () => {
@@ -34,6 +35,36 @@ describe('Connection service integration tests', () => {
             expect((await search('slack')).map((connection) => connection.id)).toEqual([slack.id]);
             expect(await search('unknown')).toEqual([]);
             expect((await search()).map((connection) => connection.id)).toEqual([github.id, slack.id]);
+        });
+    });
+
+    describe('countActiveMonthlyConnections', () => {
+        // A month no other test writes executions into, so rows seeded elsewhere never land in the count.
+        const now = new Date('2031-03-15T10:00:00Z');
+        const thisMonth = new Date('2031-03-03T00:00:00Z');
+        const lastMonth = new Date('2031-02-27T00:00:00Z');
+
+        it('counts the connections that ran a function in the month, soft-deleted ones included, per production flag', async () => {
+            const account = await createAccount();
+            const prod = await createEnvironmentSeed(account.id, 'prod');
+            const dev = await createEnvironmentSeed(account.id, 'dev');
+            await createConfigSeed(prod, 'github', 'github');
+            await createConfigSeed(dev, 'github', 'github');
+            const ran = async (env: DBEnvironment, connectionId: string, lastExecutionAt: Date | null, deleted = false) => {
+                const connection = await createConnectionSeed({ env, provider: 'github', connectionId });
+                await db.knex
+                    .from('_nango_connections')
+                    .where({ id: connection.id })
+                    .update({ last_execution_at: lastExecutionAt, deleted, deleted_at: deleted ? now : null });
+            };
+            await ran(prod, 'ran-this-month', thisMonth);
+            await ran(prod, 'ran-this-month-too', thisMonth);
+            await ran(prod, 'ran-then-was-deleted', thisMonth, true);
+            await ran(prod, 'ran-last-month', lastMonth);
+            await ran(prod, 'never-ran', null);
+            await ran(dev, 'dev-ran-this-month', thisMonth);
+
+            expect(await connectionService.countActiveMonthlyConnections(now)).toStrictEqual({ production: 3, other: 1 });
         });
     });
 
