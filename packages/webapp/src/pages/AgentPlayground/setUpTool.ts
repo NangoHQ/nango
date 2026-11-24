@@ -59,7 +59,10 @@ function setUpToContinue(messages: PlaygroundMessage[]): string | undefined {
         }
     }
     const part = lastStep.find((candidate): candidate is ToolPart => candidate.type === 'dynamic-tool' && isSetUpPart(candidate));
-    if (!part) {
+    if (
+        !part ||
+        lastStep.some((candidate) => candidate.type === 'dynamic-tool' && candidate.state === 'approval-requested' && !candidate.approval.isAutomatic)
+    ) {
         return undefined;
     }
     const setups = setUpResults(part);

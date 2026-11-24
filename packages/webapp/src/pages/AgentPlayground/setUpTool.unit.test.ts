@@ -32,6 +32,16 @@ describe('continuesAfterSetUp', () => {
         expect(continuesAfterSetUp({ messages })).toBe(true);
     });
 
+    it('waits while another tool in the same step awaits the user’s approval', () => {
+        const messages = reply([
+            { type: 'step-start' },
+            setUpPart([{ provider: 'linear', integrationId: 'linear', outcome: 'created' }]),
+            { type: 'dynamic-tool', toolName: 'nango_proxy', toolCallId: 'call-2', state: 'approval-requested', input: {}, approval: { id: 'approval-2' } }
+        ]);
+
+        expect(continuesAfterSetUp({ messages })).toBe(false);
+    });
+
     it('continues only once per setup, even when the continuation adds nothing', () => {
         const continues = continueOncePerSetUp();
         const messages = reply([{ type: 'step-start' }, setUpPart([{ provider: 'linear', integrationId: 'linear', outcome: 'created' }])]);
