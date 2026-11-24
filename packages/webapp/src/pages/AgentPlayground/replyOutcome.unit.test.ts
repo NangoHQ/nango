@@ -4,6 +4,7 @@ import { INTERRUPTED_CALL } from '../../store/agentPlaygroundChat.js';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome.js';
 
 import type { PlaygroundMessage } from '../../store/agentPlaygroundChat.js';
+import type { PostAgentSessionsBody } from '@nangohq/types';
 
 const userMessage: PlaygroundMessage = { id: 'user', role: 'user', parts: [{ type: 'text', text: 'Hi' }] };
 const emptyReply: PlaygroundMessage = {
@@ -57,6 +58,12 @@ describe('markStopped', () => {
 
         expect(reply?.parts[0]).toMatchObject({ state: 'output-error', errorText: INTERRUPTED_CALL });
         expect(reply?.metadata?.replyOutcome).toEqual({ kind: 'stopped' });
+    });
+});
+
+describe('hasVisibleContent', () => {
+    it('shows a reply that only started a session', () => {
+        expect(hasVisibleContent({ ...emptyReply, parts: [{ type: 'data-session', data: { request: {} as PostAgentSessionsBody } }] })).toBe(true);
     });
 });
 
