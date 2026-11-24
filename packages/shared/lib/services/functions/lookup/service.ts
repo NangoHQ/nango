@@ -42,6 +42,8 @@ export interface ResolvedInlineFunction {
     enabled: true;
     code: string;
     description: string | null;
+    agentSessionId: string;
+    resultRecordId: string;
 }
 
 export type ListFunctionsErrorCode = 'integration_not_found' | 'list_failed';
@@ -241,8 +243,8 @@ export async function resolveFunctionByUuid({
             if (!inlineFunction.value) {
                 return Ok(undefined);
             }
-            const { code, description } = inlineFunction.value;
-            return Ok({ kind: 'inline', uuid, name: INLINE_FUNCTION_NAME, enabled: true, code, description });
+            const { code, description, agentSessionId, resultRecordId } = inlineFunction.value;
+            return Ok({ kind: 'inline', uuid, name: INLINE_FUNCTION_NAME, enabled: true, code, description, agentSessionId, resultRecordId });
         }
         if (isCatalogFunctionUuid(uuid)) {
             const definition = getCatalogFunctionByUuid(uuid);
