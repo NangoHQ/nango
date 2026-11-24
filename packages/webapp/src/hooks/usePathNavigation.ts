@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
@@ -21,15 +20,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 export function usePathNavigation(basePath: string, defaultValue: string = '', onValueChange?: (value: string) => void): [string, (value: string) => void] {
     const location = useLocation();
     const navigate = useNavigate();
-    const [value, setValue] = useState<string>(() => getValueFromPath(location.pathname, basePath, defaultValue));
+    const value = getValueFromPath(location.pathname, basePath, defaultValue);
 
-    useEffect(() => {
-        setValue(getValueFromPath(location.pathname, basePath, defaultValue));
-    }, [location.pathname, basePath, defaultValue]);
-
-    // Handler that updates both state and URL
     const handleValueChange = (newValue: string) => {
-        setValue(newValue);
         navigate(`${basePath}/${newValue}`, { replace: true });
         onValueChange?.(newValue);
     };
@@ -38,10 +31,21 @@ export function usePathNavigation(basePath: string, defaultValue: string = '', o
 }
 
 function getValueFromPath(pathname: string, basePath: string, defaultValue: string): string {
-    const lastSegment = pathname.split('/').filter(Boolean).at(-1);
+    const lastSegment = safeDecode(pathname.split('/').filter(Boolean).at(-1));
     const lastBasePathSegment = basePath.split('/').filter(Boolean).at(-1);
     if (lastSegment && lastSegment !== lastBasePathSegment) {
         return lastSegment;
     }
     return defaultValue;
+}
+
+function safeDecode(segment: string | undefined): string | undefined {
+    if (!segment) {
+        return segment;
+    }
+    try {
+        return decodeURIComponent(segment);
+    } catch {
+        return segment;
+    }
 }
