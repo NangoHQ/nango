@@ -1,14 +1,17 @@
 import { randomUUID } from 'node:crypto';
 
+import tracer from 'dd-trace';
+
 import { records, format as recordsFormatter } from '@nangohq/records';
 import { agentSessionResultModel } from '@nangohq/shared';
-import { Err, Ok, report } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { describeResult } from './agentSessionResultShape.js';
 
 import type { AgentSession, AgentSessionResolvedConnection, DBPlan } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Span } from 'dd-trace';
 
 const STORED_RESULT_HINT =
     'The result is too large to return in full. `shape` outlines its structure as TypeScript and `sample` shows the first items with long strings clipped. Call nango_run_code with this result_id and JavaScript that reads `data` and returns only what you need.';
@@ -65,9 +68,15 @@ export async function toolResultForAgent({
         } satisfies UnstoredToolResult;
     }
 
-    const stored = await storeToolResult({ sessionId: session.id, environmentId, plan, connection, toolName, data });
+    const stored = await tracer.trace<Promise<Result<string>>>('server.agentSession.storeResult', async (span: Span) => {
+        span.setTag('nango.agentSessionId', session.id).setTag('nango.actionName', toolName).setTag('nango.resultBytes', bytes);
+        const result = await storeToolResult({ sessionId: session.id, environmentId, plan, connection, toolName, data });
+        if (result.isErr()) {
+            span.setTag('error', result.error);
+        }
+        return result;
+    });
     if (stored.isErr()) {
-        report(stored.error);
         return data;
     }
 

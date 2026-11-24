@@ -6,20 +6,25 @@ import { envs } from '../env.js';
 import { decodeResultId, encodeResultId, formatMegabytes, toolResultForAgent } from './agentSessionResults.service.js';
 
 import type { AgentSession, AgentSessionResolvedConnection } from '@nangohq/types';
-import type * as NangoUtils from '@nangohq/utils';
 
 const mocks = vi.hoisted(() => ({
     upsert: vi.fn(),
-    report: vi.fn()
+    setTag: vi.fn()
 }));
+
+vi.mock('dd-trace', () => {
+    const span = {
+        setTag(...args: unknown[]) {
+            mocks.setTag(...args);
+            return span;
+        }
+    };
+    return { default: { trace: (_name: string, fn: (s: typeof span) => unknown) => fn(span) } };
+});
 
 vi.mock('@nangohq/records', () => ({
     records: { upsert: mocks.upsert },
     format: { formatRecords: ({ data }: { data: unknown[] }) => Ok(data) }
-}));
-vi.mock('@nangohq/utils', async (importOriginal) => ({
-    ...(await importOriginal<typeof NangoUtils>()),
-    report: mocks.report
 }));
 
 const MODEL = '_nango_agent_session_session-1';
@@ -53,7 +58,7 @@ async function resultFor(data: unknown, session: AgentSession = SESSION): Promis
 
 beforeEach(() => {
     mocks.upsert.mockReset().mockResolvedValue(Ok({ addedKeys: [], updatedKeys: [], deletedKeys: [], nonUniqueKeys: [] }));
-    mocks.report.mockReset();
+    mocks.setTag.mockReset();
 });
 
 describe('toolResultForAgent', () => {
@@ -108,12 +113,12 @@ describe('toolResultForAgent', () => {
         expect(mocks.upsert).not.toHaveBeenCalled();
     });
 
-    it('returns the result in full and reports when storing fails, since the tool already ran', async () => {
+    it('returns the result in full and tags the span with the error when storing fails, since the tool already ran', async () => {
         const error = new Error('records down');
         mocks.upsert.mockResolvedValue(Err(error));
 
         await expect(resultFor(LARGE)).resolves.toBe(LARGE);
-        expect(mocks.report).toHaveBeenCalledWith(error);
+        expect(mocks.setTag).toHaveBeenCalledWith('error', error);
     });
 });
 
