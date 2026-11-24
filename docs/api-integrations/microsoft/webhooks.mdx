@@ -19,11 +19,11 @@ The same setup works for integrations built on Microsoft Graph whose resources s
 
 | Integration | Resource | `changeType` | Permission | Maximum subscription lifetime |
 | - | - | - | - | - |
-| Microsoft (Outlook mail and calendar) | `me/messages`, `me/events` | `created,updated,deleted` | `Mail.Read`, `Calendars.Read` | 10,080 minutes (7 days) |
+| Microsoft (Outlook mail and calendar) | `me/messages`, `me/events` | `created,updated,deleted` | `Mail.Read`, `Calendars.Read` | 10,070 minutes (just under 7 days) |
 | OneDrive for Business | `me/drive/root` or `drives/{drive-id}/root` | `updated` | `Files.Read.All` | 42,300 minutes |
-| SharePoint Online | `sites/{site-id}/lists/{list-id}`, or `drives/{drive-id}/root` for a document library | `updated` | `Sites.Read.All` | 42,300 minutes |
+| SharePoint Online | `sites/{site-id}/lists/{list-id}`, or `drives/{drive-id}/root` for a document library | `updated` | `Sites.Read.All` for lists, `Files.Read.All` for document libraries | 42,300 minutes |
 | Microsoft Word, Excel, and PowerPoint | `me/drive/root` or `drives/{drive-id}/root` | `updated` | `Files.Read.All` | 42,300 minutes |
-| Microsoft People | `me/contacts` | `created,updated,deleted` | `Contacts.Read` | 10,080 minutes (7 days) |
+| Microsoft People | `me/contacts` | `created,updated,deleted` | `Contacts.Read` | 10,070 minutes (just under 7 days) |
 | Microsoft Entra ID | `users`, `groups` | `updated,deleted` (`updated` also covers created users and groups) | `User.Read.All`, `Group.Read.All` | 41,760 minutes |
 
 Drive items, including Word, Excel, and PowerPoint files, only support `updated`, and a notification says that something changed in the drive, not which file. Use [delta](https://learn.microsoft.com/en-us/graph/api/driveitem-delta) to fetch the changed files, for example from a sync triggered by the webhook.
