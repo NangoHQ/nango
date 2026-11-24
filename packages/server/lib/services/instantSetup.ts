@@ -2,6 +2,7 @@ import type { AuthModeType, Provider, ProviderInstantSetup, ProviderMcpOAUTH2 } 
 
 const AUTH_MODES_NEEDING_DEV_APP: AuthModeType[] = ['OAUTH1', 'OAUTH2', 'APP', 'CUSTOM'];
 const AUTH_MODES_WITH_REQUIRED_SETUP_FIELDS: AuthModeType[] = ['TBA', 'INSTALL_PLUGIN'];
+export const NANGO_APP_AUTH_MODES: ReadonlySet<AuthModeType> = new Set(['OAUTH1', 'OAUTH2', 'APP']);
 
 export function needsSetupFields(provider: Provider): boolean {
     return (
@@ -14,7 +15,7 @@ export function getInstantSetup(provider: Provider, preConfigured: boolean): Pro
         return null;
     }
     // Nango's own app can't carry integration settings, even optional ones.
-    if (preConfigured && !provider.integration_config) {
+    if (preConfigured && !provider.integration_config && NANGO_APP_AUTH_MODES.has(provider.auth_mode)) {
         return 'nango-managed-app';
     }
     if (AUTH_MODES_NEEDING_DEV_APP.includes(provider.auth_mode)) {

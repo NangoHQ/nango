@@ -13,6 +13,10 @@ describe('getInstantSetup', () => {
         expect(getInstantSetup(provider('OAUTH2'), true)).toBe('nango-managed-app');
     });
 
+    it('does not use Nango’s app for an auth mode Nango’s credentials do not support', () => {
+        expect(getInstantSetup(provider('CUSTOM'), true)).toBeNull();
+    });
+
     it('is not instant on Nango’s app when the provider has optional integration settings', () => {
         const withOptionalConfig = provider('OAUTH2', {
             integration_config: { appDomain: { type: 'string', title: 'App domain', description: '', order: 0, optional: true } }
