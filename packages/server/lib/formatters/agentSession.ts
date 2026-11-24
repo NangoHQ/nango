@@ -53,6 +53,6 @@ export function metaToolsSummary(metaTools: AgentSessionMetaTools): AgentSession
         nango_execute: metaTools.nangoExecute,
         nango_proxy: metaTools.nangoProxy,
         nango_create_connection: metaTools.nangoCreateConnection,
-        ...(metaTools.nangoRunCode !== undefined && { nango_run_code: metaTools.nangoRunCode })
+        ...(metaTools.nangoQueryResult !== undefined && { nango_query_result: metaTools.nangoQueryResult })
     };
 }
