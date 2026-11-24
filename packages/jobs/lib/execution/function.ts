@@ -11,7 +11,6 @@ import {
     functionLookupService,
     getApiUrl,
     getEndUserByConnectionId,
-    inlineFunctionService,
     isInlineFunctionUuid,
     LogActionEnum,
     NangoError,
@@ -29,7 +28,7 @@ import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskFunction } from '@nangohq/nango-orchestrator';
-import type { Config, ResolvedFunction } from '@nangohq/shared';
+import type { Config, ResolvedFunction, ResolvedInlineFunction } from '@nangohq/shared';
 import type {
     CheckpointRange,
     ConnectionJobs,
@@ -45,10 +44,6 @@ import type {
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
-const INLINE_FUNCTION_NAME = 'inline';
-
-type ResolvedInlineFunction = { kind: 'inline'; uuid: string; name: string; enabled: true; code: string; description: string | null };
-
 export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let logCtx: LogContext | undefined;
     let account: DBTeam | undefined;
@@ -56,7 +51,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let providerConfig: Config | null | undefined;
     let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
-    let functionName: string | undefined = isInlineFunctionUuid(task.functionUuid) ? INLINE_FUNCTION_NAME : undefined;
+    let functionName: string | undefined = isInlineFunctionUuid(task.functionUuid) ? functionLookupService.INLINE_FUNCTION_NAME : undefined;
 
     try {
         const accountContext = await tracer.trace('function.prepare.accountContext', async () =>
@@ -77,13 +72,12 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
         }
 
-        const resolved: Result<ResolvedFunction | ResolvedInlineFunction | undefined> = await tracer.trace('function.prepare.functionConfig', async () =>
-            isInlineFunctionUuid(task.functionUuid)
-                ? resolveInlineFunction({ environmentId: task.connection.environment_id, uuid: task.functionUuid })
-                : functionLookupService.resolveFunctionByUuid({
-                      environmentId: task.connection.environment_id,
-                      functionUuid: task.functionUuid
-                  })
+        const resolved = await tracer.trace('function.prepare.functionConfig', async () =>
+            functionLookupService.resolveFunctionByUuid({
+                environmentId: task.connection.environment_id,
+                functionUuid: task.functionUuid,
+                includeInline: true
+            })
         );
         if (resolved.isErr()) {
             throw resolved.error;
@@ -591,15 +585,6 @@ async function getLogCtx(
     return logCtx;
 }
 
-async function resolveInlineFunction({ environmentId, uuid }: { environmentId: number; uuid: string }): Promise<Result<ResolvedInlineFunction | undefined>> {
-    const inlineFunction = await inlineFunctionService.get(db.knex, { environmentId, uuid });
-    if (inlineFunction.isErr() || !inlineFunction.value) {
-        return inlineFunction.isErr() ? Err(inlineFunction.error) : Ok(undefined);
-    }
-    const { code, description } = inlineFunction.value;
-    return Ok({ kind: 'inline', uuid, name: INLINE_FUNCTION_NAME, enabled: true, code, description });
-}
-
 function inlineLogFields(fn: ResolvedFunction | ResolvedInlineFunction): Record<string, string> {
     if (fn.kind !== 'inline') {
         return {};
@@ -648,7 +633,7 @@ function toInlineConfig({ environmentId, configId }: { environmentId: number; co
     const now = new Date();
     return {
         id: 0,
-        sync_name: INLINE_FUNCTION_NAME,
+        sync_name: functionLookupService.INLINE_FUNCTION_NAME,
         nango_config_id: configId,
         file_location: '',
         version: '0.0.0',

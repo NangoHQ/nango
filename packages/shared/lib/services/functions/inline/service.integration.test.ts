@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 
 import { seedAccountEnvAndUser } from '../../../seeders/global.seeder.js';
+import { resolveFunctionByUuid } from '../lookup/service.js';
 import { create, get, INLINE_FUNCTIONS_TABLE, maxInlineFunctionCodeLength } from './service.js';
 import { isInlineFunctionUuid } from './uuid.js';
 
@@ -39,6 +40,21 @@ describe('inline functions', () => {
 
         expect(isInlineFunctionUuid(created.uuid)).toBe(true);
         expect((await get(db.knex, { environmentId: env.id, uuid: created.uuid })).unwrap()).toStrictEqual(created);
+    });
+
+    it('resolves an inline uuid as a function only for callers that ask for inline functions', async () => {
+        const { env, agentSessionId } = await seedSession();
+        const created = (await create(db.knex, { environmentId: env.id, agentSessionId, code: 'return 1;', description: 'One' })).unwrap();
+
+        expect((await resolveFunctionByUuid({ environmentId: env.id, functionUuid: created.uuid, includeInline: true })).unwrap()).toStrictEqual({
+            kind: 'inline',
+            uuid: created.uuid,
+            name: 'inline',
+            enabled: true,
+            code: 'return 1;',
+            description: 'One'
+        });
+        expect((await resolveFunctionByUuid({ environmentId: env.id, functionUuid: created.uuid })).unwrap()).toBeUndefined();
     });
 
     it('only reads the code from the environment that stored it', async () => {
