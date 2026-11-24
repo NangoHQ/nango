@@ -79,7 +79,7 @@ export const CatalogProviderShow: React.FC = () => {
         try {
             const response = await postIntegration(oneClickSetupBody);
             toast({ title: `${provider.displayName} integration added`, variant: 'success' });
-            await navigate(`/${env}/integrations/${encodeURIComponent(response.data.unique_key)}`);
+            await navigate(`/${env}/integrations/${encodeURIComponent(response.data.unique_key)}/functions`);
         } catch {
             toast({ title: `Failed to add ${provider.displayName}`, variant: 'error' });
         } finally {

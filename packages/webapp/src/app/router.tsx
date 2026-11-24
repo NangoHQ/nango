@@ -98,7 +98,7 @@ const RedirectLegacyFunctionPage = () => {
     }
 
     const search = next.toString();
-    return <Navigate to={{ pathname: `/${env}/integrations/${providerConfigKey}`, search: search ? `?${search}` : '' }} replace />;
+    return <Navigate to={{ pathname: `/${env}/integrations/${providerConfigKey}/functions`, search: search ? `?${search}` : '' }} replace />;
 };
 
 const ConnectionIndexRedirect = () => {
