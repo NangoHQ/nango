@@ -537,6 +537,30 @@ describe('listSessionTools', () => {
         expect(callable.get('a_b__c_2')).toStrictEqual({ integrationId: 'a_b', name: 'c', description: 'c description', pinned: false });
     });
 
+    it("lists a tool's tags in _meta, without its required scopes", () => {
+        const { listed } = buildSessionTools(
+            session({
+                compiledToolset: {
+                    notion: {
+                        provider: 'notion',
+                        pinned: [
+                            { ...tool('read_doc'), tags: { read_only_hint: 'true', labels: ['docs'], required_scopes: { all: ['documents:read'] } } },
+                            { ...tool('upsert_doc'), tags: { required_scopes: { all: ['documents:write'] } } }
+                        ],
+                        searchable: []
+                    }
+                }
+            })
+        );
+
+        expect(listed.find((tool) => tool.name === 'notion__read_doc')?._meta).toStrictEqual({
+            'nango/integration': 'notion',
+            'nango/tool': 'read_doc',
+            'nango/tags': { read_only_hint: 'true', labels: ['docs'] }
+        });
+        expect(listed.find((tool) => tool.name === 'notion__upsert_doc')?._meta).toStrictEqual({ 'nango/integration': 'notion', 'nango/tool': 'upsert_doc' });
+    });
+
     it('keeps a page worth of tools listable', () => {
         const pinned = Array.from({ length: TOOLS_PAGE_SIZE * 2 }, (_, index) => tool(`action_${index}`));
         const tools = listSessionTools(session({ compiledToolset: { notion: { provider: 'notion', pinned, searchable: [] } } }));

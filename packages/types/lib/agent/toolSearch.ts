@@ -1,3 +1,4 @@
+import type { FunctionTagValue } from '../function/config.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type AgentSessionToolConnectionState = { readonly status: 'connected'; readonly connection_id: string } | { readonly status: 'not_connected' };
@@ -15,6 +16,7 @@ export interface AgentSessionToolRelated {
 
 export interface AgentSessionToolMatch extends AgentSessionToolRelated {
     readonly input: AgentSessionToolInput;
+    readonly tags?: Readonly<Record<string, FunctionTagValue>>;
 }
 
 export interface AgentSessionToolSearchQueryResult {

@@ -7,7 +7,9 @@ import { filterJsonSchemaForModels, report } from '@nangohq/utils';
 import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
 import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
+import { clientToolTags } from './agentSessionToolTags.js';
 
+import type { ClientToolTags } from './agentSessionToolTags.js';
 import type { ActionInputSchemaRow } from '@nangohq/shared';
 import type {
     AgentSession,
@@ -108,6 +110,7 @@ interface SearchCandidate {
     connection: AgentSessionToolConnectionState;
     listed: boolean;
     input?: AgentSessionToolInput;
+    tags?: ClientToolTags;
 }
 
 /** A candidate with the score it was ranked on, so how well a search did outlives the ranking. */
@@ -405,6 +408,7 @@ function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; 
         return tools.flatMap(({ tool, listed }): SearchCandidate[] => {
             // Defensive: a tool the listing has no slug for cannot be called.
             const slug = slugOf({ integration, action: tool.name });
+            const tags = clientToolTags(tool.tags);
 
             return slug
                 ? [
@@ -416,6 +420,7 @@ function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; 
                           description: tool.description,
                           connection,
                           listed,
+                          ...(tags ? { tags } : {}),
                           ...(tool.mcp ? { input: { kind: 'schema', schema: tool.mcp.inputSchema as JSONSchema7 } as const } : {})
                       }
                   ]
@@ -534,13 +539,14 @@ function toRelated(candidate: SearchCandidate): AgentSessionToolRelated {
 
 // The dialect URL would repeat on every match, and the guidance already says what the schemas are.
 function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput): AgentSessionToolMatch {
+    const tags = candidate.tags ? { tags: candidate.tags } : {};
     if (input.kind !== 'schema') {
-        return { ...toRelated(candidate), input };
+        return { ...toRelated(candidate), input, ...tags };
     }
 
     const schema = { ...input.schema };
     delete schema.$schema;
-    return { ...toRelated(candidate), input: { kind: 'schema', schema } };
+    return { ...toRelated(candidate), input: { kind: 'schema', schema }, ...tags };
 }
 
 function integrationStates(candidates: SearchCandidate[]): Record<string, AgentSessionToolSearchIntegrationState> {
