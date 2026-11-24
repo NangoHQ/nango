@@ -42,6 +42,7 @@ import { AddIntegrationCard } from './components/AddIntegrationCard';
 import { HeroIllustration } from './components/HeroIllustration';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
+import { WorkingSpiral } from './components/WorkingSpiral';
 import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
 import { continueOncePerSetUp, createdIntegrationIds, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults } from './setUpTool';
@@ -642,11 +643,7 @@ const WorkingIndicator: React.FC<{ messages: PlaygroundMessage[] }> = ({ message
 
     return (
         <div className="flex items-center gap-2 text-body-medium-regular text-text-secondary" role="status">
-            <span className="flex gap-1">
-                {[0, 150, 300].map((delay) => (
-                    <span key={delay} className="size-1.5 animate-bounce rounded-full bg-text-secondary" style={{ animationDelay: `${delay}ms` }} />
-                ))}
-            </span>
+            <WorkingSpiral />
             <span className="animate-pulse">{label}</span>
         </div>
     );

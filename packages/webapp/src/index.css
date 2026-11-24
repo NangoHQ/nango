@@ -50,6 +50,43 @@
 
     --animate-accordion-down: accordion-down 0.2s ease-out;
     --animate-accordion-up: accordion-up 0.2s ease-out;
+    --animate-spiral-wave: spiral-wave 2.2s infinite;
+    --animate-spiral-band: spiral-band 2s infinite;
+    --animate-spiral-shimmer: spiral-shimmer 2.4s linear infinite;
+
+    @keyframes spiral-wave {
+        0%,
+        70%,
+        100% {
+            stroke: var(--spiral-rest);
+            animation-timing-function: ease-out;
+        }
+        15% {
+            stroke: var(--spiral-lit-strong);
+            animation-timing-function: ease-in-out;
+        }
+    }
+    @keyframes spiral-band {
+        0%,
+        45%,
+        100% {
+            stroke: var(--spiral-rest);
+            animation-timing-function: ease-out;
+        }
+        10% {
+            stroke: var(--spiral-lit);
+            animation-timing-function: ease-in-out;
+        }
+    }
+    @keyframes spiral-shimmer {
+        0%,
+        100% {
+            stroke: var(--spiral-shimmer-rest);
+        }
+        50% {
+            stroke: var(--spiral-shimmer-lit);
+        }
+    }
 
     @keyframes accordion-down {
         from {
