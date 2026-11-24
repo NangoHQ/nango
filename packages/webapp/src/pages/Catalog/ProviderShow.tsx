@@ -89,7 +89,16 @@ export const CatalogProviderShow: React.FC = () => {
     };
     const renderSetupButton = (source: SetupButtonSource, size: 'sm' | 'md') => {
         if (configuredIntegrationIds && configuredIntegrationIds.length > 0) {
-            return <TestConnectionButton env={env} integrationIds={configuredIntegrationIds} canCreate={canCreateConnection} size={size} />;
+            return (
+                <TestConnectionButton
+                    env={env}
+                    provider={provider.name}
+                    page="catalog"
+                    integrationIds={configuredIntegrationIds}
+                    canCreate={canCreateConnection}
+                    size={size}
+                />
+            );
         }
         return renderAddIntegrationButton(source, size);
     };

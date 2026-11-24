@@ -345,6 +345,17 @@ export const analyticsEventCatalogue = defineCatalogue({
         fires: 'When someone starts creating a connection from the dashboard or the Agent Playground',
         properties: z.object({ provider: z.string(), is_playground: z.boolean().optional() })
     },
+    'connections:test_connection_button_click': {
+        surface: 'app',
+        insight: 'Whether people who already have a test connection open it from the catalog and integration pages, or add another one',
+        fires: 'When someone opens or adds a test connection from the test connection button on a catalog or integration page',
+        properties: z.object({
+            provider: z.string(),
+            page: z.enum(['catalog', 'integration']),
+            action: z.enum(['open_one', 'open_list', 'add']),
+            own_connection_count: z.number()
+        })
+    },
     'connections:share_link_button_click': {
         surface: 'app',
         insight: 'How often people hand connection setup to an end user instead of doing it themselves',

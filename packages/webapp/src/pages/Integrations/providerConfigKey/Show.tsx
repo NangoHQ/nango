@@ -88,7 +88,14 @@ export const ShowIntegration: React.FC = () => {
                         </a>
                     </Button>
                     <TryInPlaygroundButton provider={integration.integration.provider} integrationName={displayName} source="integration" variant="outline" />
-                    <TestConnectionButton env={env} integrationIds={[integration.integration.unique_key]} canCreate={canCreateTestConnection} size="md" />
+                    <TestConnectionButton
+                        env={env}
+                        provider={integration.integration.provider}
+                        page="integration"
+                        integrationIds={[integration.integration.unique_key]}
+                        canCreate={canCreateTestConnection}
+                        size="md"
+                    />
                 </div>
             </header>
 
