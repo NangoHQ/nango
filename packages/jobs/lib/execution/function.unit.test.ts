@@ -160,6 +160,7 @@ describe('startFunction', () => {
         if (!args) throw new Error('Missing script invocation');
         expect(args.arg).toEqual(execution.trigger);
         expect(args.nangoProps.scriptType).toBe('function');
+        expect(args.nangoProps.agentSessionResult).toBeUndefined();
         expect(args.nangoProps.syncConfig).toMatchObject({
             id: 0,
             nango_config_id: 9,
@@ -236,6 +237,10 @@ describe('startFunction', () => {
         expect(args.code).toBe(code);
         expect(args.nangoProps.scriptType).toBe('function');
         expect(args.nangoProps.execMode).toBe('transform');
+        expect(args.nangoProps.agentSessionResult).toStrictEqual({
+            sessionId: '7c8e1f2a-3b4d-4e5f-8a9b-0c1d2e3f4a5b',
+            recordId: '9d0e1f2a-3b4c-4d5e-9f6a-7b8c9d0e1f2a'
+        });
         expect(args.nangoProps.syncConfig).toMatchObject({ id: 0, sync_name: 'inline', nango_config_id: 9, file_location: '', source: 'standalone' });
         expect(logCtx.info).toHaveBeenCalledWith(
             "Starting function 'inline'",

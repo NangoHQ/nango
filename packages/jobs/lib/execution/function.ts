@@ -169,7 +169,10 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
 
         const nangoProps: NangoProps = {
             scriptType: 'function',
-            ...(fn.kind === 'inline' && { execMode: 'transform' as const }),
+            ...(fn.kind === 'inline' && {
+                execMode: 'transform' as const,
+                agentSessionResult: { sessionId: fn.agentSessionId, recordId: fn.resultRecordId }
+            }),
             host: getApiUrl(),
             team: {
                 id: account.id,
