@@ -1,40 +1,42 @@
 import db from '@nangohq/database';
 import { environmentService } from '@nangohq/shared';
-import { Err, Ok, stringifyError } from '@nangohq/utils';
+import { Err, Ok, report, stringifyError } from '@nangohq/utils';
 
 import { tasks } from './index.js';
 
 import type { Result } from '@nangohq/utils';
-
-// `tasks` writes through its own pg pool; deferring initial pickup ensures the outer knex
-// transaction has committed `deleted = true` before the worker checks the environment row.
-const INITIAL_DELAY_MS = 2_000;
 
 export interface EnvironmentDeletionParams {
     environmentId: number;
 }
 
 /**
- * Soft-deletes the environment and enqueues the durable `deleteEnvironment` task.
- * Rolls back the soft-delete if enqueuing fails; the task is a no-op if the soft-delete rolls back.
+ * Commits the environment soft-delete before enqueuing the durable `deleteEnvironment` task so the
+ * worker never observes `deleted = false`. Restores the environment if enqueuing fails.
  */
 export async function startEnvironmentDeletion(params: EnvironmentDeletionParams): Promise<Result<void>> {
+    let softDeleted = false;
     try {
-        await db.knex.transaction(async (trx) => {
-            const deleted = await environmentService.softDelete(trx, { environmentId: params.environmentId });
-            if (deleted === 0) {
-                return; // Already deleted; no need to enqueue the delete task.
-            }
+        const deleted = await environmentService.softDelete(db.knex, { environmentId: params.environmentId });
+        if (deleted === 0) {
+            return Ok(undefined); // Already deleted; no need to enqueue the delete task.
+        }
+        softDeleted = true;
 
-            const res = await tasks.enqueue('deleteEnvironment', params, {
-                startsAfter: new Date(Date.now() + INITIAL_DELAY_MS)
-            });
-            if (res.isErr()) {
-                throw res.error; // roll back the soft-delete
-            }
-        });
+        const res = await tasks.enqueue('deleteEnvironment', params);
+        if (res.isErr()) {
+            throw res.error;
+        }
+
         return Ok(undefined);
     } catch (err) {
+        if (softDeleted) {
+            try {
+                await environmentService.restoreSoftDeleted(db.knex, { environmentId: params.environmentId });
+            } catch (restoreErr) {
+                report(restoreErr, { environmentId: params.environmentId });
+            }
+        }
         return Err(err instanceof Error ? err : new Error(stringifyError(err)));
     }
 }

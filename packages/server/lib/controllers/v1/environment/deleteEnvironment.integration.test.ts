@@ -1,17 +1,30 @@
 import { randomUUID } from 'node:crypto';
 
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import { environmentService, getProvider, PROD_ENVIRONMENT_NAME, seeders } from '@nangohq/shared';
 import { createConfigSeed } from '@nangohq/shared/lib/seeders/config.seeder.js';
 import { createSyncSeeds } from '@nangohq/shared/lib/seeders/index.js';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, Ok } from '@nangohq/utils';
 
-import { deleteEnvironmentTask } from '../../../tasks/handlers/deleteEnvironment.js';
+import { envs } from '../../../env.js';
+import { deleteEnvironmentTask } from '../../../tasks/index.js';
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
-import type { DBConnection, DBEnvironment, DBOAuthSession } from '@nangohq/types';
+import type * as serverUtils from '../../../utils/utils.js';
+import type { DBConnection, DBEnvironment } from '@nangohq/types';
+
+vi.mock('../../../utils/utils.js', async (importOriginal) => {
+    const actual = await importOriginal<typeof serverUtils>();
+    return {
+        ...actual,
+        getOrchestrator: () => ({
+            deleteSyncs: () => Promise.resolve(Ok(undefined)),
+            deleteFunctionSchedules: () => Promise.resolve(Ok(undefined))
+        })
+    };
+});
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -117,12 +130,14 @@ describe(`DELETE ${endpoint}`, () => {
             type: 'sync'
         });
 
-        await db.knex.from<DBOAuthSession>('_nango_oauth_sessions').insert({
+        await db.knex('_nango_oauth_sessions').insert({
             id: randomUUID(),
             connection_id: connection.connection_id,
             provider_config_key: providerName,
             provider: providerName,
-            environment_id: testEnv.id
+            environment_id: testEnv.id,
+            callback_url: 'http://localhost/oauth/callback',
+            auth_mode: 'OAUTH2'
         });
 
         const res = await api.fetch(endpoint, {
@@ -134,6 +149,13 @@ describe(`DELETE ${endpoint}`, () => {
 
         expect(res.res.status).toBe(204);
         expect(await environmentService.getById(testEnv.id)).toBeNull();
+
+        const enqueued = await db.knex
+            .withSchema(envs.TASKS_DATABASE_SCHEMA)
+            .from('tasks')
+            .whereRaw("name LIKE 'deleteEnvironment:%' AND payload->>'environmentId' = ?", [String(testEnv.id)])
+            .first<{ id: string }>();
+        expect(enqueued).toBeDefined();
 
         const taskRes = await deleteEnvironmentTask.handle({ environmentId: testEnv.id }, { taskId: 'test', attempt: 0, logger: getLogger('test') });
         expect(taskRes.isOk()).toBe(true);

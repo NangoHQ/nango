@@ -481,6 +481,10 @@ class EnvironmentService {
         return await trx.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
     }
 
+    async restoreSoftDeleted(trx: Knex, { environmentId }: { environmentId: number }): Promise<number> {
+        return await trx.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: true }).update({ deleted: false, deleted_at: null });
+    }
+
     async getSoftDeleted({ limit, olderThan }: { limit: number; olderThan: number }): Promise<DBEnvironment[]> {
         const dateThreshold = new Date();
         dateThreshold.setDate(dateThreshold.getDate() - olderThan);

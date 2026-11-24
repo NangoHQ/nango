@@ -2,28 +2,38 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import type * as NangoUtils from '@nangohq/utils';
+
 const order: string[] = [];
+const mockKnex = {};
 
 const softDelete = vi.fn((..._args: unknown[]) => {
     order.push('softDelete');
     return Promise.resolve(1);
 });
+const restoreSoftDeleted = vi.fn((..._args: unknown[]) => {
+    order.push('restoreSoftDeleted');
+    return Promise.resolve(1);
+});
 vi.mock('@nangohq/shared', () => ({
-    environmentService: { softDelete: (...args: unknown[]) => softDelete(...args) }
+    environmentService: {
+        softDelete: (...args: unknown[]) => softDelete(...args),
+        restoreSoftDeleted: (...args: unknown[]) => restoreSoftDeleted(...args)
+    }
 }));
 
-let txOutcome: 'committed' | 'rolledback' | null = null;
-const transaction = vi.fn(async (cb: (trx: unknown) => Promise<unknown>) => {
-    try {
-        const result = await cb({});
-        txOutcome = 'committed';
-        return result;
-    } catch (err) {
-        txOutcome = 'rolledback';
-        throw err;
-    }
+vi.mock('@nangohq/database', () => ({ default: { knex: mockKnex } }));
+
+const report = vi.fn();
+vi.mock('@nangohq/utils', async (importOriginal) => {
+    const actual = await importOriginal<typeof NangoUtils>();
+    return {
+        ...actual,
+        report: (...args: unknown[]): void => {
+            report(...args);
+        }
+    };
 });
-vi.mock('@nangohq/database', () => ({ default: { knex: { transaction: (cb: (trx: unknown) => Promise<unknown>) => transaction(cb) } } }));
 
 const enqueue = vi.fn((..._args: unknown[]) => {
     order.push('enqueue');
@@ -36,9 +46,13 @@ const { startEnvironmentDeletion } = await import('./startEnvironmentDeletion.js
 describe('startEnvironmentDeletion', () => {
     beforeEach(() => {
         order.length = 0;
-        txOutcome = null;
+        report.mockReset();
         softDelete.mockReset().mockImplementation(() => {
             order.push('softDelete');
+            return Promise.resolve(1);
+        });
+        restoreSoftDeleted.mockReset().mockImplementation(() => {
+            order.push('restoreSoftDeleted');
             return Promise.resolve(1);
         });
         enqueue.mockReset().mockImplementation(() => {
@@ -47,14 +61,14 @@ describe('startEnvironmentDeletion', () => {
         });
     });
 
-    it('soft-deletes the environment then enqueues deleteEnvironment with a short startsAfter delay', async () => {
+    it('commits the soft-delete before enqueuing deleteEnvironment', async () => {
         const res = await startEnvironmentDeletion({ environmentId: 42 });
 
         expect(res.isOk()).toBe(true);
-        expect(softDelete).toHaveBeenCalledWith({}, { environmentId: 42 });
-        expect(enqueue).toHaveBeenCalledWith('deleteEnvironment', { environmentId: 42 }, expect.objectContaining({ startsAfter: expect.any(Date) }));
+        expect(softDelete).toHaveBeenCalledWith(mockKnex, { environmentId: 42 });
+        expect(enqueue).toHaveBeenCalledWith('deleteEnvironment', { environmentId: 42 });
+        expect(restoreSoftDeleted).not.toHaveBeenCalled();
         expect(order).toEqual(['softDelete', 'enqueue']);
-        expect(txOutcome).toBe('committed');
     });
 
     it('does not enqueue a duplicate task when the environment is already soft-deleted', async () => {
@@ -64,25 +78,41 @@ describe('startEnvironmentDeletion', () => {
 
         expect(res.isOk()).toBe(true);
         expect(enqueue).not.toHaveBeenCalled();
-        expect(txOutcome).toBe('committed');
+        expect(restoreSoftDeleted).not.toHaveBeenCalled();
     });
 
-    it('rolls back the soft-delete and returns Err when enqueue fails', async () => {
+    it('restores the soft-deleted environment and returns Err when enqueue fails', async () => {
         enqueue.mockResolvedValueOnce(Err(new Error('queue down')));
 
         const res = await startEnvironmentDeletion({ environmentId: 42 });
 
         expect(res.isErr()).toBe(true);
-        expect(txOutcome).toBe('rolledback');
+        expect(restoreSoftDeleted).toHaveBeenCalledWith(mockKnex, { environmentId: 42 });
+        expect(order).toEqual(['softDelete', 'restoreSoftDeleted']);
     });
 
-    it('returns Err and does not enqueue when soft-delete throws', async () => {
+    it('preserves the original enqueue error and reports when restoreSoftDeleted also fails', async () => {
+        const enqueueErr = new Error('queue down');
+        const restoreErr = new Error('restore failed');
+        enqueue.mockResolvedValueOnce(Err(enqueueErr));
+        restoreSoftDeleted.mockRejectedValueOnce(restoreErr);
+
+        const res = await startEnvironmentDeletion({ environmentId: 42 });
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error).toBe(enqueueErr);
+        }
+        expect(report).toHaveBeenCalledWith(restoreErr, { environmentId: 42 });
+    });
+
+    it('returns Err and does not enqueue or restore when soft-delete throws', async () => {
         softDelete.mockRejectedValueOnce(new Error('db down'));
 
         const res = await startEnvironmentDeletion({ environmentId: 42 });
 
         expect(res.isErr()).toBe(true);
         expect(enqueue).not.toHaveBeenCalled();
-        expect(txOutcome).toBe('rolledback');
+        expect(restoreSoftDeleted).not.toHaveBeenCalled();
     });
 });

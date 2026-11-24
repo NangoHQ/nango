@@ -33,3 +33,5 @@ export const tasks = new Tasks({
     },
     logger
 });
+
+export { deleteEnvironmentTask };
