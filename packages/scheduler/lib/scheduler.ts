@@ -8,7 +8,6 @@ import { defaultSchedulerConfig, noopLogger } from './config.js';
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
-import { ScheduleTaskAlreadyRunningError } from './errors.js';
 import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
 import { logger, setLogger } from './utils/logger.js';
@@ -281,13 +280,11 @@ export class Scheduler {
         }
         const task = createResult.value.created[0];
         if (!task) {
-            if (taskProps.scheduleId && createResult.value.discarded.some((discarded) => discarded.reason === 'conflict')) {
-                return { result: Err(new ScheduleTaskAlreadyRunningError()), events: [] };
-            }
             const events = createResult.value.discarded
                 .filter((d) => d.reason === 'capped')
                 .map((d): SchedulerEvent => ({ type: 'task_dropped', groupKey: d.props.groupKey, count: 1, reason: 'task_cap' }));
-            return { result: Err(`Failed to create task '${taskProps.name}'`), events };
+            const discarded = createResult.value.discarded[0];
+            return { result: Err(discarded?.error ?? new Error(`Failed to create task '${taskProps.name}'`)), events };
         }
         if (task.scheduleId) {
             const scheduleRes = await schedules.setLastScheduledTask(trx, [{ id: task.scheduleId, taskId: task.id, taskState: task.state }]);

@@ -82,6 +82,25 @@ describe('OrchestratorClient immediate', () => {
         expect(fetchMock).toHaveBeenCalledTimes(3);
     });
 
+    it('does not retry task cap exceeded responses', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(JSON.stringify({ error: { code: 'task_cap_exceeded', message: "Task cap of 10 exceeded for group 'group-1'" } }), {
+                status: 429,
+                headers: { 'content-type': 'application/json' }
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.immediate(buildImmediateRequest());
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error).toMatchObject({ name: 'task_cap_exceeded', message: "Task cap of 10 exceeded for group 'group-1'" });
+        }
+        expect(fetchMock).toHaveBeenCalledOnce();
+    });
+
     it('preserves existing retries on non-immediate route errors', async () => {
         const fetchMock = vi.fn().mockResolvedValue(
             new Response(JSON.stringify({ error: { code: 'schedule_not_found', message: 'missing schedule' } }), {

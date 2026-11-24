@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { isDuplicateTaskNameError } from '@nangohq/scheduler';
+import { isDuplicateTaskNameError, isTaskCapExceededError } from '@nangohq/scheduler';
 import { metrics, validateRequest } from '@nangohq/utils';
 
 import { actionArgsSchema, functionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
@@ -68,7 +68,9 @@ export type PostImmediate = Endpoint<{
         };
         args: JsonObject & { type: TaskType };
     };
-    Error: ApiError<'immediate_failed' | 'duplicate_task_name' | 'invalid_request'> | ApiError<'rate_limit_exceeded', undefined, RateLimitPayload>;
+    Error:
+        | ApiError<'immediate_failed' | 'duplicate_task_name' | 'task_cap_exceeded' | 'invalid_request'>
+        | ApiError<'rate_limit_exceeded', undefined, RateLimitPayload>;
     Success: ImmediateSuccess;
 }>;
 
@@ -119,6 +121,11 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
             heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat
         });
         if (task.isErr()) {
+            if (isTaskCapExceededError(task.error)) {
+                res.status(429).json({ error: { code: 'task_cap_exceeded', message: task.error.message } });
+                return;
+            }
+
             if (isDuplicateTaskNameError(task.error)) {
                 res.status(409).json({
                     error: {

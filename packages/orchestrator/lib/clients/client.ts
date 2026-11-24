@@ -115,7 +115,16 @@ export class OrchestratorClient {
     public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
         const res = await this.routeFetch(
             postImmediateRoute,
-            props.rateLimitKey ? { retryConfig: { maxAttempts: 1, maxWaitMs: Infinity, delayMs: 0, retryIf: () => false } } : undefined
+            props.rateLimitKey
+                ? { retryConfig: { maxAttempts: 1, maxWaitMs: Infinity, delayMs: 0, retryIf: () => false } }
+                : {
+                      retryConfig: {
+                          maxAttempts: 3,
+                          maxWaitMs: Infinity,
+                          delayMs: 50,
+                          retryIf: (res) => 'error' in res && getErrorMessageForCode(res.error.payload, 'task_cap_exceeded') === null
+                      }
+                  }
         )({ body: props });
         if ('error' in res) {
             const rateLimit = getErrorForCode(res.error.payload, 'rate_limit_exceeded');
@@ -127,6 +136,14 @@ export class OrchestratorClient {
                 return Err({
                     name: 'duplicate_task_name',
                     message: duplicateMessage || 'Task with this name already exists',
+                    payload: {}
+                });
+            }
+            const taskCapMessage = getErrorMessageForCode(res.error.payload, 'task_cap_exceeded');
+            if (taskCapMessage !== null) {
+                return Err({
+                    name: 'task_cap_exceeded',
+                    message: taskCapMessage || 'Task cap exceeded',
                     payload: {}
                 });
             }
