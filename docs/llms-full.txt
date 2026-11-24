@@ -16156,6 +16156,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `oracle-cloud-identity` | Oracle Cloud Identity | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/oracle-cloud-identity.md) | [connect](https://nango.dev/docs/api-integrations/oracle-cloud-identity/connect.md) |  | dev-tools, iam |
 | `oracle-hcm` | Oracle Fusion Cloud (HCM) | BASIC | [docs](https://nango.dev/docs/integrations/all/oracle-hcm.md) | [connect](https://nango.dev/docs/integrations/all/oracle-hcm/connect.md) |  | hr |
 | `orange-logic` | Orange Logic | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/orange-logic.md) | [connect](https://nango.dev/docs/api-integrations/orange-logic/connect.md) |  | storage |
+| `orb` | Orb | API_KEY | [docs](https://nango.dev/docs/api-integrations/orb.md) | [connect](https://nango.dev/docs/api-integrations/orb/connect.md) |  | invoicing |
 | `ordinal` | Ordinal | API_KEY | [docs](https://nango.dev/docs/api-integrations/ordinal.md) | [connect](https://nango.dev/docs/api-integrations/ordinal/connect.md) |  | productivity |
 | `ory` | Ory | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/ory.md) |  |  | iam |
 | `osu` | Osu | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/osu.md) |  |  | gaming |
@@ -16285,6 +16286,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `resend` | Resend | API_KEY | [docs](https://nango.dev/docs/api-integrations/resend.md) | [connect](https://nango.dev/docs/api-integrations/resend/connect.md) |  | communication |
 | `resova` | Resova | API_KEY | [docs](https://nango.dev/docs/api-integrations/resova.md) | [connect](https://nango.dev/docs/api-integrations/resova/connect.md) |  | other |
 | `retell-ai` | Retell AI | API_KEY | [docs](https://nango.dev/docs/integrations/all/retell-ai.md) | [connect](https://nango.dev/docs/integrations/all/retell-ai/connect.md) |  | dev-tools, productivity |
+| `returnless` | Returnless | API_KEY | [docs](https://nango.dev/docs/api-integrations/returnless.md) | [connect](https://nango.dev/docs/api-integrations/returnless/connect.md) |  | e-commerce |
 | `rev-ai` | Rev AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/rev-ai.md) | [connect](https://nango.dev/docs/api-integrations/rev-ai/connect.md) |  | other |
 | `revivn` | Revivn | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/revivn.md) | [connect](https://nango.dev/docs/api-integrations/revivn/connect.md) |  | other |
 | `revolut-business` | Revolut Business | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/revolut-business.md) | [connect](https://nango.dev/docs/api-integrations/revolut-business/connect.md) | [setup](https://nango.dev/docs/api-integrations/revolut-business/how-to-register-your-own-revolut-business-api-oauth-app.md) | banking |

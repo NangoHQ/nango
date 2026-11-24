@@ -28823,6 +28823,30 @@ oracle-cloud-identity:
             order: 1
             doc_section: '#step-1-finding-your-service-instance'
 
+orb:
+    display_name: Orb
+    categories:
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.withorb.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/ping
+    docs: https://nango.dev/docs/api-integrations/orb
+    docs_connect: https://nango.dev/docs/api-integrations/orb/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Orb API key (live or test mode).
+            pattern: '^[A-Za-z0-9_-]{20,}$'
+            example: 3vq8********************************************************m2x7
+            doc_section: '#step-1-create-an-api-key'
+
 ordinal:
     display_name: Ordinal
     categories:
@@ -30179,6 +30203,30 @@ publora:
             pattern: '^sk_[a-z0-9]{8}(_[a-z0-9]{8})?\.[a-f0-9]{52}$'
             example: sk_mrmbzomn_1a2b3c4d.964793af****************************************0ab
             doc_section: '#step-1-creating-your-api-key'
+
+returnless:
+    display_name: Returnless
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api-v2.returnless.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /2025-01/account
+    docs: https://nango.dev/docs/api-integrations/returnless
+    docs_connect: https://nango.dev/docs/api-integrations/returnless/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Returnless API key.
+            pattern: '^[A-Za-z0-9]{20,}$'
+            example: Qk7d****************************************m2Xr
+            doc_section: '#step-1-create-an-api-key'
 
 rev-ai:
     display_name: Rev AI
