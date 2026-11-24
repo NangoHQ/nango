@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { Err, Ok, report, useLambdaKeepWarm } from '@nangohq/utils';
+import { Err, Ok, report, stringToHash, useLambdaKeepWarm } from '@nangohq/utils';
 
 import { PROD_ENVIRONMENT_NAME } from '../constants.js';
 import { externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
@@ -477,12 +477,13 @@ class EnvironmentService {
         return { level };
     }
 
-    async softDelete(trx: Knex, { environmentId }: { environmentId: number }): Promise<number> {
-        return await trx.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+    async acquireDeletionLock(trx: Knex, { environmentId }: { environmentId: number }): Promise<void> {
+        const lockKey = stringToHash(`environment_deletion:${environmentId}`);
+        await trx.raw('SELECT pg_advisory_xact_lock(?) as lock_environment_deletion', [lockKey]);
     }
 
-    async restoreSoftDeleted(trx: Knex, { environmentId }: { environmentId: number }): Promise<number> {
-        return await trx.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: true }).update({ deleted: false, deleted_at: null });
+    async softDelete(trx: Knex, { environmentId }: { environmentId: number }): Promise<number> {
+        return await trx.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
     }
 
     async getSoftDeleted({ limit, olderThan }: { limit: number; olderThan: number }): Promise<DBEnvironment[]> {

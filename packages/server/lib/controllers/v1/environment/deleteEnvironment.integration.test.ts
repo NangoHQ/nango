@@ -1,15 +1,15 @@
 import { randomUUID } from 'node:crypto';
 
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import { environmentService, getProvider, PROD_ENVIRONMENT_NAME, seeders } from '@nangohq/shared';
 import { createConfigSeed } from '@nangohq/shared/lib/seeders/config.seeder.js';
 import { createSyncSeeds } from '@nangohq/shared/lib/seeders/index.js';
-import { getLogger, Ok } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
-import { deleteEnvironmentTask } from '../../../tasks/index.js';
+import { deleteEnvironmentTask, tasks } from '../../../tasks/index.js';
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 import type * as serverUtils from '../../../utils/utils.js';
@@ -36,6 +36,9 @@ describe(`DELETE ${endpoint}`, () => {
     });
     afterAll(() => {
         api.server.close();
+    });
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     it('should be protected', async () => {
@@ -166,5 +169,39 @@ describe(`DELETE ${endpoint}`, () => {
         expect(await db.knex.from('_nango_syncs').where({ id: sync.id }).first()).toBeUndefined();
         expect(await db.knex.from('_nango_connections').where({ id: connection.id }).first()).toBeUndefined();
         expect(await db.knex.from('_nango_oauth_sessions').where({ environment_id: testEnv.id }).first()).toBeUndefined();
+    });
+
+    it('should serialize concurrent DELETE requests so an enqueue failure rolls back cleanly for the next request', async () => {
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        const testEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-concurrent-delete' })).unwrap().environment;
+
+        vi.spyOn(tasks, 'enqueue').mockResolvedValueOnce(Err(new Error('transient queue error')));
+
+        const [first, second] = await Promise.all([
+            api.fetch(endpoint, {
+                method: 'DELETE',
+                // @ts-expect-error query params are required
+                query: { env: testEnv.name },
+                session
+            }),
+            api.fetch(endpoint, {
+                method: 'DELETE',
+                // @ts-expect-error query params are required
+                query: { env: testEnv.name },
+                session
+            })
+        ]);
+
+        expect([first.res.status, second.res.status].sort((a, b) => a - b)).toEqual([204, 500]);
+        expect(await environmentService.getById(testEnv.id)).toBeNull();
+
+        const enqueuedCount = await db.knex
+            .withSchema(envs.TASKS_DATABASE_SCHEMA)
+            .from('tasks')
+            .whereRaw("name LIKE 'deleteEnvironment:%' AND payload->>'environmentId' = ?", [String(testEnv.id)])
+            .count<{ count: string }[]>('* as count')
+            .first();
+        expect(Number(enqueuedCount?.count)).toBe(1);
     });
 });

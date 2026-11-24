@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import db from '@nangohq/database';
+import { environmentService } from '@nangohq/shared';
 import { defineTask } from '@nangohq/tasks';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
@@ -33,7 +34,10 @@ export const deleteEnvironmentTask = defineTask({
         const target = `environment ${payload.environmentId}`;
 
         try {
-            const environment = await db.knex<DBEnvironment>('_nango_environments').where({ id: payload.environmentId }).first();
+            const environment = await db.knex.transaction(async (trx) => {
+                await environmentService.acquireDeletionLock(trx, { environmentId: payload.environmentId });
+                return await trx<DBEnvironment>('_nango_environments').where({ id: payload.environmentId }).first();
+            });
             if (!environment) {
                 return Ok(undefined);
             }

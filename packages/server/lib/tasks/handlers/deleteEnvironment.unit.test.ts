@@ -14,9 +14,22 @@ vi.mock('../../deletion/deleteEnvironmentData.js', () => ({
     deleteEnvironmentData: (...args: unknown[]) => deleteEnvironmentData(...args)
 }));
 
+const acquireDeletionLock = vi.fn<(...args: unknown[]) => Promise<void>>().mockResolvedValue(undefined);
+vi.mock('@nangohq/shared', () => ({
+    environmentService: {
+        acquireDeletionLock: (...args: unknown[]) => acquireDeletionLock(...args)
+    }
+}));
+
 const first = vi.fn();
 const where = vi.fn(() => ({ first }));
-const knex = vi.fn(() => ({ where }));
+const trx = vi.fn(() => ({ where }));
+const knex = Object.assign(
+    vi.fn(() => ({ where })),
+    {
+        transaction: vi.fn((cb: (t: typeof trx) => Promise<unknown>) => cb(trx))
+    }
+);
 vi.mock('@nangohq/database', () => ({ default: { knex } }));
 
 const { deleteEnvironmentTask } = await import('./deleteEnvironment.js');
@@ -38,10 +51,12 @@ const payload = { environmentId: 42 };
 
 describe('deleteEnvironment task', () => {
     beforeEach(() => {
+        acquireDeletionLock.mockReset().mockResolvedValue(undefined);
         enqueue.mockReset().mockResolvedValue(Ok({ taskId: 'task-id' }));
         deleteEnvironmentData.mockReset().mockResolvedValue(undefined);
         first.mockReset().mockResolvedValue({ id: 42, name: 'old-dev', deleted: true });
         where.mockClear();
+        trx.mockClear();
         knex.mockClear();
     });
     afterEach(() => vi.clearAllMocks());
@@ -50,7 +65,8 @@ describe('deleteEnvironment task', () => {
         const res = await deleteEnvironmentTask.handle(payload, ctx);
 
         expect(res.isOk()).toBe(true);
-        expect(knex).toHaveBeenCalledWith('_nango_environments');
+        expect(acquireDeletionLock).toHaveBeenCalledWith(trx, { environmentId: 42 });
+        expect(trx).toHaveBeenCalledWith('_nango_environments');
         expect(where).toHaveBeenCalledWith({ id: 42 });
         expect(deleteEnvironmentData).toHaveBeenCalledTimes(1);
         expect(deleteEnvironmentData).toHaveBeenCalledWith(
