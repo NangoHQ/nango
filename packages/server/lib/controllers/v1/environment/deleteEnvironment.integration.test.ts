@@ -1,13 +1,17 @@
+import { randomUUID } from 'node:crypto';
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import { environmentService, getProvider, PROD_ENVIRONMENT_NAME, seeders } from '@nangohq/shared';
 import { createConfigSeed } from '@nangohq/shared/lib/seeders/config.seeder.js';
 import { createSyncSeeds } from '@nangohq/shared/lib/seeders/index.js';
+import { getLogger } from '@nangohq/utils';
 
+import { deleteEnvironmentTask } from '../../../tasks/handlers/deleteEnvironment.js';
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
-import type { DBConnection } from '@nangohq/types';
+import type { DBConnection, DBEnvironment, DBOAuthSession } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -53,7 +57,7 @@ describe(`DELETE ${endpoint}`, () => {
         });
     });
 
-    it('should successfully delete a non-prod environment', async () => {
+    it('should successfully soft-delete a non-prod environment', async () => {
         const { account, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
         const testEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete' })).unwrap().environment;
@@ -67,18 +71,18 @@ describe(`DELETE ${endpoint}`, () => {
 
         expect(res.res.status).toBe(204);
 
-        // Verify the environment was actually deleted
         const deletedEnv = await environmentService.getById(testEnv.id);
         expect(deletedEnv).toBeNull();
+
+        const rawEnv = await db.knex<DBEnvironment>('_nango_environments').where({ id: testEnv.id }).first();
+        expect(rawEnv?.deleted).toBe(true);
     });
 
-    it('should soft delete configs, syncConfigs and syncs when environment is deleted', async () => {
-        // Seed account, environment, and user
+    it('should soft-delete immediately and asynchronously hard-delete configs, syncs, connections, and oauth sessions via deleteEnvironmentTask', async () => {
         const { account, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
         const testEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete-related' })).unwrap().environment;
 
-        // Create a provider config for this environment
         const providerName = 'github';
         const provider = getProvider(providerName);
         if (!provider) {
@@ -86,37 +90,41 @@ describe(`DELETE ${endpoint}`, () => {
         }
 
         const providerConfig = await createConfigSeed(testEnv, providerName, providerName);
-        expect(providerConfig).not.toBeNull();
+        if (!providerConfig?.id) {
+            throw new Error('Failed to seed provider config');
+        }
 
-        // Create a connection for our sync
-        const connection = (
-            await db.knex
-                .from<DBConnection>('_nango_connections')
-                .insert({
-                    environment_id: testEnv.id,
-                    connection_id: 'test-connection-id',
-                    provider_config_key: providerName,
-                    config_id: providerConfig.id!,
-                    deleted: false,
-                    credentials: {}
-                })
-                .returning('*')
-        )[0];
-        expect(connection).not.toBeNull();
+        const [connection] = await db.knex
+            .from<DBConnection>('_nango_connections')
+            .insert({
+                environment_id: testEnv.id,
+                connection_id: 'test-connection-id',
+                provider_config_key: providerName,
+                config_id: providerConfig.id,
+                deleted: false,
+                credentials: {}
+            })
+            .returning('*');
+        if (!connection) {
+            throw new Error('Failed to seed connection');
+        }
 
-        // Create a syncConfig and sync
         const { syncConfig, sync } = await createSyncSeeds({
-            connectionId: connection!.id,
+            connectionId: connection.id,
             environment_id: testEnv.id,
-            nango_config_id: providerConfig.id!,
+            nango_config_id: providerConfig.id,
             sync_name: 'test-sync',
             type: 'sync'
         });
 
-        expect(syncConfig).not.toBeNull();
-        expect(sync).not.toBeNull();
+        await db.knex.from<DBOAuthSession>('_nango_oauth_sessions').insert({
+            id: randomUUID(),
+            connection_id: connection.connection_id,
+            provider_config_key: providerName,
+            provider: providerName,
+            environment_id: testEnv.id
+        });
 
-        // Now delete the environment
         const res = await api.fetch(endpoint, {
             method: 'DELETE',
             // @ts-expect-error query params are required
@@ -125,39 +133,16 @@ describe(`DELETE ${endpoint}`, () => {
         });
 
         expect(res.res.status).toBe(204);
+        expect(await environmentService.getById(testEnv.id)).toBeNull();
 
-        // Verify the environment was deleted
-        const deletedEnv = await environmentService.getById(testEnv.id);
-        expect(deletedEnv).toBeNull();
+        const taskRes = await deleteEnvironmentTask.handle({ environmentId: testEnv.id }, { taskId: 'test', attempt: 0, logger: getLogger('test') });
+        expect(taskRes.isOk()).toBe(true);
 
-        // Verify that config was soft deleted
-        const deletedConfig = await db.knex
-            .from('_nango_configs')
-            .where({
-                id: providerConfig.id,
-                deleted: true
-            })
-            .first();
-        expect(deletedConfig).not.toBeNull();
-
-        // Verify that syncConfig was soft deleted by checking it doesn't show up in active configs
-        const deletedSyncConfig = await db.knex
-            .from('_nango_sync_configs')
-            .where({
-                id: syncConfig.id,
-                deleted: true
-            })
-            .first();
-        expect(deletedSyncConfig).not.toBeNull();
-
-        // Verify that sync was soft deleted
-        const deletedSync = await db.knex
-            .from('_nango_syncs')
-            .where({
-                id: sync.id,
-                deleted: true
-            })
-            .first();
-        expect(deletedSync).not.toBeNull();
+        expect(await db.knex.from('_nango_environments').where({ id: testEnv.id }).first()).toBeUndefined();
+        expect(await db.knex.from('_nango_configs').where({ id: providerConfig.id }).first()).toBeUndefined();
+        expect(await db.knex.from('_nango_sync_configs').where({ id: syncConfig.id }).first()).toBeUndefined();
+        expect(await db.knex.from('_nango_syncs').where({ id: sync.id }).first()).toBeUndefined();
+        expect(await db.knex.from('_nango_connections').where({ id: connection.id }).first()).toBeUndefined();
+        expect(await db.knex.from('_nango_oauth_sessions').where({ environment_id: testEnv.id }).first()).toBeUndefined();
     });
 });

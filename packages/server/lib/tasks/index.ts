@@ -3,6 +3,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { deleteArtifactsTask } from './handlers/deleteArtifacts.js';
+import { deleteEnvironmentTask } from './handlers/deleteEnvironment.js';
 import { deleteFunctionTask } from './handlers/deleteFunction.js';
 import { deleteFunctionArtifactsTask } from './handlers/deleteFunctionArtifacts.js';
 import { deleteRecordsTask } from './handlers/deleteRecords.js';
@@ -18,7 +19,7 @@ const databaseUrl =
  * Register task types here. To add one: create a handler with `defineTask`, then add it to this
  * tuple — `tasks.enqueue` is typed against it automatically.
  */
-const definitions = [exampleTask, deleteFunctionTask, deleteRecordsTask, deleteArtifactsTask, deleteFunctionArtifactsTask] as const;
+const definitions = [exampleTask, deleteEnvironmentTask, deleteFunctionTask, deleteRecordsTask, deleteArtifactsTask, deleteFunctionArtifactsTask] as const;
 
 /** Enqueue background tasks with `tasks.enqueue('type', payload)`. */
 export const tasks = new Tasks({

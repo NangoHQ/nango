@@ -1,10 +1,10 @@
 import * as z from 'zod';
 
 import { environmentService, PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { startEnvironmentDeletion } from '../../tasks/startEnvironmentDeletion.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { getOrchestrator } from '../../utils/utils.js';
 
 import type { DeletePublicEnvironment } from '@nangohq/types';
 
@@ -41,7 +41,12 @@ export const deletePublicEnvironment = asyncWrapper<DeletePublicEnvironment>(asy
         return;
     }
 
-    await environmentService.softDelete({ environmentId: environment.id, orchestrator: getOrchestrator() });
+    const enqueued = await startEnvironmentDeletion({ environmentId: environment.id });
+    if (enqueued.isErr()) {
+        report(enqueued.error);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to enqueue environment deletion' } });
+        return;
+    }
 
     res.status(204).send();
 });

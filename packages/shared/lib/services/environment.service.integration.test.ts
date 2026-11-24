@@ -11,7 +11,6 @@ import { getEncryptionManager } from '../utils/encryption.manager.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService from './environment.service.js';
 
-import type { Orchestrator } from '../clients/orchestrator.js';
 import type { CreateEnvironmentSettings, UpdateEnvironmentSettings } from './environment.service.js';
 import type { DBCustomerKey, DBEnvironment } from '@nangohq/types';
 
@@ -157,7 +156,7 @@ describe('Environment service', () => {
             const webhookSigningKey = uuid();
 
             const deleted = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid(), webhookSigningKey })).unwrap();
-            await environmentService.softDelete({ environmentId: deleted.environment.id, orchestrator: {} as Orchestrator });
+            await environmentService.softDelete(db.knex, { environmentId: deleted.environment.id });
 
             const deletedEnvironment = await db.knex<DBEnvironment>('_nango_environments').where({ id: deleted.environment.id }).first();
             expect(deletedEnvironment).toMatchObject({ deleted: true, deleted_at: expect.toBeIsoDate() });

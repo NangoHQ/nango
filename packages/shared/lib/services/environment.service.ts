@@ -4,7 +4,7 @@ import db from '@nangohq/database';
 import { Err, Ok, report, useLambdaKeepWarm } from '@nangohq/utils';
 
 import { PROD_ENVIRONMENT_NAME } from '../constants.js';
-import { configService, externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
+import { externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
@@ -13,7 +13,6 @@ import customerKeyService from './customerKey.service.js';
 import { getPlan, lambdaKeepWarmProvisionedConcurrencyMultiplier } from './plans/plans.js';
 import secretService from './secret.service.js';
 
-import type { Orchestrator } from '../index.js';
 import type { Knex } from '@nangohq/database';
 import type { ApiWebhooks, DBEnvironment, DBEnvironmentVariable, DBExternalWebhook, DBPlan, SdkLogger } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -478,19 +477,8 @@ class EnvironmentService {
         return { level };
     }
 
-    async softDelete({ environmentId, orchestrator }: { environmentId: number; orchestrator: Orchestrator }): Promise<void> {
-        const configs = await configService.listProviderConfigs(db.knex, environmentId);
-        for (const config of configs) {
-            // This handles deleting connections and syncs down the line
-            await configService.deleteProviderConfig({
-                id: config.id!,
-                environmentId,
-                providerConfigKey: config.unique_key,
-                orchestrator
-            });
-        }
-
-        await db.knex.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+    async softDelete(trx: Knex, { environmentId }: { environmentId: number }): Promise<number> {
+        return await trx.from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
     }
 
     async getSoftDeleted({ limit, olderThan }: { limit: number; olderThan: number }): Promise<DBEnvironment[]> {

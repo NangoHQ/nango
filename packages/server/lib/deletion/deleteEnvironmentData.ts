@@ -6,7 +6,7 @@ import { deleteProviderConfigData } from './deleteProviderConfigData.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
 import type { Config } from '@nangohq/shared';
-import type { DBEndUser, DBEnvironment, DBEnvironmentVariable, DBExternalWebhook, DBSlackNotification } from '@nangohq/types';
+import type { DBEndUser, DBEnvironment, DBEnvironmentVariable, DBExternalWebhook, DBOAuthSession, DBSlackNotification } from '@nangohq/types';
 
 export async function deleteEnvironmentData(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {
     const { logger } = opts;
@@ -27,6 +27,7 @@ export async function deleteEnvironmentData(environment: DBEnvironment, opts: Ba
     });
 
     await deleteEndUserData(environment, opts);
+    await deleteOAuthSessionsByEnvironmentId(environment, opts);
     await deleteExternalWebhooksByEnvironmentId(environment, opts);
     await deleteSlackNotificationsByEnvironmentId(environment, opts);
     await deleteEnvironmentVariablesByEnvironmentId(environment, opts);
@@ -50,6 +51,26 @@ async function deleteEndUserData(environment: DBEnvironment, opts: BatchDeleteSh
                 .delete();
 
             return endUsers;
+        }
+    });
+}
+
+async function deleteOAuthSessionsByEnvironmentId(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {
+    const { logger } = opts;
+    logger.info('Deleting all oauth sessions in environment...', { environmentId: environment.id, environmentName: environment.name });
+
+    await batchDelete({
+        ...opts,
+        name: 'oauth_sessions < environment',
+        deleteFn: async () => {
+            const oauthSessions = await db.knex
+                .from<DBOAuthSession>('_nango_oauth_sessions')
+                .whereIn('id', function (sub) {
+                    sub.select('id').from<DBOAuthSession>('_nango_oauth_sessions').where({ environment_id: environment.id }).limit(opts.limit);
+                })
+                .delete();
+
+            return oauthSessions;
         }
     });
 }
