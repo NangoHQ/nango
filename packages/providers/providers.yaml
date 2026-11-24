@@ -16359,6 +16359,36 @@ facebook-system-user:
             example: EAAM5b*******************TgZDZD
             doc_section: '#step-1-generating-a-system-user-access-token'
 
+facebook-login-for-business:
+    display_name: Facebook (Login for Business)
+    categories:
+        - marketing
+        - social
+    auth_mode: OAUTH2
+    authorization_url: https://www.facebook.com/v22.0/dialog/oauth
+    token_url: https://graph.facebook.com/v22.0/oauth/access_token
+    authorization_params:
+        config_id: ${connectionConfig.configId}
+        override_default_response_type: 'true'
+    authorization_url_skip_encode:
+        - scopes
+    proxy:
+        base_url: https://graph.facebook.com
+    docs: https://nango.dev/docs/api-integrations/facebook-login-for-business
+    setup_guide_url: https://nango.dev/docs/api-integrations/facebook-login-for-business/how-to-register-your-own-facebook-login-for-business-api-oauth-app
+    integration_config:
+        configId:
+            type: string
+            title: Configuration ID
+            description: The ID of your Facebook Login for Business configuration, from your Meta app's dashboard.
+            pattern: '^[0-9]+$'
+    connection_config:
+        configId:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 faktoora:
     display_name: faktoora
     categories:
@@ -22004,6 +22034,12 @@ instagram:
     docs: https://nango.dev/docs/api-integrations/instagram
     setup_guide_url: https://nango.dev/docs/api-integrations/instagram/how-to-register-your-own-instagram-api-oauth-app
 
+instagram-login-for-business:
+    alias: facebook-login-for-business
+    display_name: Instagram (Login for Business)
+    docs: https://nango.dev/docs/api-integrations/instagram-login-for-business
+    setup_guide_url: https://nango.dev/docs/api-integrations/instagram-login-for-business/how-to-register-your-own-instagram-login-for-business-api-oauth-app
+
 icypeas:
     display_name: Icypeas
     categories:
@@ -23942,6 +23978,27 @@ lightspeed-retail:
             title: ''
             description: ''
             automated: true
+
+line-yahoo-ads:
+    display_name: LINE Yahoo Ads
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://biz-oauth.yahoo.co.jp/oauth/v1/authorize
+    token_url: https://biz-oauth.yahoo.co.jp/oauth/v1/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - yahooads
+    disable_pkce: true
+    proxy:
+        base_url: https://ads-search.yahooapis.jp
+    docs: https://nango.dev/docs/api-integrations/line-yahoo-ads
+    setup_guide_url: https://nango.dev/docs/api-integrations/line-yahoo-ads/how-to-register-your-own-line-yahoo-ads-api-oauth-app
 
 linear:
     display_name: Linear
