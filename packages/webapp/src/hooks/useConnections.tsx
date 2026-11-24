@@ -2,7 +2,6 @@ import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClie
 import { useMemo } from 'react';
 
 import { APIError, apiFetch } from '../utils/api';
-import { isOwnTestConnection } from '../utils/endUser';
 import { useUser } from './useUser';
 
 import type {
@@ -25,6 +24,9 @@ export function useConnections(queries: Omit<GetConnections['Querystring'], 'pag
             }
             if (queries.search) {
                 usp.set('search', queries.search);
+            }
+            if (queries.endUserEmail) {
+                usp.set('endUserEmail', queries.endUserEmail);
             }
             if (queries.integrationIds && queries.integrationIds.length > 0) {
                 usp.append('integrationIds', queries.integrationIds.join(','));
@@ -66,9 +68,8 @@ export function useOwnTestConnections(env: string, integrationIds: string[] | nu
     const { user } = useUser();
     const email = user?.email;
     const enabled = Boolean(email) && integrationIds !== null && integrationIds.length > 0;
-    // `search` matches end user emails as a substring; the tag check keeps exact matches only.
-    const { data, isPending } = useConnections({ env, integrationIds: integrationIds ?? [], search: email }, { enabled });
-    const connections = useMemo(() => (data?.pages[0]?.data ?? []).filter((connection) => isOwnTestConnection(connection.tags, email)), [data, email]);
+    const { data, isPending } = useConnections({ env, integrationIds: integrationIds ?? [], endUserEmail: email }, { enabled });
+    const connections = useMemo(() => data?.pages[0]?.data ?? [], [data]);
 
     return { connections, isPending: enabled && isPending };
 }
