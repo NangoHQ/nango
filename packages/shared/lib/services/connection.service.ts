@@ -2722,7 +2722,7 @@ export class ConnectionService {
         }
     }
 
-    async countActiveAndTotalConnections(now: Date): Promise<ConnectionCounts[]> {
+    async countActiveAndTotalConnections(now: Date): Promise<[production: ConnectionCounts, other: ConnectionCounts]> {
         const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
         const nextMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
         const rows = await db.readOnly
@@ -2735,10 +2735,11 @@ export class ConnectionService {
                 db.knex.raw('count(*) filter (where c.deleted_at is null) as total')
             );
 
-        return [true, false].map((isProduction) => {
+        const count = (isProduction: boolean): ConnectionCounts => {
             const row = rows.find(({ is_production }) => is_production === isProduction);
             return { isProduction, active: Number(row?.active ?? 0), total: Number(row?.total ?? 0) };
-        });
+        };
+        return [count(true), count(false)];
     }
 }
 
