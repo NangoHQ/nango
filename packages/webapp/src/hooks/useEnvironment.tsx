@@ -134,7 +134,6 @@ export function usePostEnvironment() {
 }
 
 export function useDeleteEnvironment(env: string) {
-    const queryClient = useQueryClient();
     return useMutation<undefined, APIError>({
         mutationFn: async () => {
             const res = await apiFetch(`/api/v1/environments?env=${env}`, {
@@ -142,12 +141,9 @@ export function useDeleteEnvironment(env: string) {
             });
 
             if (!res.ok) {
-                const json = (await res.json()) as Record<string, unknown>;
+                const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
                 throw new APIError({ res, json });
             }
-        },
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: metaQueryKey });
         }
     });
 }
