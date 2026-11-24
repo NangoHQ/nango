@@ -31,7 +31,7 @@ export async function checkEnterpriseLicense(): Promise<void> {
         return;
     }
     if (!envs.NANGO_LICENSE_CHECK) {
-        logger.info('License check disabled: NANGO_LICENSE_CHECK is not set.');
+        logger.info('License check disabled: NANGO_LICENSE_CHECK is false.');
         return;
     }
 
