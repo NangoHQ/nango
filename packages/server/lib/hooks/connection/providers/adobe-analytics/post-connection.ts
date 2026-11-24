@@ -1,5 +1,3 @@
-import { isAxiosError } from 'axios';
-
 import type { InternalNango as Nango } from '../../internal-nango.js';
 import type { AdobeAnalyticsDiscoveryResponse } from './types.js';
 
@@ -10,12 +8,18 @@ export default async function execute(nango: Nango) {
         return;
     }
 
-    const response = await nango.proxy<AdobeAnalyticsDiscoveryResponse>({
-        endpoint: '/discovery/me',
-        providerConfigKey: connection.provider_config_key
-    });
+    // The proxy throws on a failed request, so a missing scope or Adobe error doesn't fail the connection.
+    let response;
+    try {
+        response = await nango.proxy<AdobeAnalyticsDiscoveryResponse>({
+            endpoint: '/discovery/me',
+            providerConfigKey: connection.provider_config_key
+        });
+    } catch {
+        return;
+    }
 
-    if (isAxiosError(response)) {
+    if (!('data' in response)) {
         return;
     }
 
