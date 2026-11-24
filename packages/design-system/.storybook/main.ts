@@ -32,7 +32,8 @@ const config: StorybookConfig = {
                 alias: {
                     ...existingAlias,
                     '@': path.resolve(__dirname, '../../webapp/src'),
-                    // CI builds Storybook without building workspace packages, so dist/ doesn't exist there.
+                    // CI builds Storybook without building workspace packages, so their dist/ doesn't exist there.
+                    '@nangohq/authz': path.resolve(__dirname, '../../authz/lib/index.ts'),
                     '@nangohq/frontend': path.resolve(__dirname, '../../frontend/lib/index.ts')
                 }
             },
