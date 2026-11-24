@@ -15,6 +15,7 @@ export interface DBInlineFunction {
     readonly agent_session_id: string;
     readonly code: string;
     readonly description: string | null;
+    readonly result_record_id: string;
     readonly created_at: Date;
 }
 
@@ -24,6 +25,7 @@ export interface InlineFunction {
     agentSessionId: string;
     code: string;
     description: string | null;
+    resultRecordId: string;
     createdAt: Date;
 }
 
@@ -39,7 +41,13 @@ export class InlineFunctionError extends Error {
 
 export async function create(
     db: Knex,
-    { environmentId, agentSessionId, code, description }: { environmentId: number; agentSessionId: string; code: string; description?: string | undefined }
+    {
+        environmentId,
+        agentSessionId,
+        code,
+        description,
+        resultRecordId
+    }: { environmentId: number; agentSessionId: string; code: string; description?: string | undefined; resultRecordId: string }
 ): Promise<Result<InlineFunction, InlineFunctionError>> {
     if (code.length === 0 || code.length > maxInlineFunctionCodeLength) {
         return Err(new InlineFunctionError('invalid_code', `Inline code must be between 1 and ${maxInlineFunctionCodeLength} characters`));
@@ -55,7 +63,8 @@ export async function create(
                 environment_id: environmentId,
                 agent_session_id: agentSessionId,
                 code,
-                description: description ?? null
+                description: description ?? null,
+                result_record_id: resultRecordId
             })
             .returning('*');
         if (!row) {
@@ -86,6 +95,7 @@ function toInlineFunction(row: DBInlineFunction): InlineFunction {
         agentSessionId: row.agent_session_id,
         code: row.code,
         description: row.description,
+        resultRecordId: row.result_record_id,
         createdAt: row.created_at
     };
 }
