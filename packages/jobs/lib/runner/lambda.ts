@@ -21,6 +21,7 @@ import {
 import { Err, getInternalTlsOptions, getLogger, Ok, stringifyError, useLambda } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { TASK_TOKEN_DISPATCH_BUFFER_SECS } from '../internal-auth.js';
 import { registerWithFleet } from '../runtime/runtimes.js';
 import { getLambdaFunctionName, isLambdaTenantIsolationRoutingId } from '../utils/lambda.js';
 
@@ -193,20 +194,24 @@ class Lambda {
                         FunctionVersion: pvResult.Version
                     })
                 );
-                if (envs.LAMBDA_FAILURE_DESTINATION) {
-                    await lambdaClient.send(
-                        new PutFunctionEventInvokeConfigCommand({
-                            FunctionName: pvResult.FunctionName,
-                            Qualifier: envs.LAMBDA_FUNCTION_ALIAS,
-                            MaximumRetryAttempts: 0,
-                            DestinationConfig: {
-                                OnFailure: {
-                                    Destination: envs.LAMBDA_FAILURE_DESTINATION
-                                }
-                            }
-                        })
-                    );
-                }
+                await lambdaClient.send(
+                    new PutFunctionEventInvokeConfigCommand({
+                        FunctionName: pvResult.FunctionName,
+                        Qualifier: envs.LAMBDA_FUNCTION_ALIAS,
+                        // Same five minutes as the task token buffer. A queued invoke that waits longer is dropped.
+                        MaximumEventAgeInSeconds: TASK_TOKEN_DISPATCH_BUFFER_SECS,
+                        ...(envs.LAMBDA_FAILURE_DESTINATION
+                            ? {
+                                  MaximumRetryAttempts: 0,
+                                  DestinationConfig: {
+                                      OnFailure: {
+                                          Destination: envs.LAMBDA_FAILURE_DESTINATION
+                                      }
+                                  }
+                              }
+                            : {})
+                    })
+                );
                 const useProvisionedConcurrency = !perTenant;
                 if (useProvisionedConcurrency) {
                     const resourceId = `function:${pvResult.FunctionName}:${envs.LAMBDA_FUNCTION_ALIAS}`;

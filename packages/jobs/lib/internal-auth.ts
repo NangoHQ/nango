@@ -21,17 +21,18 @@ import { envs } from './env.js';
 import type { NangoProps } from '@nangohq/types';
 
 /**
- * The kill clock starts when the runner builds the SDK, after dispatch and cold start.
- * Five minutes covers that gap. There is no refresh.
+ * Extra time on a lifecycle token so it is still valid when the runner starts.
+ * Lambda uses the same five minutes as its maximum event age and drops a queued
+ * invoke that waits longer. There is no refresh.
  */
-const TASK_TOKEN_DISPATCH_SLACK_SECS = 5 * 60;
+export const TASK_TOKEN_DISPATCH_BUFFER_SECS = 5 * 60;
 
 function taskExpiresInSecs(nangoProps?: Pick<NangoProps, 'lifecycle'>): number {
     const killAfterMs = nangoProps?.lifecycle?.killAfterMs;
     if (killAfterMs === undefined) {
         return INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS;
     }
-    return Math.ceil(killAfterMs / 1000) + TASK_TOKEN_DISPATCH_SLACK_SECS;
+    return Math.ceil(killAfterMs / 1000) + TASK_TOKEN_DISPATCH_BUFFER_SECS;
 }
 
 function jobsSigner() {

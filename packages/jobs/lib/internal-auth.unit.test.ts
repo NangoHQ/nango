@@ -104,7 +104,7 @@ describe('mintTaskAuthToken', () => {
         expect(payload.exp).toBeLessThan(issuedAt + 5 + 5 * 60 + 5);
     });
 
-    it('keeps five minutes of dispatch slack when killAfterMs is 0', () => {
+    it('keeps five minutes of dispatch buffer when killAfterMs is 0', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const issuedAt = Math.floor(Date.now() / 1000);
         const token = mintTaskAuthToken('task-1', { lifecycle: { killAfterMs: 0, interruptAfterMs: 0 } });

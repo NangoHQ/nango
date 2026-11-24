@@ -200,6 +200,26 @@ describe('LambdaRuntimeAdapter – large payload S3 upload', () => {
         expect(payload).not.toHaveProperty('internalAuthToken');
     });
 
+    it('offloads when the preview fits but the task token would push the inline payload over the max', async () => {
+        const code = 'export default async function run() {}';
+        const codeParams = { foo: 'bar' };
+        const nangoProps = minimalNangoProps();
+        const taskId = 'task-near-max';
+        const previewBytes = Buffer.byteLength(JSON.stringify({ taskId, nangoProps, code, codeParams }), 'utf8');
+        mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = previewBytes + 1;
+
+        const adapter = new LambdaRuntimeAdapter(mockFleet as any);
+        const result = await adapter.invoke({ taskId, nangoProps, code, codeParams });
+
+        expect(result.isOk()).toBe(true);
+        const invokeCommand = (mockLambdaSend.mock.calls[0]! as unknown[])[0] as { input?: { Payload?: string } };
+        const payload = JSON.parse(invokeCommand.input!.Payload as string);
+        expect(payload).toHaveProperty('codeRef');
+        expect(payload).not.toHaveProperty('code');
+
+        mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = 100;
+    });
+
     it('when payload is under max size, does not call S3 and sends inline code and codeParams', async () => {
         mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB so our small payload is under
         const code = 'export default async function run() {}';

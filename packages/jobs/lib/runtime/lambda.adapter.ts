@@ -18,6 +18,9 @@ import type { NangoProps, Result, RoutingContext } from '@nangohq/types';
 
 const logger = getLogger('LambdaRuntimeAdapter');
 
+/** Room for taskAuthToken and internalAuthToken. The size check runs before those fields exist. */
+const TASK_TOKEN_PAYLOAD_OVERHEAD_BYTES = 8 * 1024;
+
 const client = new LambdaClient();
 const s3 = new S3Client();
 
@@ -147,7 +150,8 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
             code: params.code,
             codeParams: params.codeParams
         });
-        const payloadSize = Buffer.byteLength(preview, 'utf8');
+        // Count the token before it is minted so a payload near the inline maximum is offloaded first.
+        const payloadSize = Buffer.byteLength(preview, 'utf8') + TASK_TOKEN_PAYLOAD_OVERHEAD_BYTES;
         if (payloadSize > envs.LAMBDA_PAYLOAD_LIMIT_BYTES) {
             return Err(new Error(`Payload size exceeds limit: ${payloadSize} bytes > ${envs.LAMBDA_PAYLOAD_LIMIT_BYTES} bytes`));
         }
@@ -158,27 +162,28 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
                 : undefined;
         const { nangoProps, internalAuthToken } = await runnerAuth(params.taskId, params.nangoProps);
         const authFields = internalAuthToken ? { internalAuthToken } : {};
-        if (offloaded) {
-            const [codeRef, codeParamsRef] = offloaded;
-            return Ok(
-                JSON.stringify({
-                    taskId: params.taskId,
-                    nangoProps,
-                    codeRef,
-                    codeParamsRef,
-                    ...authFields
-                })
+        const payload = offloaded
+            ? JSON.stringify({
+                  taskId: params.taskId,
+                  nangoProps,
+                  codeRef: offloaded[0],
+                  codeParamsRef: offloaded[1],
+                  ...authFields
+              })
+            : JSON.stringify({
+                  taskId: params.taskId,
+                  nangoProps,
+                  code: params.code,
+                  codeParams: params.codeParams,
+                  ...authFields
+              });
+        const finalSize = Buffer.byteLength(payload, 'utf8');
+        if (!offloaded && envs.LAMBDA_PAYLOADS_BUCKET_NAME && finalSize > envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) {
+            return Err(
+                new Error(`Payload size exceeds inline maximum after adding the task token: ${finalSize} bytes > ${envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES} bytes`)
             );
         }
-        return Ok(
-            JSON.stringify({
-                taskId: params.taskId,
-                nangoProps,
-                code: params.code,
-                codeParams: params.codeParams,
-                ...authFields
-            })
-        );
+        return Ok(payload);
     }
 
     async invoke(params: {
