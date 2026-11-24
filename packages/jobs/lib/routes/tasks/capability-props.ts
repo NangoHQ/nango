@@ -4,8 +4,9 @@ import type { InternalServiceAuth } from '@nangohq/internal-auth';
 
 /**
  * A jobs task capability token carries `res`. The body must name that environment,
- * connection, and sync. `syncJobId` is not a claim: the sync job row created for
- * this orchestrator task (`run_id`) is the authoritative id.
+ * connection, and sync. `syncJobId` is not a claim: the sync job row for this
+ * orchestrator task is the authoritative id. `taskId` is that task's run id, not a
+ * field copied off the row, so the passed row's `run_id` still has to match it.
  *
  * `isResourceBound` is false when the claim is absent, so an action token (no `syncId`)
  * is checked here: the body must not name a sync or a sync job either.
@@ -26,7 +27,7 @@ export function taskPropsBoundToCapability(
     }
     const syncId = auth?.res?.syncId;
     if (syncId) {
-        if (!isResourceBound(auth, 'syncId', props.syncId) || props.syncJobId === undefined) {
+        if (!isResourceBound(auth, 'syncId', props.syncId)) {
             return false;
         }
         return syncJob !== null && syncJob.id === props.syncJobId && syncJob.sync_id === syncId && syncJob.run_id === taskId;

@@ -14,8 +14,8 @@ export function runnerBearer(props: Pick<NangoProps, 'secretKey' | 'taskAuthToke
 
 /**
  * `@nangohq/node` gets `apiKey` for a task token and `secretKey` otherwise, never both.
- * A secret still on the payload is passed as `webhookSigningKey`, which is what
- * `verifyIncomingWebhookRequest` used the secret for.
+ * A task token does not also carry the environment secret. The runner does not verify
+ * incoming webhooks, and that secret must not sit on the client the script runs with.
  */
 export function nangoClientConfig(props: NangoProps, opts: { isSync: boolean; dryRun: boolean }): NodeNangoProps {
     const shared = {
@@ -28,7 +28,7 @@ export function nangoClientConfig(props: NangoProps, opts: { isSync: boolean; dr
         isScript: true as const
     };
     if (props.taskAuthToken) {
-        return { ...shared, apiKey: props.taskAuthToken, ...(props.secretKey ? { webhookSigningKey: props.secretKey } : {}) };
+        return { ...shared, apiKey: props.taskAuthToken };
     }
     if (!props.secretKey) {
         throw new Error('runner has neither a task token nor a secret key');

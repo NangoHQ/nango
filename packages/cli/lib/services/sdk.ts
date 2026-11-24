@@ -57,7 +57,7 @@ export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
             this.stubbedCheckpoint = cliProps.stubbedCheckpoint;
         }
 
-        this.nango = new Nango(cliNango(props, { isSync: false }), getAxiosSettings(props));
+        this.nango = new Nango(dryRunProps(props, { isSync: false }), getAxiosSettings(props));
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -202,7 +202,7 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
 
         this.dryRunService = cliProps.dryRunService;
 
-        this.nango = new Nango(cliNango(props, { isSync: true }), getAxiosSettings(props));
+        this.nango = new Nango(dryRunProps(props, { isSync: true }), getAxiosSettings(props));
     }
 
     // Can't double extends
@@ -545,7 +545,7 @@ export function createFunctionCLI({
 }
 
 /** Dry-run client. CLI props carry a secret and never a task token. */
-export function cliNango(props: NangoProps, opts: { isSync: boolean }): NodeNangoProps {
+export function dryRunProps(props: NangoProps, opts: { isSync: boolean }): NodeNangoProps {
     if (!props.secretKey) {
         throw new Error('CLI dry run requires a secretKey');
     }

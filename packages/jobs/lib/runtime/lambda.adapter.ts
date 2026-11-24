@@ -141,34 +141,44 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
     }
 
     private async preparePayload(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<string>> {
-        const { nangoProps, internalAuthToken } = await runnerAuth(params.taskId, params.nangoProps);
-        const authFields = internalAuthToken ? { internalAuthToken } : {};
-        const payload = {
+        const preview = JSON.stringify({
             taskId: params.taskId,
-            nangoProps,
+            nangoProps: params.nangoProps,
             code: params.code,
-            codeParams: params.codeParams,
-            ...authFields
-        };
-        const payloadString = JSON.stringify(payload);
-        const payloadSize = Buffer.byteLength(payloadString, 'utf8');
+            codeParams: params.codeParams
+        });
+        const payloadSize = Buffer.byteLength(preview, 'utf8');
         if (payloadSize > envs.LAMBDA_PAYLOAD_LIMIT_BYTES) {
             return Err(new Error(`Payload size exceeds limit: ${payloadSize} bytes > ${envs.LAMBDA_PAYLOAD_LIMIT_BYTES} bytes`));
         }
-        if (payloadSize > envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES && envs.LAMBDA_PAYLOADS_BUCKET_NAME) {
-            const [codeRef, codeParamsRef] = await Promise.all([this.uploadCode(params), this.uploadCodeParams(params)]);
+        // Upload before minting. The token clock starts at mint, and the function's kill clock starts later.
+        const offloaded =
+            payloadSize > envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES && envs.LAMBDA_PAYLOADS_BUCKET_NAME
+                ? await Promise.all([this.uploadCode(params), this.uploadCodeParams(params)])
+                : undefined;
+        const { nangoProps, internalAuthToken } = await runnerAuth(params.taskId, params.nangoProps);
+        const authFields = internalAuthToken ? { internalAuthToken } : {};
+        if (offloaded) {
+            const [codeRef, codeParamsRef] = offloaded;
             return Ok(
                 JSON.stringify({
                     taskId: params.taskId,
                     nangoProps,
-                    codeRef: codeRef,
-                    codeParamsRef: codeParamsRef,
+                    codeRef,
+                    codeParamsRef,
                     ...authFields
                 })
             );
-        } else {
-            return Ok(payloadString);
         }
+        return Ok(
+            JSON.stringify({
+                taskId: params.taskId,
+                nangoProps,
+                code: params.code,
+                codeParams: params.codeParams,
+                ...authFields
+            })
+        );
     }
 
     async invoke(params: {

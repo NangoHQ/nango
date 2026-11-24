@@ -129,6 +129,11 @@ describe('taskPropsBoundToCapability', () => {
         expect(taskPropsBoundToCapability(server, boundProps, taskId, syncJob)).toBe(false);
     });
 
+    it('rejects a sync token whose body omits the sync job id', () => {
+        const { syncJobId: _syncJobId, ...withoutJobId } = boundProps;
+        expect(taskPropsBoundToCapability(capabilityAuth(), withoutJobId, taskId, syncJob)).toBe(false);
+    });
+
     it('rejects a sync id when the token is not bound to a sync', () => {
         const action = capabilityAuth({ environmentId: 1, connectionId: 2 });
         expect(taskPropsBoundToCapability(action, { environmentId: 1, nangoConnectionId: 2, syncId: resource.syncId, syncJobId: 7 }, taskId, syncJob)).toBe(

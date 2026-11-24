@@ -54,9 +54,10 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) =>
     }
     // HMAC and scope-less task JWTs have no `res` and stay on the previous path until PR 5.
     // When internal auth is disabled the middleware does not verify a token, so there is no claim to compare.
-    // isResourceBound accepts only a jobs task JWT, so a token from another issuer is rejected here.
+    // isResourceBound accepts only a jobs task JWT. Tokens from another issuer are rejected here only when they carry `res`.
     const auth = getInternalServiceAuth(res);
     if (auth?.kind === 'jwt' && auth.res) {
+        // syncJobId is not a token claim, and handle() writes the body's id. It has to be the row for this task.
         const syncJob = auth.res.syncId ? await getSyncJobByRunId(taskId) : null;
         if (!taskPropsBoundToCapability(auth, nangoProps, taskId, syncJob)) {
             res.status(401).json({ error: { code: 'put_task_failed', message: 'Unauthorized' } });

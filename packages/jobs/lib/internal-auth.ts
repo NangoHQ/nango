@@ -20,9 +20,18 @@ import { envs } from './env.js';
 
 import type { NangoProps } from '@nangohq/types';
 
+/**
+ * The kill clock starts when the runner builds the SDK, after dispatch and cold start.
+ * Five minutes covers that gap. There is no refresh.
+ */
+const TASK_TOKEN_DISPATCH_SLACK_SECS = 5 * 60;
+
 function taskExpiresInSecs(nangoProps?: Pick<NangoProps, 'lifecycle'>): number {
     const killAfterMs = nangoProps?.lifecycle?.killAfterMs;
-    return killAfterMs !== undefined ? Math.max(60, Math.ceil(killAfterMs / 1000) + 60) : INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS;
+    if (killAfterMs === undefined) {
+        return INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS;
+    }
+    return Math.ceil(killAfterMs / 1000) + TASK_TOKEN_DISPATCH_SLACK_SECS;
 }
 
 function jobsSigner() {

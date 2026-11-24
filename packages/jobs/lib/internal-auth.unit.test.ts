@@ -100,11 +100,11 @@ describe('mintTaskAuthToken', () => {
             throw new Error('expected a token');
         }
         const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
-        expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + 60);
-        expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS);
+        expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + 5 + 5 * 60);
+        expect(payload.exp).toBeLessThan(issuedAt + 5 + 5 * 60 + 5);
     });
 
-    it('uses the bounded expiry when killAfterMs is 0', () => {
+    it('keeps five minutes of dispatch slack when killAfterMs is 0', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const issuedAt = Math.floor(Date.now() / 1000);
         const token = mintTaskAuthToken('task-1', { lifecycle: { killAfterMs: 0, interruptAfterMs: 0 } });
@@ -112,8 +112,8 @@ describe('mintTaskAuthToken', () => {
             throw new Error('expected a token');
         }
         const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
-        expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + 60);
-        expect(payload.exp).toBeLessThan(issuedAt + 65);
+        expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + 5 * 60);
+        expect(payload.exp).toBeLessThan(issuedAt + 5 * 60 + 5);
     });
 });
 
