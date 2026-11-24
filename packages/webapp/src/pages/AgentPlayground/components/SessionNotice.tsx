@@ -11,7 +11,7 @@ import type { AgentPlaygroundSessionCreated } from '@nangohq/types';
 function sessionExplanation(reason: AgentPlaygroundSessionCreated['reason']): string {
     switch (reason) {
         case 'integrations_changed':
-            return "A session's integrations are set when it starts, so the playground started a new session that includes your new integrations.";
+            return "A session's integrations are set when it starts, so the playground started a new session that includes your current integrations.";
         case 'connections_changed':
             return 'Your connections changed since the last session started, so the playground started a new session that uses your current connections.';
         case 'expired':
