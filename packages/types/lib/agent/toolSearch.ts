@@ -16,7 +16,8 @@ export interface AgentSessionToolRelated {
 
 export interface AgentSessionToolMatch extends AgentSessionToolRelated {
     readonly input: AgentSessionToolInput;
-    readonly tags?: Readonly<Record<string, FunctionTagValue>>;
+    /** The same `_meta` a listed tool carries, so a client reads tags one way. */
+    readonly _meta?: { readonly 'nango/tags': Readonly<Record<string, FunctionTagValue>> };
 }
 
 export interface AgentSessionToolSearchQueryResult {

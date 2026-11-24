@@ -7,7 +7,7 @@ import { filterJsonSchemaForModels, report } from '@nangohq/utils';
 import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
 import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
-import { clientToolTags } from './agentSessionToolTags.js';
+import { clientToolTags, TAGS_META_KEY } from './agentSessionToolTags.js';
 
 import type { ClientToolTags } from './agentSessionToolTags.js';
 import type { ActionInputSchemaRow } from '@nangohq/shared';
@@ -539,14 +539,14 @@ function toRelated(candidate: SearchCandidate): AgentSessionToolRelated {
 
 // The dialect URL would repeat on every match, and the guidance already says what the schemas are.
 function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput): AgentSessionToolMatch {
-    const tags = candidate.tags ? { tags: candidate.tags } : {};
+    const meta = candidate.tags ? { _meta: { [TAGS_META_KEY]: candidate.tags } } : {};
     if (input.kind !== 'schema') {
-        return { ...toRelated(candidate), input, ...tags };
+        return { ...toRelated(candidate), input, ...meta };
     }
 
     const schema = { ...input.schema };
     delete schema.$schema;
-    return { ...toRelated(candidate), input: { kind: 'schema', schema }, ...tags };
+    return { ...toRelated(candidate), input: { kind: 'schema', schema }, ...meta };
 }
 
 function integrationStates(candidates: SearchCandidate[]): Record<string, AgentSessionToolSearchIntegrationState> {

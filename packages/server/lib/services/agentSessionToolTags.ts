@@ -1,6 +1,6 @@
 import type { FunctionTagValue, ToolTags } from '@nangohq/types';
 
-export const TAGS_META_KEY = 'nango/tags';
+export const TAGS_META_KEY = 'nango/tags' as const;
 
 export type ClientToolTags = Record<string, FunctionTagValue>;
 

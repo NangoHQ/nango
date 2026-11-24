@@ -50,10 +50,11 @@ const relatedSchema = z
 const matchSchema = relatedSchema
     .extend({
         input: inputSchema,
-        tags: z
-            .record(z.string(), z.union([z.string(), z.array(z.string())]))
+        _meta: z
+            .object({ 'nango/tags': z.record(z.string(), z.union([z.string(), z.array(z.string())])) })
+            .strict()
             .optional()
-            .describe("The tags the tool's author set on it.")
+            .describe("The tags the tool's author set on it, keyed as on a listed tool.")
     })
     .strict();
 
