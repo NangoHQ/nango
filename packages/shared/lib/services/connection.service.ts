@@ -209,6 +209,12 @@ export class GetConnectionError extends Error {
     }
 }
 
+interface ConnectionCounts {
+    isProduction: boolean;
+    active: number;
+    total: number;
+}
+
 interface ConnectionServiceDependencies {
     configService: typeof configService;
     refreshOrTestCredentials: RefreshOrTestCredentials;
@@ -2716,23 +2722,23 @@ export class ConnectionService {
         }
     }
 
-    async countActiveMonthlyConnections(now: Date): Promise<{ production: number; other: number }> {
+    async countActiveAndTotalConnections(now: Date): Promise<ConnectionCounts[]> {
         const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
         const nextMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
-        const rows = await db.knex
+        const rows = await db.readOnly
             .from('_nango_connections as c')
             .join('_nango_environments as e', 'e.id', 'c.environment_id')
-            .where('c.last_execution_at', '>=', monthStart)
-            .andWhere('c.last_execution_at', '<', nextMonthStart)
             .groupBy('e.is_production')
-            .select('e.is_production')
-            .count<{ is_production: boolean; count: string }[]>('* as count');
+            .select<{ is_production: boolean; active: string; total: string }[]>(
+                'e.is_production',
+                db.knex.raw('count(*) filter (where c.last_execution_at >= ? and c.last_execution_at < ?) as active', [monthStart, nextMonthStart]),
+                db.knex.raw('count(*) filter (where c.deleted_at is null) as total')
+            );
 
-        const counts = { production: 0, other: 0 };
-        for (const row of rows) {
-            counts[row.is_production ? 'production' : 'other'] = Number(row.count);
-        }
-        return counts;
+        return [true, false].map((isProduction) => {
+            const row = rows.find(({ is_production }) => is_production === isProduction);
+            return { isProduction, active: Number(row?.active ?? 0), total: Number(row?.total ?? 0) };
+        });
     }
 }
 

@@ -3,7 +3,8 @@ type HostedMetricKind = 'counter' | 'gauge' | 'histogram';
 /** Every metric an installation records, with the kind of instrument that records it. */
 const HOSTED_METRICS = {
     'nango.hosted_metric.active_concurrency': 'histogram',
-    'nango.hosted_metric.active_connections': 'gauge'
+    'nango.hosted_metric.active_connections': 'gauge',
+    'nango.hosted_metric.connections': 'gauge'
 } as const satisfies Record<string, HostedMetricKind>;
 
 type Catalog = typeof HOSTED_METRICS;
