@@ -10,31 +10,39 @@ import { exec } from './lambdaKeepWarm.js';
 import type { DBPlan } from '@nangohq/types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const ACCOUNT_AGE_MS = 10 * DAY_MS;
+const EXECUTION_WINDOW_MS = 20 * DAY_MS;
+
+const NEW_ACCOUNT_MS = ACCOUNT_AGE_MS / 2;
+const OLD_ACCOUNT_MS = ACCOUNT_AGE_MS * 2;
+const RECENT_EXECUTION_MS = EXECUTION_WINDOW_MS / 2;
+const STALE_EXECUTION_MS = EXECUTION_WINDOW_MS * 2;
+const BETWEEN_WINDOWS_MS = (ACCOUNT_AGE_MS + EXECUTION_WINDOW_MS) / 2;
 
 async function seedEnv({
     plan,
-    accountAgeDays = 60,
-    executionAgesDays = []
+    accountAgeMs = OLD_ACCOUNT_MS,
+    executionAgesMs = []
 }: {
     plan?: Partial<DBPlan>;
-    accountAgeDays?: number;
-    /** One connection per entry, with last_execution_at set this many days ago (null = never executed) */
-    executionAgesDays?: (number | null)[];
+    accountAgeMs?: number;
+    /** One connection per entry, with last_execution_at set this many ms ago (null = never executed) */
+    executionAgesMs?: (number | null)[];
 }): Promise<number> {
     const seed = await seeders.seedAccountEnvAndUser();
     (await updatePlan(db.knex, { id: seed.plan.id, lambda_tenant_isolation: true, ...plan })).unwrap();
     await db
         .knex('_nango_accounts')
         .where({ id: seed.account.id })
-        .update({ created_at: new Date(Date.now() - accountAgeDays * DAY_MS) });
+        .update({ created_at: new Date(Date.now() - accountAgeMs) });
 
-    if (executionAgesDays.length > 0) {
+    if (executionAgesMs.length > 0) {
         const connectionIds = await seeders.createConnectionSeeds(seed.env);
-        for (const [i, age] of executionAgesDays.entries()) {
+        for (const [i, age] of executionAgesMs.entries()) {
             await db
                 .knex('_nango_connections')
                 .where({ id: connectionIds[i]! })
-                .update({ last_execution_at: age === null ? null : new Date(Date.now() - age * DAY_MS) });
+                .update({ last_execution_at: age === null ? null : new Date(Date.now() - age) });
         }
     }
     return seed.env.id;
@@ -48,15 +56,23 @@ async function warmedEnvironmentIds(): Promise<Set<number>> {
 
 describe('lambdaKeepWarm cron exec', () => {
     // Ensure cron is not set to 0 so lock can be acquired.
-    const originalCronMinutes = envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES;
+    const original = {
+        cronMinutes: envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES,
+        accountAgeMs: envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS,
+        executionWindowMs: envs.LAMBDA_KEEP_WARM_EXECUTION_WINDOW_MS
+    };
 
     beforeAll(async () => {
         await multipleMigrations();
         envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES = 5;
+        envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS = ACCOUNT_AGE_MS;
+        envs.LAMBDA_KEEP_WARM_EXECUTION_WINDOW_MS = EXECUTION_WINDOW_MS;
     });
 
     afterAll(() => {
-        envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES = originalCronMinutes;
+        envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES = original.cronMinutes;
+        envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS = original.accountAgeMs;
+        envs.LAMBDA_KEEP_WARM_EXECUTION_WINDOW_MS = original.executionWindowMs;
     });
 
     afterEach(() => {
@@ -64,14 +80,14 @@ describe('lambdaKeepWarm cron exec', () => {
     });
 
     it('keeps a new free account warm', async () => {
-        const envId = await seedEnv({ plan: { name: 'free' }, accountAgeDays: 3 });
+        const envId = await seedEnv({ plan: { name: 'free' }, accountAgeMs: NEW_ACCOUNT_MS });
         expect(await warmedEnvironmentIds()).toContain(envId);
     });
 
     it('does not keep an old free account warm when nothing ran recently', async () => {
         const noConnections = await seedEnv({ plan: { name: 'free' } });
-        const neverExecuted = await seedEnv({ plan: { name: 'free' }, executionAgesDays: [null] });
-        const staleExecution = await seedEnv({ plan: { name: 'free' }, executionAgesDays: [20] });
+        const neverExecuted = await seedEnv({ plan: { name: 'free' }, executionAgesMs: [null] });
+        const staleExecution = await seedEnv({ plan: { name: 'free' }, executionAgesMs: [STALE_EXECUTION_MS] });
 
         const warmed = await warmedEnvironmentIds();
         expect(warmed).not.toContain(noConnections);
@@ -80,8 +96,18 @@ describe('lambdaKeepWarm cron exec', () => {
     });
 
     it('keeps an old free account warm when a connection in the environment ran recently', async () => {
-        const envId = await seedEnv({ plan: { name: 'free' }, executionAgesDays: [20, 3] });
+        const envId = await seedEnv({ plan: { name: 'free' }, executionAgesMs: [STALE_EXECUTION_MS, RECENT_EXECUTION_MS] });
         expect(await warmedEnvironmentIds()).toContain(envId);
+    });
+
+    it('measures execution recency against the execution window, not the account age', async () => {
+        const envId = await seedEnv({ plan: { name: 'free' }, executionAgesMs: [BETWEEN_WINDOWS_MS] });
+        expect(await warmedEnvironmentIds()).toContain(envId);
+    });
+
+    it('measures account newness against the account age, not the execution window', async () => {
+        const envId = await seedEnv({ plan: { name: 'free' }, accountAgeMs: BETWEEN_WINDOWS_MS });
+        expect(await warmedEnvironmentIds()).not.toContain(envId);
     });
 
     it('only keeps the environment with the recent execution warm', async () => {
@@ -90,14 +116,14 @@ describe('lambdaKeepWarm cron exec', () => {
         await db
             .knex('_nango_accounts')
             .where({ id: seed.account.id })
-            .update({ created_at: new Date(Date.now() - 60 * DAY_MS) });
+            .update({ created_at: new Date(Date.now() - OLD_ACCOUNT_MS) });
         const otherEnv = await seeders.createEnvironmentSeed(seed.account.id, 'prod');
 
         const [connectionId] = await seeders.createConnectionSeeds(seed.env);
         await db
             .knex('_nango_connections')
             .where({ id: connectionId! })
-            .update({ last_execution_at: new Date(Date.now() - 1 * DAY_MS) });
+            .update({ last_execution_at: new Date(Date.now() - RECENT_EXECUTION_MS) });
 
         const warmed = await warmedEnvironmentIds();
         expect(warmed).toContain(seed.env.id);
@@ -105,7 +131,7 @@ describe('lambdaKeepWarm cron exec', () => {
     });
 
     it('ignores deleted connections', async () => {
-        const envId = await seedEnv({ plan: { name: 'free' }, executionAgesDays: [1] });
+        const envId = await seedEnv({ plan: { name: 'free' }, executionAgesMs: [RECENT_EXECUTION_MS] });
         await db.knex('_nango_connections').where({ environment_id: envId }).update({ deleted: true, deleted_at: new Date() });
 
         expect(await warmedEnvironmentIds()).not.toContain(envId);
