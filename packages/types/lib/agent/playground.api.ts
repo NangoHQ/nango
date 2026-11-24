@@ -10,7 +10,7 @@ export interface AgentPlaygroundIntegrationSetup {
     provider: string;
     displayName?: string;
     integrationId?: string;
-    outcome: 'created' | 'existing' | 'missing_credentials' | 'needs_developer_app' | 'needs_setup' | 'not_created';
+    outcome: 'created' | 'existing' | 'missing_credentials' | 'needs_developer_app' | 'needs_setup' | 'needs_confirmation' | 'not_created';
     usesSharedCredentials?: boolean;
 }
 

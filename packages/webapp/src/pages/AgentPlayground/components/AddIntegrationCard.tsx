@@ -1,5 +1,14 @@
+import { Zap } from 'lucide-react';
+
+import { Button } from '@nangohq/design-system';
+
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { ButtonLink } from '@/components/ui/ButtonLink';
+import { usePostIntegration } from '@/hooks/useIntegration';
+import { useProvider } from '@/hooks/useProvider';
+import { useToast } from '@/hooks/useToast';
+import { getOneClickSetupBody } from '@/pages/Catalog/catalog.utils';
+import { useStore } from '@/store';
 import { returnToPlaygroundState } from '../returnToPlayground';
 
 import type { AgentPlaygroundIntegrationSetup } from '@nangohq/types';
@@ -30,9 +39,47 @@ export const AddIntegrationCard: React.FC<AddIntegrationCardProps> = ({ provider
                 <span className="text-body-medium-medium text-text-strong">Add the {name} integration</span>
                 <span className="text-body-small-regular text-text-secondary">{reason(outcome, name)}</span>
             </div>
+            {outcome === 'needs_confirmation' ? (
+                <OneClickAddButton provider={provider} name={name} href={href} />
+            ) : (
+                <ButtonLink to={href} state={returnToPlaygroundState()} size="sm">
+                    Add integration
+                </ButtonLink>
+            )}
+        </div>
+    );
+};
+
+const OneClickAddButton: React.FC<{ provider: string; name: string; href: string }> = ({ provider, name, href }) => {
+    const env = useStore((state) => state.env);
+    const { toast } = useToast();
+    const { data: providerData } = useProvider(env, provider);
+    const { mutateAsync: postIntegration, isPending } = usePostIntegration(env);
+    const body = providerData ? getOneClickSetupBody(providerData.data) : null;
+
+    if (providerData && !body) {
+        return (
             <ButtonLink to={href} state={returnToPlaygroundState()} size="sm">
                 Add integration
             </ButtonLink>
-        </div>
+        );
+    }
+
+    const add = async () => {
+        if (!body) {
+            return;
+        }
+        try {
+            await postIntegration(body);
+        } catch {
+            toast({ title: `Failed to add ${name}`, variant: 'error' });
+        }
+    };
+
+    return (
+        <Button size="sm" loading={isPending || !providerData} onClick={() => void add()}>
+            <Zap className="fill-current stroke-none" />
+            Add integration
+        </Button>
     );
 };
