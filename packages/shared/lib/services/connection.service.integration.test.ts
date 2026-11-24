@@ -43,6 +43,7 @@ describe('Connection service integration tests', () => {
         const now = new Date('2031-03-15T10:00:00Z');
         const thisMonth = new Date('2031-03-03T00:00:00Z');
         const lastMonth = new Date('2031-02-27T00:00:00Z');
+        const nextMonth = new Date('2031-04-01T00:00:00Z');
 
         it('counts the connections that ran a function in the month, soft-deleted ones included, per production flag', async () => {
             const account = await createAccount();
@@ -61,6 +62,7 @@ describe('Connection service integration tests', () => {
             await ran(prod, 'ran-this-month-too', thisMonth);
             await ran(prod, 'ran-then-was-deleted', thisMonth, true);
             await ran(prod, 'ran-last-month', lastMonth);
+            await ran(prod, 'ran-next-month', nextMonth);
             await ran(prod, 'never-ran', null);
             await ran(dev, 'dev-ran-this-month', thisMonth);
 

@@ -2718,10 +2718,12 @@ export class ConnectionService {
 
     async countActiveMonthlyConnections(now: Date): Promise<{ production: number; other: number }> {
         const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+        const nextMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
         const rows = await db.knex
             .from('_nango_connections as c')
             .join('_nango_environments as e', 'e.id', 'c.environment_id')
             .where('c.last_execution_at', '>=', monthStart)
+            .andWhere('c.last_execution_at', '<', nextMonthStart)
             .groupBy('e.is_production')
             .select('e.is_production')
             .count<{ is_production: boolean; count: string }[]>('* as count');

@@ -10,7 +10,7 @@ const TICK_INTERVAL_MS = 60 * 60 * 1000;
 
 export function activeConnectionsDaemon(): { abort: () => Promise<void> } | undefined {
     if (!flags.hasHostedTelemetryActiveConnections) {
-        logger.info('Skipping (FLAG_HOSTED_TELEMETRY_ACTIVE_CONNECTIONS_ENABLED is not set)');
+        logger.info('Skipping (FLAG_HOSTED_TELEMETRY_ACTIVE_CONNECTIONS_ENABLED is false)');
         return;
     }
     const knex = hostedTelemetryDb();
