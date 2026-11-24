@@ -440,7 +440,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
 
 // ── Delete button with self-managed open state ─────────────────────
 
-const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }> = ({ displayName, onDelete }) => {
+const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => Promise<void> }> = ({ displayName, onDelete }) => {
     const [open, setOpen] = useState(false);
 
     return (
@@ -460,7 +460,7 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
                     <Trash2 />
                 </IconButton>
             }
-            onConfirm={onDelete}
+            onConfirm={() => onDelete().then(() => setOpen(false))}
             open={open}
             onOpenChange={setOpen}
         />
@@ -526,6 +526,7 @@ export const ApiKeys: React.FC = () => {
             } else {
                 toast({ title: 'Failed to delete API key', variant: 'error' });
             }
+            throw err;
         }
     };
 
@@ -595,7 +596,7 @@ export const ApiKeys: React.FC = () => {
                                                     <Pencil />
                                                 </IconButton>
                                             )}
-                                            {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />}
+                                            {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => handleDelete(key.id)} />}
                                         </div>
                                     </TableCell>
                                 )}

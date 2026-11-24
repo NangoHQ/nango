@@ -165,12 +165,7 @@ const DeleteAccountApiKeyButton: React.FC<{
                     <Trash2 />
                 </IconButton>
             }
-            onConfirm={() => {
-                void onDelete(apiKey)
-                    .then(() => setOpen(false))
-                    // Error already toasted in handleDelete; swallowed so the modal stays open without an unhandled rejection.
-                    .catch(() => undefined);
-            }}
+            onConfirm={() => onDelete(apiKey).then(() => setOpen(false))}
             open={open}
             onOpenChange={setOpen}
         />

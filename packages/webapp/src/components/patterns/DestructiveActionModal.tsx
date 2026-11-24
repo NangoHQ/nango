@@ -24,7 +24,7 @@ interface DestructiveActionModalProps {
     confirmButtonText: string;
     cancelButtonText?: string;
     trigger?: React.ReactNode;
-    onConfirm: () => unknown;
+    onConfirm: () => Promise<unknown>;
     loading?: boolean;
     open: boolean;
     onOpenChange: (open: boolean) => void;
