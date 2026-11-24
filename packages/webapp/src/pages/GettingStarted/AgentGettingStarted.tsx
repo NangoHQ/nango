@@ -330,7 +330,7 @@ const TryIntegrationsStep: React.FC<{
 const FEATURED_STARTERS = STARTER_PROMPTS.filter(({ provider }) => provider !== 'google-drive');
 
 const TILE_CLASS =
-    'group flex items-center gap-2.5 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-2.5 text-left type-text-medium-sm text-text-strong transition-[background-color,border-color,box-shadow] hover:border-border-strong hover:bg-surface-panel hover:shadow-container-panel focus-visible:outline-none focus-visible:shadow-focus-outline-default';
+    'group flex items-center gap-2.5 rounded-ds-xs border border-border-default px-3 py-2.5 text-left type-text-medium-sm text-text-strong transition-[background-color,border-color,box-shadow] hover:border-border-strong hover:shadow-container-panel focus-visible:outline-none focus-visible:shadow-focus-outline-default';
 
 const TileArrow: React.FC = () => <ArrowRight aria-hidden className="size-3.5 shrink-0 text-text-muted transition-colors group-hover:text-text-default" />;
 
@@ -360,7 +360,7 @@ const ExploreIntegrationsPanel: React.FC<{ env: string }> = ({ env }) => {
                                 to={`/${env}/playground/agent`}
                                 state={playgroundDraftState(prompt, env, provider)}
                                 title={prompt}
-                                className={TILE_CLASS}
+                                className={cn(TILE_CLASS, 'bg-surface-panel hover:bg-surface-panel-muted')}
                                 onClick={() =>
                                     track('playground:try_button_click', {
                                         provider,
@@ -376,10 +376,10 @@ const ExploreIntegrationsPanel: React.FC<{ env: string }> = ({ env }) => {
                         ))}
                     <Link
                         to={`/${env}/catalog`}
-                        className={cn(TILE_CLASS, 'border-dashed border-border-default text-text-default')}
+                        className={cn(TILE_CLASS, 'border-dashed hover:bg-surface-panel')}
                         onClick={() => track('onboarding:catalog_link_click')}
                     >
-                        <LibraryBig className="size-[18px] shrink-0 text-icon-secondary" aria-hidden />
+                        <LibraryBig className="size-4 shrink-0 text-icon-secondary" aria-hidden />
                         <span className="min-w-0 flex-1 truncate">
                             {apiCount !== undefined ? `Browse all ${apiCount.toLocaleString('en-US')} APIs` : 'Browse all APIs'}
                         </span>
