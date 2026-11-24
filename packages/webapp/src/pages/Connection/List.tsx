@@ -1,6 +1,6 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { ExternalLink, PauseCircle, Plus, Search, ShieldAlert, TriangleAlert } from 'lucide-react';
-import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
+import { ExternalLink, PauseCircle, Plus, Search, ShieldAlert, TriangleAlert, X } from 'lucide-react';
+import { parseAsArrayOf, parseAsBoolean, parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,7 @@ import { useConnections } from '@/hooks/useConnections';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useSearchQueryState } from '@/hooks/useSearchQueryState';
+import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
@@ -173,6 +174,9 @@ export const ConnectionList = () => {
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [selectedIntegrations, setSelectedIntegrations] = useQueryState('integrations', parseIntegrations);
     const [rawStatusFilters, setSelectedStatusFilters] = useQueryState('status', parseStatusFilters);
+    const [onlyMine, setOnlyMine] = useQueryState('mine', parseAsBoolean.withDefault(false));
+    const { user } = useUser();
+    const endUserEmail = onlyMine ? user?.email : undefined;
     const selectedStatusFilters = useMemo(
         () => (rawStatusFilters ?? []).filter((s): s is StatusFilterValue => validStatusFilterValues.has(s)),
         [rawStatusFilters]
@@ -207,6 +211,7 @@ export const ConnectionList = () => {
     } = useConnections({
         env,
         search: debouncedSearch,
+        endUserEmail,
         integrationIds,
         withError
     });
@@ -246,7 +251,7 @@ export const ConnectionList = () => {
         }
     }, [displayedConnections.length, selectedStatusFilters.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || selectedStatusFilters.length > 0;
+    const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || selectedStatusFilters.length > 0 || onlyMine;
 
     const connectionCount = displayedConnections.length;
     const hasConnections = connectionCount > 0;
@@ -338,6 +343,11 @@ export const ConnectionList = () => {
                                     reorderOnSelect={false}
                                     showSearch={false}
                                 />
+                                {onlyMine && (
+                                    <Button type="button" variant="outline" size="md" onClick={() => void setOnlyMine(null)}>
+                                        Your test connections <X />
+                                    </Button>
+                                )}
                                 <PermissionGate condition={canCreateTestConnection}>
                                     {(allowed) => (
                                         <ButtonLink to={`/${env}/connections/create`} size="md" disabled={!allowed} className="ml-auto">

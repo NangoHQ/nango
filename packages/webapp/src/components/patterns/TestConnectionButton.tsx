@@ -54,7 +54,7 @@ export const TestConnectionButton: React.FC<TestConnectionButtonProps> = ({ env,
     const openPath =
         connections.length === 1
             ? `/${env}/connections/${encodeURIComponent(first.provider_config_key)}/${encodeURIComponent(first.connection_id)}`
-            : `/${env}/connections?integrations=${integrationIds.map(encodeURIComponent).join(',')}`;
+            : `/${env}/connections?integrations=${integrationIds.map(encodeURIComponent).join(',')}&mine=true`;
 
     return (
         <SplitButton variant="primary" size={size}>
