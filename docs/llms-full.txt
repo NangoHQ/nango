@@ -7609,8 +7609,7 @@ When Nango registers your instance, you'll receive three things.
 
 ### Requirements
 
-{/* TODO(pau): the first managed release that ships the licensing model and the telemetry upload. */}
-- Nango managed image `managed-X.Y.Z` or later.
+- Nango managed image `managed-1.7.4` or later.
 - [Helm chart](https://github.com/NangoHQ/nango-helm-charts) `2.6.0` or later, which adds the `selfHosting` workload.
 - For automatic reporting, allow outbound HTTPS on port 443 to the installations URL. Use the static IP addresses from Nango if you restrict egress. For clusters without outbound access, see [Report without outbound access](#report-without-outbound-access).
 
@@ -7659,8 +7658,7 @@ When Nango registers your instance, you'll receive three things.
     Give `selfHosting` the same database settings as your other services. Set `NANGO_DATABASE_URL` or the `NANGO_DB_*` variables, along with `NANGO_DB_SSL` if your main database requires TLS. If you store metrics in a separate database, use the same telemetry database URL and TLS settings on `selfHosting` as on the services that write the metrics. See [Hosted telemetry](#hosted-telemetry).
   </Step>
   <Step id="check-it-works" title="Verify the rollout">
-    {/* TODO(pau): name the dashboard view once it ships. */}
-    After you deploy the updated Helm values, open the installation info in the dashboard. It shows the status of your license and the version you run.
+    After you deploy the updated Helm values, open the dashboard, click your name at the bottom of the sidebar and select **Installation info**. It shows the managed release you run and the status, expiration date and grace period of your license.
   </Step>
 </Steps>
 
@@ -7698,7 +7696,7 @@ curl -fsS -o nango-telemetry.ndjson.gz \
 
 The export is a gzip-compressed NDJSON file. Its last line is a signature made with your installation key, which Nango uses to verify that the file came from your installation and is intact.
 
-{/* TODO(pau): how the customer sends the file to Nango. */}
+Send the file to Nango through your support channel.
 
 ### Renew the license or replace the key
 
