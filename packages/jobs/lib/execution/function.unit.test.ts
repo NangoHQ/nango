@@ -221,7 +221,7 @@ describe('startFunction', () => {
     });
 
     it('starts an inline function', async () => {
-        const code = 'return record.issueNumber;';
+        const code = 'return result.issueNumber;';
 
         expect((await startFunction(inlineTask(code))).isOk()).toBe(true);
         expect(shared.functionLookupService.resolveFunctionByUuid).toHaveBeenCalledWith({
@@ -252,7 +252,7 @@ describe('startFunction', () => {
     it('reports the usage of a failed inline function without alerting on Slack', async () => {
         startScript.mockResolvedValue(Err(new Error('script failed')));
 
-        await startFunction(inlineTask('return record.value;'));
+        await startFunction(inlineTask('return result.value;'));
 
         expect(slackService.reportFailure).not.toHaveBeenCalled();
         expect(publish.mock.calls[0]?.[0].type).toBe('usage.function_executions');

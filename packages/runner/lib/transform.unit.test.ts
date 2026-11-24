@@ -50,7 +50,7 @@ async function failure(code: string, input: unknown = null) {
 
 describe('exec in transform mode', () => {
     it('runs the code over the invocation input and returns its value', async () => {
-        const res = await run(`return record.emails.filter((email) => email.unread).map((email) => email.id);`, {
+        const res = await run(`return result.emails.filter((email) => email.unread).map((email) => email.id);`, {
             emails: [
                 { id: 'a', unread: true },
                 { id: 'b', unread: false },
@@ -62,19 +62,19 @@ describe('exec in transform mode', () => {
     });
 
     it('lets the code await', async () => {
-        const res = await run(`const value = await Promise.resolve(record.value); return value * 2;`, { value: 21 });
+        const res = await run(`const value = await Promise.resolve(result.value); return value * 2;`, { value: 21 });
 
         expect(res.unwrap().output).toBe(42);
     });
 
     it('returns null when the code returns nothing', async () => {
-        const res = await run(`record.value;`, { value: 1 });
+        const res = await run(`result.value;`, { value: 1 });
 
         expect(res.unwrap().output).toBeNull();
     });
 
     it('accepts code that ends with a line comment', async () => {
-        const res = await run(`return record.value; // done`, { value: 7 });
+        const res = await run(`return result.value; // done`, { value: 7 });
 
         expect(res.unwrap().output).toBe(7);
     });
@@ -88,7 +88,7 @@ describe('exec in transform mode', () => {
     });
 
     it.each([
-        ['the constructor of the input', `return record.constructor.constructor('return typeof process')();`],
+        ['the constructor of the input', `return result.constructor.constructor('return typeof process')();`],
         ['eval', `return eval('typeof process');`],
         ['an async function constructor', `return (async () => {}).constructor('return typeof process')();`]
     ])('does not let the code build new code through %s', async (_name, code) => {
@@ -99,7 +99,7 @@ describe('exec in transform mode', () => {
     });
 
     it('reports an error thrown by the code with the line it was thrown from', async () => {
-        const error = await failure(`const items = record.items;\nreturn items.length;`, {});
+        const error = await failure(`const items = result.items;\nreturn items.length;`, {});
 
         expect(error.type).toBe('script_internal_error');
         expect(error.payload).toMatchObject({
@@ -110,7 +110,7 @@ describe('exec in transform mode', () => {
     });
 
     it.each([
-        ['a syntax error', `const value = record.value;\nreturn value.`, { message: "Unexpected token '}'", line: 2 }],
+        ['a syntax error', `const value = result.value;\nreturn value.`, { message: "Unexpected token '}'", line: 2 }],
         ['an import', `import fs from 'node:fs';\nreturn 1;`, { message: 'Cannot use import statement outside a module', line: 1 }],
         ['code that closes its function', `}); globalThis.escaped = true; (async function () {`, { message: 'The code must be a single function body' }]
     ])('rejects %s before running anything', async (_name, code, payload) => {
