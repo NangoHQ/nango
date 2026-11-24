@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { APIError } from '@/utils/api';
 import { returnsToPlayground } from '../AgentPlayground/returnToPlayground';
 import PageNotFound from '../PageNotFound';
 import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
@@ -61,7 +62,7 @@ export const CreateIntegration = () => {
     };
 
     if (providerError) {
-        if (providerError.res.status === 404) {
+        if (providerError instanceof APIError && providerError.res.status === 404) {
             return <PageNotFound />;
         }
         return <ErrorPageComponent title="Add integration" error={providerError} />;
