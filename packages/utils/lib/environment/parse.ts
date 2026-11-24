@@ -1027,7 +1027,8 @@ const ENVS_SHAPE = z.object({
 
     // Lambda
     LAMBDA_KEEP_WARM_ENABLED: z.stringbool().optional().default(false),
-    LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS: z.coerce.number().default(24 * 60 * 60 * 1000),
+    LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS: z.coerce.number().default(14 * 24 * 60 * 60 * 1000),
+    LAMBDA_KEEP_WARM_EXECUTION_WINDOW_MS: z.coerce.number().default(14 * 24 * 60 * 60 * 1000),
     LAMBDA_KEEP_WARM_SUBSCRIBE_CONCURRENCY: z.coerce.number().min(1).max(10).optional().default(1),
     LAMBDA_DEFAULT_TIMEOUT_BILLING_SECS: z.coerce.number().optional().default(10),
     LAMBDA_ENABLED: z.stringbool().optional().default(false),

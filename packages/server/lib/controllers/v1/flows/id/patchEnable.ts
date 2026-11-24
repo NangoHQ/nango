@@ -1,6 +1,5 @@
-import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, enableScriptConfig, getSyncConfigById, startTrial, syncManager } from '@nangohq/shared';
+import { configService, enableScriptConfig, getSyncConfigById, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
@@ -34,7 +33,7 @@ export const patchFlowEnable = asyncWrapperWithEnvironment<PatchFlowEnable>(asyn
     }
 
     const body: PatchFlowEnable['Body'] = val.data;
-    const { environment, plan } = res.locals;
+    const { environment } = res.locals;
 
     const syncConfig = await getSyncConfigById(environment.id, valParams.data.id);
     if (!syncConfig) {
@@ -46,14 +45,6 @@ export const patchFlowEnable = asyncWrapperWithEnvironment<PatchFlowEnable>(asyn
     if (!config) {
         res.status(400).send({ error: { code: 'unknown_provider' } });
         return;
-    }
-
-    if (plan && plan.auto_idle && plan.trial_end_at && plan.trial_end_at.getTime() < Date.now()) {
-        res.status(400).send({ error: { code: 'plan_limit', message: "Can't enable more scripts, upgrade or extend your auto idling period" } });
-        return;
-    }
-    if (plan && !plan.trial_end_at && plan.auto_idle) {
-        await startTrial(db.knex, plan);
     }
 
     const updated = await enableScriptConfig({ id: valParams.data.id, environmentId: environment.id });
