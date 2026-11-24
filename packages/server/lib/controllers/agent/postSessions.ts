@@ -129,13 +129,13 @@ const metaToolsShape = {
     nango_execute: metaToolSchema.optional(),
     nango_proxy: metaToolSchema.optional(),
     nango_create_connection: createConnectionMetaToolSchema.optional(),
-    nango_run_code: metaToolSchema.optional()
+    nango_query_result: metaToolSchema.optional()
 } satisfies Record<keyof AgentSessionMetaToolsSummary, z.ZodType>;
 
 const META_TOOL_NAMES = Object.keys(metaToolsShape);
 
 // Not offered until the feature is ready, so an account without the flag is told it does not exist.
-const RUN_CODE_META_TOOL = 'nango_run_code';
+const QUERY_RESULT_META_TOOL = 'nango_query_result';
 
 /**
  * Unknown keys pass validation so they can be rejected as unknown_meta_tool, which names them,
@@ -149,7 +149,7 @@ export const agentSessionMetaToolsSchema = z.looseObject(metaToolsShape).transfo
         ...(requested.nango_create_connection && {
             nangoCreateConnection: { enabled: requested.nango_create_connection.enabled, tags: requested.nango_create_connection.tags ?? {} }
         }),
-        ...(requested.nango_run_code && { nangoRunCode: requested.nango_run_code.enabled })
+        ...(requested.nango_query_result && { nangoQueryResult: requested.nango_query_result.enabled })
     };
 
     return { metaTools, unknown: Object.keys(requested).filter((key) => !META_TOOL_NAMES.includes(key)) };
@@ -194,11 +194,11 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
 
     const { account, environment, plan } = res.locals;
 
-    const runCodeAvailable = await getFlags().isAgentSessionRunCodeEnabled(account.uuid);
-    const supportedMetaTools = runCodeAvailable ? META_TOOL_NAMES : META_TOOL_NAMES.filter((name) => name !== RUN_CODE_META_TOOL);
+    const queryResultAvailable = await getFlags().isAgentSessionRunCodeEnabled(account.uuid);
+    const supportedMetaTools = queryResultAvailable ? META_TOOL_NAMES : META_TOOL_NAMES.filter((name) => name !== QUERY_RESULT_META_TOOL);
     const unknownMetaTools = [
         ...(body.data.meta_tools?.unknown ?? []),
-        ...(!runCodeAvailable && body.data.meta_tools?.metaTools.nangoRunCode !== undefined ? [RUN_CODE_META_TOOL] : [])
+        ...(!queryResultAvailable && body.data.meta_tools?.metaTools.nangoQueryResult !== undefined ? [QUERY_RESULT_META_TOOL] : [])
     ];
     if (unknownMetaTools.length > 0) {
         res.status(400).send({

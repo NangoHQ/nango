@@ -63,7 +63,7 @@ const agentSessionRequest = z.object({
             nango_execute: metaToolSwitch.optional(),
             nango_proxy: metaToolSwitch.optional(),
             nango_create_connection: createConnectionSwitch.optional(),
-            nango_run_code: metaToolSwitch.optional()
+            nango_query_result: metaToolSwitch.optional()
         })
         .optional(),
     expires_in: z.string().optional()
@@ -624,7 +624,7 @@ export const analyticsEventCatalogue = defineCatalogue({
             is_execute_enabled: z.boolean(),
             is_proxy_enabled: z.boolean(),
             is_create_connection_enabled: z.boolean(),
-            is_run_code_enabled: z.boolean().optional(),
+            is_query_result_enabled: z.boolean().optional(),
             pinned_tool_count: z.number(),
             searchable_tool_count: z.number(),
             // What the caller sent, next to what the session compiled to above.
