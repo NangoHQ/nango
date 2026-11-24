@@ -662,7 +662,7 @@ const IntegrationSetupNotice: React.FC<{
     const addedSince = isAdded(setup) ? undefined : addedIntegrations.get(setup.provider);
     const integrationId = addedSince ?? setup.integrationId;
     const name = (integrationId && labels?.get(integrationId)?.integrationName) || setup.displayName || providerName(setup.provider);
-    const href = integrationId ? `/${env}/integrations/${integrationId}` : `/${env}/integrations/create/${setup.provider}`;
+    const href = integrationId ? `/${env}/integrations/${integrationId}` : `/${env}/catalog/${setup.provider}/add`;
 
     if (addedSince) {
         return <AddedIntegrationRow provider={setup.provider} text={`Using your ${name} integration`} href={href} />;

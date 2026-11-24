@@ -123,7 +123,7 @@ export const CatalogProviderShow: React.FC = () => {
                                     <DropdownMenuItem
                                         onSelect={() => {
                                             trackSetupButtonClick(provider.name, source, 'advanced');
-                                            void navigate(`/${env}/integrations/create/${provider.name}`);
+                                            void navigate(`/${env}/catalog/${provider.name}/add`);
                                         }}
                                     >
                                         Advanced…
@@ -140,7 +140,7 @@ export const CatalogProviderShow: React.FC = () => {
                     </Button>
                 ) : (
                     <ButtonLink
-                        to={`/${env}/integrations/create/${provider.name}`}
+                        to={`/${env}/catalog/${provider.name}/add`}
                         variant="primary"
                         size={size}
                         disabled={!allowed}
@@ -201,7 +201,7 @@ export const CatalogProviderShow: React.FC = () => {
                                 <DropdownMenuItem
                                     onSelect={() => {
                                         trackSetupButtonClick(provider.name, 'more_menu', 'form');
-                                        void navigate(`/${env}/integrations/create/${provider.name}`);
+                                        void navigate(`/${env}/catalog/${provider.name}/add`);
                                     }}
                                 >
                                     Add another integration

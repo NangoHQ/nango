@@ -28,8 +28,8 @@ export const CreateIntegration = () => {
     const location = useLocation();
     const { mutateAsync: postIntegration } = usePostIntegration(env);
 
-    const { providerConfigKey } = useParams();
-    const { data: providerData, isLoading: loadingProvider } = useProvider(env, providerConfigKey);
+    const { provider: providerParam } = useParams();
+    const { data: providerData, isLoading: loadingProvider } = useProvider(env, providerParam);
 
     const provider = providerData?.data;
     const providerName = provider?.name;
