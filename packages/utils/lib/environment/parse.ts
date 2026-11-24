@@ -288,8 +288,7 @@ const ENVS_SHAPE = z.object({
 
     // License configuration options
     NANGO_LICENSE: z.string().optional(),
-    // Experimental, disabled by default for now
-    NANGO_LICENSE_CHECK: z.stringbool().optional().default(false),
+    NANGO_LICENSE_CHECK: z.stringbool().optional().default(true),
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?

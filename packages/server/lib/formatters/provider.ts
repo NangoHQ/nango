@@ -1,5 +1,6 @@
 import { basePublicUrl, resolveSchemaRef } from '@nangohq/utils';
 
+import { getInstantSetup } from '../services/instantSetup.js';
 import { isCatalogToolTemplate } from '../services/provider.service.js';
 import { toNangoFunction } from './function.js';
 
@@ -52,6 +53,7 @@ export function providerListItemToAPI(
         docs_connect: properties.docs_connect,
         preConfigured,
         preConfiguredScopes,
+        instantSetup: getInstantSetup(properties, preConfigured),
         functionCounts: functionCounts ?? { tools: 0, syncs: 0 },
         ...(properties.integration_config && { integration_config: properties.integration_config }),
         ...(properties.auth_mode === 'MCP_OAUTH2' && {

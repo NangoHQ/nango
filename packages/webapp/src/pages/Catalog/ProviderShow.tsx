@@ -21,7 +21,7 @@ import { useStore } from '@/store';
 import { getDisplayName } from '../Integrations/utils';
 import PageNotFound from '../PageNotFound';
 import { trackSetupButtonClick } from './analytics';
-import { getCategoryLabel, getInstantSetup, getOneClickSetupBody, getVisibleCategories, hasCustomSetup, isMcp } from './catalog.utils';
+import { getCategoryLabel, getOneClickSetupBody, getVisibleCategories, hasCustomSetup, isMcp } from './catalog.utils';
 import { CatalogFunctions } from './components/CatalogFunctions';
 import { CatalogLogo } from './components/CatalogLogo';
 import { ProviderCallout } from './components/ProviderCallout';
@@ -152,7 +152,7 @@ export const CatalogProviderShow: React.FC = () => {
             }}
         </PermissionGate>
     );
-    const instantSetup = getInstantSetup(provider);
+    const { instantSetup } = provider;
     const categories = getVisibleCategories(provider);
 
     const showMoreMenu = Boolean(existingIntegrationId && canSetUp);
@@ -233,7 +233,7 @@ export const CatalogProviderShow: React.FC = () => {
 };
 
 function getCalloutState(provider: ApiProviderListItem, configuredIntegrationIds: string[] | null): ProviderCalloutState {
-    const instantSetup = getInstantSetup(provider);
+    const { instantSetup } = provider;
     if (configuredIntegrationIds === null) {
         // Only instant setup apps always end up with a callout. Elsewhere a placeholder could vanish once the list loads.
         return instantSetup ? { kind: 'loading' } : { kind: 'none' };
@@ -241,7 +241,7 @@ function getCalloutState(provider: ApiProviderListItem, configuredIntegrationIds
     if (configuredIntegrationIds.length > 0) {
         return { kind: 'configured', integrationIds: configuredIntegrationIds };
     }
-    if (instantSetup === 'managed') {
+    if (instantSetup === 'nango-managed-app') {
         return { kind: 'instant-managed' };
     }
     if (instantSetup === 'no-dev-app') {
