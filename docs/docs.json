@@ -1010,6 +1010,7 @@
               "integrations/all/datto-rmm",
               "integrations/all/datto-rmm-password-grant",
               "api-integrations/dayforce",
+              "api-integrations/dealhub",
               "integrations/all/deel",
               "integrations/all/deel-sandbox",
               "api-integrations/deepgram",

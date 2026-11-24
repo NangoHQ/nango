@@ -5,7 +5,7 @@
 - [OpenAPI spec](https://nango.dev/docs/spec.yaml): Exact HTTP API schemas for code generation or typed clients.
 - [Docs MCP server](https://nango.dev/docs/mcp): Live docs context without authentication. The Management MCP server includes the same docs tools.
 
-Provider count: 1468
+Provider count: 1469
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -436,6 +436,7 @@ URL patterns:
 | `datto-rmm` | Datto RMM | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/datto-rmm.md) | [connect](https://nango.dev/docs/integrations/all/datto-rmm/connect.md) |  | support |
 | `datto-rmm-password-grant` | Datto RMM (Password Grant) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/datto-rmm-password-grant.md) | [connect](https://nango.dev/docs/integrations/all/datto-rmm-password-grant/connect.md) |  | support |
 | `dayforce` | Dayforce | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/dayforce.md) | [connect](https://nango.dev/docs/api-integrations/dayforce/connect.md) |  | hr |
+| `dealhub` | DealHub | API_KEY | [docs](https://nango.dev/docs/api-integrations/dealhub.md) | [connect](https://nango.dev/docs/api-integrations/dealhub/connect.md) |  | crm |
 | `deel` | Deel | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/deel.md) |  |  | hr |
 | `deel-sandbox` | Deel (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/deel-sandbox.md) |  |  | hr |
 | `deepgram` | Deepgram | API_KEY | [docs](https://nango.dev/docs/api-integrations/deepgram.md) | [connect](https://nango.dev/docs/api-integrations/deepgram/connect.md) |  | other |
