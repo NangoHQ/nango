@@ -11,6 +11,8 @@ import {
     functionLookupService,
     getApiUrl,
     getEndUserByConnectionId,
+    inlineFunctionService,
+    isInlineFunctionUuid,
     LogActionEnum,
     NangoError,
     secretService
@@ -45,7 +47,7 @@ import type { JsonValue } from 'type-fest';
 
 const INLINE_FUNCTION_NAME = 'inline';
 
-type InlineFunction = { kind: 'inline'; uuid: string; name: string; enabled: true };
+type ResolvedInlineFunction = { kind: 'inline'; uuid: string; name: string; enabled: true; code: string; description: string | null };
 
 export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let logCtx: LogContext | undefined;
@@ -54,7 +56,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let providerConfig: Config | null | undefined;
     let syncConfig: DBSyncConfig | null = null;
     let endUser: NangoProps['endUser'] | null = null;
-    let functionName: string | undefined = task.source ? INLINE_FUNCTION_NAME : undefined;
+    let functionName: string | undefined = isInlineFunctionUuid(task.functionUuid) ? INLINE_FUNCTION_NAME : undefined;
 
     try {
         const accountContext = await tracer.trace('function.prepare.accountContext', async () =>
@@ -75,14 +77,14 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
         }
 
-        const resolved: Result<ResolvedFunction | InlineFunction | undefined> = task.source
-            ? Ok({ kind: 'inline', uuid: task.functionUuid, name: INLINE_FUNCTION_NAME, enabled: true })
-            : await tracer.trace('function.prepare.functionConfig', async () =>
-                  functionLookupService.resolveFunctionByUuid({
+        const resolved: Result<ResolvedFunction | ResolvedInlineFunction | undefined> = await tracer.trace('function.prepare.functionConfig', async () =>
+            isInlineFunctionUuid(task.functionUuid)
+                ? resolveInlineFunction({ environmentId: task.connection.environment_id, uuid: task.functionUuid })
+                : functionLookupService.resolveFunctionByUuid({
                       environmentId: task.connection.environment_id,
                       functionUuid: task.functionUuid
                   })
-              );
+        );
         if (resolved.isErr()) {
             throw resolved.error;
         }
@@ -128,7 +130,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             nangoConnectionId: task.connection.id,
             connectionId: task.connection.connection_id,
             startedAt: now,
-            meta: { trigger: task.trigger.kind, variant: task.variant ?? 'base', taskId: task.id, ...inlineLogFields(task) }
+            meta: { trigger: task.trigger.kind, variant: task.variant ?? 'base', taskId: task.id, ...inlineLogFields(fn) }
         });
 
         // capping
@@ -154,7 +156,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             function: fn.name,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key,
-            ...inlineLogFields(task)
+            ...inlineLogFields(fn)
         });
 
         let sdkLogger: SdkLogger;
@@ -173,7 +175,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
 
         const nangoProps: NangoProps = {
             scriptType: 'function',
-            ...(task.source && { execMode: 'transform' as const }),
+            ...(fn.kind === 'inline' && { execMode: 'transform' as const }),
             host: getApiUrl(),
             team: {
                 id: account.id,
@@ -214,7 +216,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             routingContext,
             logCtx: logCtx,
             arg: task.trigger,
-            code: task.source?.code
+            code: fn.kind === 'inline' ? fn.code : undefined
         });
 
         if (res.isErr()) {
@@ -247,7 +249,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             team: account,
             environment: environment,
             endUser,
-            inline: task.source !== undefined
+            inline: isInlineFunctionUuid(task.functionUuid)
         });
         return Err(error);
     }
@@ -589,11 +591,20 @@ async function getLogCtx(
     return logCtx;
 }
 
-function inlineLogFields(task: TaskFunction): Record<string, string> {
-    if (!task.source) {
+async function resolveInlineFunction({ environmentId, uuid }: { environmentId: number; uuid: string }): Promise<Result<ResolvedInlineFunction | undefined>> {
+    const inlineFunction = await inlineFunctionService.get(db.knex, { environmentId, uuid });
+    if (inlineFunction.isErr() || !inlineFunction.value) {
+        return inlineFunction.isErr() ? Err(inlineFunction.error) : Ok(undefined);
+    }
+    const { code, description } = inlineFunction.value;
+    return Ok({ kind: 'inline', uuid, name: INLINE_FUNCTION_NAME, enabled: true, code, description });
+}
+
+function inlineLogFields(fn: ResolvedFunction | ResolvedInlineFunction): Record<string, string> {
+    if (fn.kind !== 'inline') {
         return {};
     }
-    return { source: task.source.kind, ...(task.source.description && { description: task.source.description }) };
+    return { source: 'inline', ...(fn.description && { description: fn.description }) };
 }
 
 // TODO: refactor NangoProps to support native function config

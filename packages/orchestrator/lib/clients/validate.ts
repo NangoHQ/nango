@@ -3,9 +3,7 @@ import * as z from 'zod';
 import { taskStates } from '@nangohq/scheduler';
 import { Err, Ok } from '@nangohq/utils';
 
-import { maxInlineSourceCodeLength } from '../constants.js';
 import { jsonSchema } from '../utils/validation.js';
-import { isInlineFunctionUuid } from './inlineFunctionUuid.js';
 import { TaskAbort, TaskAction, TaskFunction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
 
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
@@ -78,16 +76,7 @@ export const onEventArgsSchema = z.object({
 
 const functionBaseFields = {
     type: z.literal('function'),
-    functionUuid: z.uuid(),
-    source: z
-        .object({
-            kind: z.literal('inline'),
-            code: z.string().min(1).max(maxInlineSourceCodeLength, `Inline code is limited to ${maxInlineSourceCodeLength} characters`),
-            description: z.string().min(1).max(1024).optional()
-        })
-        .strict()
-        .transform(({ description, ...source }) => ({ ...source, ...(description !== undefined && { description }) }))
-        .optional()
+    functionUuid: z.uuid()
 };
 
 const functionTriggerConnectionSchema = z.object({
@@ -139,14 +128,11 @@ const functionArgsObjectSchema = z
     })
     .strict();
 
-export const functionArgsSchema = functionArgsObjectSchema
-    .refine((args) => (args.source !== undefined) === isInlineFunctionUuid(args.functionUuid), 'A source and an inline function uuid must be used together')
-    .transform(({ source, activityLogId, variant, ...args }) => ({
-        ...args,
-        ...(source !== undefined && { source }),
-        ...(activityLogId !== undefined && { activityLogId }),
-        ...(variant !== undefined && { variant })
-    }));
+export const functionArgsSchema = functionArgsObjectSchema.transform(({ activityLogId, variant, ...args }) => ({
+    ...args,
+    ...(activityLogId !== undefined && { activityLogId }),
+    ...(variant !== undefined && { variant })
+}));
 
 const commonSchemaFields = {
     id: z.string().uuid(),
@@ -314,7 +300,6 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 attempt: func.data.retryCount + 1,
                 attemptMax: func.data.retryMax + 1,
                 functionUuid: func.data.payload.functionUuid,
-                ...(func.data.payload.source !== undefined && { source: func.data.payload.source }),
                 ...(func.data.payload.variant !== undefined && { variant: func.data.payload.variant }),
                 connection: func.data.payload.connection,
                 ...(func.data.payload.activityLogId !== undefined && { activityLogId: func.data.payload.activityLogId }),
