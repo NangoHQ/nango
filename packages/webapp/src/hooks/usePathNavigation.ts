@@ -21,20 +21,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 export function usePathNavigation(basePath: string, defaultValue: string = '', onValueChange?: (value: string) => void): [string, (value: string) => void] {
     const location = useLocation();
     const navigate = useNavigate();
-    const [value, setValue] = useState<string>(defaultValue);
+    const [value, setValue] = useState<string>(() => getValueFromPath(location.pathname, basePath, defaultValue));
 
-    // Sync state from URL path on mount and when path changes
     useEffect(() => {
-        const pathSegments = location.pathname.split('/').filter(Boolean);
-        const lastSegment = pathSegments[pathSegments.length - 1];
-        const basePathSegments = basePath.split('/').filter(Boolean);
-        const lastBasePathSegment = basePathSegments[basePathSegments.length - 1];
-
-        if (lastSegment && lastSegment !== lastBasePathSegment) {
-            setValue(lastSegment);
-        } else if (defaultValue) {
-            setValue(defaultValue);
-        }
+        setValue(getValueFromPath(location.pathname, basePath, defaultValue));
     }, [location.pathname, basePath, defaultValue]);
 
     // Handler that updates both state and URL
@@ -45,4 +35,13 @@ export function usePathNavigation(basePath: string, defaultValue: string = '', o
     };
 
     return [value, handleValueChange];
+}
+
+function getValueFromPath(pathname: string, basePath: string, defaultValue: string): string {
+    const lastSegment = pathname.split('/').filter(Boolean).at(-1);
+    const lastBasePathSegment = basePath.split('/').filter(Boolean).at(-1);
+    if (lastSegment && lastSegment !== lastBasePathSegment) {
+        return lastSegment;
+    }
+    return defaultValue;
 }
