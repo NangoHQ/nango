@@ -27,7 +27,7 @@ This guide shows you how to create an Adobe Developer Console project with the A
     </Step>
     <Step id="configure-integration" title="Enter the credentials in Nango">
         In the project's OAuth Web App credential, copy the **Client ID** and **Client secret** into your **Adobe Analytics** integration in Nango.
-        Nango requests `offline_access` by default. Add the scopes your app needs in the integration settings, for example `openid`, `AdobeID`, `read_organizations`, `additional_info.projectedProductContext`, and `additional_info.job_function` for the Adobe Analytics API.
+        Nango requests the `openid`, `AdobeID`, `read_organizations`, `additional_info.projectedProductContext`, `additional_info.job_function`, and `offline_access` scopes by default, which the Adobe Analytics API needs.
     </Step>
     <Step id="start-building-integration" title="Start building your integration">
         Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.

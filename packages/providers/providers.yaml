@@ -673,6 +673,11 @@ adobe:
     authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
     token_url: https://ims-na1.adobelogin.com/ims/token/v3
     default_scopes:
+        - openid
+        - AdobeID
+        - read_organizations
+        - additional_info.projectedProductContext
+        - additional_info.job_function
         - offline_access
     authorization_params:
         response_type: code
