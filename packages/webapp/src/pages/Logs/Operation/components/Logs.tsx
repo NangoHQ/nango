@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { addMinutes } from 'date-fns';
 import { ArrowLeft, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount } from 'react-use';
@@ -9,7 +8,6 @@ import { useDebounce, useInterval, useMount } from 'react-use';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, SegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
-import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Spinner } from '@/components/ui/Spinner';
@@ -21,16 +19,8 @@ import { columns, defaultLimit } from '../constants';
 import { ShowMessage } from '../Message/Show';
 import { LogRow } from './LogRow';
 
-import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { LogLevel, MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
 import type { Table as ReactTable } from '@tanstack/react-table';
-
-const fullPeriod: PeriodPreset = {
-    name: 'full',
-    label: 'All logs',
-    shortLabel: 'All',
-    toPeriod: () => null // Null means no period
-};
 
 type LevelFilter = 'all' | LogLevel;
 const levelOptions: { value: LevelFilter; label: string }[] = [
@@ -58,7 +48,6 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
     // --- Data fetch
     const [search, setSearch] = useState<string | undefined>();
     const [debouncedSearch, setDebouncedSearch] = useState<string | undefined>();
-    const [period, setPeriod] = useState<Period | null>(null);
     const [level, setLevel] = useState<LevelFilter>('all');
 
     // We optimize the refresh and memory when the users is waiting for new operations (= scroll is on top)
@@ -71,7 +60,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
         unknown[],
         { before: string | null } | { after: string | null } | null
     >({
-        queryKey: [env, 'logs:messages:infinite', operationId, debouncedSearch, period, level],
+        queryKey: [env, 'logs:messages:infinite', operationId, debouncedSearch, level],
         queryFn: async ({ pageParam, signal }) => {
             const res = await apiFetch(`/api/v1/logs/messages?env=${env}`, {
                 method: 'POST',
@@ -81,8 +70,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                     search: debouncedSearch,
                     levels: level === 'all' ? undefined : [level],
                     cursorAfter: pageParam && 'after' in pageParam ? pageParam.after : undefined,
-                    cursorBefore: pageParam && 'before' in pageParam ? pageParam.before : undefined,
-                    period: period ? { from: period.from.toISOString(), to: period.to?.toISOString() ?? new Date().toISOString() } : undefined
+                    cursorBefore: pageParam && 'before' in pageParam ? pageParam.before : undefined
                 } satisfies SearchMessages['Body']),
                 signal
             });
@@ -190,27 +178,6 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
         fetchMoreOnBottomReached(tableContainerRef.current);
     }, [fetchMoreOnBottomReached]);
 
-    const earliestToLatestPeriod = useMemo(() => {
-        if (period || !flatData.length) {
-            return;
-        }
-
-        const { earliest, latest } = flatData.reduce(
-            (acc, curr) => {
-                return {
-                    earliest: new Date(acc.earliest.createdAt) < new Date(curr.createdAt) ? acc.earliest : curr,
-                    latest: new Date(acc.latest.createdAt) > new Date(curr.createdAt) ? acc.latest : curr
-                };
-            },
-            { earliest: flatData[0], latest: flatData[0] }
-        );
-
-        return {
-            from: new Date(earliest.createdAt),
-            to: addMinutes(new Date(latest.createdAt), 1)
-        };
-    }, [flatData, period]);
-
     return (
         <div className="grow-0 overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-center">
@@ -273,16 +240,6 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                         </SegmentedControlItem>
                     ))}
                 </SegmentedControl>
-                <div className="border border-transparent">
-                    <PeriodSelector
-                        period={period}
-                        isLive={isLive}
-                        onChange={setPeriod}
-                        presets={[fullPeriod]}
-                        defaultPreset={fullPeriod}
-                        customPeriodExample={earliestToLatestPeriod}
-                    />
-                </div>
             </header>
             <div
                 style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}
