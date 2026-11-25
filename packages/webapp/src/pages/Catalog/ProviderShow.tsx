@@ -223,6 +223,7 @@ export const CatalogProviderShow: React.FC = () => {
             ) : (
                 <CatalogFunctions
                     templates={templatesData?.data ?? []}
+                    provider={provider.name}
                     displayName={provider.displayName}
                     isMcp={isMcp(provider)}
                     renderSetupButton={() => (existingIntegrationId ? null : renderSetupButton('panel', 'sm'))}

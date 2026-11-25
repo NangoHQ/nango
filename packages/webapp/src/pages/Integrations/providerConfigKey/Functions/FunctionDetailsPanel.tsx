@@ -3,10 +3,9 @@ import { useCallback, useMemo } from 'react';
 
 import { Badge, CopyButton, IconButton, LinkButton } from '@nangohq/design-system';
 
-import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Separator } from '@/components/ui/Separator';
-import { Spinner } from '@/components/ui/Spinner';
-import { CompactEmptyState, FunctionPanel, FunctionPanelHeader, FunctionSchemaTabs } from '@/features/Functions/FunctionPanel';
+import { FunctionCodeBlock } from '@/features/Functions/FunctionCodeBlock';
+import { FunctionPanel, FunctionPanelHeader, FunctionSchemaTabs } from '@/features/Functions/FunctionPanel';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteIntegrationFunction } from '@/hooks/useIntegration';
 import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hooks/useIntegrationFunctions';
@@ -194,15 +193,5 @@ const FunctionCode: React.FC<{ fn: FunctionDetails; integration: ApiIntegration 
     const codeError = isDeployedCode ? deployedCodeError : templateCodeError;
     const code = isDeployedCode ? codeData?.code : templateCode?.code;
 
-    if (codePending) {
-        return (
-            <div className="flex h-48 items-center justify-center">
-                <Spinner className="size-5 text-text-muted" />
-            </div>
-        );
-    }
-    if (codeError || !code) {
-        return <CompactEmptyState>Failed to load source code.</CompactEmptyState>;
-    }
-    return <CodeBlock title={`${fn.name}.ts`} language="typescript" code={code} />;
+    return <FunctionCodeBlock name={fn.name} code={code} pending={codePending} failed={Boolean(codeError)} />;
 };

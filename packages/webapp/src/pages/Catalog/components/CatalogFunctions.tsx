@@ -25,12 +25,13 @@ const TAB_LABELS: Record<FunctionTypeTab, { singular: string; plural: string }> 
 
 interface CatalogFunctionsProps {
     templates: ProviderTemplatesSuccess['data'];
+    provider: string;
     displayName: string;
     isMcp: boolean;
     renderSetupButton: () => React.ReactNode;
 }
 
-export const CatalogFunctions: React.FC<CatalogFunctionsProps> = ({ templates, displayName, isMcp, renderSetupButton }) => {
+export const CatalogFunctions: React.FC<CatalogFunctionsProps> = ({ templates, provider, displayName, isMcp, renderSetupButton }) => {
     const [rawType, setType] = useQueryState('type', parseAsStringLiteral(FUNCTION_TYPES));
     const [selectedName, setSelectedName] = useQueryState('function', parseAsString);
     const [search, setSearch] = useState('');
@@ -66,7 +67,9 @@ export const CatalogFunctions: React.FC<CatalogFunctionsProps> = ({ templates, d
             <SlidingPanelLayout
                 selected={selected}
                 getKey={(fn) => `${fn.type}:${fn.name}`}
-                renderPanel={(fn) => <CatalogFunctionPanel fn={fn} setupButton={renderSetupButton()} onClose={() => void setSelectedName(null)} />}
+                renderPanel={(fn) => (
+                    <CatalogFunctionPanel fn={fn} provider={provider} setupButton={renderSetupButton()} onClose={() => void setSelectedName(null)} />
+                )}
                 onClose={() => void setSelectedName(null)}
             >
                 <FunctionList
