@@ -1,0 +1,42 @@
+---
+title: 'Astalty - How do I link my account?'
+sidebarTitle: 'Astalty'
+---
+
+## Overview
+
+To authenticate with Astalty, you need:
+
+1. **API Key** — an API key created in your Astalty API Dashboard.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- An Astalty account where you are the Account Owner, or an Admin the Account Owner gave the **Can manage API keys and webhooks** permission.
+
+### Step 1: Create an API key
+
+1. Sign in to [Astalty](https://app.astalty.com.au) and open **Settings**. Under **Developers**, click **API Dashboard**.
+
+<img src="/api-integrations/astalty/settings_api_dashboard.png" alt="Astalty Settings page with API Dashboard under Developers"/>
+
+2. In the API Dashboard menu, click **Manage Keys**, then click **Create API Key**.
+
+<img src="/api-integrations/astalty/manage_keys_create.png" alt="Astalty Manage Keys page with the Create API Key button"/>
+
+3. Enter a **Name** that identifies the integration and choose an **Access Level**. **Read Only** can only read data; choose **Full Access** if your integration needs to create, update or delete data. Then click **Create**.
+
+<img src="/api-integrations/astalty/create_api_key_dialog.png" alt="Astalty Create API Key dialog with the Name field, Access Level options and the Create button"/>
+
+4. In the **API Key Created** dialog, click **Copy to clipboard** and store the key. Astalty shows it only once: if you close the dialog before saving it, delete the key and create a new one.
+
+<img src="/api-integrations/astalty/api_key_created.png" alt="Astalty API Key Created dialog with the Copy to clipboard button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Astalty.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form. Nango checks the key with Astalty and rejects it if it is wrong or revoked.
+
+<img src="/api-integrations/astalty/form.png" alt="Astalty Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>

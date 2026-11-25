@@ -1,0 +1,55 @@
+---
+title: 'Dot - How do I link my account?'
+sidebarTitle: 'Dot'
+---
+
+## Overview
+
+To authenticate with Dot, you need:
+
+1. **Region** — the Dot host your account is on.
+2. **API Token** — a Dot API token.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Dot account. [Sign up for free](https://app.getdot.ai/register); no credit card is required.
+
+### Step 1: Find your region
+
+Check the address you use to sign in to Dot:
+
+- `app.getdot.ai` for the US region.
+- `eu.getdot.ai` for the EU region.
+
+### Step 2: Create an API token
+
+The token acts with the permissions of the user it belongs to.
+
+1. Sign in to Dot, click **Settings** in the left sidebar and open the **Users** tab.
+
+<img src="/api-integrations/dot/settings_users_tab.png" alt="Dot Settings page with the Users tab selected"/>
+
+2. Scroll to the **API Tokens** section and click **Create Token**.
+
+<img src="/api-integrations/dot/create_token_button.png" alt="API Tokens section of the Dot Users tab with the Create Token button"/>
+
+3. Pick the user the token acts as, enter a **Token Name**, choose an **Expiration** and add an optional **Description**. Then click **Create Token**.
+
+<img src="/api-integrations/dot/create_token_dialog.png" alt="Dot Create API Token dialog with the user, token name, expiration and description fields"/>
+
+4. Copy the token. It is only shown once.
+
+<img src="/api-integrations/dot/api_token_created.png" alt="Dot API Token Created dialog showing the new token to copy"/>
+
+### Step 3: Enter your region and API token in the Connect UI
+
+1. Open the form where you need to authenticate with Dot.
+2. Select your **Region** from Step 1.
+3. Paste the token you copied in Step 2 into the **API Token** field.
+4. Submit the form. Nango checks the token with Dot and rejects it if it is invalid.
+
+<img src="/api-integrations/dot/form.png" alt="Dot Connect UI form with the Region and API Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Dot.

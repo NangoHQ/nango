@@ -134,13 +134,11 @@ export async function prepareDeploymentBundle({
 export async function deployBundle({
     accountId,
     environmentId,
-    environmentName,
     reconciliation,
     orchestrator
 }: {
     accountId: number;
     environmentId: number;
-    environmentName: string;
     reconciliation: DeploymentBundleReconciliation;
     orchestrator: Pick<Orchestrator, 'scheduleFunctions' | 'deleteFunctionSchedules'>;
 }): Promise<Result<void, DeploymentBundleError>> {
@@ -191,7 +189,6 @@ export async function deployBundle({
             }
             const version = versionHash.value;
             const paths = functionArtifactPaths({
-                environmentName,
                 accountId,
                 environmentId,
                 integrationId: artifact.integrationId,

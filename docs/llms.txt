@@ -1,6 +1,6 @@
 # Nango Docs
 
-> Nango is the tool calling layer for AI agents to act across 1,400+ APIs. These files are curated for agents: core docs are listed directly, while provider-specific API pages live in a compact catalog.
+> Nango is the tool calling layer for AI agents to act across 1,500+ APIs. These files are curated for agents: core docs are listed directly, while provider-specific API pages live in a compact catalog.
 
 - [OpenAPI spec](https://nango.dev/docs/spec.yaml): Exact HTTP API schemas for code generation or typed clients.
 - [Docs MCP server](https://nango.dev/docs/mcp): Live docs context without authentication. The Management MCP server includes the same docs tools.
@@ -150,7 +150,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 1476 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 1503 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
 
 ## Resources

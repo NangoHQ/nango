@@ -1,0 +1,40 @@
+---
+title: 'Asin - How do I link my account?'
+sidebarTitle: 'Asin'
+---
+
+## Overview
+
+To authenticate with Asin, you need:
+
+1. **API Key** — a personal API key created in your Asin dashboard.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- An Asin account. You can [sign up](https://www.asin.dev/signup) for free with Google, Discord or an email address.
+
+### Step 1: Create an API key
+
+1. [Log in](https://www.asin.dev/login) to Asin and open the **Extension & API** tab of the [dashboard](https://www.asin.dev/app#api).
+
+<img src="/api-integrations/asin/open_extension_api_tab.png" alt="Asin dashboard with the Extension & API tab open"/>
+
+2. Under **API keys**, enter a name for the key, such as the name of your app, then click **Create key**.
+
+<img src="/api-integrations/asin/create_api_key.png" alt="Asin API keys section with a key name entered and the Create key button"/>
+
+3. In the **Your new API key** dialog, click **Copy**. Asin shows the key only once: if you lose it, create a new key. The key starts with `asin_`.
+
+<img src="/api-integrations/asin/copy_api_key.png" alt="Asin Your new API key dialog with the Copy button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Asin.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form. Nango checks the key with Asin and rejects it if it is wrong.
+
+<img src="/api-integrations/asin/form.png" alt="Asin Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Asin.
