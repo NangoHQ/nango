@@ -1114,6 +1114,7 @@
               "integrations/all/epic-games",
               "api-integrations/epicor-prophet-21",
               "api-integrations/epost-klara",
+              "api-integrations/era-by-hono",
               "api-integrations/ergo",
               "api-integrations/erpnext",
               "api-integrations/esignatures-io",

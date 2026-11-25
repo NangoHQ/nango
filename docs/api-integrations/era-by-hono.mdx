@@ -1,0 +1,95 @@
+---
+title: 'ERA by HONO'
+sidebarTitle: 'ERA by HONO'
+description: 'Connect AI tools to HONO HRMS via the Model Context Protocol (MCP) to check leave, attendance, holidays, approvals and more'
+---
+
+## 🚀 Quickstart
+
+Connect to the HONO MCP server with Nango and call MCP tools in minutes. HONO MCP uses OAuth 2.1 with **dynamic client registration** and PKCE, so no app registration is required.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ERA by HONO_.
+    </Step>
+    <Step title="Authorize HONO">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to HONO. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call a HONO MCP tool">
+    Make your first MCP request (initialize handshake). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/era/mcp" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "nango-client",
+                        "version": "1.0.0"
+                    }
+                }
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/era/mcp',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+                params: {
+                    protocolVersion: '2024-11-05',
+                    capabilities: {},
+                    clientInfo: {
+                        name: 'nango-client',
+                        version: '1.0.0'
+                    }
+                }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/overview) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 ERA by HONO guides
+
+Nango uses **dynamic client registration** with HONO's MCP OAuth server. You do not need to register an MCP application.
+
+Official resources: [ERA MCP Server documentation](https://mcp.hono.ai/era/documentation)
+
+---
