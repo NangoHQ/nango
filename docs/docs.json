@@ -1849,6 +1849,7 @@
               "api-integrations/spendesk",
               "integrations/all/splitwise",
               "api-integrations/splunk",
+              "api-integrations/spotdraft-mcp",
               "integrations/all/spotify",
               "integrations/all/spotify-oauth2-cc",
               "api-integrations/spotlightr",

@@ -108,7 +108,8 @@ export async function routeWebhook({
 
     // Only forward webhook if there is no capping and the response was successful
     const cappingStatus = await capping.getStatus(plan || null, 'webhook_forwards', 'data_transfer');
-    if (!cappingStatus.isCapped && res.statusCode === 200 && ((plan && plan.has_webhooks_forward) || !plan)) {
+    const noForward = 'noForward' in res && res.noForward;
+    if (!noForward && !cappingStatus.isCapped && res.statusCode === 200 && ((plan && plan.has_webhooks_forward) || !plan)) {
         const webhookBodyToForward = 'toForward' in res ? res.toForward : request.body;
         const connectionIds = 'connectionIds' in res ? res.connectionIds : [];
 
