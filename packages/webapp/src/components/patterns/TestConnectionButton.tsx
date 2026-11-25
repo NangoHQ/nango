@@ -76,7 +76,7 @@ export const TestConnectionButton: React.FC<TestConnectionButtonProps> = ({ env,
                     </SplitButtonAction>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <SplitButtonMenuTrigger label="Your other test connections" />
+                            <SplitButtonMenuTrigger label="Your test connections" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="min-w-80 p-1.5">
                             <DropdownMenuLabel className="px-2.5 pt-1.5 pb-1 type-label-xs uppercase tracking-wide text-text-tertiary">
