@@ -1,0 +1,37 @@
+---
+title: 'Serply - How do I link my account?'
+sidebarTitle: 'Serply'
+---
+
+## Overview
+
+To authenticate with Serply, you need:
+
+1. **API token**: created in your Serply dashboard.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Serply account. [Sign up](https://app.serply.io/users/sign_up) for free: every new account gets 2,500 free credits, no credit card required, valid for 30 days.
+
+### Step 1: Create an API token
+
+1. Sign in to [Serply](https://app.serply.io) and click **API tokens** in the top navigation.
+2. Under **Create a token**, enter a name for the token (for example, `nango`) and click **Create token**.
+
+<img src="/api-integrations/serply/create_api_token.png" alt="Serply API tokens page with a token name entered under Create a token and the Create token button highlighted"/>
+
+3. Under **Your tokens**, click **Copy** next to the new token.
+
+<img src="/api-integrations/serply/api_token_created.png" alt="Serply API tokens page listing the new token with its Copy button highlighted"/>
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Serply.
+2. Paste the token you copied in Step 1 into the **API Token** field.
+3. Submit the form. Nango checks the token with Serply and rejects it if it is invalid.
+
+<img src="/api-integrations/serply/form.png" alt="Serply Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Serply.

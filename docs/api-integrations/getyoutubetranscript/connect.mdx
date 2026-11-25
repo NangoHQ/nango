@@ -1,0 +1,40 @@
+---
+title: 'GetYouTubeTranscript - How do I link my account?'
+sidebarTitle: 'GetYouTubeTranscript'
+---
+
+## Overview
+
+To authenticate with GetYouTubeTranscript, you need:
+
+1. **API Key** — an API key created in your GetYouTubeTranscript dashboard.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A GetYouTubeTranscript account. You can [sign up](https://getyoutubetranscript.com/developers) with Google or an email code.
+
+### Step 1: Create an API key
+
+1. [Sign in](https://getyoutubetranscript.com/sign-in) to GetYouTubeTranscript. On the [dashboard](https://getyoutubetranscript.com/dashboard), click **Create a key**, or click **Developers** in the sidebar.
+
+<img src="/api-integrations/getyoutubetranscript/dashboard_create_api_key.png" alt="GetYouTubeTranscript dashboard with the Create a key button"/>
+
+2. On the **API** page, under **Your API keys**, enter a name for the key, such as the name of your app, then click **New key**.
+
+<img src="/api-integrations/getyoutubetranscript/developers_new_key.png" alt="GetYouTubeTranscript Your API keys section with a key name entered and the New key button"/>
+
+3. Click the copy button next to the new key, then click **I've saved it**. GetYouTubeTranscript shows the key only once: if you lose it, create a new key. The key starts with `sk_live_`.
+
+<img src="/api-integrations/getyoutubetranscript/api_key_created.png" alt="GetYouTubeTranscript new API key with the copy button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with GetYouTubeTranscript.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form. Nango checks the key with GetYouTubeTranscript and rejects it if it is wrong.
+
+<img src="/api-integrations/getyoutubetranscript/form.png" alt="GetYouTubeTranscript Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to GetYouTubeTranscript.
