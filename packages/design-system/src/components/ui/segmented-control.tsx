@@ -98,6 +98,7 @@ export type SegmentedControlItemProps = ItemBaseProps &
               /** Text label. One or two words. Empty children (null, booleans) would render icon-only, so they need the other branch. */
               children: Exclude<React.ReactNode, null | undefined | boolean>;
               'aria-label'?: string;
+              count?: React.ReactNode;
           }
         | {
               children?: null | false;
@@ -108,7 +109,8 @@ export type SegmentedControlItemProps = ItemBaseProps &
     );
 
 export const SegmentedControlItem = forwardRef<React.ElementRef<typeof RadioGroupPrimitive.Item>, SegmentedControlItemProps>(
-    ({ className, icon, children, ...props }, ref) => {
+    ({ className, icon, children, ...rest }, ref) => {
+        const { count, ...props } = rest as typeof rest & { count?: React.ReactNode };
         const size = useContext(SegmentedControlSizeContext);
         if (!size) {
             throw new Error('SegmentedControlItem must be rendered inside a SegmentedControl');
@@ -124,6 +126,7 @@ export const SegmentedControlItem = forwardRef<React.ElementRef<typeof RadioGrou
             >
                 {icon}
                 {children}
+                {count !== undefined && <span className="tabular-nums text-text-muted">{count}</span>}
             </RadioGroupPrimitive.Item>
         );
 
