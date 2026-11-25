@@ -16,7 +16,8 @@ export interface ClerkWebhookPayload {
     type: string;
     object: 'event';
     data: Record<string, unknown>;
-    timestamp?: number;
+    timestamp: number;
+    instance_id: string;
 }
 
 /** https://resend.com/docs/dashboard/webhooks/introduction */
@@ -35,14 +36,25 @@ export interface OpenAIWebhookPayload {
     data: Record<string, unknown>;
 }
 
+/**
+ * The body of a PostHog webhook destination is a template the user can edit. The default one sends the
+ * captured event, whose name is `event.event`, for example `$pageview`.
+ * https://posthog.com/docs/data-pipelines/destinations/webhook
+ */
+export interface PostHogWebhookPayload {
+    event?: { uuid?: string; event?: string; distinct_id?: string; properties?: Record<string, unknown>; timestamp?: string; url?: string };
+    person?: Record<string, unknown>;
+    [key: string]: unknown;
+}
+
 // Standard Webhooks names its headers `webhook-*`; Svix-hosted senders use `svix-*`.
 const hasHeader = (headers: Record<string, string>, name: 'id' | 'timestamp' | 'signature') => Boolean(headers[`webhook-${name}`] || headers[`svix-${name}`]);
 
 /**
  * For providers that sign with Standard Webhooks (Svix) from an endpoint each end user creates in the
- * provider's dashboard, with a signing secret of its own. The payloads don't say which account they
- * come from, so each webhook URL carries `?nangoConnectionId=` and the delivery is verified against
- * the `webhookSecret` stored on that connection.
+ * provider's dashboard, with a signing secret of its own. A delivery can only be verified with its
+ * endpoint's secret, so each webhook URL carries `?nangoConnectionId=` and the delivery is verified
+ * against the `webhookSecret` stored on that connection.
  *
  * `webhookType` is the payload field holding the event type, when the provider sends one.
  */
@@ -91,3 +103,4 @@ export const incidentIoWebhookRouting = standardWebhooksConnectionRouting<Incide
 export const clerkWebhookRouting = standardWebhooksConnectionRouting<ClerkWebhookPayload>('type');
 export const resendWebhookRouting = standardWebhooksConnectionRouting<ResendWebhookPayload>('type');
 export const openaiWebhookRouting = standardWebhooksConnectionRouting<OpenAIWebhookPayload>('type');
+export const postHogWebhookRouting = standardWebhooksConnectionRouting<PostHogWebhookPayload>('event.event');

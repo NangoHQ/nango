@@ -10,7 +10,7 @@ description: 'Learn how to receive real-time Clerk user, session and organizatio
 2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's signature against that connection's own webhook secret. Clerk signs deliveries with [Standard Webhooks](https://www.standardwebhooks.com/), and Nango rejects deliveries signed more than 5 minutes ago.
 3. Nango routes the event to that connection, using the payload's `type` field as the webhook type.
 
-Clerk payloads don't say which account they come from, so each connection needs its own webhook endpoint in Clerk and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected.
+Each Clerk webhook endpoint has its own signing secret, so each connection needs its own endpoint in Clerk and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected. Clerk can deliver events out of order, so compare `data.updated_at`, or fetch the object from the Clerk Backend API, before acting on an event.
 
 ## Setup
 

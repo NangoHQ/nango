@@ -36,7 +36,8 @@ export {
     incidentIoWebhookRouting,
     clerkWebhookRouting,
     resendWebhookRouting,
-    openaiWebhookRouting
+    openaiWebhookRouting,
+    postHogWebhookRouting
 } from './standard-webhooks-connection-routing.js';
 export { default as calComWebhookRouting } from './cal-com-webhook-routing.js';
 export { default as streakWebhookRouting } from './streak-webhook-routing.js';

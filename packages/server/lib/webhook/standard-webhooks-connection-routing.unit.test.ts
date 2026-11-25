@@ -7,7 +7,13 @@ import { seeders } from '@nangohq/shared';
 import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
 
 import { InternalNango } from './internal-nango.js';
-import { clerkWebhookRouting, incidentIoWebhookRouting, openaiWebhookRouting, resendWebhookRouting } from './standard-webhooks-connection-routing.js';
+import {
+    clerkWebhookRouting,
+    incidentIoWebhookRouting,
+    openaiWebhookRouting,
+    postHogWebhookRouting,
+    resendWebhookRouting
+} from './standard-webhooks-connection-routing.js';
 
 import type { WebhookHandler } from './types.js';
 
@@ -71,7 +77,7 @@ const providers: { provider: string; route: WebhookHandler; body: Record<string,
     {
         provider: 'clerk',
         route: clerkWebhookRouting,
-        body: { type: 'user.created', object: 'event', data: { id: 'user_29w83sxmDNGwOuEthce5gg56FcC' } },
+        body: { type: 'user.created', object: 'event', data: { id: 'user_29w83sxmDNGwOuEthce5gg56FcC' }, timestamp: 1654012591835, instance_id: 'ins_123' },
         webhookType: 'type',
         prefix: 'svix'
     },
@@ -87,6 +93,13 @@ const providers: { provider: string; route: WebhookHandler; body: Record<string,
         route: openaiWebhookRouting,
         body: { id: 'evt_685343a1381c819085d44c354e1b330e', object: 'event', type: 'response.completed', created_at: 1763900000, data: { id: 'resp_abc' } },
         webhookType: 'type',
+        prefix: 'webhook'
+    },
+    {
+        provider: 'posthog',
+        route: postHogWebhookRouting,
+        body: { event: { uuid: '0193a3c1-5a1e-7000-8000-000000000000', event: '$pageview', distinct_id: 'user-1', properties: {} }, person: { id: 'p1' } },
+        webhookType: 'event.event',
         prefix: 'webhook'
     }
 ];
@@ -121,6 +134,18 @@ describe('Standard Webhooks connection routing', () => {
 
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalledOnce();
+    });
+
+    it('accepts a secret without the whsec_ prefix, as PostHog lets the user enter one', async () => {
+        const secret = Buffer.from('posthog-secret-of-32-bytes-long!').toString('base64');
+        const { nango, execute } = getNangoMock({ provider: 'posthog', connectionSecret: secret });
+        const body = { event: { event: '$pageview' } };
+        const rawBody = JSON.stringify(body);
+
+        const result = await postHogWebhookRouting(nango, sign({ rawBody, secret }), body, rawBody, QUERY);
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledWith(expect.objectContaining({ webhookType: 'event.event' }));
     });
 
     it('accepts any one of several signatures, as sent while a secret is being rotated', async () => {

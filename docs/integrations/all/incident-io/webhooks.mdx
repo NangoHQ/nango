@@ -10,7 +10,9 @@ description: 'Learn how to receive real-time incident.io incident events in your
 2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's signature against that connection's own webhook secret. incident.io signs deliveries with [Standard Webhooks](https://www.standardwebhooks.com/), and Nango rejects deliveries signed more than 5 minutes ago.
 3. Nango routes the event to that connection, using the payload's `event_type` field as the webhook type.
 
-incident.io payloads don't say which account they come from, so each connection needs its own webhook endpoint in incident.io and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected. incident.io sends the incident in the payload, but fetch it from the incident.io API if you need its latest state.
+Each incident.io webhook endpoint has its own signing secret, so each connection needs its own endpoint in incident.io and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected.
+
+incident.io can deliver webhooks out of order, and for private incidents, alerts and escalations the payload only carries the resource's ID. Fetch the resource from the incident.io API, with an API key that can read private resources if you need them, before acting on it.
 
 ## Setup
 

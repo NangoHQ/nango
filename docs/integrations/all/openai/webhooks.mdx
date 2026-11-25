@@ -10,7 +10,7 @@ description: 'Learn how to receive real-time OpenAI response, batch and fine-tun
 2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's signature against that connection's own webhook secret. OpenAI signs deliveries with [Standard Webhooks](https://www.standardwebhooks.com/), and Nango rejects deliveries signed more than 5 minutes ago.
 3. Nango routes the event to that connection, using the payload's `type` field as the webhook type.
 
-OpenAI payloads don't say which account they come from, so each connection needs its own webhook endpoint in OpenAI and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected. OpenAI payloads only carry the ID of the object that changed, so fetch it from the OpenAI API before acting on it.
+Each OpenAI webhook endpoint has its own signing secret, so each connection needs its own endpoint in OpenAI and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected. Most OpenAI payloads only carry the ID of the object that changed, for example the response ID in `data.id`, so fetch it from the OpenAI API before acting on it.
 
 ## Setup
 
@@ -20,7 +20,7 @@ In the Nango dashboard, open your OpenAI integration and copy the **Webhook URL*
 
 ### 2. Register the webhook in OpenAI
 
-1. In your OpenAI project's settings, go to **Webhooks** and create an endpoint.
+1. In your OpenAI project's settings, go to [**Webhooks**](https://platform.openai.com/settings/project/webhooks) and create an endpoint.
 2. Set the URL to the URL from step 1, and pick the events to receive.
 3. Copy the **Signing secret** OpenAI shows once the endpoint is created (it starts with `whsec_`). OpenAI only shows it once.
 

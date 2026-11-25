@@ -30842,6 +30842,9 @@ posthog:
         headers:
             authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.subdomain}.posthog.com
+    webhook_routing_script: postHogWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/posthog
     docs_connect: https://nango.dev/docs/api-integrations/posthog/connect
     connection_config:
