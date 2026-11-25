@@ -312,3 +312,65 @@ describe('microsoft-admin-cert client_credentials', () => {
         ).rejects.toThrow('The integration needs both the private key and the certificate');
     });
 });
+
+describe('slack and slack-mcp tokens', () => {
+    async function withSlackServer(
+        fn: (base: string, requests: { url: string; body: string }[]) => Promise<void>,
+        responseBody: Record<string, unknown> = {
+            ok: true,
+            access_token: 'xoxe.xoxp-new',
+            refresh_token: 'xoxe-rotated',
+            expires_in: 43200,
+            token_type: 'user'
+        }
+    ): Promise<void> {
+        const requests: { url: string; body: string }[] = [];
+        const server = http.createServer((req, res) => {
+            let body = '';
+            req.on('data', (chunk) => (body += chunk));
+            req.on('end', () => {
+                requests.push({ url: req.url ?? '', body });
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(responseBody));
+            });
+        });
+        await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+        const { port } = server.address() as AddressInfo;
+        try {
+            await fn(`http://127.0.0.1:${port}`, requests);
+        } finally {
+            await new Promise<void>((resolve) => server.close(() => resolve()));
+        }
+    }
+    const slackMcpConfig = { ...config, unique_key: 'slack-mcp', provider: 'slack-mcp', oauth_scopes: '' } as unknown as ProviderConfig;
+    const userOnlyConnection = (base: string) =>
+        ({
+            credentials: {
+                type: 'OAUTH2',
+                access_token: 'xoxe.xoxp-old',
+                refresh_token: 'xoxe-old',
+                raw: { access_token: 'xoxe.xoxp-old', authed_user: { id: 'U1', scope: 'chat:write' } }
+            },
+            connection_config: { base }
+        }) as unknown as DBConnectionDecrypted;
+
+    it("slack-mcp surfaces Slack's ok:false error instead of a parsing error", async () => {
+        await withSlackServer(
+            async (base) => {
+                const provider = {
+                    auth_mode: 'MCP_OAUTH2',
+                    token_url: `${base}/api/oauth.v2.user.access`,
+                    alternate_access_token_response_path: 'authed_user'
+                } as unknown as ProviderOAuth2;
+                const err = (await providerClient.refreshToken(provider, slackMcpConfig, userOnlyConnection(base)).catch((err: unknown) => err)) as Error & {
+                    type: string;
+                };
+                expect(err.type).toBe('slack_refresh_token_request_error');
+                expect(err.message).toBe(
+                    'The Slack API returned an error when trying to refresh the access token. Please try again later. Error: invalid_refresh_token'
+                );
+            },
+            { ok: false, error: 'invalid_refresh_token' }
+        );
+    });
+});

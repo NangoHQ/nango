@@ -80,6 +80,7 @@ class ProviderClient {
             case 'posthog-oauth':
             case 'walmart':
             case 'slack':
+            case 'slack-mcp':
             case 'attio-mcp':
             case 'revolut-business':
             case 'scrollstash-mcp':
@@ -217,6 +218,16 @@ class ProviderClient {
                     config.oauth_client_secret,
                     callBackUrl,
                     provider.alternate_access_token_response_path
+                );
+            case 'slack-mcp':
+                return this.createSlackToken(
+                    tokenUrl,
+                    code,
+                    config.oauth_client_id,
+                    config.oauth_client_secret,
+                    callBackUrl,
+                    provider.alternate_access_token_response_path,
+                    codeVerifier
                 );
             case 'revolut-business':
                 return this.createRevolutToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
@@ -428,6 +439,7 @@ class ProviderClient {
                 );
             }
             case 'slack':
+            case 'slack-mcp':
                 return this.refreshSlackToken(
                     interpolatedTokenUrl.href,
                     config.oauth_client_id,
@@ -2263,7 +2275,8 @@ class ProviderClient {
         clientId: string,
         clientSecret: string,
         redirectUri: string,
-        alternateTokenPath?: string
+        alternateTokenPath?: string,
+        codeVerifier?: string
     ): Promise<object> {
         try {
             const body = new URLSearchParams({
@@ -2271,7 +2284,8 @@ class ProviderClient {
                 client_secret: clientSecret,
                 code,
                 redirect_uri: redirectUri,
-                grant_type: 'authorization_code'
+                grant_type: 'authorization_code',
+                ...(codeVerifier && { code_verifier: codeVerifier })
             });
             const response = await axios.post(tokenUrl, body.toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
             if (response.status === 200 && response.data) {
@@ -2285,6 +2299,9 @@ class ProviderClient {
             }
             throw new NangoError('slack_token_request_error', response.data);
         } catch (err: any) {
+            if (err instanceof NangoError) {
+                throw err;
+            }
             throw new NangoError('slack_token_request_error', err.message);
         }
     }
@@ -2361,6 +2378,9 @@ class ProviderClient {
                 ...(minExpiresIn !== undefined && { expires_in: minExpiresIn })
             };
         } catch (err: any) {
+            if (err instanceof NangoError) {
+                throw err;
+            }
             throw new NangoError('slack_refresh_token_request_error', err.message);
         }
     }
