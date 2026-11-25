@@ -1,7 +1,7 @@
 import archiver from 'archiver';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { env, isCloud, isEnterprise, isLocal, isTest, report, useRemoteStorage } from '@nangohq/utils';
+import { isCloud, isEnterprise, isLocal, isTest, report, useRemoteStorage } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { NangoError } from '../../utils/error.js';
@@ -96,8 +96,8 @@ class RemoteFileService {
 
     /**
      * Copy
-     * @desc copy an existing public integration file to user's location in remote storage,
-     * on local copy to the set local destination
+     * @desc copy between full object keys (including across template/integration stores).
+     * When a local destination is supplied, preserve local-development template copying.
      */
     async copy({
         sourcePath,
@@ -110,14 +110,13 @@ class RemoteFileService {
          * sic
          * Destination when not uploading to remote storage
          * This method handles when remote storage is not enabled (like locally)
-         * TODO: We probably need to do it outside but until now it's like this
          */
-        destinationLocalFileName: string;
+        destinationLocalFileName?: string;
     }): Promise<string | null> {
-        const sourceKey = `${this.publicZeroYamlRoute}/${sourcePath}`;
+        const sourceKey = sourcePath;
         try {
-            if (this.useRemote) {
-                await copyObject({ from: this.getTemplatesStore(), to: this.getStore(), sourceKey, destinationKey: destinationPath });
+            if (this.useRemote || !destinationLocalFileName) {
+                await copyObject({ from: this.getStoreFor(sourceKey), to: this.getStoreFor(destinationPath), sourceKey, destinationKey: destinationPath });
 
                 return destinationPath;
             } else {
@@ -134,30 +133,13 @@ class RemoteFileService {
         }
     }
 
-    private async withFallback<T>(fileName: string, get: (key: string) => Promise<T>): Promise<T> {
-        const fallbackKey = fileName.replace(/^[^/]+/, env);
-        if (!/^[^/]+\/account\//.test(fileName) || !fileName.includes('/functions/') || fallbackKey === fileName) {
-            return get(fileName);
-        }
-
-        try {
-            const result = await get(fileName);
-            if (result !== null) {
-                return result;
-            }
-        } catch {
-            // Bundle artifacts may have moved from the customer prefix to the infrastructure prefix.
-        }
-        return get(fallbackKey);
-    }
-
     getFile(fileName: string): Promise<string> {
-        return this.withFallback(fileName, (key) => this.getStoreFor(key).get(key));
+        return this.getStoreFor(fileName).get(fileName);
     }
 
     async getStream(fileName: string): Promise<ServiceResponse<Readable | null>> {
         try {
-            const body = await this.withFallback(fileName, (key) => this.getStoreFor(key).getStream(key));
+            const body = await this.getStoreFor(fileName).getStream(fileName);
 
             if (body) {
                 return { success: true, error: null, response: body };
