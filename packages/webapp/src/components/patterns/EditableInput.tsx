@@ -62,7 +62,9 @@ export const EditableInput: React.FC<EditableInputProps> = ({
         const el = textareaRef.current ?? inputRef.current;
         if (!el) return;
         el.focus();
-        el.select();
+        // Start editing from the end of the value, not wherever the caret was left in read mode.
+        const end = el.value.length;
+        el.setSelectionRange(end, end);
     }, [editing, onEditingChange]);
 
     // The Edit button only exists again once editing ends and the save has settled.
