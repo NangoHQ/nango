@@ -1,0 +1,88 @@
+---
+title: 'Adobe Analytics'
+sidebarTitle: 'Adobe Analytics'
+description: 'Integrate your application with the Adobe Analytics API'
+---
+
+## 🚀 Quickstart
+
+Connect to Adobe Analytics with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Adobe Analytics_.
+
+    <Note>
+      Adobe Analytics has no Nango-managed OAuth app. Register your own by following the [setup guide](/api-integrations/adobe-analytics/how-to-register-your-own-adobe-analytics-api-oauth-app) and enter its client ID and client secret when you create the integration.
+    </Note>
+
+    </Step>
+    <Step id="authorize-adobe-analytics" title="Authorize Adobe Analytics">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then log in with an Adobe ID that has access to Adobe Analytics. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-adobe-analytics-api" title="Call the Adobe Analytics API">
+    Let's make your first request to the Adobe Analytics API to list the report suites of a company. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, and the connection's global company ID (see [API gotchas](#api-gotchas)):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/<GLOBAL-COMPANY-ID>/reportsuites/collections/suites" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/<GLOBAL-COMPANY-ID>/reportsuites/collections/suites',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Adobe Analytics integration guides
+
+- [How to register your own Adobe Analytics OAuth app](/api-integrations/adobe-analytics/how-to-register-your-own-adobe-analytics-api-oauth-app)  
+Create an Adobe Developer Console project with the Adobe Analytics API and obtain credentials to connect it to Nango.
+
+Official docs: [Adobe Analytics 2.0 API](https://developer.adobe.com/analytics-apis/docs/2.0/)
+
+## API gotchas
+
+- A user can belong to several organizations and companies. To pick another company, call `GET /discovery/me` through the proxy and use the `globalCompanyId` you need from the `imsOrgs[].companies[]` list.
+- The user must be added to an Adobe Analytics product profile in the [Adobe Admin Console](https://adminconsole.adobe.com). The product profile's report suite, metric, and dimension permissions decide what the API returns.
+
+## 🧩 Pre-built syncs & tools for Adobe Analytics
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/adobe-analytics/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

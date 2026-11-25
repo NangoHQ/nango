@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { Badge } from '@nangohq/design-system';
 
+import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -14,7 +15,9 @@ import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { APIError } from '@/utils/api';
 import { returnsToPlayground } from '../AgentPlayground/returnToPlayground';
+import PageNotFound from '../PageNotFound';
 import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
 import { AuthCreateForm } from './components/forms/AuthCreateForm';
 import { getDisplayName } from './utils';
@@ -28,8 +31,8 @@ export const CreateIntegration = () => {
     const location = useLocation();
     const { mutateAsync: postIntegration } = usePostIntegration(env);
 
-    const { providerConfigKey } = useParams();
-    const { data: providerData, isLoading: loadingProvider } = useProvider(env, providerConfigKey);
+    const { provider: providerParam } = useParams();
+    const { data: providerData, isLoading: loadingProvider, error: providerError } = useProvider(env, providerParam);
 
     const provider = providerData?.data;
     const providerName = provider?.name;
@@ -57,6 +60,13 @@ export const CreateIntegration = () => {
             toast({ title: 'Failed to create integration', variant: 'error' });
         }
     };
+
+    if (providerError) {
+        if (providerError instanceof APIError && providerError.res.status === 404) {
+            return <PageNotFound />;
+        }
+        return <ErrorPageComponent title="Add integration" error={providerError} />;
+    }
 
     if (loadingProvider || !provider) {
         return (

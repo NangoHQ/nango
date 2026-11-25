@@ -610,6 +610,7 @@
               "integrations/all/addepar-basic",
               "api-integrations/addresszen",
               "integrations/all/adobe",
+              "api-integrations/adobe-analytics",
               "api-integrations/adobe-commerce",
               "integrations/all/adobe-umapi",
               "integrations/all/adobe-workfront",

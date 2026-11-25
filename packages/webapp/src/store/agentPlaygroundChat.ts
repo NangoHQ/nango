@@ -1,7 +1,7 @@
-import type { AgentPlaygroundMessageMetadata } from '@nangohq/types';
+import type { AgentPlaygroundDataParts, AgentPlaygroundMessageMetadata } from '@nangohq/types';
 import type { UIMessage } from 'ai';
 
-export type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
+export type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata, AgentPlaygroundDataParts>;
 
 interface StoredChat {
     userId: string;

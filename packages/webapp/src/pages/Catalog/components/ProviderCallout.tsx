@@ -34,7 +34,7 @@ export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, display
     const onlyIntegrationId = state.kind === 'configured' && state.integrationIds.length === 1 ? state.integrationIds[0] : undefined;
     if (onlyIntegrationId) {
         return (
-            <Alert variant="neutral" size="wide" icon="success" role="note">
+            <Alert variant="success" size="wide" role="note">
                 <CircleCheck />
                 <AlertTitle>
                     {displayName} integration set up in {env}
@@ -51,7 +51,7 @@ export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, display
 
     if (state.kind === 'configured') {
         return (
-            <Alert variant="neutral" size="wide" icon="success" role="note">
+            <Alert variant="success" size="wide" role="note">
                 <CircleCheck />
                 <AlertTitle>
                     {pluralize(state.integrationIds.length, `${displayName} integration`)} set up in {env}
