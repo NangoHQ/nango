@@ -1,0 +1,81 @@
+---
+title: 'Orb'
+sidebarTitle: 'Orb'
+description: 'Integrate your application with the Orb API'
+---
+
+## 🚀 Quickstart
+
+Connect to Orb with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Orb_.
+    </Step>
+    <Step id="authorize-orb" title="Authorize Orb">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Orb API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-orb-api" title="Call the Orb API">
+    Let's make your first request to the Orb API: check your connection and API key. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/ping" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/ping',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Orb integration guides
+
+- [How do I link my account?](/api-integrations/orb/connect)  
+Create an API key in the Orb web app to connect your Orb account.
+
+Official docs: [Orb API reference](https://docs.withorb.com/api-reference/introduction)
+
+## 🧩 Pre-built syncs & tools for Orb
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/orb/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Orb's MCP server is on the fixed host `https://mcp.withorb.com` and takes the same API key: send MCP requests to `/mcp` through this connection with `baseUrlOverride` set to `https://mcp.withorb.com`. Nango keeps the connection's credentials and headers. See [Orb MCP server](https://docs.withorb.com/api-reference/mcp-server).
+
+---

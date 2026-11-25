@@ -47,7 +47,16 @@ const relatedSchema = z
     })
     .strict();
 
-const matchSchema = relatedSchema.extend({ input: inputSchema }).strict();
+const matchSchema = relatedSchema
+    .extend({
+        input: inputSchema,
+        _meta: z
+            .object({ 'nango/tags': z.record(z.string(), z.union([z.string(), z.array(z.string())])) })
+            .strict()
+            .optional()
+            .describe("The tags the tool's author set on it.")
+    })
+    .strict();
 
 const queryResultSchema = z
     .object({

@@ -245,6 +245,27 @@ describe('rankSessionTools', () => {
         expect(tied).toBe(true);
     });
 
+    it("carries a tool's tags, without its required scopes", () => {
+        const { best } = rank({
+            compiledToolset: {
+                gmail: {
+                    provider: 'google-mail',
+                    pinned: [],
+                    searchable: [
+                        {
+                            name: 'list_labels',
+                            description: 'List the labels in the mailbox.',
+                            tags: { read_only_hint: 'true', required_scopes: { all: ['gmail.readonly'] } }
+                        }
+                    ]
+                }
+            },
+            query: 'list labels'
+        });
+
+        expect(best[0]?.tags).toStrictEqual({ read_only_hint: 'true' });
+    });
+
     it('searches pinned tools too and carries the slug they are listed under', () => {
         const { best, related } = rank({
             compiledToolset: {

@@ -119,7 +119,6 @@ import { putSpendAlert } from './controllers/v1/plans/billing/putSpendAlert.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
-import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getBillingUsage } from './controllers/v1/plans/usage/getBillingUsage.js';
 import { getBillingUsageTopDimensionValues } from './controllers/v1/plans/usage/getBillingUsageTopDimensionValues.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
@@ -162,7 +161,6 @@ import {
     auditBillingPlanChanged,
     auditBillingSpendAlertChanged,
     auditBillingSpendAlertRemoved,
-    auditBillingTrialExtended,
     auditConnectionCredentialsRead,
     auditConnectionDeleted,
     auditConnectionMetadataUpdated,
@@ -303,7 +301,6 @@ web.route('/invite/:id').delete(webAuth, auditMemberInviteDeclined, declineInvit
 // Plans
 web.route('/plans').get(webAuth, getPlans);
 web.route('/plans/current').get(webAuth, getCurrentPlan);
-web.route('/plans/trial/extension').post(webAuth, auditBillingTrialExtended, can('account:plan:update'), postPlanExtendTrial);
 web.route('/plans/usage').get(webAuth, getUsage);
 web.route('/plans/billing-usage').get(webAuth, getBillingUsage);
 web.route('/plans/billing-usage/top-dimension-values').get(webAuth, getBillingUsageTopDimensionValues);
