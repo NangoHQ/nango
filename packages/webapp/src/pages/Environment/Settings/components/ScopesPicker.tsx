@@ -129,7 +129,7 @@ export const ScopesPicker: React.FC<ScopesPickerProps> = ({ selected, onChange, 
                     const groupId = `scope-group-${group.group.replace(/\s+/g, '-').toLowerCase()}`;
                     return (
                         <div key={group.group} className="border-b border-border-muted last:border-b-0">
-                            <div className="flex h-9 items-center gap-2 pr-2.5 pl-1 hover:bg-interactive-ghost-hover">
+                            <div className="relative flex h-9 items-center gap-2 pr-2.5 pl-1 hover:bg-interactive-ghost-hover">
                                 <button
                                     type="button"
                                     aria-expanded={open}
@@ -137,16 +137,20 @@ export const ScopesPicker: React.FC<ScopesPickerProps> = ({ selected, onChange, 
                                     aria-label={`${open ? 'Collapse' : 'Expand'} ${group.group}`}
                                     disabled={!!q}
                                     onClick={() => setExpanded((e) => ({ ...e, [group.group]: !open }))}
-                                    className="focus-default inline-flex size-6 items-center justify-center rounded-ds-xs text-icon-secondary disabled:text-icon-disabled"
+                                    className="focus-default inline-flex size-6 cursor-pointer items-center justify-center rounded-ds-xs text-icon-secondary after:absolute after:inset-0 disabled:cursor-default disabled:text-icon-disabled"
                                 >
                                     <ChevronRight className={cn('size-3.5 transition-transform', open && 'rotate-90')} />
                                 </button>
-                                <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 type-text-medium-sm text-text-default">
-                                    {!readOnly && (
-                                        <Checkbox checked={groupCheckedState(on, rows.length)} onCheckedChange={() => onChange(toggleGroup(group, selected))} />
-                                    )}
-                                    {group.group}
-                                </label>
+                                {!readOnly && (
+                                    <div className="relative z-10 flex">
+                                        <Checkbox
+                                            aria-label={group.group}
+                                            checked={groupCheckedState(on, rows.length)}
+                                            onCheckedChange={() => onChange(toggleGroup(group, selected))}
+                                        />
+                                    </div>
+                                )}
+                                <span className="min-w-0 flex-1 truncate type-text-medium-sm text-text-default">{group.group}</span>
                                 <span className={cn('shrink-0 type-text-regular-xs', all ? 'text-text-secondary' : 'text-text-muted')}>
                                     {all ? 'All' : `${on} of ${rows.length}`}
                                 </span>
