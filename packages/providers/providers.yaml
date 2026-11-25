@@ -8348,6 +8348,82 @@ carbone:
             example: test_k9Pq********************************************************************************************************************************************************************************************************************************************************************************************************************************x2Vm
             doc_section: '#step-1-copy-your-api-key'
 
+carta:
+    display_name: Carta
+    categories:
+        - accounting
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.loginHost}/o/authorize/
+    token_url: https://${connectionConfig.loginHost}/o/access_token/
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+    docs: https://nango.dev/docs/api-integrations/carta
+    setup_guide_url: https://nango.dev/docs/api-integrations/carta/how-to-register-your-own-carta-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/carta/connect
+    connection_config:
+        loginHost:
+            type: string
+            title: Login Host
+            description: Carta's login host. Use login.app.carta.com for production and login.playground.carta.team for the Playground environment.
+            format: hostname
+            enum:
+                - login.app.carta.com
+                - login.playground.carta.team
+            order: 1
+            doc_section: '#step-1-select-your-carta-environment'
+        apiHost:
+            type: string
+            title: API Host
+            description: Carta's API host. Use api.carta.com for production and api.playground.carta.team for the Playground environment. It must match the login host.
+            format: hostname
+            enum:
+                - api.carta.com
+                - api.playground.carta.team
+            order: 2
+            doc_section: '#step-1-select-your-carta-environment'
+carta-mcp:
+    display_name: Carta (MCP)
+    categories:
+        - accounting
+        - legal
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.app.carta.com/authorize
+    token_url: https://mcp.app.carta.com/token
+    registration_url: https://mcp.app.carta.com/register
+    default_scopes:
+        - openid
+        - cuid
+    authorization_params:
+        response_type: code
+        resource: https://mcp.app.carta.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+        resource: https://mcp.app.carta.com/mcp
+    refresh_params:
+        grant_type: refresh_token
+        resource: https://mcp.app.carta.com/mcp
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://mcp.app.carta.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/carta-mcp
 castingwords:
     display_name: CastingWords
     categories:
@@ -11952,8 +12028,8 @@ cursor:
             title: API Key
             description: The API Key for your Cursor account
             doc_section: '#step-1-finding-api-key'
-            example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
-            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
+            example: grok_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64}|grok_[A-Za-z0-9_-]+)$'
 
 cursor-admin:
     display_name: Cursor Admin
@@ -11973,8 +12049,8 @@ cursor-admin:
             type: string
             title: API key
             description: The Admin API key for your Cursor account
-            example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
-            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
+            example: grok_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64}|grok_[A-Za-z0-9_-]+)$'
             secret: true
             doc_section: '#step-1-finding-api-key'
         password:
@@ -36920,6 +36996,35 @@ splunk:
             title: Authentication Token
             description: Your Splunk authentication token.
             doc_section: '#step-1-create-an-authentication-token'
+
+spotdraft-mcp:
+    display_name: SpotDraft (MCP)
+    categories:
+        - mcp
+        - legal
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://api.us.spotdraft.com/api/v1/oauth/authorize/
+    token_url: https://api.us.spotdraft.com/api/v1/oauth/token/
+    registration_url: https://api.us.spotdraft.com/api/v1/oauth/register/
+    authorization_params:
+        response_type: code
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://mcp.us.spotdraft.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/spotdraft-mcp
 
 spotify:
     display_name: Spotify (OAuth)
