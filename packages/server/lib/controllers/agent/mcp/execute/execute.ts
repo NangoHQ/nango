@@ -6,12 +6,13 @@ import { Err, Ok } from '@nangohq/utils';
 import { executeAction } from '../../../../services/action.service.js';
 import * as agentGettingStartedService from '../../../../services/agentGettingStarted.service.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
+import { toolResultForAgent } from '../../../../services/agentSessionResults.service.js';
 import { callRemoteTool, withRemoteMcpSession } from '../../../../services/remoteMcp.service.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { resolveSessionConnection } from '../sessionConnection.js';
-import { defineAgentSessionMcpTool, RemoteToolResult } from '../sessionTool.js';
+import { defineAgentSessionMcpTool, invalidArgumentsOf, RemoteToolResult } from '../sessionTool.js';
 import { actionExecutionErrorToMcp, functionInvokeErrorToMcp, remoteMcpErrorToMcp, toolUnavailableError } from './errors.js';
 import { executeInputSchema } from './schema.js';
 
@@ -35,8 +36,8 @@ export const executeTool = defineAgentSessionMcpTool({
         openWorldHint: true
     },
     isEnabled: (metaTools) => metaTools.nangoExecute,
-    onInvalidArguments: ({ session }) => {
-        trackAgentSessionToolCall({ metaTool: 'nango_execute', session, errorCode: 'invalid_input' });
+    onInvalidArguments: ({ session }, { error }) => {
+        trackAgentSessionToolCall({ metaTool: 'nango_execute', session, errorCode: 'invalid_input', invalidArguments: invalidArgumentsOf(error) });
     },
     async handler({ args, ...context }) {
         const { session, callable } = context;
@@ -151,6 +152,8 @@ export async function executeSessionTool({
         });
     }
 
+    const resultForAgent = (data: unknown) => toolResultForAgent({ environmentId: environment.id, plan: context.plan, session, connection, toolName, data });
+
     return await tracer.trace<Promise<Result<unknown>>>('server.mcp.agentSession.execute', async (span: Span) => {
         // The same keys executeAction sets, so one concept is not queried under two names. It tags
         // only after its lookups, and those can fail, so a failed execution is attributable either way.
@@ -160,27 +163,35 @@ export async function executeSessionTool({
             .setTag('nango.providerConfigKey', integrationId)
             .setTag('nango.actionName', toolName);
 
-        const tool = await toolService.findTool({ environmentId: environment.id, integrationKey: integrationId, name: toolName });
-        if (tool.isErr()) {
-            span.setTag('nango.error', tool.error);
+        const resolved = await toolService.resolveTool({
+            accountUuid: account.uuid,
+            environmentId: environment.id,
+            integration: { id: connection.configId, unique_key: integrationId, provider: connection.provider },
+            name: toolName
+        });
+        if (resolved.isErr()) {
+            span.setTag('nango.error', resolved.error);
             track({ errorCode: 'internal_error' });
-            return Err(tool.error);
+            return Err(resolved.error);
         }
 
-        if (tool.value) {
-            const functionSource = tool.value.currentVersion.source;
-            if (!tool.value.config.enabled) {
-                track({ errorCode: 'tool_not_in_session', functionSource });
-                return Err(toolUnavailableError({ integrationId, toolName }));
-            }
+        const tool = resolved.value;
+        if (tool.kind === 'missing') {
+            track({ errorCode: 'tool_not_in_session', functionSource: tool.source });
+            return Err(toolUnavailableError({ integrationId, toolName }));
+        }
+
+        if (tool.kind === 'function') {
+            const functionSource = tool.source;
 
             const { logCtx, result } = await invokeFunction({
                 operation: { type: 'tool', action: 'call' },
                 account,
                 environment,
                 connectionId: connection.connectionId,
-                functionUuid: tool.value.config.uuid,
-                input: tool.value.currentVersion.input_schema_ref || !isEmptyObject(input) ? input : undefined,
+                integrationId,
+                functionUuid: tool.uuid,
+                input: tool.inputSchemaRef || !isEmptyObject(input) ? input : undefined,
                 request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
                 invocationType: 'wait',
                 orchestrator: getOrchestrator(),
@@ -200,7 +211,7 @@ export async function executeSessionTool({
             }
 
             track({ logOperationId: logCtx?.id, functionSource });
-            return Ok('data' in result.value ? result.value.data : null);
+            return Ok(await resultForAgent('data' in result.value ? result.value.data : null));
         }
 
         const { logCtx, functionSource, result } = await executeAction({
@@ -224,7 +235,7 @@ export async function executeSessionTool({
         }
 
         track({ logOperationId: logCtx?.id, functionSource });
-        return Ok('data' in result.value ? result.value.data : null);
+        return Ok(await resultForAgent('data' in result.value ? result.value.data : null));
     });
 }
 
@@ -239,6 +250,7 @@ interface ToolCallOutcome {
     underlyingErrorCode?: string | undefined;
     mcpTool?: boolean | undefined;
     functionSource?: FunctionSource | undefined;
+    invalidArguments?: string[] | undefined;
 }
 
 async function executeRemoteTool({
@@ -261,7 +273,7 @@ async function executeRemoteTool({
     const { account, environment, plan, session } = context;
 
     if (input !== undefined && (typeof input !== 'object' || input === null || Array.isArray(input))) {
-        track({ errorCode: 'invalid_input' });
+        track({ errorCode: 'invalid_input', invalidArguments: ['input: invalid_type'] });
         return Err(
             new PublicMcpError(`Tool '${toolName}' takes an object as its input. Correct the input and call it again.`, {
                 code: 'invalid_input',

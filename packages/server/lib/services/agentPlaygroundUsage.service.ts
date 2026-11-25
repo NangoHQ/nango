@@ -2,7 +2,8 @@ import { productTracking } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
-import type { AgentPlaygroundIntegrationSetup, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { PlaygroundRequest } from './agentPlaygroundRequest.js';
+import type { AgentPlaygroundIntegrationSetup, AnalyticsEventProperties, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 import type { LanguageModelUsage } from 'ai';
 
 const logger = getLogger('AgentPlayground');
@@ -106,12 +107,13 @@ export function isUsableOutcome(outcome: AgentPlaygroundIntegrationSetup['outcom
     return outcome === 'created' || outcome === 'existing';
 }
 
-export function trackStarterIntegrationSetup(
+export function trackIntegrationSetup(
     ctx: { account: DBTeam; environment: DBEnvironment; plan: DBPlan | null; user: DBUser },
-    setup: AgentPlaygroundIntegrationSetup
+    setup: AgentPlaygroundIntegrationSetup,
+    trigger: AnalyticsEventProperties<'playground:integration_create'>['trigger']
 ): void {
     const { outcome } = setup;
-    const base = { provider: setup.provider, is_existing: outcome === 'existing' || outcome === 'missing_credentials' };
+    const base = { provider: setup.provider, is_existing: outcome === 'existing' || outcome === 'missing_credentials', trigger };
     productTracking.track({
         name: 'playground:integration_create',
         team: ctx.account,
@@ -127,7 +129,13 @@ export function trackStarterIntegrationSetup(
             environment: ctx.environment,
             user: ctx.user,
             plan: ctx.plan,
-            eventProperties: { provider: setup.provider, is_playground: true, source: 'playground', is_shared_credentials: true, has_missing_fields: false }
+            eventProperties: {
+                provider: setup.provider,
+                is_playground: true,
+                source: 'playground',
+                is_shared_credentials: setup.usesSharedCredentials ?? false,
+                has_missing_fields: false
+            }
         });
     }
 }
@@ -135,6 +143,7 @@ export function trackStarterIntegrationSetup(
 export interface PlaygroundTurn {
     isFirstTurn: boolean;
     starterProvider?: string;
+    request?: PlaygroundRequest;
 }
 
 export function trackPlaygroundTurn({
@@ -172,6 +181,14 @@ export function trackPlaygroundTurn({
             environment_id: ctx.environment.id,
             is_first_turn: turn.isFirstTurn,
             ...(turn.starterProvider ? { starter_provider: turn.starterProvider } : {}),
+            ...(turn.request
+                ? {
+                      intent: turn.request.intent,
+                      requested_providers: turn.request.providers,
+                      requested_provider_count: turn.request.providers.length,
+                      has_unsupported_provider: turn.request.hasUnsupportedProvider
+                  }
+                : {}),
             is_success: outcome !== 'error',
             ...(outcome === 'error' ? { error_code: 'model_error', ...(errorCategory ? { error_category: errorCategory } : {}) } : {}),
             is_stopped: outcome === 'aborted',

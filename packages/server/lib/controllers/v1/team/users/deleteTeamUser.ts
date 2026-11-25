@@ -1,9 +1,10 @@
 import * as z from 'zod';
 
 import { accountService, productTracking, userService } from '@nangohq/shared';
-import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { flagHasUsage, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { linkNewTeamToBilling } from '../../../../utils/billing.js';
 
 import type { DeleteTeamUser } from '@nangohq/types';
 
@@ -56,6 +57,10 @@ export const deleteTeamUser = asyncWrapper<DeleteTeamUser>(async (req, res) => {
     if (!updated) {
         res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
         return;
+    }
+
+    if (flagHasUsage) {
+        await linkNewTeamToBilling(newTeam, user);
     }
     productTracking.track({ name: 'team:user_remove' });
 

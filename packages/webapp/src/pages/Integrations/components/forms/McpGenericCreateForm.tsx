@@ -117,7 +117,7 @@ export const McpGenericCreateForm: React.FC<{ provider: ApiProviderListItem; onS
 
                     <div>
                         <Button type="submit" loading={loading}>
-                            Create
+                            Add integration
                         </Button>
                     </div>
                 </form>

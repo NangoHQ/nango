@@ -4,6 +4,7 @@ import { SignJWT } from 'jose';
 import knexFactory from 'knex';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { signManualTelemetryExport } from '../../installation/manual-telemetry-export.js';
 import { digestBody, INSTALLATION_TOKEN_TYPE, mintInstallationToken } from '../../installation/token.js';
 import { migrate } from '../db/migrate.js';
 import { INSTALLATION_KEYS_TABLE } from '../db/schema.js';
@@ -46,7 +47,7 @@ async function licensedInstallation(
 }
 
 const mint = (privateKeyPem: string) => mintInstallationToken(privateKeyPem, { body });
-const verify = (token: string, registry: RegistryDb = db) => verifyInstallationToken(registry, { token, bodySha256: digestBody(body) });
+const verify = (token: string, registry: RegistryDb = db) => verifyInstallationToken(registry, { token });
 
 function code(res: Awaited<ReturnType<typeof verifyInstallationToken>>): string {
     return res.isErr() ? res.error.code : 'ok';
@@ -90,18 +91,13 @@ describe('installation tokens', () => {
         expect(rest).toStrictEqual({ ver: 1, body_sha256: digestBody(body) });
         expect(Number(exp) - Number(iat)).toBe(300);
 
-        expect((await verify(token)).unwrap()).toMatchObject({ id: installation.id, uuid: installation.uuid, name: 'prod' });
+        expect((await verify(token)).unwrap()).toMatchObject({
+            installation: { id: installation.id, uuid: installation.uuid, name: 'prod' },
+            bodySha256: digestBody(body)
+        });
         expect((await getInstallationKey(db, { kid })).unwrap()?.last_used_at?.getTime()).toBeGreaterThanOrEqual(before.getTime());
         const [seen] = (await searchInstallations(db, { id: installation.id })).unwrap();
         expect(seen?.last_seen_at?.getTime()).toBeGreaterThanOrEqual(before.getTime());
-    });
-
-    it('rejects a token presented with another body than the one it was minted for', async () => {
-        const { privateKeyPem } = await licensedInstallation('replayed');
-        const token = await mint(privateKeyPem);
-
-        const res = await verifyInstallationToken(db, { token, bodySha256: digestBody(Buffer.from('another day')) });
-        expect(code(res)).toBe('body_mismatch');
     });
 
     it('rejects a deleted key', async () => {
@@ -189,7 +185,7 @@ describe('installation tokens', () => {
         const token = await mint(privateKeyPem);
         await knex.raw('ALTER TABLE ??.?? RENAME COLUMN last_used_at TO last_used_at_moved', [schema, INSTALLATION_KEYS_TABLE]);
         try {
-            expect((await verify(token)).unwrap().id).toBe(installation.id);
+            expect((await verify(token)).unwrap().installation.id).toBe(installation.id);
         } finally {
             await knex.raw('ALTER TABLE ??.?? RENAME COLUMN last_used_at_moved TO last_used_at', [schema, INSTALLATION_KEYS_TABLE]);
         }
@@ -209,6 +205,7 @@ describe('installation tokens', () => {
         expect(code(await verify(await forged(kid, privateKeyPem, { typ: 'JWT' })))).toBe('malformed');
         expect(code(await verify(await forged(kid, privateKeyPem, { claims: { ver: 2 } })))).toBe('malformed');
         expect(code(await verify(await forged(kid, privateKeyPem, { claims: { body_sha256: undefined } })))).toBe('malformed');
+        expect(code(await verify(await signManualTelemetryExport(privateKeyPem, { bodySha256: digestBody(body) })))).toBe('malformed');
         expect(code(await verify(await forged(kid, privateKeyPem, {})))).toBe('ok');
     });
 });

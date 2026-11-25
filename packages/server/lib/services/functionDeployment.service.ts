@@ -11,7 +11,7 @@ import {
     sandboxApiKeyService,
     toFunctionDeploymentCreate
 } from '@nangohq/sandbox';
-import { configService, functionConfigService, getSyncConfigRaw } from '@nangohq/shared';
+import { configService, functionConfigService, functionLookupService, getSyncConfigRaw } from '@nangohq/shared';
 import { baseUrl, Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { deployIntegrationTemplate } from './integrationTemplate.service.js';
@@ -19,7 +19,6 @@ import { deployIntegrationTemplate } from './integrationTemplate.service.js';
 import type { FunctionDeploymentError } from '@nangohq/sandbox';
 import type {
     DBEnvironment,
-    DBPlan,
     DBTeam,
     DeployedFunction,
     FunctionDeploymentCodeBody,
@@ -33,6 +32,7 @@ import type { Result } from '@nangohq/utils';
 const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
 
 export type DeployFunctionServiceErrorCode =
+    | 'legacy_actions_deprecated'
     | 'customer_api_key_required'
     | 'integration_not_found'
     | 'invalid_request'
@@ -41,11 +41,11 @@ export type DeployFunctionServiceErrorCode =
     | 'deployment_failed';
 
 export type DeployTemplateServiceErrorCode =
+    | 'legacy_actions_deprecated'
     | 'invalid_request'
     | 'integration_not_found'
     | 'template_not_found'
     | 'ambiguous_function'
-    | 'plan_limit'
     | 'template_already_deployed'
     | 'non_runnable_template'
     | 'template_deployment_failed'
@@ -65,6 +65,16 @@ export class FunctionDeploymentServiceError<TCode extends FunctionDeploymentServ
     }
 }
 
+export class LegacyActionsDeprecatedError extends FunctionDeploymentServiceError<'legacy_actions_deprecated'> {
+    constructor({ actionNames = [] }: { actionNames?: string[] } = {}) {
+        super({
+            code: 'legacy_actions_deprecated',
+            message: `Actions are deprecated. Use createTool instead.${actionNames.length > 0 ? ` Found: ${actionNames.join(', ')}.` : ''}`
+        });
+        this.name = 'LegacyActionsDeprecatedError';
+    }
+}
+
 export type DeployFunctionServiceError = FunctionDeploymentServiceError<DeployFunctionServiceErrorCode>;
 export type DeployTemplateServiceError = FunctionDeploymentServiceError<DeployTemplateServiceErrorCode>;
 export type GetDeploymentStatusServiceError = FunctionDeploymentServiceError<GetDeploymentStatusServiceErrorCode>;
@@ -78,7 +88,6 @@ export interface DeployFunctionParams {
 export interface DeployTemplateParams {
     account: DBTeam;
     environment: DBEnvironment;
-    plan: DBPlan | null;
     body: FunctionDeploymentTemplateBody;
 }
 
@@ -145,6 +154,13 @@ export async function deployFunction({
                 message: `Cannot overwrite existing function '${body.function_name}'`
             })
         );
+    }
+
+    if (body.function_type === 'action') {
+        const canDeployActions = await functionLookupService.hasActiveLegacyActions({ accountId: environment.account_id });
+        if (!canDeployActions) {
+            return Err(new LegacyActionsDeprecatedError());
+        }
     }
 
     const allowDestructiveDeploy = Boolean(body.allow_destructive && existingSource === 'standalone');
@@ -226,7 +242,6 @@ export async function deployFunction({
 export async function deployTemplate({
     account,
     environment,
-    plan,
     body
 }: DeployTemplateParams): Promise<Result<FunctionDeploymentCreateSuccess, DeployTemplateServiceError>> {
     // TODO: support tool and function templates
@@ -242,7 +257,6 @@ export async function deployTemplate({
     const outcome = await deployIntegrationTemplate({
         environment,
         account,
-        plan,
         providerConfigKey: body.integration_id,
         name: body.template,
         type: body.function_type
@@ -250,6 +264,8 @@ export async function deployTemplate({
 
     if (!outcome.ok) {
         switch (outcome.reason) {
+            case 'legacy_actions_deprecated':
+                return Err(new LegacyActionsDeprecatedError());
             case 'integration_not_found':
                 return Err(
                     new FunctionDeploymentServiceError({
@@ -269,13 +285,6 @@ export async function deployTemplate({
                     new FunctionDeploymentServiceError({
                         code: 'ambiguous_function',
                         message: `'${body.template}' exists as both a sync and an action; specify 'function_type' to disambiguate`
-                    })
-                );
-            case 'plan_limit':
-                return Err(
-                    new FunctionDeploymentServiceError({
-                        code: 'plan_limit',
-                        message: "Can't enable more functions, upgrade or extend your trial period"
                     })
                 );
             case 'template_already_deployed':

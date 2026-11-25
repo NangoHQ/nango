@@ -6,13 +6,12 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { CopyButton, InputGroup, InputGroupAddon, InputGroupInput, LinkButton } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -23,7 +22,6 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { AuthBadge } from './components/AuthBadge';
-import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
 export const IntegrationsList = () => {
     const navigate = useNavigate();
@@ -102,7 +100,7 @@ export const IntegrationsList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-3">
+        <DashboardLayout className="flex flex-col gap-3">
             <Helmet>
                 <title>Integrations - Nango</title>
             </Helmet>
@@ -121,7 +119,7 @@ export const IntegrationsList = () => {
                 <PermissionGate asChild condition={canWriteIntegration}>
                     {(allowed) => (
                         <ButtonLink disabled={!allowed} to={`/${env}/catalog`} size="md">
-                            Set up new integration
+                            Add integration
                         </ButtonLink>
                     )}
                 </PermissionGate>
@@ -132,9 +130,9 @@ export const IntegrationsList = () => {
                     {providerFilter ? (
                         <div className="flex items-center gap-2 text-text-secondary text-body-small-regular">
                             <span>Showing {initialIntegrations?.[0]?.meta.displayName ?? providerFilter} integrations</span>
-                            <Button variant="link-accent" size="sm" onClick={() => void setProviderFilter(null)}>
+                            <LinkButton size="sm" onClick={() => void setProviderFilter(null)}>
                                 Show all
-                            </Button>
+                            </LinkButton>
                         </div>
                     ) : (
                         <span />
@@ -144,8 +142,6 @@ export const IntegrationsList = () => {
                     </span>
                 </div>
             )}
-
-            <AutoIdlingBanner />
 
             {isPending && (
                 <div className="flex flex-col gap-1">
@@ -159,11 +155,11 @@ export const IntegrationsList = () => {
             {data?.data && data.data.length === 0 && (
                 <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
                     <h3 className="text-title-body text-text-strong">No available integrations</h3>
-                    <p className="text-text-secondary text-body-medium-regular">You don’t have any integrations set up yet with Nango.</p>
+                    <p className="text-text-secondary text-body-medium-regular">You haven’t added any integrations yet.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
                             <ButtonLink disabled={!allowed} to={`/${env}/catalog`} size="lg">
-                                Set up new integration
+                                Add integration
                             </ButtonLink>
                         )}
                     </PermissionGate>
@@ -177,7 +173,7 @@ export const IntegrationsList = () => {
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
                             <ButtonLink disabled={!allowed} to={`/${env}/catalog`} size="lg">
-                                Set up new integration
+                                Add integration
                             </ButtonLink>
                         )}
                     </PermissionGate>
@@ -212,7 +208,7 @@ export const IntegrationsList = () => {
                                 <TableCell className="text-text-secondary !text-body-small-regular">
                                     <div className="flex gap-1.5 items-center">
                                         {integration.unique_key}
-                                        <CopyButton text={integration.unique_key} />
+                                        <CopyButton size="sm" inline value={integration.unique_key} />
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-text-strong text-body-small-semi text-center">{integration.meta.connectionCount}</TableCell>

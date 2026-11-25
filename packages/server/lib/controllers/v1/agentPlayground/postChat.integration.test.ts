@@ -104,9 +104,17 @@ async function chat(
     const chunks = text
         .split('\n')
         .filter((line) => line.startsWith('data: {'))
-        .map((line) => JSON.parse(line.slice('data: '.length)) as { type: string; messageMetadata?: AgentPlaygroundMessageMetadata });
+        .map(
+            (line) =>
+                JSON.parse(line.slice('data: '.length)) as {
+                    type: string;
+                    messageMetadata?: AgentPlaygroundMessageMetadata;
+                    data?: AgentPlaygroundSessionCreated;
+                }
+        );
     const start = chunks.find((chunk) => chunk.type === 'start')?.messageMetadata;
-    return { status: res.status, sessionId: start?.sessionId, integrationSetup: start?.integrationSetup, sessionCreated: start?.sessionCreated, text };
+    const sessionCreated = chunks.find((chunk) => chunk.type === 'data-session')?.data;
+    return { status: res.status, sessionId: start?.sessionId, integrationSetup: start?.integrationSetup, sessionCreated, text };
 }
 
 async function integrationsIn(environmentId: number): Promise<{ unique_key: string; shared_credentials_id: number | null }[]> {
@@ -235,6 +243,75 @@ describe('POST /api/v1/agent-playground/chat', () => {
         }
     });
 
+    function labellingModel(): MockLanguageModelV4 {
+        return new MockLanguageModelV4({
+            modelId: 'gpt-6-luna',
+            doGenerate: () =>
+                Promise.resolve({
+                    content: [{ type: 'text', text: JSON.stringify({ intent: 'copy tasks into issues', apps: ['Asana', 'Linear', 'Not A Real App'] }) }],
+                    finishReason: { unified: 'stop', raw: undefined },
+                    usage: stepUsage,
+                    warnings: []
+                }),
+            doStream: () =>
+                Promise.resolve({
+                    stream: simulateReadableStream<LanguageModelV4StreamPart>({
+                        chunks: [
+                            { type: 'text-start', id: 'text-1' },
+                            { type: 'text-delta', id: 'text-1', delta: 'Asana is not set up here.' },
+                            { type: 'text-end', id: 'text-1' },
+                            { type: 'finish', finishReason: { unified: 'stop', raw: undefined }, usage: stepUsage }
+                        ]
+                    })
+                })
+        });
+    }
+
+    it('labels what a typed first message asks for, alongside the reply', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        const model = labellingModel();
+        modelOverride.current = () => model;
+        const track = vi.spyOn(productTracking, 'track');
+
+        const turn = await chat(session, { messages: [userMessage('Copy my Asana tasks into Linear')] });
+
+        expect(turn.text).toContain('Asana is not set up here.');
+        await vi.waitFor(() => {
+            expect(playgroundTurnEvents(track)).toEqual([
+                expect.objectContaining({
+                    is_first_turn: true,
+                    step_count: 1,
+                    intent: 'copy tasks into issues',
+                    requested_providers: ['asana', 'linear'],
+                    requested_provider_count: 2,
+                    has_unsupported_provider: true
+                })
+            ]);
+        });
+        expect(model.doGenerateCalls).toHaveLength(1);
+        expect(JSON.stringify(track.mock.calls)).not.toContain('Copy my Asana tasks into Linear');
+    });
+
+    it('does not label a later message', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        const model = labellingModel();
+        modelOverride.current = () => model;
+        const track = vi.spyOn(productTracking, 'track');
+        const reply = { id: crypto.randomUUID(), role: 'assistant', parts: [{ type: 'text', text: 'Asana is not set up here.' }] };
+
+        await chat(session, { messages: [userMessage('Copy my Asana tasks into Linear'), reply, userMessage('Use GitHub then')] });
+
+        await vi.waitFor(() => {
+            expect(playgroundTurnEvents(track)).toHaveLength(1);
+        });
+        expect(playgroundTurnEvents(track)[0]).not.toHaveProperty('intent');
+        expect(model.doGenerateCalls).toHaveLength(0);
+    });
+
     it('tracks a turn that fails mid-stream once, as a failure, with the failing step', async () => {
         vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();
@@ -353,12 +430,21 @@ describe('POST /api/v1/agent-playground/chat', () => {
         const turn = await chat(session, { messages: [userMessage("What's on my Google Calendar today?", { starterProvider: 'google-calendar' })] });
 
         expect(turn.status).toBe(200);
-        expect(turn.integrationSetup).toEqual({ provider: 'google-calendar', integrationId: 'pg-google-calendar', outcome: 'created' });
-        expect(eventsNamed(track, 'playground:integration_create')).toEqual([{ provider: 'google-calendar', is_success: true, is_existing: false }]);
+        expect(turn.integrationSetup).toEqual({
+            provider: 'google-calendar',
+            displayName: 'Google Calendar',
+            integrationId: 'google-calendar',
+            outcome: 'created',
+            usesSharedCredentials: true
+        });
+        expect(eventsNamed(track, 'playground:integration_create')).toEqual([
+            { provider: 'google-calendar', is_success: true, is_existing: false, trigger: 'starter' }
+        ]);
+        expect(eventsNamed(track, 'integrations:integration_create')).toEqual([expect.objectContaining({ is_shared_credentials: true })]);
         expect(turn.text).toContain('Mock reply');
         expect(turn.sessionCreated?.request.toolset).toBe('*');
         const integrations = await integrationsIn(env.id);
-        expect(integrations.map(({ unique_key }) => unique_key)).toEqual(['pg-google-calendar']);
+        expect(integrations.map(({ unique_key }) => unique_key)).toEqual(['google-calendar']);
         expect(integrations[0]?.shared_credentials_id).not.toBeNull();
     });
 
@@ -371,30 +457,35 @@ describe('POST /api/v1/agent-playground/chat', () => {
         const turn = await chat(session, { messages: [userMessage("What's on my Google Calendar today?", { starterProvider: 'google-calendar' })] });
 
         expect(turn.status).toBe(200);
-        expect(turn.integrationSetup).toEqual({ provider: 'google-calendar', integrationId: 'my-calendar', outcome: 'missing_credentials' });
+        expect(turn.integrationSetup).toEqual({
+            provider: 'google-calendar',
+            displayName: 'Google Calendar',
+            integrationId: 'my-calendar',
+            outcome: 'missing_credentials'
+        });
         expect(turn.sessionId).toBeUndefined();
         expect(turn.sessionCreated).toBeUndefined();
         expect(turn.text).not.toContain('Mock reply');
         expect((await integrationsIn(env.id)).map(({ unique_key }) => unique_key)).toEqual(['my-calendar']);
     });
 
-    it("stops without creating anything when Nango has no OAuth app for the prompt's provider", async () => {
+    it("stops without creating anything when the prompt's provider needs the user's own OAuth app", async () => {
         vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
         const track = vi.spyOn(productTracking, 'track');
 
-        const turn = await chat(session, { messages: [userMessage('Show my 5 newest HubSpot contacts', { starterProvider: 'hubspot' })] });
+        const turn = await chat(session, { messages: [userMessage('What Linear issues are assigned to me?', { starterProvider: 'linear' })] });
 
         expect(turn.status).toBe(200);
-        expect(turn.integrationSetup).toEqual({ provider: 'hubspot', outcome: 'not_created' });
+        expect(turn.integrationSetup).toEqual({ provider: 'linear', displayName: 'Linear', outcome: 'needs_developer_app' });
         expect(turn.sessionId).toBeUndefined();
         expect(turn.sessionCreated).toBeUndefined();
         expect(turn.text).not.toContain('Mock reply');
         expect(await integrationsIn(env.id)).toEqual([]);
         expect(eventsNamed(track, 'playground:integration_create')).toEqual([
-            { provider: 'hubspot', is_success: false, error_code: 'not_created', is_existing: false }
+            { provider: 'linear', is_success: false, error_code: 'needs_developer_app', is_existing: false, trigger: 'starter' }
         ]);
         expect(playgroundTurnEvents(track)).toEqual([]);
     });

@@ -81,7 +81,8 @@ describe('trackAgentSessionCreated', () => {
             is_tool_search_enabled: true,
             is_execute_enabled: true,
             is_proxy_enabled: false,
-            is_create_connection_enabled: false
+            is_create_connection_enabled: false,
+            is_run_code_enabled: false
         });
     });
 
@@ -152,7 +153,8 @@ describe('trackAgentSessionCreated', () => {
                 meta_tools: {
                     nango_proxy: true,
                     nango_execute: { enabled: false },
-                    nango_create_connection: { enabled: true, tags: { end_user_id: 'user-1' } }
+                    nango_create_connection: { enabled: true, tags: { end_user_id: 'user-1' } },
+                    nango_run_code: true
                 },
                 expires_in: '1h'
             })
@@ -164,7 +166,12 @@ describe('trackAgentSessionCreated', () => {
                 tenant: { connections: { any: [{ tags: ['end_user_id', 'end_user_email'] }], pinned: [{ integration_id: 'notion' }] } },
                 toolset: { notion: { allow: { tools: ['create-page'] } }, slack: { deny: { tools: ['delete-message'] } }, github: '*' },
                 pinned_tools: { notion: ['create-page'] },
-                meta_tools: { nango_proxy: true, nango_execute: { enabled: false }, nango_create_connection: { enabled: true, tags: ['end_user_id'] } },
+                meta_tools: {
+                    nango_proxy: true,
+                    nango_execute: { enabled: false },
+                    nango_create_connection: { enabled: true, tags: ['end_user_id'] },
+                    nango_run_code: true
+                },
                 expires_in: '1h'
             }
         });
@@ -371,6 +378,31 @@ describe('trackAgentSessionProxyRequest', () => {
             http_status: 200,
             log_operation_id: 'op-2',
             is_success: true
+        });
+    });
+
+    it.each([
+        { path: '/v1/pages/59833787-2cf9-4fdf-8782-e53db20768a5?filter=archived', endpoint: '/v1/pages/59833787-2cf9-4fdf-8782-e53db20768a5' },
+        { path: '/oauth2/v3/userinfo#me', endpoint: '/oauth2/v3/userinfo' },
+        { path: '/repos/acme/billing-service/issues/42', endpoint: '/repos/acme/billing-service/issues/42' }
+    ])('reports $path as the endpoint $endpoint', ({ path, endpoint }) => {
+        inRequest(() => trackAgentSessionProxyRequest({ session, integrationId: 'notion', method: 'GET', path }));
+
+        expect(onlyEvent().properties).toMatchObject({ endpoint });
+    });
+
+    it('reports which arguments made the request invalid', () => {
+        inRequest(() =>
+            trackAgentSessionProxyRequest({
+                session,
+                errorCode: 'invalid_input',
+                invalidArguments: ['path: invalid_format', 'connection_id: unrecognized_key']
+            })
+        );
+
+        expect(onlyEvent().properties).toMatchObject({
+            error_code: 'invalid_input',
+            invalid_arguments: 'path: invalid_format, connection_id: unrecognized_key'
         });
     });
 

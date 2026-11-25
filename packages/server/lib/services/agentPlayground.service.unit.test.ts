@@ -22,7 +22,7 @@ import {
 import { sessionOwner } from './agentPlaygroundTags.js';
 
 import type { PlaygroundUIMessage } from './agentPlayground.service.js';
-import type { AgentSession } from '@nangohq/types';
+import type { AgentPlaygroundSessionCreated, AgentSession, DBSyncConfig } from '@nangohq/types';
 
 const executeAction = vi.hoisted(() => vi.fn());
 vi.mock('./action.service.js', () => ({ executeAction }));
@@ -86,6 +86,18 @@ describe('describeTurn', () => {
         const setupOnly: PlaygroundUIMessage = { id: 'setup', role: 'assistant', parts: [] };
 
         expect(describeTurn([userMessage('Show my calendar'), setupOnly, userMessage('List my issues')], undefined)).toStrictEqual({
+            isFirstTurn: true
+        });
+    });
+
+    it('still treats the first typed message as first after a reply stopped with only its session', () => {
+        const sessionOnly: PlaygroundUIMessage = {
+            id: 'stopped',
+            role: 'assistant',
+            parts: [{ type: 'data-session', data: { request: {} as AgentPlaygroundSessionCreated['request'] } }]
+        };
+
+        expect(describeTurn([userMessage('Show my calendar'), sessionOnly, userMessage('List my issues')], undefined)).toStrictEqual({
             isFirstTurn: true
         });
     });
@@ -165,18 +177,18 @@ describe('toolNeedsApproval', () => {
 });
 
 describe('existingIntegrationFor', () => {
-    it('prefers the playground integration, then the one keyed by the provider name, then the oldest', () => {
+    it('prefers the one keyed by the provider name, then an older pg- one, then the oldest', () => {
         const integrations = [
-            { unique_key: 'slack', provider: 'slack', missing_fields: [] },
             { unique_key: 'pg-slack', provider: 'slack', missing_fields: [] },
+            { unique_key: 'slack', provider: 'slack', missing_fields: [] },
             { unique_key: 'old-calendar', provider: 'google-calendar', missing_fields: [] },
-            { unique_key: 'google-calendar', provider: 'google-calendar', missing_fields: [] },
+            { unique_key: 'pg-google-calendar', provider: 'google-calendar', missing_fields: [] },
             { unique_key: 'new-github', provider: 'github', missing_fields: [] },
             { unique_key: 'newer-github', provider: 'github', missing_fields: [] }
         ];
 
-        expect(existingIntegrationFor(integrations, 'slack')?.unique_key).toBe('pg-slack');
-        expect(existingIntegrationFor(integrations, 'google-calendar')?.unique_key).toBe('google-calendar');
+        expect(existingIntegrationFor(integrations, 'slack')?.unique_key).toBe('slack');
+        expect(existingIntegrationFor(integrations, 'google-calendar')?.unique_key).toBe('pg-google-calendar');
         expect(existingIntegrationFor(integrations, 'github')?.unique_key).toBe('new-github');
         expect(existingIntegrationFor(integrations, 'linear')).toBeUndefined();
     });
@@ -237,7 +249,7 @@ describe('buildMcpTools', () => {
     let close: (() => Promise<void>) | undefined;
 
     beforeEach(async () => {
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'deployed', config: { enabled: true } as DBSyncConfig }));
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { title: 'Roadmap' } }) });
 
         const server = createAgentSessionMcpServer({

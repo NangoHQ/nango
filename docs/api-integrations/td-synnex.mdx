@@ -1,0 +1,83 @@
+---
+title: 'TD SYNNEX'
+sidebarTitle: 'TD SYNNEX'
+description: 'Integrate your application with the TD SYNNEX API'
+---
+
+## 🚀 Quickstart
+
+Connect to TD SYNNEX with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _TD SYNNEX_.
+    </Step>
+    <Step id="authorize-td-synnex" title="Authorize TD SYNNEX">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then select your region and enter your Client ID and Client Secret. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-td-synnex-api" title="Call the TD SYNNEX API">
+    Let's make your first request to the TD SYNNEX API to list cloud vendors. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1/cloud/vendors" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/cloud/vendors',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Nango exchanges your Client ID and Client Secret for an access token and refreshes it for you.
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 TD SYNNEX integration guides
+
+- [How do I link my account?](/api-integrations/td-synnex/connect)  
+Create client credentials in the TD SYNNEX Developer Portal and connect with the Connect UI.
+
+Official docs: [TD SYNNEX API documentation](https://developer.tdsynnex.com/api-center/reseller/home?resource=%2F)
+
+## 🧩 Pre-built syncs & tools for TD SYNNEX
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/td-synnex/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- This integration covers the TD SYNNEX Developer Portal APIs. For the StreamOne Ion API, use the `td-synnex-streamone-ion` integration, which authenticates with a StreamOne Ion refresh token.
+
+---

@@ -2,18 +2,18 @@ import { ArrowUpRight, Braces, Check } from 'lucide-react';
 import { parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { LinkButton } from '@nangohq/design-system';
 
 import { cn } from '@/utils/utils';
 import { SlidingPanelLayout } from '../../Integrations/providerConfigKey/Functions/SlidingPanelLayout';
 import { CatalogFunctionPanel } from './CatalogFunctionPanel';
 import { SearchField } from './SearchField';
 
-import type { NangoFunctionTemplate } from '@nangohq/types';
+import type { ProviderTemplatesSuccess } from '@nangohq/types';
 
-const FUNCTIONS_GUIDE_URL = 'https://nango.dev/docs/guides/functions/functions-guide';
-const PROXY_GUIDE_URL = 'https://nango.dev/docs/guides/platform/proxy-requests';
-const MCP_TOOLS_GUIDE_URL = 'https://nango.dev/docs/guides/agent-sessions#mcp-server-tools';
+const FUNCTIONS_GUIDE_URL = 'https://nango.dev/docs/guides/platform/functions/functions-guide';
+const PROXY_GUIDE_URL = 'https://nango.dev/docs/guides/auth/proxy-requests';
+const MCP_TOOLS_GUIDE_URL = 'https://nango.dev/docs/guides/agent-sessions/toolsets#mcp-server-tools';
 
 const FUNCTION_TYPES = ['action', 'sync'] as const;
 type FunctionTypeTab = (typeof FUNCTION_TYPES)[number];
@@ -23,7 +23,7 @@ const TAB_LABELS: Record<FunctionTypeTab, { singular: string; plural: string }> 
 };
 
 interface CatalogFunctionsProps {
-    templates: NangoFunctionTemplate[];
+    templates: ProviderTemplatesSuccess['data'];
     displayName: string;
     isMcp: boolean;
     renderSetupButton: () => React.ReactNode;
@@ -34,7 +34,10 @@ export const CatalogFunctions: React.FC<CatalogFunctionsProps> = ({ templates, d
     const [selectedName, setSelectedName] = useQueryState('function', parseAsString);
     const [search, setSearch] = useState('');
 
-    const tabs = FUNCTION_TYPES.map((type) => ({ type, items: templates.filter((fn) => fn.type === type) })).filter((tab) => tab.items.length > 0);
+    const tabs = FUNCTION_TYPES.map((type) => ({
+        type,
+        items: templates.filter((fn) => (type === 'action' ? fn.type === 'action' || fn.type === 'tool' : fn.type === type))
+    })).filter((tab) => tab.items.length > 0);
     const activeTab = tabs.find((tab) => tab.type === rawType) ?? tabs[0];
 
     if (!activeTab) {
@@ -130,14 +133,14 @@ const NoResultsState: React.FC<{ query: string; noun: string; displayName: strin
             Try another word. Need something {displayName} doesn&apos;t have here? You can build your own.
         </span>
         <div className="flex items-center gap-4 pt-1">
-            <Button variant="link-accent" size="md" onClick={onClear}>
+            <LinkButton size="lg" onClick={onClear}>
                 Clear search
-            </Button>
-            <Button asChild variant="link-accent" size="md">
+            </LinkButton>
+            <LinkButton asChild size="lg">
                 <a href={FUNCTIONS_GUIDE_URL} target="_blank" rel="noreferrer">
                     Build your own <ArrowUpRight />
                 </a>
-            </Button>
+            </LinkButton>
         </div>
     </div>
 );
@@ -156,16 +159,16 @@ const NoFunctionsState: React.FC<{ displayName: string }> = ({ displayName }) =>
             You can build your own, or call {displayName}&apos;s API directly through the Nango proxy.
         </span>
         <div className="flex items-center gap-4 pt-1">
-            <Button asChild variant="link-accent" size="md">
+            <LinkButton asChild size="lg">
                 <a href={FUNCTIONS_GUIDE_URL} target="_blank" rel="noreferrer">
                     Build your own <ArrowUpRight />
                 </a>
-            </Button>
-            <Button asChild variant="link-accent" size="md">
+            </LinkButton>
+            <LinkButton asChild size="lg">
                 <a href={PROXY_GUIDE_URL} target="_blank" rel="noreferrer">
                     Proxy docs <ArrowUpRight />
                 </a>
-            </Button>
+            </LinkButton>
         </div>
     </EmptyStateCard>
 );
@@ -177,11 +180,11 @@ const McpToolsState: React.FC = () => (
             Nango automatically makes all tools of this MCP server available. You can use it with Agent sessions, or any other Nango feature.
         </span>
         <div className="flex items-center gap-4 pt-1">
-            <Button asChild variant="link-accent" size="md">
+            <LinkButton asChild size="lg">
                 <a href={MCP_TOOLS_GUIDE_URL} target="_blank" rel="noreferrer">
                     Docs <ArrowUpRight />
                 </a>
-            </Button>
+            </LinkButton>
         </div>
     </EmptyStateCard>
 );

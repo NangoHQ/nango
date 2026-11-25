@@ -28,8 +28,6 @@ export enum Types {
     JOBS_DELETE_SYNCS_DATA_RECORDS = 'nango.jobs.cron.deleteSyncsData.records',
     JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
     JOBS_DELETE_OLD_DATA = 'nango.jobs.cron.deleteOldData',
-    CRON_TRIAL = 'nango.cron.trial',
-
     LOGS_LOG = 'nango.logs.log',
 
     MFA_VERIFY_SUCCESS = 'nango.mfa.verify.success',
@@ -193,6 +191,11 @@ export enum Types {
     AUDIT_CLICKHOUSE_INGEST_RESULT = 'nango.audit.clickhouse.ingest.result',
     AUDIT_CONSUMER_BATCH_SIZE = 'nango.audit.consumer.batch.size',
     AUDIT_CONSUMER_REJECTED = 'nango.audit.consumer.rejected',
+
+    SELF_HOSTING_CLICKHOUSE_INSERT_ROWS = 'nango.self_hosting.clickhouse.insert.rows',
+    SELF_HOSTING_INSTALLATIONS = 'nango.self_hosting.installations',
+    SELF_HOSTING_INSTALLATION_LAST_SEEN_HOURS = 'nango.self_hosting.installation.last_seen_hours',
+    SELF_HOSTING_LICENSE_EXPIRES_IN_DAYS = 'nango.self_hosting.license.expires_in_days',
 
     FEATURE_FLAGS_CLIENT_UNAVAILABLE = 'nango.feature_flags.client.unavailable',
     FEATURE_FLAGS_CLIENT_RECONNECTED = 'nango.feature_flags.client.reconnected',

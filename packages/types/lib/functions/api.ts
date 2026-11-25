@@ -3,7 +3,15 @@ import type { AuditPolicy } from '../audit-trail/event.js';
 import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTags, FunctionTriggerDefinition } from '../function/config.js';
 import type { ToolTags } from '../function/tool.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
-import type { FunctionListType, FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
+import type {
+    FunctionListType,
+    FunctionType,
+    ListedNangoFunction,
+    NangoActionFunction,
+    NangoFunctionTemplate,
+    NangoSyncFunction,
+    NangoToolFunction
+} from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'> | 'tool' | 'function';
@@ -215,7 +223,7 @@ export type PostFunctionDeployment = ApiEndpoint<{
     Method: 'POST';
     Path: '/functions/deployments';
     Body: FunctionDeploymentBody;
-    Error: ApiError<FunctionErrorCode> | ApiError<'template_not_found' | 'ambiguous_function' | 'plan_limit' | 'template_already_deployed'>;
+    Error: ApiError<FunctionErrorCode> | ApiError<'template_not_found' | 'ambiguous_function' | 'template_already_deployed' | 'legacy_actions_deprecated'>;
     // Both variants return the same shape. `function` deploys are async (status waiting/running, poll for the result);
     // `template` deploys run synchronously, so the response already carries a terminal status (success/failed).
     Success: FunctionDeploymentCreateSuccess;
@@ -385,7 +393,14 @@ export type GetFunctionInvocation = ApiEndpoint<{
     Path: '/connections/:connectionId/functions/:functionUuid/invocations/:id';
     Params: { connectionId: string; functionUuid: string; id: string };
     Error: ApiError<
-        'invalid_uri_params' | 'not_found' | 'function_not_found' | 'connection_not_found' | 'function_failed' | 'function_runtime_error' | 'server_error'
+        | 'invalid_uri_params'
+        | 'invalid_invocation'
+        | 'not_found'
+        | 'function_not_found'
+        | 'connection_not_found'
+        | 'function_failed'
+        | 'function_runtime_error'
+        | 'server_error'
     >;
     Success: FunctionInvocationSuccess;
 }>;
@@ -413,7 +428,7 @@ export interface FunctionDeletionSuccess {
 }
 
 export interface ProviderTemplatesSuccess {
-    data: (NangoSyncFunction | NangoActionFunction)[];
+    data: (NangoSyncFunction | NangoActionFunction | NangoToolFunction)[];
 }
 
 export type GetIntegrationFunctions = ApiEndpoint<{
@@ -507,15 +522,15 @@ export type GetPublicProviderTemplates = ApiEndpoint<{
 type ProviderTemplateCodeError =
     | ApiError<'unknown_function'>
     | ApiError<'source_unavailable'>
-    | ApiError<'ambiguous_function', undefined, { matches: { type: FunctionType; name: string }[] }>;
+    | ApiError<'ambiguous_function', undefined, { matches: { type: FunctionListType; name: string }[] }>;
 
 export type GetPublicProviderTemplateCode = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/providers/:provider/templates/:name/code';
     Params: { provider: string; name: string };
-    Querystring: { type?: FunctionType | undefined };
-    Success: { type: FunctionType; code: string };
+    Querystring: { type?: FunctionListType | undefined };
+    Success: { type: FunctionListType; code: string };
     Error: ProviderTemplateCodeError;
 }>;
 
@@ -524,8 +539,8 @@ export type GetProviderTemplateCode = ApiEndpoint<{
     Method: 'GET';
     Path: '/api/v1/providers/:providerConfigKey/templates/:name/code';
     Params: { providerConfigKey: string; name: string };
-    Querystring: { env: string; type?: FunctionType | undefined };
-    Success: { type: FunctionType; code: string };
+    Querystring: { env: string; type?: FunctionListType | undefined };
+    Success: { type: FunctionListType; code: string };
     Error: ProviderTemplateCodeError;
 }>;
 

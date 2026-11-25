@@ -14,17 +14,7 @@ export {
     AlertDialogTitle,
     AlertDialogTrigger
 } from './components/ui/alert-dialog';
-export {
-    Alert,
-    AlertActions,
-    AlertButton,
-    type AlertButtonProps,
-    alertButtonVariants,
-    AlertDescription,
-    type AlertProps,
-    AlertTitle,
-    alertVariants
-} from './components/ui/alert';
+export { Alert, AlertActions, AlertButton, type AlertButtonProps, AlertDescription, type AlertProps, AlertTitle, alertVariants } from './components/ui/alert';
 export { Badge, type BadgeProps, badgeVariants } from './components/ui/badge';
 export {
     Button,
@@ -33,8 +23,23 @@ export {
     type IconButtonProps,
     type IconButtonSize,
     type IconButtonVariant,
+    ICON_BUTTON_SIZES,
+    ICON_BUTTON_VARIANTS,
     buttonVariants
 } from './components/ui/button';
+export { COPY_BUTTON_RESET_MS, COPY_BUTTON_SIZES, CopyButton, type CopyButtonProps, type CopyButtonSize } from './components/ui/copy-button';
+export {
+    SplitButton,
+    SplitButtonAction,
+    type SplitButtonActionProps,
+    SplitButtonMenuTrigger,
+    type SplitButtonMenuTriggerProps,
+    type SplitButtonProps,
+    type SplitButtonSize,
+    type SplitButtonVariant,
+    SPLIT_BUTTON_SIZES,
+    SPLIT_BUTTON_VARIANTS
+} from './components/ui/split-button';
 export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card';
 export {
     Dialog,
@@ -59,6 +64,8 @@ export {
     inlineCodeVariants
 } from './components/ui/inline-code';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
+export { SecretInput, type SecretInputProps } from './components/ui/secret-input';
+export { LinkButton, type LinkButtonProps, linkButtonVariants } from './components/ui/link-button';
 export { Textarea, type TextareaProps } from './components/ui/textarea';
 export {
     InputGroup,
@@ -66,11 +73,16 @@ export {
     inputGroupAddonVariants,
     InputGroupButton,
     InputGroupInput,
+    type InputGroupInputProps,
+    InputGroupKbd,
+    type InputGroupProps,
+    InputGroupSwatch,
     InputGroupText,
     InputGroupTextarea
 } from './components/ui/input-group';
 export {
     Field,
+    FieldContent,
     FieldDescription,
     FieldError,
     type FieldErrorProps,
@@ -84,6 +96,7 @@ export {
     FieldSet,
     fieldVariants
 } from './components/ui/field';
+export { useFieldControl } from './components/ui/field-context';
 export {
     SegmentedControl,
     SegmentedControlItem,
@@ -101,4 +114,5 @@ export {
     type TooltipProviderProps,
     TooltipTrigger
 } from './components/ui/tooltip';
+export { copyText } from './lib/clipboard';
 export { dsTwMergeConfig } from './lib/twMergeConfig';

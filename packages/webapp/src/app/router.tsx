@@ -16,6 +16,7 @@ import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredT
 import { AgentPlayground } from '@/pages/AgentPlayground/Show';
 import { AccountApiKeysShow } from '@/pages/ApiKeys/Show';
 import { AuditShow } from '@/pages/Audit/Show';
+import { ProviderBreadcrumb } from '@/pages/Catalog/components/ProviderBreadcrumb';
 import { CatalogProviderShow } from '@/pages/Catalog/ProviderShow';
 import { CatalogShow } from '@/pages/Catalog/Show';
 import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
@@ -30,6 +31,7 @@ import { ShowRecordModel as ConnectionShowRecordModel } from '@/pages/Connection
 import { EnvironmentSettings } from '@/pages/Environment/Settings/Show';
 import { AgentGettingStarted } from '@/pages/GettingStarted/AgentGettingStarted';
 import { Homepage } from '@/pages/Homepage/Show';
+import { InstallationShow } from '@/pages/Installation/Show';
 import { CreateIntegration } from '@/pages/Integrations/Create';
 import { ShowIntegration } from '@/pages/Integrations/providerConfigKey/Show';
 import { IntegrationsList } from '@/pages/Integrations/Show';
@@ -97,7 +99,20 @@ const RedirectLegacyFunctionPage = () => {
     }
 
     const search = next.toString();
-    return <Navigate to={{ pathname: `/${env}/integrations/${providerConfigKey}`, search: search ? `?${search}` : '' }} replace />;
+    return <Navigate to={{ pathname: `/${env}/integrations/${providerConfigKey}/functions`, search: search ? `?${search}` : '' }} replace />;
+};
+
+const RedirectToAddIntegration = () => {
+    const { env, provider } = useParams();
+    const location = useLocation();
+
+    return (
+        <Navigate
+            to={{ pathname: `/${env}/catalog/${encodeURIComponent(provider ?? '')}/add`, search: location.search, hash: location.hash }}
+            state={location.state as unknown}
+            replace
+        />
+    );
 };
 
 const ConnectionIndexRedirect = () => {
@@ -195,7 +210,7 @@ const routes: RouteObject[] = [
                 element: <AccountDiscovery />
             },
             {
-                path: '/team-settings',
+                path: '/team',
                 element: <TeamSettingsPage />,
                 handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
             },
@@ -205,7 +220,7 @@ const routes: RouteObject[] = [
                 handle: { breadcrumb: 'Account API keys' } as BreadcrumbHandle
             },
             {
-                path: '/user-settings',
+                path: '/profile',
                 handle: { breadcrumb: 'Profile settings' } as BreadcrumbHandle,
                 children: [
                     {
@@ -230,6 +245,11 @@ const routes: RouteObject[] = [
                 handle: { breadcrumb: 'Audit trail' } as BreadcrumbHandle
             },
             {
+                path: '/team/installation',
+                element: <InstallationShow />,
+                handle: { breadcrumb: 'Installation info' } as BreadcrumbHandle
+            },
+            {
                 path: '/:env',
                 children: [
                     {
@@ -249,8 +269,20 @@ const routes: RouteObject[] = [
                             },
                             {
                                 path: ':provider',
-                                element: <CatalogProviderShow />,
-                                handle: { breadcrumb: (params) => params.provider || 'Provider' } as BreadcrumbHandle
+                                handle: {
+                                    breadcrumb: (params) => (params.provider ? <ProviderBreadcrumb provider={params.provider} /> : 'Provider')
+                                } as BreadcrumbHandle,
+                                children: [
+                                    {
+                                        index: true,
+                                        element: <CatalogProviderShow />
+                                    },
+                                    {
+                                        path: 'add',
+                                        element: <CreateIntegration />,
+                                        handle: { breadcrumb: 'Add integration' } as BreadcrumbHandle
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -264,16 +296,14 @@ const routes: RouteObject[] = [
                             },
                             {
                                 path: 'create',
-                                handle: { breadcrumb: 'Set up new integration' } as BreadcrumbHandle,
                                 children: [
                                     {
                                         index: true,
                                         element: <Navigate to="../../catalog" replace />
                                     },
                                     {
-                                        path: ':providerConfigKey',
-                                        element: <CreateIntegration />,
-                                        handle: { breadcrumb: (params) => params.providerConfigKey || 'Integration' } as BreadcrumbHandle
+                                        path: ':provider',
+                                        element: <RedirectToAddIntegration />
                                     }
                                 ]
                             },
@@ -318,7 +348,7 @@ const routes: RouteObject[] = [
                             {
                                 path: 'create',
                                 element: <ConnectionCreate />,
-                                handle: { breadcrumb: 'Create test connection' } as BreadcrumbHandle
+                                handle: { breadcrumb: 'Add test connection' } as BreadcrumbHandle
                             },
                             {
                                 path: 'create-legacy',
@@ -406,15 +436,15 @@ const routes: RouteObject[] = [
                     // Backward compat redirects for old env-prefixed URLs
                     {
                         path: 'account-settings',
-                        element: <RedirectPreservingLocation to="/team-settings" />
+                        element: <RedirectPreservingLocation to="/team" />
                     },
                     {
                         path: 'team-settings',
-                        element: <RedirectPreservingLocation to="/team-settings" />
+                        element: <RedirectPreservingLocation to="/team" />
                     },
                     {
                         path: 'user-settings',
-                        element: <RedirectPreservingLocation to="/user-settings" />
+                        element: <RedirectPreservingLocation to="/profile" />
                     },
                     {
                         path: 'team/billing',
@@ -426,7 +456,27 @@ const routes: RouteObject[] = [
     },
     {
         path: '/account-settings',
-        element: <RedirectPreservingLocation to="/team-settings" />
+        element: <RedirectPreservingLocation to="/team" />
+    },
+    {
+        path: '/account',
+        element: <RedirectPreservingLocation to="/team" />
+    },
+    {
+        path: '/team-settings',
+        element: <RedirectPreservingLocation to="/team" />
+    },
+    {
+        path: '/user-settings',
+        element: <RedirectPreservingLocation to="/profile" />
+    },
+    {
+        path: '/user-settings/enable-2fa',
+        element: <RedirectPreservingLocation to="/profile/enable-2fa" />
+    },
+    {
+        path: '/billing',
+        element: <RedirectPreservingLocation to="/team/billing" />
     },
     {
         path: '/hn-demo',

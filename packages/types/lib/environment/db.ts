@@ -56,6 +56,9 @@ export interface DBEnvironment extends TimestampsAndDeletedCorrect {
     is_production: boolean;
 }
 
+/** A DBEnvironment with the secret columns omitted. Task-token requests never load them. */
+export type EnvironmentWithoutSecrets = Omit<DBEnvironment, 'secret_key' | 'pending_secret_key' | 'hmac_key' | 'otlp_settings'>;
+
 export interface DBExternalWebhook extends Timestamps {
     id: number;
     environment_id: number;

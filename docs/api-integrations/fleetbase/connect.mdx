@@ -1,0 +1,35 @@
+---
+title: 'Fleetbase - How do I link my account?'
+sidebarTitle: 'Fleetbase'
+---
+
+## Overview
+
+To authenticate with Fleetbase, you need:
+
+1. **API Key** — a secret API key from the Fleetbase Developers Console.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A [Fleetbase Cloud](https://console.fleetbase.io/onboard) account. New accounts can try the full platform free for 7 days.
+
+### Step 1: Create an API key
+
+1. Sign in to the [Fleetbase console](https://console.fleetbase.io).
+2. Open the **Developers** extension, then go to the **API Keys** section.
+3. To work with test data, first turn on the **View test data** toggle in the section header. Keys created this way are test keys and start with `flb_test_`; live keys start with `flb_live_`.
+4. Click **New** to create a key, then copy it.
+
+Live, test and restricted API keys all work. A restricted key can only reach the resources its permissions allow.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Fleetbase.
+2. Enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/fleetbase/form.png" alt="Fleetbase Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Fleetbase.

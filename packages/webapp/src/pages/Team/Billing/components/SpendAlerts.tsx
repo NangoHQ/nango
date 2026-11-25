@@ -1,6 +1,6 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 
-import { Button, IconButton } from '@nangohq/design-system';
+import { IconButton, LinkButton } from '@nangohq/design-system';
 
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useApiGetSpendAlert, useCurrentPlan, useDeleteSpendAlert } from '@/hooks/usePlan';
@@ -48,9 +48,9 @@ export const SpendAlerts: React.FC = () => {
                 isError={isError}
                 addAction={
                     <SpendAlertDialog currency={currency} floorInCents={floorInCents}>
-                        <Button variant="link-accent">
+                        <LinkButton size="lg">
                             <Plus /> Add spend alert
-                        </Button>
+                        </LinkButton>
                     </SpendAlertDialog>
                 }
                 rowActions={

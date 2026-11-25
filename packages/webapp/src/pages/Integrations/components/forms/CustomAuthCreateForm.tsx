@@ -3,9 +3,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button, InputGroup, InputGroupInput, InputGroupTextarea } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupInput, InputGroupTextarea, SecretInput } from '@nangohq/design-system';
 
-import { SecretInput } from '@/components/patterns/SecretInput';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 
@@ -117,9 +116,7 @@ export const CustomAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onS
                                 <FormItem>
                                     <FormLabel>Client Secret</FormLabel>
                                     <FormControl>
-                                        <InputGroup>
-                                            <SecretInput {...field} aria-invalid={!!fieldState.error} />
-                                        </InputGroup>
+                                        <SecretInput editable {...field} value={field.value ?? ''} aria-invalid={!!fieldState.error} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -151,7 +148,7 @@ export const CustomAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onS
 
                     <div>
                         <Button type="submit" loading={loading}>
-                            Create
+                            Add integration
                         </Button>
                     </div>
                 </form>

@@ -29,8 +29,7 @@ export {
     auditBillingPaymentMethodRemoved,
     auditBillingPlanChanged,
     auditBillingSpendAlertChanged,
-    auditBillingSpendAlertRemoved,
-    auditBillingTrialExtended
+    auditBillingSpendAlertRemoved
 } from './billing.middleware.js';
 export {
     auditConnectionCreated,
@@ -39,6 +38,7 @@ export {
     auditConnectionMetadataUpdated,
     auditConnectionRefreshed,
     auditConnectionUpdated,
+    auditPublicConnectionCredentialsRead,
     auditPublicConnectionDeleted,
     auditPublicConnectionUpdated
 } from './connection.middleware.js';

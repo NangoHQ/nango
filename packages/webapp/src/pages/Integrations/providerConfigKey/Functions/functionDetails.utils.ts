@@ -2,7 +2,7 @@ import { resolveSchemaReference } from '@/features/Playground/input.utils';
 import { buildPullCommand, isRunnableFunction, isSyncOrAction } from '@/utils/scripts';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 
-import type { FunctionListSource, FunctionListType, FunctionType, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
+import type { FunctionListSource, FunctionListType, FunctionType, ListedNangoFunction, NangoFunctionTemplate, NangoToolFunction } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 export type DetailsFunction = ListedNangoFunction | NangoFunctionTemplate;
@@ -15,7 +15,7 @@ export interface FunctionDetails extends FunctionSchemas {
     scopes: string[];
     scopesMatch: 'all' | 'any';
     frequency: string | null;
-    pullCommand: string | null;
+    pullCommand: string;
     runType: 'sync' | 'action' | 'tool' | null;
     delete: { type: 'sync' | 'action'; description: string } | undefined;
     code: { kind: 'deployed'; type: FunctionListType } | { kind: 'template'; type: FunctionType };
@@ -26,7 +26,7 @@ export interface FunctionSchemas {
     outputSchemas: { name: string; schema: JSONSchema7 }[];
 }
 
-export function toFunctionSchemas(fn: DetailsFunction): FunctionSchemas {
+export function toFunctionSchemas(fn: DetailsFunction | NangoToolFunction): FunctionSchemas {
     if (fn.type === 'tool') {
         const outputSchema = displaySchema(fn.output_json_schema);
         return {
@@ -76,7 +76,7 @@ export function toFunctionDetails(
             ...base,
             scopes: requiredScopes?.all ?? requiredScopes?.any ?? [],
             scopesMatch: requiredScopes?.any ? 'any' : 'all',
-            pullCommand: null,
+            pullCommand: buildPullCommand({ integration, name: fn.name, type: 'tool', source: { env } }),
             code: { kind: 'deployed', type: 'tool' }
         };
     }

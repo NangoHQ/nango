@@ -1,0 +1,43 @@
+---
+title: 'CloudPress - How do I link my account?'
+sidebarTitle: 'CloudPress'
+---
+
+## Overview
+
+To authenticate with CloudPress, you need:
+
+1. **CloudPress host** — the address you sign in to, such as `my.cloudpress.com`.
+2. **API Key** — a personal API key created in your CloudPress settings.
+
+This guide will show you where to find each of them.
+
+### Prerequisites
+
+- A paid CloudPress workspace. Trial accounts cannot use the API: purchase a site to convert your trial first.
+
+### Step 1: Find your CloudPress host
+
+Your host is the address you sign in to CloudPress at, without `https://`. Most people use `my.cloudpress.com`. If you sign in at a white-label address (for example, `brand.example.com`), use that host instead.
+
+### Step 2: Create an API key
+
+1. Sign in to CloudPress, open the avatar menu in the top right and choose **My Settings**.
+
+<img src="/api-integrations/cloudpress/open_my_settings.png" alt="CloudPress dashboard with the avatar menu open and My Settings highlighted"/>
+
+2. In the left-hand menu, under **Developer**, click **API keys**.
+3. In **Name**, enter a label for the key (for example, `Nango`). Leave **Allowed IP addresses** empty to allow any address.
+4. Click **Create API Key**.
+5. Copy the token right away with the **Copy** button: it is shown only once. If you lose it, delete the key and create a new one.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with CloudPress.
+2. In **CloudPress host**, enter your host from Step 1, without `https://` (for example, `my.cloudpress.com`).
+3. In **API Key**, paste the key you copied in Step 2.
+4. Submit the form. Nango checks the key with CloudPress before saving the connection.
+
+<img src="/api-integrations/cloudpress/form.png" alt="CloudPress Connect UI form with the CloudPress host and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to CloudPress.

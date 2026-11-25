@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import db from '@nangohq/database';
 import * as kvstore from '@nangohq/kvstore';
 import { envs } from '@nangohq/logs';
-import { getPlan, getSyncConfigsAsStandardConfig, onEventScriptService, seeders } from '@nangohq/shared';
+import { getSyncConfigsAsStandardConfig, onEventScriptService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -200,6 +200,42 @@ describe(`POST ${endpoint}`, () => {
         } finally {
             getLockingSpy.mockRestore();
         }
+    });
+
+    it('should reject actions when the account has no active legacy actions', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                debug: false,
+                flowConfigs: [
+                    {
+                        syncName: 'create-issue',
+                        fileBody: { js: 'js file', ts: 'ts file' },
+                        providerConfigKey: 'unauthenticated',
+                        endpoints: [{ method: 'POST', path: '/issues' }],
+                        type: 'action',
+                        runs: null,
+                        track_deletes: false,
+                        attributes: {},
+                        metadata: {},
+                        models: []
+                    }
+                ],
+                nangoYamlBody: '',
+                onEventScriptsByProvider: [],
+                reconcile: false,
+                deployMode: 'all'
+            }
+        });
+
+        expect(res.res.status).toBe(403);
+        expect(res.json).toStrictEqual({
+            error: { code: 'legacy_actions_deprecated', message: 'Actions are deprecated. Use createTool instead. Found: unauthenticated/create-issue.' }
+        });
+        expect(await db.knex('_nango_sync_configs').where({ environment_id: env.id })).toHaveLength(0);
     });
 
     describe('deploy', () => {
@@ -719,49 +755,6 @@ describe(`POST ${endpoint}`, () => {
                     // Unrelated is absent
                 }
             });
-        });
-    });
-
-    describe('trial start on failed deploy', () => {
-        it('does not start the trial when the deploy fails', async () => {
-            const { env, apiKey, plan } = await seeders.seedAccountEnvAndUser({ plan: { trial_end_at: null, auto_idle: true } });
-            expect(plan.trial_end_at).toBeNull();
-
-            const res = await api.fetch(endpoint, {
-                method: 'POST',
-                token: apiKey.secret,
-                body: {
-                    debug: false,
-                    flowConfigs: [
-                        {
-                            syncName: 'test',
-                            fileBody: { js: 'js file', ts: 'ts file' },
-                            providerConfigKey: 'does-not-exist',
-                            endpoints: [{ method: 'GET', path: '/path' }],
-                            runs: 'every day',
-                            type: 'sync',
-                            attributes: {},
-                            auto_start: false,
-                            metadata: { description: 'a' },
-                            sync_type: 'full',
-                            track_deletes: false,
-                            input: 'Input',
-                            models: ['Output']
-                        }
-                    ],
-                    nangoYamlBody: '',
-                    onEventScriptsByProvider: [],
-                    reconcile: false,
-                    deployMode: 'all',
-                    sdkVersion: '0.61.3-yaml'
-                }
-            });
-
-            isError(res.json);
-            expect(res.res.status).not.toBe(200);
-
-            const updatedPlan = (await getPlan(db.knex, { accountId: env.account_id })).unwrap();
-            expect(updatedPlan.trial_end_at).toBeNull();
         });
     });
 });

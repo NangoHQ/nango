@@ -1,0 +1,39 @@
+---
+title: 'Zip - How do I link my account?'
+sidebarTitle: 'Zip'
+---
+
+## Overview
+
+To authenticate with Zip, you need:
+
+1. **API Key** — a Standard or Restricted API key created in your Zip company settings.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Zip user with administrator permissions or the **Manage company API keys** permission.
+- API access for your Zip company. If you don't see **API** in your company settings, contact Zip support.
+
+### Step 1: Create an API key
+
+1. Sign in to [Zip](https://app.zip.com/login).
+2. Click the gear icon at the top of the page and select **Company settings**.
+3. Under **Setup**, click **API**.
+4. On the **API keys** tab, click **+ Create API key**.
+5. Select the key type:
+    - **Standard**: read and write access on all endpoints.
+    - **Restricted**: access per record type. Choose **Read-only** (or more) next to each record type your app needs. Zip blocks access to record types you leave blank.
+6. Enter a **Name** and, optionally, an expiration date.
+7. Click **Create**, then copy the token from the **Save API key** dialog. Zip shows the full key only once.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Zip.
+2. Enter your **API Key** from Step 1.
+3. Submit the form.
+
+<img src="/api-integrations/zip/form.png" alt="Zip Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the key. If the key is wrong, the first API request returns an authentication error.

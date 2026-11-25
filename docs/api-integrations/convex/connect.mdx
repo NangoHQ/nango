@@ -1,0 +1,44 @@
+---
+title: 'Convex - How do I link my account?'
+sidebarTitle: 'Convex'
+---
+
+## Overview
+
+To authenticate with Convex, you need:
+
+1. **Team Access Token** — a Convex team access token for the Management API.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Convex account with access to the Management API. Convex's [pricing page](https://www.convex.dev/pricing) lists the Management API on the Professional plan and above, not on the Free & Starter plan.
+
+### Step 1: Create a team access token
+
+1. Sign in to the [Convex dashboard](https://dashboard.convex.dev).
+2. Click **Team Settings** in the top navigation, then **Access Tokens** in the left sidebar. This page also shows your **Team ID**, which most Management API endpoints need.
+3. Click **Create Token**.
+
+<img src="/api-integrations/convex/team_access_tokens_page.png" alt="Convex Team Access Tokens page with the Team ID and the Create Token button highlighted"/>
+
+4. Enter a **Token Name**, optionally choose an **Expiration**, and click **Save**.
+
+<img src="/api-integrations/convex/create_team_access_token.png" alt="Create Team Access Token dialog with the token name, expiration and Save button"/>
+
+5. Click **Copy** to copy the token. Convex shows it only once.
+
+<img src="/api-integrations/convex/team_access_token_created.png" alt="Team Access Token Created dialog with the Copy button highlighted"/>
+
+A team access token can only perform the actions you have access to on the team. Personal access tokens, created under your profile settings, do not work for this connection.
+
+### Step 2: Enter your team access token in the Connect UI
+
+1. Open the form where you need to authenticate with Convex.
+2. Enter your **Team Access Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/convex/form.png" alt="Convex connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Convex.

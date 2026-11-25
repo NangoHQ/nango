@@ -7,7 +7,7 @@ import {
     getCardMeta,
     getCategoryLabel,
     getInitials,
-    getInstantSetup,
+    getOneClickSetupBody,
     listCategories,
     sortProviders
 } from './catalog.utils';
@@ -21,27 +21,34 @@ function provider(overrides: Partial<ApiProviderListItem> & Pick<ApiProviderList
         docs: '',
         preConfigured: false,
         preConfiguredScopes: [],
-        functionCounts: { actions: 0, syncs: 0 },
+        instantSetup: null,
+        functionCounts: { tools: 0, syncs: 0 },
         ...overrides
     };
 }
 
-describe('getInstantSetup', () => {
-    it('is managed when Nango has preconfigured credentials, even for OAuth 2', () => {
-        expect(getInstantSetup(provider({ name: 'hubspot', authMode: 'OAUTH2', preConfigured: true }))).toBe('managed');
+describe('getOneClickSetupBody', () => {
+    it('uses Nango’s credentials when Nango manages the app', () => {
+        expect(getOneClickSetupBody(provider({ name: 'hubspot', instantSetup: 'nango-managed-app' }))).toEqual({
+            provider: 'hubspot',
+            useSharedCredentials: true
+        });
     });
 
-    it.each(['OAUTH1', 'OAUTH2', 'APP', 'CUSTOM'] as const)('is not instant for %s without preconfigured credentials', (authMode) => {
-        expect(getInstantSetup(provider({ name: 'x', authMode }))).toBeNull();
+    it.each(['API_KEY', 'BASIC', 'OAUTH2_CC', 'JWT', 'NONE'] as const)('creates a %s integration without credentials', (authMode) => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode, instantSetup: 'no-dev-app' }))).toEqual({ provider: 'x', useSharedCredentials: false });
     });
 
-    it.each(['API_KEY', 'BASIC', 'OAUTH2_CC', 'JWT', 'TBA', 'NONE'] as const)('needs no developer app for %s', (authMode) => {
-        expect(getInstantSetup(provider({ name: 'x', authMode }))).toBe('no-dev-app');
+    it.each(['MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'] as const)('creates a %s integration with default auth settings', (authMode) => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode, instantSetup: 'no-dev-app' }))).toEqual({
+            provider: 'x',
+            useSharedCredentials: false,
+            auth: { authType: authMode }
+        });
     });
 
-    it('is not instant for MCP OAuth with a static client', () => {
-        expect(getInstantSetup(provider({ name: 'x', authMode: 'MCP_OAUTH2', clientRegistration: 'static' }))).toBeNull();
-        expect(getInstantSetup(provider({ name: 'x', authMode: 'MCP_OAUTH2', clientRegistration: 'dynamic' }))).toBe('no-dev-app');
+    it('needs the setup form when the provider has no instant setup, such as one with required setup fields', () => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode: 'TBA', instantSetup: null }))).toBeNull();
     });
 });
 
@@ -74,8 +81,8 @@ describe('sortProviders', () => {
 describe('filterProviders', () => {
     const providers = [
         provider({ name: 'github', authMode: 'OAUTH2', categories: ['dev-tools'] }),
-        provider({ name: 'gitlab', authMode: 'API_KEY', categories: ['dev-tools'] }),
-        provider({ name: 'stripe', authMode: 'API_KEY', categories: ['payment'] })
+        provider({ name: 'gitlab', authMode: 'API_KEY', categories: ['dev-tools'], instantSetup: 'no-dev-app' }),
+        provider({ name: 'stripe', authMode: 'API_KEY', categories: ['payment'], instantSetup: 'no-dev-app' })
     ];
 
     it('combines category and instant filters', () => {
@@ -107,18 +114,18 @@ describe('getCategoryLabel', () => {
 
 describe('formatFunctionCounts', () => {
     it('leaves out zero parts and pluralizes', () => {
-        expect(formatFunctionCounts({ actions: 32, syncs: 5 })).toBe('32 tools · 5 syncs');
-        expect(formatFunctionCounts({ actions: 1, syncs: 0 })).toBe('1 tool');
-        expect(formatFunctionCounts({ actions: 0, syncs: 2 })).toBe('2 syncs');
-        expect(formatFunctionCounts({ actions: 0, syncs: 0 })).toBeNull();
+        expect(formatFunctionCounts({ tools: 32, syncs: 5 })).toBe('32 tools · 5 syncs');
+        expect(formatFunctionCounts({ tools: 1, syncs: 0 })).toBe('1 tool');
+        expect(formatFunctionCounts({ tools: 0, syncs: 2 })).toBe('2 syncs');
+        expect(formatFunctionCounts({ tools: 0, syncs: 0 })).toBeNull();
     });
 });
 
 describe('getCardMeta', () => {
     it('shows function counts, never categories', () => {
-        expect(getCardMeta({ functionCounts: { actions: 3, syncs: 1 }, categories: ['crm'] })).toBe('3 tools · 1 sync');
-        expect(getCardMeta({ functionCounts: { actions: 0, syncs: 0 }, categories: ['popular', 'crm', 'dev-tools'] })).toBe('No pre-built tools yet');
-        expect(getCardMeta({ functionCounts: { actions: 0, syncs: 0 }, categories: ['productivity', 'mcp'] })).toBe('All MCP tools');
+        expect(getCardMeta({ functionCounts: { tools: 3, syncs: 1 }, categories: ['crm'] })).toBe('3 tools · 1 sync');
+        expect(getCardMeta({ functionCounts: { tools: 0, syncs: 0 }, categories: ['popular', 'crm', 'dev-tools'] })).toBe('No pre-built tools yet');
+        expect(getCardMeta({ functionCounts: { tools: 0, syncs: 0 }, categories: ['productivity', 'mcp'] })).toBe('All MCP tools');
     });
 });
 

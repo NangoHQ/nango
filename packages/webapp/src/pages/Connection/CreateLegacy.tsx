@@ -5,10 +5,9 @@ import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam } from 'react-use';
 
-import { Button, FieldDescription } from '@nangohq/design-system';
+import { FieldDescription, LinkButton, SecretInput } from '@nangohq/design-system';
 import Nango, { AuthError } from '@nangohq/frontend';
 
-import { SecretInput } from '@/components/patterns/SecretInput';
 import { ScopesInput } from '../../components/patterns/ScopesInput';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
@@ -619,7 +618,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout width="wide">
             <Helmet>
                 <title>Create Connection - Nango</title>
             </Helmet>
@@ -700,7 +699,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         <div className="flex text-text-strong mt-1 items-center">
                                             <div className="w-full relative">
                                                 <SecretInput
-                                                    copy={true}
+                                                    editable
                                                     id="oauth_client_id"
                                                     name="oauth_client_id"
                                                     placeholder="Find the Client ID on the developer portal of the external API provider."
@@ -716,7 +715,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </div>
                                         <div className="mt-1">
                                             <SecretInput
-                                                copy={true}
+                                                editable
                                                 id="client_secret"
                                                 name="client_secret"
                                                 autoComplete="one-time-code"
@@ -752,7 +751,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </div>
                                         <div className="mt-1">
                                             <SecretInput
-                                                copy={true}
+                                                editable
                                                 id="client_certificate"
                                                 name="client_certificate"
                                                 placeholder="Paste the full PEM-encoded client certificate"
@@ -768,7 +767,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </div>
                                         <div className="mt-1">
                                             <SecretInput
-                                                copy={true}
+                                                editable
                                                 id="client_private_key"
                                                 name="client_private_key"
                                                 placeholder="Paste the full PEM-encoded private key"
@@ -790,7 +789,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     </div>
                                     <div className="mt-1">
                                         <SecretInput
-                                            copy={true}
+                                            editable
                                             id="oauth_client_id"
                                             name="oauth_client_id"
                                             placeholder="OAuth Client ID Override"
@@ -800,7 +799,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     </div>
                                     <div className="mt-8">
                                         <SecretInput
-                                            copy={true}
+                                            editable
                                             id="oauth_client_secret"
                                             name="oauth_client_secret"
                                             placeholder="OAuth Client Secret Override"
@@ -838,7 +837,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     </div>
                                     <div className="mt-1">
                                         <SecretInput
-                                            copy={true}
+                                            editable
                                             id="token_id"
                                             name="token_id"
                                             placeholder="Token ID"
@@ -851,7 +850,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             Token Secret
                                         </label>
                                         <SecretInput
-                                            copy={true}
+                                            editable
                                             id="token_secret"
                                             name="token_secret"
                                             placeholder="Token secret"
@@ -881,15 +880,15 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     </div>
                                     <FieldDescription className="mt-1">
                                         Some integrations require extra configuration — see{' '}
-                                        <Button asChild variant="link-accent" size="xs">
+                                        <LinkButton asChild size="sm">
                                             <a
-                                                href="https://nango.dev/docs/guides/auth/customize-connect-ui#handle-apis-requiring-connection-specific-configuration-for-authorization"
+                                                href="https://nango.dev/docs/guides/auth/customize-connect-ui#pass-connection-configuration"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
                                                 connection-specific configuration
                                             </a>
-                                        </Button>
+                                        </LinkButton>
                                         .
                                     </FieldDescription>
                                 </div>
@@ -914,7 +913,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
 
                                             <div className="mt-1">
                                                 <SecretInput
-                                                    copy={true}
+                                                    editable
                                                     id="username"
                                                     name="username"
                                                     value={apiAuthUsername}
@@ -930,7 +929,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
 
                                             <div className="mt-1">
                                                 <SecretInput
-                                                    copy={true}
+                                                    editable
                                                     id="password"
                                                     name="password"
                                                     value={apiAuthPassword}
@@ -949,7 +948,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
 
                                             <div className="mt-1">
                                                 <SecretInput
-                                                    copy={true}
+                                                    editable
                                                     id="api_key"
                                                     name="api_key"
                                                     value={apiKey}
@@ -972,7 +971,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     </div>
                                     <div className="mt-1">
                                         <SecretInput
-                                            copy={true}
+                                            editable
                                             id="pat_name"
                                             name="pat_name"
                                             placeholder="Organization ID"
@@ -985,7 +984,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             Dev Key
                                         </label>
                                         <SecretInput
-                                            copy={true}
+                                            editable
                                             id="dev_key"
                                             name="dev_key"
                                             placeholder="Dev Key"
@@ -1062,10 +1061,10 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
 
                                                 <div className="mt-1">
                                                     <SecretInput
-                                                        copy={true}
+                                                        editable
                                                         id={`credential-${paramName}`}
                                                         name={`credential-${paramName}`}
-                                                        value={credentialsState[paramName]}
+                                                        value={credentialsState[paramName] ?? ''}
                                                         onChange={(e) => handleCredentialParamsChange(paramName, e.target.value)}
                                                     />
                                                 </div>
@@ -1085,10 +1084,10 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
 
                                                 <div className="mt-1">
                                                     <SecretInput
-                                                        copy={true}
+                                                        editable
                                                         id={`assertion-option-${paramName}`}
                                                         name={`assertion-option-${paramName}`}
-                                                        value={assertionOptionState[paramName]}
+                                                        value={assertionOptionState[paramName] ?? ''}
                                                         onChange={(e) => handleAssertionOptionParamsChange(paramName, e.target.value)}
                                                     />
                                                 </div>
@@ -1111,7 +1110,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </div>
                                 <div>
                                     <div className="mt-6">
-                                        <Prism className="transparent-code" language="typescript" colorScheme={darkMode ? 'dark' : 'light'}>
+                                        <Prism language="typescript" colorScheme={darkMode ? 'dark' : 'light'}>
                                             {snippet()}
                                         </Prism>
                                     </div>
@@ -1132,7 +1131,12 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     Integration
                                 </Link>{' '}
                                 first to create a Connection. Follow the{' '}
-                                <a href="https://nango.dev/docs/guides/auth/auth-guide" className="text-text-link" target="_blank" rel="noreferrer">
+                                <a
+                                    href="https://nango.dev/docs/guides/auth/setup#create-integration"
+                                    className="text-text-link"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
                                     Authorize an API guide
                                 </a>{' '}
                                 for more instructions.

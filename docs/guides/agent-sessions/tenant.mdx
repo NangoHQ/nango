@@ -1,0 +1,96 @@
+---
+title: 'Tenant'
+sidebarTitle: 'Tenant'
+description: 'Choose on whose behalf an agent session acts'
+---
+
+A tenant defines whose connected accounts an agent can use. For example, one session can use a salesperson's Gmail and their organization's shared Salesforce connection.
+
+When you create a session, select connections by tag or pin them by ID. Nango resolves one connection per matching integration and uses it for that session's tool calls.
+
+Enable [`nango_create_connection`](/guides/agent-sessions/meta-tools#nango_create_connection) to let the agent ask the user to connect an integration during the session.
+
+## Select connections by tags (recommended)
+
+[Connection tags](/guides/auth/connection-tags-configuration-metadata#connection-tags) are key-value pairs you attach to a connection. Scope a session using whatever identifiers fit your app's data model, such as a user ID, team ID, or workspace ID.
+
+Set `tenant.connections.any` to a list of tag selectors. Nango uses **AND** between tags in the same selector and **OR** between selectors. You can use up to 10 selectors.
+
+In this example, a connection matches if it has both `organization_id: acme` and `workspace: marketing`, or if its `user_id` is `27382`.
+
+```json
+{
+  "tenant": {
+    "connections": {
+      "any": [
+        { "tags": { "organization_id": "acme", "workspace": "marketing" } },
+        { "tags": { "user_id": "27382" } }
+      ]
+    }
+  }
+}
+```
+
+### Resolving ambiguity
+
+If the selectors match two or more connections on the same integration, there is no way to tell which one the session should use. Creation fails with `ambiguous_connections`, and no session is created:
+
+```json
+{
+  "error": {
+    "code": "ambiguous_connections",
+    "message": "1 integration matched more than one connection. Narrow the connection tags or pin a connection id.",
+    "payload": {
+      "integrations": {
+        "notion": {
+          "match_count": 2,
+          "candidates": [{ "connection_id": "3fd0cc49-..." }, { "connection_id": "f91890c5-..." }]
+        }
+      }
+    }
+  }
+}
+```
+
+There are two ways to resolve this:
+
+1. Add tags to the selector until it matches exactly one connection per integration.
+2. [Pin](#pin-connections) one of the matched connections for that integration:
+
+```json
+{
+  "tenant": {
+    "connections": {
+      "any": [{ "tags": { "organization_id": "acme" } }],
+      "pinned": [{ "integration_id": "notion", "connection_id": "f91890c5-..." }]
+    }
+  }
+}
+```
+
+When you combine tags and pins, a pin must be one of the connections the selectors matched, or creation fails with `pinned_connection_not_matched`.
+
+## Pin connections
+
+Use `pinned` when you already know the exact connection to use for an integration:
+
+```json
+{
+  "tenant": {
+    "connections": {
+      "pinned": [
+        { "integration_id": "notion", "connection_id": "f91890c5-..." },
+        { "integration_id": "slack", "connection_id": "7c2e81a4-..." }
+      ]
+    }
+  }
+}
+```
+
+You can only use one pin per integration. Pinning a connection that does not exist fails with `unknown_pinned_connection`.
+
+## Integrations without a connection
+
+A missing connection does not block session creation. The integration appears in the toolset as `connected: false`, and calls to its tools return a not-connected error.
+
+If [`nango_create_connection`](/guides/agent-sessions/meta-tools#nango_create_connection) is disabled, the error tells the agent to notify the user and continue with its available tools. If enabled, it directs the agent to fetch a connect link for the user so they can connect the integration.

@@ -7,7 +7,7 @@ description: 'Reference for the webhooks Nango sends to your app — setup, type
 Nango POSTs webhooks to your app to notify it of important events: a new connection was created, a sync run finished, a deprecated async action completed, or an external webhook was forwarded. This page covers how to receive and verify webhooks from Nango, plus the payloads for auth, sync, and deprecated async action webhooks.
 
 <Info>
-To process webhooks coming **from external APIs** (not from Nango), see [Process external webhooks](/getting-started/use-cases/webhooks-from-external-apis). To forward external API webhooks through Nango to your app, see [Webhook forwarding](/guides/platform/webhook-forwarding).
+To process webhooks coming **from external APIs** (not from Nango), see [Process external webhooks](/guides/triggers/overview). To forward external API webhooks through Nango to your app, see [Webhook forwarding](/guides/triggers/webhook-forwarding).
 </Info>
 
 ## Set up webhooks from Nango
@@ -347,7 +347,7 @@ Payload received following a connection deletion:
 
 ### Sync webhooks
 
-Sync webhooks are sent when a [sync function](/guides/functions/syncs/sync-functions) execution finishes, whether successful or not.
+Sync webhooks are sent when a [sync function](/guides/syncs/sync-functions) execution finishes, whether successful or not.
 
 Payload received following a successful sync execution:
 
@@ -375,7 +375,7 @@ Payload received following a successful sync execution:
 }
 ```
 
-`modifiedAfter` is an ISO-8601 timestamp marking the start of the last run. To read the changed records, use cursor-based fetching as described in [Records cache → Cursors and sync progress](/guides/functions/syncs/records-cache#cursors-and-sync-progress).
+`modifiedAfter` is an ISO-8601 timestamp marking the start of the last run. To read the changed records, use cursor-based fetching as described in [Records cache → Cursors and sync progress](/guides/syncs/records-cache#cursors-and-sync-progress).
 
 **Distinguishing full vs incremental syncs:** use `checkpoints` instead of the deprecated `syncType` field. `checkpoints.from`/`checkpoints.to` are checkpoint objects (`Record<string, string | number | boolean>`) as saved by the sync function via `saveCheckpoint()` — not strings — and either can be `null`. The `checkpoints` field itself can also be missing or `null`, so guard against that before reading nested fields:
 
@@ -428,11 +428,13 @@ Payload received following a failed sync execution:
 
 ### Async action webhooks (deprecated)
 
-Existing users of deprecated async actions can enable **Async action completed** in **Environment Settings**. The webhook identifies the execution to poll; see the [legacy completion webhook contract](/guides/functions/action-functions#completion-webhook).
+Existing users of deprecated async actions can enable **Async action completed** in **Environment Settings**. The webhook identifies the execution to poll; see the [legacy completion webhook contract](/guides/platform/functions/action-functions#completion-webhook).
 
 ### External webhook forwarding
 
-Forwarded external webhooks use the same webhook URLs, signing, retries, and logs as other Nango webhooks. See [Webhook forwarding](/guides/platform/webhook-forwarding) for setup, routing behavior, and payload shapes.
+Forwarded external webhooks use the same webhook URLs, signing, retries, and logs as other Nango webhooks. See [Webhook forwarding](/guides/triggers/webhook-forwarding) for setup, routing behavior, and payload shapes.
+
+<a id="webhook-retries-debugging"></a>
 
 ## Webhook retries & debugging
 
@@ -450,7 +452,7 @@ You can also use the [OpenTelemetry exporter](/guides/platform/observability#ope
 
 ## Related guides
 
-- [Webhook forwarding](/guides/platform/webhook-forwarding) - forward external provider webhooks through Nango.
-- [Webhook functions](/guides/functions/webhook-functions) - process provider webhooks inside Nango.
-- [Event functions](/guides/functions/event-functions) - react to connection lifecycle events.
+- [Webhook forwarding](/guides/triggers/webhook-forwarding) - forward external provider webhooks through Nango.
+- [Webhook functions](/guides/triggers/webhook-functions) - process provider webhooks inside Nango.
+- [Event functions](/guides/platform/functions/event-functions) - react to connection lifecycle events.
 - [Observability](/guides/platform/observability) - monitor webhook operations and retries.

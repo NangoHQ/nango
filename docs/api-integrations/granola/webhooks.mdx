@@ -53,7 +53,7 @@ In the Nango dashboard, open your Granola integration and copy the **Webhook URL
     The response also includes an `id` (e.g. `whe_2mKr8fQxLp7Ta3`) identifying this webhook endpoint — store it too, you'll need it to delete the endpoint later (see [step 4](#4-delete-the-webhook-endpoint-on-connection-deletion)).
 
     <Note>
-    You can automate this with a [post-connection-creation script](/guides/functions/event-functions) so every new Granola connection registers its own webhook endpoint automatically:
+    You can automate this with a [post-connection-creation script](/guides/platform/functions/event-functions) so every new Granola connection registers its own webhook endpoint automatically:
 
     ```typescript
     import { createOnEvent, ProxyConfiguration } from 'nango';
@@ -160,8 +160,8 @@ If you registered the webhook endpoint manually (the dashboard flow in [step 2](
 
 Once routed, you have two options:
 
-- **Forward it to your app** — Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
-- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+- **Forward it to your app** — Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/syncs/realtime-syncs).
 
 ## Supported events
 

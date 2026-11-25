@@ -36,4 +36,11 @@ describe('metaToolsSummary', () => {
             nango_create_connection: { enabled: false, tags: {} }
         });
     });
+
+    it('reports nango_run_code only when the session was created with it', () => {
+        const metaTools = { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } };
+
+        expect(metaToolsSummary(metaTools)).not.toHaveProperty('nango_run_code');
+        expect(metaToolsSummary({ ...metaTools, nangoRunCode: false })).toMatchObject({ nango_run_code: false });
+    });
 });

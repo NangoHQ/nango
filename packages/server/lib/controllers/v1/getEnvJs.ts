@@ -1,3 +1,4 @@
+import { licensePublicKey } from '@nangohq/license';
 import { envs } from '@nangohq/logs';
 import {
     basePublicUrl,
@@ -37,6 +38,7 @@ export const getEnvJs: RequestHandler = (_, res) => {
         isCloud,
         isHosted,
         isEnterprise,
+        isManaged: Boolean(licensePublicKey),
         features: {
             logs: envs.NANGO_LOGS_ENABLED,
             scripts: flagHasScripts,

@@ -52,13 +52,14 @@ if (validator.errors) {
 const invalidInterpolation = /(?<!(\$|]))\{(?!\s*})/g;
 for (const [providerKey, provider] of Object.entries(providersJson)) {
     // Skip validation for 'sage-intacct' provider, we need this so that we can specify the element attribute
-    // Skip validation for 'semble', 'monday-api-key' and 'laylo', their query/data fields are literal GraphQL bodies
+    // Skip validation for 'semble', 'monday-api-key', 'laylo' and 'enigma', their query/data fields are literal GraphQL bodies
     if (
         providerKey === 'sage-intacct' ||
         providerKey === 'supabase-mcp' ||
         providerKey === 'semble' ||
         providerKey === 'monday-api-key' ||
-        providerKey === 'laylo'
+        providerKey === 'laylo' ||
+        providerKey === 'enigma'
     ) {
         continue;
     }

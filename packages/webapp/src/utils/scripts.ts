@@ -1,4 +1,4 @@
-import type { FunctionType, ListedNangoActionFunction, ListedNangoFunction, ListedNangoSyncFunction } from '@nangohq/types';
+import type { FunctionListType, ListedNangoActionFunction, ListedNangoFunction, ListedNangoSyncFunction } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 type PullSource = { catalog: true; provider: string } | { env: string };
@@ -18,13 +18,23 @@ export function isSyncOrAction(fn: ListedNangoFunction): fn is ListedNangoSyncFu
  * un-deployed catalog template (keyed by provider) or `{ env }` to pull a deployed function
  * from an environment.
  */
-export function buildPullCommand({ integration, name, type, source }: { integration: string; name: string; type: FunctionType; source: PullSource }): string {
-    const typeFlag = type === 'action' ? '-a' : type === 'on-event' ? '--on-event' : '-s';
+export function buildPullCommand({
+    integration,
+    name,
+    type,
+    source
+}: {
+    integration: string;
+    name: string;
+    type: FunctionListType;
+    source: PullSource;
+}): string {
+    const typeFlag = type === 'action' ? ' -a' : type === 'on-event' ? ' --on-event' : type === 'sync' ? ' -s' : '';
     if ('catalog' in source) {
         const targetFlag = integration === source.provider ? '' : ` --target ${integration}`;
-        return `nango pull ${source.provider} ${name} --catalog${targetFlag} ${typeFlag}`;
+        return `nango pull ${source.provider} ${name} --catalog${targetFlag}${typeFlag}`;
     }
-    return `nango pull ${integration} ${name} --env ${source.env} ${typeFlag}`;
+    return `nango pull ${integration} ${name} --env ${source.env}${typeFlag}`;
 }
 
 export function getSyncResponse(model: JSONSchema7) {

@@ -150,7 +150,7 @@ export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' 
     credentials: ApiPublicAllAuthCredentials;
 };
 export type GetPublicConnection = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'connection', 'credentials_read', 'environment', 'read_credentials'>;
     Method: 'GET';
     Params: {
         connectionId: string;

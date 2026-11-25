@@ -22,15 +22,15 @@ This guide shows you how to register an app in the Carta developer portal to obt
   <Step id="copy-credentials" title="Copy your credentials">
     Click **View app details** and copy the **client_id** and **client_secret**. Enter them, along with the same scopes, when you create the integration in Nango.
   </Step>
-  <Step id="choose-environment" title="Pick the matching Nango integration">
-    New apps run in Carta's Playground environment. Create a [Carta (Sandbox)](/api-integrations/carta-sandbox) integration in Nango to test them. Once Carta approves your app for production, use the [Carta](/api-integrations/carta) integration.
+  <Step id="choose-environment" title="Pick the matching Carta environment">
+    New apps run in Carta's Playground environment. When you create a connection in Nango, select the Playground login and API hosts to test them. Once Carta approves your app for production, use the production hosts (the default). See [how to link a Carta account](/api-integrations/carta/connect).
   </Step>
   <Step id="next" title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
   </Step>
 </Steps>
 
-Carta only grants scopes that are enabled on your app. Requesting a scope that isn't enabled makes authorization fail. Carta access tokens expire after one hour; Nango refreshes them automatically.
+Carta only grants scopes that are enabled on your app. Requesting a scope that isn't enabled makes authorization fail.
 
 For more details, see [Carta's authorization docs](https://docs.carta.com/api-platform/guides/guides/authorization/) and the [scopes reference](https://docs.carta.com/api-platform/guides/references/scopes/).
 
