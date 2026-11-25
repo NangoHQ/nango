@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { report } from '@nangohq/utils';
+
 import { envs } from '../env.js';
 import { NoopEventListener } from '../events/noop.listener.js';
 import { SqsEventListener } from '../events/sqs.listener.js';
@@ -67,48 +69,75 @@ export class LambdaInvocationsProcessor {
 
         // The function never ran, so there is no functionError. Lambda still sends the original payload here.
         if (parsedMessage.requestContext?.condition === 'EventAgeExceeded') {
-            await handle({
+            await failTask({
                 taskId,
                 nangoProps,
-                error: {
-                    type: 'function_runtime_event_age_exceeded',
-                    payload: { errorMessage: 'Lambda discarded the invocation because it exceeded the maximum event age' },
-                    status: 500
-                },
-                telemetryBag: {
-                    customLogs: 0,
-                    proxyCalls: 0,
-                    durationMs: 0,
-                    memoryGb: envs.LAMBDA_DEFAULT_MEMORY_MB / 1024
-                },
-                functionRuntime: 'lambda',
-                checkpoints: null
+                type: 'function_runtime_event_age_exceeded',
+                errorMessage: 'Lambda discarded the invocation because it exceeded the maximum event age',
+                status: 500,
+                durationMs: 0
             });
             return;
         }
 
+        const functionError = parsedMessage.responseContext?.functionError;
         const errorMessage = parsedMessage.responsePayload?.errorMessage;
-        if (parsedMessage.responseContext?.functionError === 'Unhandled' && errorMessage !== undefined) {
-            const errorType = lambdaErrorTypeFromMessage(errorMessage);
-            await handle({
+        if (functionError === 'Unhandled') {
+            const message = errorMessage ?? 'Lambda reported an unhandled error without a message';
+            const errorType = lambdaErrorTypeFromMessage(message);
+            await failTask({
                 taskId,
                 nangoProps,
-                error: {
-                    type: errorType,
-                    payload: { errorMessage },
-                    status: parsedMessage.responseContext.statusCode ?? 500
-                },
-                telemetryBag: {
-                    customLogs: 0,
-                    proxyCalls: 0,
-                    durationMs: getDurationMsFromErrorType(errorType),
-                    memoryGb: envs.LAMBDA_DEFAULT_MEMORY_MB / 1024
-                },
-                functionRuntime: 'lambda',
-                checkpoints: null
+                type: errorType,
+                errorMessage: message,
+                status: parsedMessage.responseContext?.statusCode ?? 500,
+                durationMs: getDurationMsFromErrorType(errorType)
             });
+            return;
+        }
+
+        // A non-Unhandled functionError is ignored on purpose. Anything else used to fail schema
+        // parsing, which the queue listener reported. Report it here, and fail the task when the
+        // function never produced an error so the run does not stay running.
+        if (functionError === undefined) {
+            const condition = parsedMessage.requestContext?.condition;
+            const message = condition ? `Lambda discarded the invocation (${condition})` : 'Lambda failure record had no function error';
+            report(new Error(message), { taskId, condition });
+            await failTask({
+                taskId,
+                nangoProps,
+                type: 'function_runtime_other',
+                errorMessage: message,
+                status: 500,
+                durationMs: 0
+            });
+            return;
+        }
+
+        if (errorMessage === undefined) {
+            report(new Error('Lambda failure record had no error message'), { taskId, functionError });
         }
     }
+}
+
+function failTask(params: { taskId: string; nangoProps: NangoProps; type: string; errorMessage: string; status: number; durationMs: number }): Promise<void> {
+    return handle({
+        taskId: params.taskId,
+        nangoProps: params.nangoProps,
+        error: {
+            type: params.type,
+            payload: { errorMessage: params.errorMessage },
+            status: params.status
+        },
+        telemetryBag: {
+            customLogs: 0,
+            proxyCalls: 0,
+            durationMs: params.durationMs,
+            memoryGb: envs.LAMBDA_DEFAULT_MEMORY_MB / 1024
+        },
+        functionRuntime: 'lambda',
+        checkpoints: null
+    });
 }
 
 function getDurationMsFromErrorType(errorType: 'function_runtime_out_of_memory' | 'function_runtime_timed_out' | 'function_runtime_other'): number {
