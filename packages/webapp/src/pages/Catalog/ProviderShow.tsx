@@ -1,13 +1,12 @@
-import { ArrowUpRight, Ellipsis, Zap } from 'lucide-react';
+import { ArrowUpRight, Zap } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { Alert, AlertDescription, Badge, Button, IconButton, SplitButton, SplitButtonAction, SplitButtonMenuTrigger } from '@nangohq/design-system';
+import { Alert, AlertDescription, Badge, Button, SplitButton, SplitButtonAction, SplitButtonMenuTrigger } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { TestConnectionButton } from '@/components/patterns/TestConnectionButton';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -38,7 +37,6 @@ export const CatalogProviderShow: React.FC = () => {
     const { data: integrationsData, isPending: integrationsPending } = useListIntegrations(env);
     const { can } = usePermissions();
     const canSetUp = can('environment:integrations:update');
-    const canCreateConnection = can('environment:connections:update');
     const { data: templatesData, isPending: templatesPending, error: templatesError } = useGetProviderTemplates({ env, provider: providerName });
     const { mutateAsync: postIntegration } = usePostIntegration(env);
     const navigate = useNavigate();
@@ -89,16 +87,7 @@ export const CatalogProviderShow: React.FC = () => {
     };
     const renderSetupButton = (source: SetupButtonSource, size: 'sm' | 'md') => {
         if (configuredIntegrationIds && configuredIntegrationIds.length > 0) {
-            return (
-                <TestConnectionButton
-                    env={env}
-                    provider={provider.name}
-                    page="catalog"
-                    integrationIds={configuredIntegrationIds}
-                    canCreate={canCreateConnection}
-                    size={size}
-                />
-            );
+            return null;
         }
         return renderAddIntegrationButton(source, size);
     };
@@ -159,8 +148,6 @@ export const CatalogProviderShow: React.FC = () => {
     const { instantSetup } = provider;
     const categories = getVisibleCategories(provider);
 
-    const showMoreMenu = Boolean(existingIntegrationId && canSetUp);
-
     return (
         <DashboardLayout hasPageHeading breadcrumbLabel={provider.displayName} className="flex flex-col gap-6">
             <Helmet>
@@ -194,29 +181,10 @@ export const CatalogProviderShow: React.FC = () => {
                         <TryInPlaygroundButton provider={provider.name} integrationName={provider.displayName} source="catalog" variant="outline" />
                     )}
                     {renderSetupButton('header', 'md')}
-                    {showMoreMenu && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <IconButton variant="ghost" size="md" label="More actions">
-                                    <Ellipsis />
-                                </IconButton>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                    onSelect={() => {
-                                        trackSetupButtonClick(provider.name, 'more_menu', 'form');
-                                        void navigate(`/${env}/catalog/${provider.name}/add`);
-                                    }}
-                                >
-                                    Add another integration
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
                 </div>
             </header>
 
-            <ProviderCallout state={calloutState} displayName={provider.displayName} provider={provider.name} env={env} />
+            <ProviderCallout state={calloutState} displayName={provider.displayName} provider={provider.name} env={env} canAddAnother={canSetUp} />
 
             {templatesPending ? (
                 <Skeleton className="h-24 w-full" />

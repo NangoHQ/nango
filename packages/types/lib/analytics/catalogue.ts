@@ -399,10 +399,10 @@ export const analyticsEventCatalogue = defineCatalogue({
     'catalog:setup_button_click': {
         surface: 'app',
         insight: 'How many catalog detail visits lead to adding an integration, whether in one click or through the setup form, and which button people use',
-        fires: "When someone clicks Add integration, Advanced… or Add another integration on an API's catalog page",
+        fires: "When someone clicks Add integration, Advanced… or Add another on an API's catalog page",
         properties: z.object({
             provider: z.string(),
-            source: z.enum(['header', 'panel', 'more_menu']),
+            source: z.enum(['header', 'panel', 'callout']),
             setup_type: z.enum(['one_click', 'form', 'advanced']).optional()
         })
     },
