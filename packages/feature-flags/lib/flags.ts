@@ -100,8 +100,9 @@ export function buildFlags(client: FeatureFlagsClient) {
          * Whether this account can create agent sessions with `nango_query_result`. Without it the setting
          * is rejected as an unknown meta tool. Default `false`.
          */
-        isAgentSessionRunCodeEnabled(accountUuid: string) {
-            return client.isEnabled('agent-session-run-code', { targetingKey: accountUuid, accountUuid }, false);
+        isAgentSessionRunCodeEnabled(_accountUuid: string) {
+            // TEMP: forced on for the dev E2E test branch, never merge
+            return Promise.resolve(true);
         },
         /**
          * Whether the deprecated `search` query param on GET /connections is still honored for this
