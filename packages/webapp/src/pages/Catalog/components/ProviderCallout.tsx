@@ -42,8 +42,8 @@ export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, display
                     {onlyIntegrationId ? `${displayName} integration` : pluralize(state.integrationIds.length, `${displayName} integration`)} set up in {env}
                 </AlertTitle>
                 <AlertDescription>
-                    {onlyIntegrationId ? 'Manage it from its integration page' : 'Manage them from Integrations'}, or add another one, e.g. with different
-                    scopes.
+                    {onlyIntegrationId ? 'Manage it from its integration page' : 'Manage them from Integrations'}
+                    {canAddAnother ? ', or add another one, e.g. with different scopes.' : '.'}
                 </AlertDescription>
                 <AlertActions>
                     {canAddAnother && (
