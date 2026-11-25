@@ -12,7 +12,7 @@ description: 'Learn how to receive real-time SendGrid email events in your app u
 
 SendGrid payloads don't say which account they come from, so each connection needs its own Event Webhook in SendGrid and its own verification key in Nango. Deliveries without a valid signature are rejected.
 
-SendGrid retries failed deliveries for up to 24 hours, so Nango accepts a signature for 24 hours (plus a few minutes of clock skew) and rejects older ones. A delivery can arrive more than once within that time, so use each event's `sg_event_id` to ignore events you have already handled.
+SendGrid retries each failed event for up to 24 hours after it occurred, so Nango accepts a signature for 24 hours (plus a few minutes of clock skew) and rejects older ones. A delivery can arrive more than once within that time, so use each event's `sg_event_id` to ignore events you have already handled.
 
 ## Setup
 
@@ -23,8 +23,12 @@ In the Nango dashboard, open your SendGrid integration and copy the **Webhook UR
 ### 2. Register the webhook in SendGrid
 
 1. In SendGrid, go to **Settings** → **Mail Settings** → **Event Webhooks** and create a webhook with the URL from step 1.
-2. Pick the events to receive.
-3. Turn on **Signed Event Webhook Requests** and copy the **Verification Key**.
+2. Pick the events to receive, turn on **Signature Verification**, and click **Save**. SendGrid only generates the key pair when the webhook is saved.
+3. Open the webhook again with **Edit** and copy its public **Verification Key**.
+
+<Note>
+**Test Integration** sends an unsigned request until the webhook is saved, so Nango rejects it. Test the webhook after saving it.
+</Note>
 
 ### 3. Set the verification key in Nango
 
