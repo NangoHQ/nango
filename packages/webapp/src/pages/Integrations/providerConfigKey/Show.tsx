@@ -82,17 +82,10 @@ export const ShowIntegration: React.FC = () => {
                     <h1 className="truncate type-heading-sm text-text-strong">{displayName}</h1>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                    <Button asChild variant="ghost" size="md">
-                        <a href={integration.template.docs} target="_blank" rel="noreferrer">
-                            Docs <ArrowUpRight />
-                        </a>
-                    </Button>
-                    <TryInPlaygroundButton provider={integration.integration.provider} integrationName={displayName} source="integration" variant="outline" />
                     <TestConnectionButton
                         env={env}
                         provider={integration.integration.provider}
-                        page="integration"
-                        integrationIds={[integration.integration.unique_key]}
+                        integrationId={integration.integration.unique_key}
                         canCreate={canCreateTestConnection}
                         size="md"
                     />
@@ -117,8 +110,16 @@ export const ShowIntegration: React.FC = () => {
                         <Link to={`/${env}/connections?integrations=${integration.integration.unique_key}`} className={integrationLinkClassName}>
                             Connections
                         </Link>
-                        {canRunFunctions && !functionDrawerOpen && (
-                            <div className="ml-3">
+                        {integration.template.docs && (
+                            <>
+                                <Separator orientation="vertical" className="data-[orientation=vertical]:h-4" />
+                                <a href={integration.template.docs} target="_blank" rel="noreferrer" className={integrationLinkClassName}>
+                                    Setup guide <ArrowUpRight className="size-3.5" />
+                                </a>
+                            </>
+                        )}
+                        <div className="ml-3 flex items-center gap-2">
+                            {canRunFunctions && !functionDrawerOpen && (
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -127,8 +128,15 @@ export const ShowIntegration: React.FC = () => {
                                     <Play />
                                     Test run
                                 </Button>
-                            </div>
-                        )}
+                            )}
+                            <TryInPlaygroundButton
+                                provider={integration.integration.provider}
+                                integrationName={displayName}
+                                source="integration"
+                                variant="outline"
+                                size="sm"
+                            />
+                        </div>
                     </div>
                 </div>
                 <TabsContent value="functions">

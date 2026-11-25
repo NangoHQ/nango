@@ -347,12 +347,11 @@ export const analyticsEventCatalogue = defineCatalogue({
     },
     'connections:test_connection_button_click': {
         surface: 'app',
-        insight: 'Whether people who already have a test connection open it from the catalog and integration pages, or add another one',
-        fires: 'When someone opens or adds a test connection from the test connection button on a catalog or integration page',
+        insight: 'Whether people who already have a test connection open it from the integration page, or add another one',
+        fires: 'When someone opens or adds a test connection from the buttons on an integration page',
         properties: z.object({
             provider: z.string(),
-            page: z.enum(['catalog', 'integration']),
-            action: z.enum(['open_one', 'open_list', 'add']),
+            action: z.enum(['open_one', 'open_from_menu', 'add']),
             own_connection_count: z.number()
         })
     },
