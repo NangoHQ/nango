@@ -30299,6 +30299,29 @@ publora:
             example: sk_mrmbzomn_1a2b3c4d.964793af****************************************0ab
             doc_section: '#step-1-creating-your-api-key'
 
+remote-com-mcp:
+    display_name: Remote.com (MCP)
+    categories:
+        - hr
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: cimd
+    authorization_url: https://api.employ.remote.com/oauth/authorize
+    token_url: https://api.employ.remote.com/oauth/token
+    authorization_params:
+        response_type: code
+        resource: https://mcp.remote.com/mcp
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://mcp.remote.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/remote-com-mcp
+
 returnless:
     display_name: Returnless
     categories:

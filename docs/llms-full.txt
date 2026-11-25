@@ -16402,6 +16402,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `redo` | Redo | API_KEY | [docs](https://nango.dev/docs/api-integrations/redo.md) | [connect](https://nango.dev/docs/api-integrations/redo/connect.md) |  | e-commerce |
 | `redtail-crm-sandbox` | Redtail CRM (Sandbox) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/redtail-crm-sandbox.md) | [connect](https://nango.dev/docs/integrations/all/redtail-crm-sandbox/connect.md) |  | crm |
 | `refiner` | Refiner | API_KEY | [docs](https://nango.dev/docs/integrations/all/refiner.md) |  |  | surveys |
+| `remote-com-mcp` | Remote.com (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/remote-com-mcp.md) |  |  | hr, mcp |
 | `render-mcp` | Render (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/render-mcp.md) | [connect](https://nango.dev/docs/api-integrations/render-mcp/connect.md) |  | dev-tools, mcp |
 | `replicate` | Replicate | API_KEY | [docs](https://nango.dev/docs/integrations/all/replicate.md) |  |  | dev-tools |
 | `reply-io` | Reply.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/reply-io.md) | [connect](https://nango.dev/docs/api-integrations/reply-io/connect.md) |  | marketing, communication |

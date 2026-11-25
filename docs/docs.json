@@ -1719,6 +1719,7 @@
               "api-integrations/redo",
               "integrations/all/redtail-crm-sandbox",
               "integrations/all/refiner",
+              "api-integrations/remote-com-mcp",
               "api-integrations/render-mcp",
               "integrations/all/replicate",
               "api-integrations/reply-io",
