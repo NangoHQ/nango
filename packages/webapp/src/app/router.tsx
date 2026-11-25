@@ -70,10 +70,8 @@ const RedirectPreservingLocation = ({ to }: { to: string }) => {
 const RedirectToEnvironmentSettings = () => {
     const storeEnv = useStore((state) => state.env);
     const location = useLocation();
-    const params = useParams();
-    const env = params.env ?? storeEnv;
-    const subPath = params['*'];
-    const pathname = subPath ? `/${env}/environment-settings/${subPath}` : `/${env}/environment-settings`;
+    const { env = storeEnv, section, subPath } = useParams();
+    const pathname = ['', env, 'environment-settings', section, subPath].filter((segment) => segment !== undefined).join('/');
     return <Navigate to={{ pathname, search: location.search, hash: location.hash }} replace />;
 };
 
@@ -435,9 +433,14 @@ const routes: RouteObject[] = [
                         ]
                     },
                     {
-                        path: 'environment-settings/*',
-                        element: <EnvironmentSettings />,
-                        handle: { breadcrumb: 'Environment settings' } as BreadcrumbHandle
+                        // Explicit params, not a `/*` splat: Sentry's route naming recurses forever on splat routes.
+                        path: 'environment-settings',
+                        handle: { breadcrumb: 'Environment settings' } as BreadcrumbHandle,
+                        children: [
+                            { index: true, element: <EnvironmentSettings /> },
+                            { path: ':section', element: <EnvironmentSettings /> },
+                            { path: ':section/:subPath', element: <EnvironmentSettings /> }
+                        ]
                     },
                     {
                         path: 'project-settings',
@@ -465,8 +468,12 @@ const routes: RouteObject[] = [
         ]
     },
     {
-        path: '/environment-settings/*',
-        element: <RedirectToEnvironmentSettings />
+        path: '/environment-settings',
+        children: [
+            { index: true, element: <RedirectToEnvironmentSettings /> },
+            { path: ':section', element: <RedirectToEnvironmentSettings /> },
+            { path: ':section/:subPath', element: <RedirectToEnvironmentSettings /> }
+        ]
     },
     {
         path: '/account-settings',

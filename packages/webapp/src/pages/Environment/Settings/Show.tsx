@@ -89,8 +89,7 @@ export const EnvironmentSettings: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [sectionSlug, ...rest] = (useParams()['*'] ?? '').split('/').filter(Boolean);
-    const subPath = rest.length > 0 ? rest.join('/') : undefined;
+    const { section: sectionSlug, subPath } = useParams();
 
     const canSeeDeprecatedAuthorization = team ? new Date(team.account.created_at) <= new Date('2025-08-25') : false;
     const visibleGroups = SECTION_GROUPS.map((group) => ({
