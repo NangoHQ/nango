@@ -36288,6 +36288,35 @@ splunk:
             description: Your Splunk authentication token.
             doc_section: '#step-1-create-an-authentication-token'
 
+spotdraft-mcp:
+    display_name: SpotDraft (MCP)
+    categories:
+        - mcp
+        - legal
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://api.us.spotdraft.com/api/v1/oauth/authorize/
+    token_url: https://api.us.spotdraft.com/api/v1/oauth/token/
+    registration_url: https://api.us.spotdraft.com/api/v1/oauth/register/
+    authorization_params:
+        response_type: code
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://mcp.us.spotdraft.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/spotdraft-mcp
+
 spotify:
     display_name: Spotify (OAuth)
     categories:
