@@ -1,8 +1,8 @@
 import { useForm } from '@tanstack/react-form';
-import { Lock, Monitor, Moon, Sun } from 'lucide-react';
+import { CircleAlert, Lock, Monitor, Moon, Sun } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { FieldError, SegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
+import { Alert, AlertDescription, AlertTitle, FieldError, SegmentedControl, SegmentedControlItem } from '@nangohq/design-system';
 
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -55,8 +55,17 @@ const StackedRow: React.FC<{ label: string; description: string; htmlFor?: strin
 
 export const ConnectUISettings = () => {
     const env = useStore((state) => state.env);
-    const { data: connectUISettings } = useConnectUISettings(env);
+    const { data: connectUISettings, isError } = useConnectUISettings(env);
 
+    if (isError && !connectUISettings) {
+        return (
+            <Alert variant="danger">
+                <CircleAlert />
+                <AlertTitle>Couldn&apos;t load Connect UI settings</AlertTitle>
+                <AlertDescription>Refresh the page to try again.</AlertDescription>
+            </Alert>
+        );
+    }
     if (!connectUISettings) {
         return <Skeleton className="h-[280px] w-full" />;
     }

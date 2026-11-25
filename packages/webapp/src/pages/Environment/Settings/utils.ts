@@ -5,7 +5,7 @@ export function secretKeyEnvVar(env: string): string {
     return `NANGO_SECRET_KEY_${env.toUpperCase()}`;
 }
 
-export const ENV_NAME_PATTERN = /^[a-z0-9_-]+$/;
+export const ENV_NAME_PATTERN = /^[a-z0-9_-]{1,255}$/;
 
 export function sameRecord(a: Record<string, string>, b: Record<string, string>): boolean {
     const aKeys = Object.keys(a);

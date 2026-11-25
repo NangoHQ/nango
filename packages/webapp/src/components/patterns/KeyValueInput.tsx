@@ -209,10 +209,10 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
                                         type={revealed ? 'text' : 'password'}
                                     />
                                     <InputGroupAddon align="inline-end">
-                                        <InputGroupButton label={revealed ? 'Hide value' : 'Show value'} onClick={() => toggleSecretVisibility(pair.id)}>
+                                        <InputGroupButton label="Show value" aria-pressed={revealed} onClick={() => toggleSecretVisibility(pair.id)}>
                                             {revealed ? <EyeOffIcon /> : <EyeIcon />}
                                         </InputGroupButton>
-                                        <CopyButton value={pair.value} disabled={pair.value === ''} />
+                                        <CopyButton value={pair.value} label={pair.key ? `Copy ${pair.key}` : 'Copy value'} disabled={pair.value === ''} />
                                     </InputGroupAddon>
                                 </InputGroup>
                             ) : (

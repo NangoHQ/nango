@@ -75,7 +75,7 @@ export function useOwnTestConnections(env: string, integrationIds: string[] | nu
 }
 
 export function useConnectionsCount(env: string) {
-    const { data, error, isLoading, refetch } = useQuery<GetConnectionsCount['Success'], APIError>({
+    const { data, error, isLoading, isPlaceholderData, refetch } = useQuery<GetConnectionsCount['Success'], APIError>({
         queryKey: ['connections', 'count', env],
         queryFn: async (): Promise<GetConnectionsCount['Success']> => {
             const res = await apiFetch(`/api/v1/connections/count?env=${env}`);
@@ -92,7 +92,7 @@ export function useConnectionsCount(env: string) {
         placeholderData: keepPreviousData
     });
 
-    return { loading: isLoading, error: error?.json, data, refetch };
+    return { loading: isLoading, error: error?.json, data, isPlaceholderData, refetch };
 }
 
 export function useConnection(queries: GetConnection['Querystring'], params: GetConnection['Params']) {

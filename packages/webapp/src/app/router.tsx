@@ -68,9 +68,11 @@ const RedirectPreservingLocation = ({ to }: { to: string }) => {
 };
 
 const RedirectToEnvironmentSettings = () => {
-    const env = useStore((state) => state.env);
+    const storeEnv = useStore((state) => state.env);
     const location = useLocation();
-    const subPath = useParams()['*'];
+    const params = useParams();
+    const env = params.env ?? storeEnv;
+    const subPath = params['*'];
     const pathname = subPath ? `/${env}/environment-settings/${subPath}` : `/${env}/environment-settings`;
     return <Navigate to={{ pathname, search: location.search, hash: location.hash }} replace />;
 };

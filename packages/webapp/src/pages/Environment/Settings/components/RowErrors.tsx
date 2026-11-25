@@ -13,7 +13,7 @@ export function rowErrorsFromApi(err: unknown, path: string): RowError[] {
         return [];
     }
     return (err.json.error.errors as { path: (string | number)[]; message: string }[])
-        .filter((e) => e.path[0] === path)
+        .filter((e) => e.path[0] === path && Number.isInteger(Number(e.path[1])) && (e.path[2] === 'name' || e.path[2] === 'value'))
         .map((e) => ({ index: Number(e.path[1]), key: e.path[2] as RowError['key'], error: e.message }));
 }
 

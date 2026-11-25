@@ -9,10 +9,10 @@ function plural(count: number, noun: string): string {
 
 export const EnvironmentDeleteDescription: React.FC<{ env: string }> = ({ env }) => {
     const { data: integrations } = useListIntegrations(env);
-    const { data: connections } = useConnectionsCount(env);
+    const { data: connections, isPlaceholderData } = useConnectionsCount(env);
 
     const integrationCount = integrations?.data.length;
-    const connectionCount = connections?.data.total;
+    const connectionCount = isPlaceholderData ? undefined : connections?.data.total;
 
     if (integrationCount === undefined || connectionCount === undefined) {
         return <>This permanently deletes everything in it, {SUFFIX}</>;

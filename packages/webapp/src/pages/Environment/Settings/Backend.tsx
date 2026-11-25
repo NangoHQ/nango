@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Alert, AlertActions, AlertButton, AlertDescription, InlineCode } from '@nangohq/design-system';
 
+import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
@@ -41,7 +42,14 @@ export const BackendSettings: React.FC = () => {
     };
 
     return (
-        <SettingsCard title="Callback URL">
+        <SettingsCard
+            title={
+                <span className="inline-flex items-center gap-1.5">
+                    Callback URL
+                    <DocsIconLink href={CALLBACK_DOCS_URL} label="Callback URL documentation" />
+                </span>
+            }
+        >
             <EditableInput
                 id="callback_url"
                 mono
