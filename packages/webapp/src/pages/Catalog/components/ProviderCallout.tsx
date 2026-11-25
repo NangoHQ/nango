@@ -1,9 +1,10 @@
-import { ArrowRight, CircleCheck, Zap } from 'lucide-react';
+import { ArrowRight, CircleCheck, Plus, Zap } from 'lucide-react';
 
 import { Alert, AlertActions, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { trackSetupButtonClick } from '../analytics';
 import { pluralize } from '../catalog.utils';
 
 export type ProviderCalloutState =
@@ -20,9 +21,10 @@ interface ProviderCalloutProps {
     displayName: string;
     provider: string;
     env: string;
+    canAddAnother: boolean;
 }
 
-export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, displayName, provider, env }) => {
+export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, displayName, provider, env, canAddAnother }) => {
     if (state.kind === 'none') {
         return null;
     }
@@ -32,35 +34,32 @@ export const ProviderCallout: React.FC<ProviderCalloutProps> = ({ state, display
     }
 
     const onlyIntegrationId = state.kind === 'configured' && state.integrationIds.length === 1 ? state.integrationIds[0] : undefined;
-    if (onlyIntegrationId) {
-        return (
-            <Alert variant="success" size="wide" role="note">
-                <CircleCheck />
-                <AlertTitle>
-                    {displayName} integration set up in {env}
-                </AlertTitle>
-                <AlertDescription>Manage it from its integration page, or add another one, e.g. with different scopes.</AlertDescription>
-                <AlertActions>
-                    <AlertButtonLink to={`/${env}/integrations/${encodeURIComponent(onlyIntegrationId)}`}>
-                        View integration <ArrowRight />
-                    </AlertButtonLink>
-                </AlertActions>
-            </Alert>
-        );
-    }
-
     if (state.kind === 'configured') {
         return (
             <Alert variant="success" size="wide" role="note">
                 <CircleCheck />
                 <AlertTitle>
-                    {pluralize(state.integrationIds.length, `${displayName} integration`)} set up in {env}
+                    {onlyIntegrationId ? `${displayName} integration` : pluralize(state.integrationIds.length, `${displayName} integration`)} set up in {env}
                 </AlertTitle>
-                <AlertDescription>Manage them from Integrations, or add another one, e.g. with different scopes.</AlertDescription>
+                <AlertDescription>
+                    {onlyIntegrationId ? 'Manage it from its integration page' : 'Manage them from Integrations'}
+                    {canAddAnother ? ', or add another one, e.g. with different scopes.' : '.'}
+                </AlertDescription>
                 <AlertActions>
-                    <AlertButtonLink to={`/${env}/integrations?provider=${encodeURIComponent(provider)}`}>
-                        View in Integrations <ArrowRight />
-                    </AlertButtonLink>
+                    {canAddAnother && (
+                        <AlertButtonLink to={`/${env}/catalog/${provider}/add`} onClick={() => trackSetupButtonClick(provider, 'callout', 'form')}>
+                            <Plus /> Add another
+                        </AlertButtonLink>
+                    )}
+                    {onlyIntegrationId ? (
+                        <AlertButtonLink to={`/${env}/integrations/${encodeURIComponent(onlyIntegrationId)}`}>
+                            View integration <ArrowRight />
+                        </AlertButtonLink>
+                    ) : (
+                        <AlertButtonLink to={`/${env}/integrations?provider=${encodeURIComponent(provider)}`}>
+                            View in Integrations <ArrowRight />
+                        </AlertButtonLink>
+                    )}
                 </AlertActions>
             </Alert>
         );
