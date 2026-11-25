@@ -4,7 +4,6 @@ import { functionArtifactPaths, functionSourceFile } from './artifacts.js';
 
 describe('functionSourceFile', () => {
     const paths = functionArtifactPaths({
-        environmentName: 'dev',
         accountId: 1,
         environmentId: 2,
         integrationId: 'github',
