@@ -7953,7 +7953,7 @@ caly:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.trycaly.com/v2
+        base_url: https://api.trycaly.com
         headers:
             authorization: Bearer ${apiKey}
         retry:
@@ -7962,7 +7962,7 @@ caly:
         verification:
             method: GET
             endpoints:
-                - /me
+                - /v2/me
     docs: https://nango.dev/docs/api-integrations/caly
     docs_connect: https://nango.dev/docs/api-integrations/caly/connect
     credentials:
