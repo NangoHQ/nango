@@ -1,0 +1,160 @@
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+
+import { cn } from '../../lib/cn';
+
+export const DOCKED_PANEL_MIN_WIDTH = 480;
+const MAIN_MIN_WIDTH = 420;
+const KEYBOARD_STEP = 16;
+
+export const DockedPanelLayout = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('relative flex h-full min-h-0 w-full', className)} {...props} />
+));
+DockedPanelLayout.displayName = 'DockedPanelLayout';
+
+export const DockedPanelMain = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('flex min-h-0 min-w-0 flex-1 flex-col', className)} {...props} />
+));
+DockedPanelMain.displayName = 'DockedPanelMain';
+
+function readStoredWidth(storageKey: string | undefined): number | null {
+    if (!storageKey) {
+        return null;
+    }
+    try {
+        const stored = Number(localStorage.getItem(storageKey));
+        return Number.isFinite(stored) && stored >= DOCKED_PANEL_MIN_WIDTH ? stored : null;
+    } catch {
+        return null;
+    }
+}
+
+function writeStoredWidth(storageKey: string, width: number | null) {
+    try {
+        if (width === null) {
+            localStorage.removeItem(storageKey);
+        } else {
+            localStorage.setItem(storageKey, String(width));
+        }
+    } catch {
+        return;
+    }
+}
+
+export interface DockedPanelProps extends React.HTMLAttributes<HTMLElement> {
+    resizeLabel?: string;
+    storageKey?: string;
+}
+
+export const DockedPanel = forwardRef<HTMLElement, DockedPanelProps>(
+    ({ className, style, resizeLabel = 'Resize panel', storageKey, children, ...props }, ref) => {
+        const panelRef = useRef<HTMLElement | null>(null);
+        const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
+        const [width, setWidth] = useState<number | null>(() => readStoredWidth(storageKey));
+        const [dragging, setDragging] = useState(false);
+
+        useEffect(() => {
+            if (storageKey) {
+                writeStoredWidth(storageKey, width);
+            }
+        }, [storageKey, width]);
+
+        const setRefs = useCallback(
+            (node: HTMLElement | null) => {
+                panelRef.current = node;
+                if (typeof ref === 'function') {
+                    ref(node);
+                } else if (ref) {
+                    ref.current = node;
+                }
+            },
+            [ref]
+        );
+
+        const clamp = (next: number) => {
+            const panel = panelRef.current;
+            const layoutWidth = panel?.parentElement?.clientWidth;
+            if (!panel || !layoutWidth) {
+                return Math.max(DOCKED_PANEL_MIN_WIDTH, next);
+            }
+            const isOverlay = getComputedStyle(panel).position === 'absolute';
+            const max = Math.max(DOCKED_PANEL_MIN_WIDTH, layoutWidth - (isOverlay ? 0 : MAIN_MIN_WIDTH));
+            return Math.min(max, Math.max(DOCKED_PANEL_MIN_WIDTH, next));
+        };
+
+        const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+            if (e.button !== 0 || !panelRef.current) {
+                return;
+            }
+            e.preventDefault();
+            e.currentTarget.setPointerCapture(e.pointerId);
+            dragRef.current = { startX: e.clientX, startWidth: panelRef.current.offsetWidth };
+            setDragging(true);
+        };
+
+        const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+            const drag = dragRef.current;
+            if (!drag) {
+                return;
+            }
+            setWidth(clamp(drag.startWidth + drag.startX - e.clientX));
+        };
+
+        const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+            if (!dragRef.current) {
+                return;
+            }
+            dragRef.current = null;
+            setDragging(false);
+            if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                e.currentTarget.releasePointerCapture(e.pointerId);
+            }
+        };
+
+        const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') {
+                return;
+            }
+            e.preventDefault();
+            const current = width ?? panelRef.current?.offsetWidth ?? DOCKED_PANEL_MIN_WIDTH;
+            setWidth(clamp(current + (e.key === 'ArrowLeft' ? KEYBOARD_STEP : -KEYBOARD_STEP)));
+        };
+
+        return (
+            <aside
+                ref={setRefs}
+                className={cn(
+                    'relative flex h-full min-h-0 w-[clamp(600px,48%,960px)] flex-none flex-col border-l border-border-default bg-surface-panel',
+                    'min-[1180px]:max-w-[calc(100%-420px)]',
+                    'max-[1180px]:absolute max-[1180px]:inset-y-0 max-[1180px]:right-0 max-[1180px]:z-10 max-[1180px]:max-w-full max-[1180px]:shadow-container-sheet',
+                    className
+                )}
+                style={width === null ? style : { ...style, width }}
+                {...props}
+            >
+                <div
+                    role="separator"
+                    aria-orientation="vertical"
+                    aria-label={resizeLabel}
+                    aria-valuemin={DOCKED_PANEL_MIN_WIDTH}
+                    aria-valuenow={width ?? undefined}
+                    tabIndex={0}
+                    data-dragging={dragging || undefined}
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    onPointerCancel={onPointerUp}
+                    onKeyDown={onKeyDown}
+                    onDoubleClick={() => setWidth(null)}
+                    className={cn(
+                        'absolute inset-y-0 -left-0.75 z-20 w-1.5 cursor-col-resize touch-none',
+                        'transition-[background-color,box-shadow] duration-100 ease-in-out',
+                        'hover:bg-border-strong data-[dragging]:bg-border-strong',
+                        'focus-visible:outline-none focus-visible:shadow-focus-outline-default'
+                    )}
+                />
+                {children}
+            </aside>
+        );
+    }
+);
+DockedPanel.displayName = 'DockedPanel';
