@@ -39,7 +39,7 @@
         "README.md"
     ],
     "devDependencies": {
-        "vitest": "4.1.11",
+        "vitest": "4.1.12",
         "esbuild": "0.28.1",
         "tsup": "8.5.1"
     }

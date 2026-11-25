@@ -1,0 +1,45 @@
+---
+title: 'ActiveTrail - How do I link my account?'
+sidebarTitle: 'ActiveTrail'
+---
+
+## Overview
+
+To authenticate with ActiveTrail, you need:
+
+1. **Access Token** - an ActiveTrail API access token.
+
+This guide shows you how to create one.
+
+### Prerequisites
+
+- An ActiveTrail account where you have Manager permissions. Only Managers can create API access tokens.
+
+### Step 1: Create an API access token
+
+1. Sign in to [ActiveTrail](https://app.activetrail.com).
+2. In the top bar, open the **Integrations** menu (puzzle-piece icon) and choose **API**. This opens the **API Keys** page.
+
+<img src="/api-integrations/activetrail/integrations_menu_api.png" alt="ActiveTrail top bar with the Integrations menu open and the API item"/>
+
+3. Click **New**.
+4. Enter a **Name** for the token, for example `Nango`. **Description**, **Authorized IPs** and **Expiry date** are optional:
+    - Leave **Authorized IPs** empty. If you add IPs, the token only works from those addresses.
+    - If you set an **Expiry date**, the connection stops working when the token expires.
+5. Click **Save**.
+
+<img src="/api-integrations/activetrail/create_api_key.png" alt="ActiveTrail API app form with the Name, Authorized IPs and Expiry date fields and the Save button"/>
+
+6. In the **Access token** dialog, click **Copy Token**. ActiveTrail shows the token only once, so copy it now.
+
+<img src="/api-integrations/activetrail/copy_access_token.png" alt="ActiveTrail Access token dialog with the Copy Token button"/>
+
+### Step 2: Enter your access token in the Connect UI
+
+1. Open the form where you need to authenticate with ActiveTrail.
+2. Enter your **Access Token** in the designated field.
+3. Click **Connect**. Nango checks the token with ActiveTrail and rejects it if it is wrong.
+
+<img src="/api-integrations/activetrail/form.png" alt="Nango Connect UI form for entering the ActiveTrail access token" style={{maxWidth: "450px" }}/>
+
+You are now connected to ActiveTrail.

@@ -140,7 +140,7 @@ export const CatalogShow: React.FC = () => {
             secondaryNav={
                 <CategoryRail
                     categories={categories}
-                    totalCount={instantCount}
+                    totalCount={isPending ? undefined : instantCount}
                     selected={category}
                     onSelect={(next) => {
                         void setCategory(next);
@@ -154,7 +154,9 @@ export const CatalogShow: React.FC = () => {
             </Helmet>
             <SearchField
                 value={search}
-                placeholder={`Search ${providers.length.toLocaleString('en-US')} APIs, like GitHub or Salesforce`}
+                placeholder={
+                    isPending ? 'Search APIs, like GitHub or Salesforce' : `Search ${providers.length.toLocaleString('en-US')} APIs, like GitHub or Salesforce`
+                }
                 onChange={(value) => {
                     setSearch(value);
                     if (value.trim()) {

@@ -1,0 +1,36 @@
+---
+title: 'AxisCare - How do I link my account?'
+sidebarTitle: 'AxisCare'
+---
+
+## Overview
+
+To authenticate with AxisCare, you need:
+
+1. **Site Number** — the site number of your AxisCare account.
+2. **API Token** — an API token created in your AxisCare account.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- An AxisCare account for your agency. The AxisCare API is available to AxisCare customers.
+
+### Step 1: Find your site number
+
+Your site number is the first part of the URL you use to sign in to AxisCare. For example, if your AxisCare URL is `https://123456.axiscare.com`, your site number is `123456`.
+
+### Step 2: Get an API token
+
+1. Create an API token in your AxisCare account, or ask the person who manages AxisCare at your agency for one. If you cannot create API tokens, contact [AxisCare support](mailto:support@axiscare.com).
+2. Copy the token.
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with AxisCare.
+2. Enter your **Site Number** from Step 1 and your **API Token** from Step 2.
+3. Submit the form.
+
+<img src="/api-integrations/axiscare/form.png" alt="AxisCare Connect UI form with the Site Number and API Token fields" style={{maxWidth: "450px" }}/>
+
+The connection is saved without checking the token. If the token is wrong, the first API request returns an authentication error.

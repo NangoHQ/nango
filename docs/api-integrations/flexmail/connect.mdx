@@ -1,0 +1,53 @@
+---
+title: 'Flexmail - How do I link my account?'
+sidebarTitle: 'Flexmail'
+---
+
+## Overview
+
+To authenticate with Flexmail, you need:
+
+1. **Account ID** - the numeric ID of your Flexmail account.
+2. **Personal access token** - a token created in your Flexmail account. This is not your Flexmail login password.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A [Flexmail](https://flexmail.be) account. You can [sign up](https://flexmail.be/en/signup) for a free trial.
+
+### Step 1: Find your account ID
+
+1. Log in to the [Flexmail app](https://app.flexmail.eu/auth).
+2. Open the account menu at the top right. Your numeric account ID is shown in brackets next to **Profile**, for example **Profile (12345)**.
+3. Click **Settings**.
+
+<img src="/api-integrations/flexmail/account_menu_settings.png" alt="Flexmail account menu with the account ID next to Profile and Settings highlighted"/>
+
+4. On the **Settings** page, your account ID is also listed as **Account ID** under **General**.
+
+### Step 2: Create a personal access token
+
+1. On the **Settings** page, under **API**, click **Personal access tokens**.
+
+<img src="/api-integrations/flexmail/settings_personal_access_tokens.png" alt="Flexmail Settings page with the Account ID under General and Personal access tokens under API"/>
+
+2. Click **Create token**.
+3. Enter a descriptive name for the token, such as the name of your app, then click **Create token**.
+
+<img src="/api-integrations/flexmail/create_token_name.png" alt="Flexmail form to name a new personal access token with the Create token button"/>
+
+4. Click the copy button next to the token and store it securely. Flexmail shows the token only once.
+
+<img src="/api-integrations/flexmail/token_created_copy.png" alt="Flexmail personal access token screen with the copy button next to the token"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Flexmail.
+2. Enter the account ID from Step 1 in the **Account ID** field.
+3. Paste the token you copied in Step 2 into the **Personal access token** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/flexmail/form.png" alt="Flexmail Connect UI form with the Account ID and Personal access token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Flexmail.

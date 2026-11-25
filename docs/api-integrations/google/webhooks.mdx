@@ -1,0 +1,147 @@
+---
+title: 'How to set up webhooks with Google on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive Gmail and Google Calendar notifications in your app on one Google integration webhook URL'
+---
+
+## How it works
+
+1. Gmail and Google Calendar both send notifications to your Google integration's single Nango webhook URL.
+2. **Gmail** delivers through a Google Cloud Pub/Sub push subscription. The body is a Pub/Sub message, signed with an OIDC JWT in the `Authorization` header. Nango verifies the JWT and the integration's webhook secret, sent as the `nangoWebhookSecret` query parameter. It routes the notification by the `emailAddress` inside it, using `*` as the webhook type.
+3. **Google Calendar** delivers through notification channels. The body is empty and the details are in `X-Goog-*` headers. Nango checks `X-Goog-Channel-Token` against the integration's webhook secret and routes by `X-Goog-Resource-URI`, using `X-Goog-Resource-State` as the webhook type.
+
+Nango tells the two apart by the body: a Pub/Sub message is Gmail, anything else is Calendar.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Google integration and copy the **Webhook URL**. Use it for both Gmail and Calendar.
+
+### 2. Set the webhook secret in Nango
+
+On the same page, set a **Webhook secret** of at least 16 characters, for example generated with `openssl rand -hex 32`. Calendar sends it back as the channel `token` you set in step 5. Gmail sends it in the push endpoint URL you set in step 3.
+
+The JWT on a Gmail push proves Google signed it, not that your subscription sent it: any Google Cloud service account can create one for your webhook URL. The secret is what ties the push to your subscription, so Nango requires it for Gmail. A secret shorter than 16 characters counts as no secret.
+
+### 3. Set up Gmail push notifications
+
+1. Create a [Pub/Sub topic](https://console.cloud.google.com/cloudpubsub/topic/list) and give `gmail-api-push@system.gserviceaccount.com` the **Pub/Sub Publisher** role on it.
+2. Create a push subscription on the topic:
+   - **Endpoint URL**: the webhook URL from step 1 with your secret appended, `<NANGO-WEBHOOK-URL>?nangoWebhookSecret=<WEBHOOK-SECRET>`.
+   - **Authentication**: enabled, with a service account.
+   - **Audience**: the webhook URL from step 1 without the query string. Leaving it empty defaults to the full endpoint URL, which Nango rejects.
+3. Call Gmail's `watch` endpoint for each connection, through Nango's proxy:
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/gmail/v1/users/me/watch" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topicName": "projects/<PROJECT-ID>/topics/<TOPIC-ID>",
+    "labelIds": ["INBOX"]
+  }'
+```
+
+Call `watch` again at least once a day to keep it active. The [Gmail webhooks guide](/api-integrations/google-mail/webhooks#setup) covers each step in detail.
+
+<Warning>
+Nango rejects every Gmail push that lacks a valid `Authorization` header or the correct `nangoWebhookSecret`, and every Gmail push when the integration has no webhook secret. A push subscription created without authentication or without the secret in its endpoint URL delivers nothing.
+</Warning>
+
+### 4. Store the Gmail address in Nango
+
+Nango matches Gmail notifications by the `emailAddress` they contain. Store it in the connection's metadata:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "emailAddress": "<USER-EMAIL>" }
+  }'
+```
+
+See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+### 5. Create Calendar notification channels
+
+Create a channel for each calendar you want to watch, through Nango's proxy:
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/calendar/v3/calendars/<URL-ENCODED-CALENDAR-ID>/events/watch" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "<UNIQUE-CHANNEL-ID>",
+    "type": "web_hook",
+    "address": "<NANGO-WEBHOOK-URL>",
+    "token": "<WEBHOOK-SECRET>"
+  }'
+```
+
+Use `primary` for the user's main calendar. URL-encode other calendar IDs, which often contain `@` or `#`.
+
+Save the `id`, `resourceId` and `resourceUri` from the response. Channels expire and are not renewed automatically: create a new one before expiry, then stop the old one. The [Google Calendar webhooks guide](/api-integrations/google-calendar/webhooks#setup) covers renewal in detail.
+
+### 6. Store the calendar resource URIs in Nango
+
+Nango matches Calendar notifications against `metadata.googleCalendarWatchResourceUris`. Add the `resourceUri` of every channel, exactly as Google returned it:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "googleCalendarWatchResourceUris": ["<RESOURCE-URI>"] }
+  }'
+```
+
+<Warning>
+`PATCH` keeps other metadata keys such as `emailAddress`, but replaces the whole `googleCalendarWatchResourceUris` array. Include every active URI for the connection, or notifications for the missing ones stop matching it.
+</Warning>
+
+If several connections list the same URI, Nango forwards the notification once per connection.
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the notification to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe to `*` to receive both. A Gmail notification has `message.data`, a base64 JSON with `emailAddress` and `historyId`. A Calendar notification has the `x-goog-resource-*` headers. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+If no connection matches, Nango still forwards the notification, but without a `connectionId`.
+
+## Rollback strategy
+
+Stop Gmail notifications for a connection:
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/gmail/v1/users/me/stop" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>"
+```
+
+Stop each Calendar channel with the `id` and `resourceId` from step 5:
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/calendar/v3/channels/stop" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Content-Type: application/json" \
+  -d '{ "id": "<CHANNEL-ID>", "resourceId": "<RESOURCE-ID>" }'
+```
+
+To stop all Gmail notifications at once, detach the Pub/Sub subscription from the topic in the Google Cloud Console.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

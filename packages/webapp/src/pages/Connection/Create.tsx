@@ -163,7 +163,7 @@ export const ConnectionCreate: React.FC = () => {
                         <h2 className="text-2xl">Embed in your app</h2>
                         <a
                             className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong focus:border-border-strong focus:outline-0"
-                            href="https://nango.dev/docs/guides/auth/auth-guide"
+                            href="https://nango.dev/docs/guides/auth/setup#auth-from-your-app"
                             target="_blank"
                             rel="noreferrer"
                         >

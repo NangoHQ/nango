@@ -31,6 +31,8 @@ interface ComboboxBaseProps<T extends string = string> {
     className?: string;
     contentClassName?: string;
     showSearch?: boolean;
+    // Set this inside a Dialog or Sheet, or the list won't scroll with the mouse wheel.
+    modal?: boolean;
 }
 
 interface SingleProps<T extends string = string> extends ComboboxBaseProps<T> {
@@ -92,7 +94,17 @@ function getParentCheckboxState<T extends string>(opt: ComboboxOption<T>, select
 }
 
 export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T>) {
-    const { options, disabled, searchPlaceholder = 'Search', emptyText = 'No results found.', footer, className, contentClassName, showSearch = true } = props;
+    const {
+        options,
+        disabled,
+        searchPlaceholder = 'Search',
+        emptyText = 'No results found.',
+        footer,
+        className,
+        contentClassName,
+        showSearch = true,
+        modal = false
+    } = props;
 
     const multiSelected = props.allowMultiple ? props.selected : undefined;
     const multiDefaultSelect = props.allowMultiple ? props.defaultSelect : undefined;
@@ -268,7 +280,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             type="button"
             disabled={disabled}
             className={cn(
-                'text-[14px] h-8 cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-surface-canvas px-2 py-0 text-body-medium-regular leading-[160%] tracking-normal outline-none transition-[color,box-shadow] focus-default hover:text-text-strong disabled:cursor-not-allowed disabled:opacity-50',
+                'text-[14px] h-8 cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-ds-sm border-ds-1 border-border-input bg-surface-canvas px-2 py-0 text-body-medium-regular leading-[160%] tracking-normal outline-none transition-[background-color,border-color,color,box-shadow] focus-visible:border-focus-ring-default! focus-visible:shadow-[inset_0_0_0_0.5px_var(--focus-ring-default)] enabled:hover:border-border-input-hover hover:text-text-strong disabled:cursor-not-allowed disabled:opacity-50',
                 selectedOption ? 'text-text-strong' : 'text-text-secondary',
                 open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover',
                 className
@@ -348,7 +360,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
     };
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={setOpen} modal={modal}>
             <PopoverTrigger asChild>{trigger}</PopoverTrigger>
             <PopoverContent
                 align={props.allowMultiple ? 'end' : 'start'}
@@ -547,7 +559,9 @@ const ComboboxChips = React.forwardRef<HTMLDivElement, React.ComponentPropsWitho
                 className={cn(
                     // cursor-text on the container, cursor-default on the chips: the empty area is
                     // where typing starts, the chips are tokens.
-                    'flex cursor-text flex-wrap items-center gap-1.5 rounded border border-border-muted bg-surface-canvas px-2 py-1.5 text-sm outline-none focus:outline-none focus-visible:outline-none focus-within:border-border-muted has-data-[slot=combobox-chip]:px-1.5',
+                    'flex cursor-text flex-wrap items-center gap-1.5 rounded-ds-sm border-ds-1 border-border-input bg-surface-canvas px-2 py-1.5 text-sm outline-none transition-[border-color,box-shadow] hover:border-border-input-hover has-data-[slot=combobox-chip]:px-1.5',
+                    // Only the input's focus lights the border; a focused chip draws its own ring
+                    'has-[input:focus]:border-focus-ring-default! has-[input:focus]:shadow-[inset_0_0_0_0.5px_var(--focus-ring-default)]',
                     className
                 )}
                 {...props}
@@ -571,11 +585,11 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
             <span className="min-w-0 truncate">{children}</span>
             {showRemove && (
                 <ComboboxPrimitive.ChipRemove
-                    render={<IconButton variant="ghost" size="2xs" label="Remove" />}
-                    className="size-4 p-0 flex items-center justify-center rounded-sm text-text-muted hover:text-text-strong hover:bg-state-hover"
+                    render={<IconButton variant="ghost" size="sm" inline label="Remove" />}
+                    className="flex items-center justify-center rounded-sm text-text-muted hover:text-text-strong hover:bg-state-hover"
                     data-slot="combobox-chip-remove"
                 >
-                    <XIcon className="pointer-events-none size-3.5" />
+                    <XIcon className="pointer-events-none" />
                 </ComboboxPrimitive.ChipRemove>
             )}
         </ComboboxPrimitive.Chip>

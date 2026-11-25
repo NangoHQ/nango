@@ -1,3 +1,15 @@
+import { humanize } from './toolDisplay';
+
+// The server only sets up integrations for these providers (PLAYGROUND_PROVIDERS in agentPlayground.service.ts).
+export const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
+    { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
+    { prompt: 'Summarize my 3 latest emails in Gmail', provider: 'google-mail', name: 'Gmail' },
+    { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
+    { prompt: 'List my recent files in Google Drive', provider: 'google-drive', name: 'Google Drive' },
+    { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
+    { prompt: 'Show my recently edited Notion pages', provider: 'notion', name: 'Notion' }
+];
+
 // Read-only first tasks per provider, so trying an integration in the playground can't change anyone's data.
 // Providers missing here get a generic prompt. The Agent Playground PostHog dashboard ranks which of them people try.
 export const PROVIDER_STARTER_PROMPTS: Record<string, string> = {
@@ -59,7 +71,7 @@ export const PROVIDER_STARTER_PROMPTS: Record<string, string> = {
     gong: 'Summarize my latest Gong call',
     'google-ads': 'How did my Google Ads campaigns do last week?',
     'google-calendar': "What's on my Google Calendar today?",
-    'google-drive': 'Find my recently edited files in Google Drive',
+    'google-drive': 'List my recent files in Google Drive',
     'google-gemini': 'Which Google Gemini models can I use?',
     'google-mail': 'Summarize my 3 latest emails in Gmail',
     'google-tasks': "What's on my Google Tasks list?",
@@ -99,7 +111,7 @@ export const PROVIDER_STARTER_PROMPTS: Record<string, string> = {
     monday: 'Show the items on my latest Monday board',
     mural: 'Show my recent murals in Mural',
     'ninety-io': 'What are my open to-dos in Ninety.io?',
-    notion: 'Summarize my latest Notion page',
+    notion: 'Show my recently edited Notion pages',
     'odoo-api-key': 'Show my 5 newest contacts in Odoo',
     'odoo-cc': 'Show my 5 newest contacts in Odoo',
     'okta-cc': 'Show recent sign-in events in Okta',
@@ -161,3 +173,7 @@ export const PROVIDER_STARTER_PROMPTS: Record<string, string> = {
     zoom: 'What Zoom meetings do I have coming up?',
     'zoom-cc': 'What plan is my Zoom account on?'
 };
+
+export function providerName(provider: string): string {
+    return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
+}

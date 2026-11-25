@@ -13,13 +13,13 @@ import {
     FieldLabel,
     InputGroup,
     InputGroupInput,
+    SecretInput,
     Tooltip,
     TooltipContent,
     TooltipTrigger
 } from '@nangohq/design-system';
 
 import { ScopesInput } from '@/components/patterns/ScopesInput';
-import { SecretInput } from '@/components/patterns/SecretInput';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/Form';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
@@ -130,7 +130,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                     <Alert variant="info">
                         <AlertDescription>Pre-approved apps that work in production. Review the trade-offs before you go live.</AlertDescription>
                         <AlertActions>
-                            <AlertButtonLink to="https://nango.dev/docs/guides/auth/auth-guide#nango-managed-oauth-apps" target="_blank">
+                            <AlertButtonLink to="https://nango.dev/docs/guides/auth/overview#nango-managed-oauth-apps" target="_blank">
                                 Read the trade-offs <ExternalLinkIcon />
                             </AlertButtonLink>
                         </AlertActions>
@@ -197,7 +197,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                                         <FormItem>
                                             <FormLabel>Client secret</FormLabel>
                                             <FormControl>
-                                                <SecretInput {...field} />
+                                                <SecretInput editable {...field} value={field.value ?? ''} />
                                             </FormControl>
                                         </FormItem>
                                     )}

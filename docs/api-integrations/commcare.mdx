@@ -1,0 +1,81 @@
+---
+title: 'CommCare'
+sidebarTitle: 'CommCare'
+description: 'Integrate your application with the CommCare API'
+---
+
+## 🚀 Quickstart
+
+Connect to CommCare with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _CommCare_.
+    </Step>
+    <Step id="authorize-commcare" title="Authorize CommCare">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then pick your region and enter your project space, username and API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-commcare-api" title="Call the CommCare API">
+    Let's make your first request to the CommCare API to list the project spaces you belong to. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/user_domains/v1/" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/user_domains/v1/',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 CommCare integration guides
+
+- [How do I link my account?](/api-integrations/commcare/connect)  
+Find your region and project space, and generate an API key to connect your CommCare account.
+
+Official docs: [CommCare API](https://commcare-hq.readthedocs.io/api/index.html)
+
+## 🧩 Pre-built syncs & tools for CommCare
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/commcare/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango stores the project space in the `domain` connection config field but adds it to no request, and project-space APIs (`/a/<DOMAIN>/api/<VERSION>/...`) sit outside the `/api` base URL. Call them with `baseUrlOverride` set to `https://<REGION>` (the connection's `region` connection config field) and `domain` in the path. See [List Mobile Workers](https://dimagi.atlassian.net/wiki/x/sgAphg).
+
+---

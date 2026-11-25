@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
 
-import type { InternalAuthPublicKey } from '@nangohq/types';
+import type { AuditTrailDataPlaneScope, InternalAuthPublicKey } from '@nangohq/types';
 
 const PUBSUB_SUBJECTS = ['user', 'usage', 'team', 'lambda_keep_warm', 'audit'] as const;
 
@@ -85,6 +85,36 @@ const runnerEgressNangoPortsSchema = z
             return z.NEVER;
         }
         return [...ports].sort((a, b) => a - b);
+    });
+
+// A Record, so adding a scope to the type fails to compile until it is listed here.
+const AUDIT_TRAIL_DATA_PLANE_SCOPES: Record<AuditTrailDataPlaneScope, true> = { read_credentials: true };
+
+function isAuditTrailDataPlaneScope(value: string): value is AuditTrailDataPlaneScope {
+    return Object.hasOwn(AUDIT_TRAIL_DATA_PLANE_SCOPES, value);
+}
+
+const auditTrailDataPlaneScopesSchema = z
+    .string()
+    .optional()
+    .transform((s, ctx): AuditTrailDataPlaneScope[] => {
+        const value = s?.trim() ?? '';
+        if (value === '' || value === 'all') {
+            return Object.keys(AUDIT_TRAIL_DATA_PLANE_SCOPES) as AuditTrailDataPlaneScope[];
+        }
+        if (value === 'none') {
+            return [];
+        }
+        const scopes = new Set<AuditTrailDataPlaneScope>();
+        for (const part of value.split(',')) {
+            const scope = part.trim();
+            if (!isAuditTrailDataPlaneScope(scope)) {
+                ctx.addIssue(`Invalid scope in FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: ${part}`);
+                return z.NEVER;
+            }
+            scopes.add(scope);
+        }
+        return [...scopes];
     });
 
 const runnerEgressNangoPodSelectorSchema = z
@@ -221,6 +251,10 @@ function internalAuthPublicKeysSchema(varName: string) {
         );
 }
 
+// The audit consumer's ClickHouse write may use this share of the SQS visibility timeout; the rest covers the
+// batch window and the delete.
+export const AUDIT_CONSUMER_WRITE_TIMEOUT_FRACTION_OF_VISIBILITY = 2 / 3;
+
 const ENVS_SHAPE = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -230,6 +264,8 @@ const ENVS_SHAPE = z.object({
 
     // Dockerfile
     GIT_HASH: z.string().optional(),
+    // Stamped by the managed release workflow
+    NANGO_MANAGED_VERSION: z.string().optional(),
 
     // Auth
     WORKOS_API_KEY: z.string().optional(),
@@ -252,8 +288,7 @@ const ENVS_SHAPE = z.object({
 
     // License configuration options
     NANGO_LICENSE: z.string().optional(),
-    // Experimental, disabled by default for now
-    NANGO_LICENSE_CHECK: z.stringbool().optional().default(false),
+    NANGO_LICENSE_CHECK: z.stringbool().optional().default(true),
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
@@ -643,6 +678,10 @@ const ENVS_SHAPE = z.object({
     AWS_INTEGRATIONS_REGION: z.string().optional(),
     AWS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
 
+    // Optional separate S3 bucket for integration templates (templates-zero/). Unset: templates are read from the integrations bucket.
+    AWS_TEMPLATES_BUCKET_NAME: z.string().trim().min(1).optional(),
+    AWS_TEMPLATES_REGION: z.string().trim().min(1).optional(),
+
     GCS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
 
     AZURE_INTEGRATIONS_ACCOUNT_NAME: z.string().optional(),
@@ -654,7 +693,9 @@ const ENVS_SHAPE = z.object({
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
+    FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES: auditTrailDataPlaneScopesSchema,
     FLAG_HOSTED_TELEMETRY_ENABLED: z.stringbool().optional().default(true),
+    FLAG_HOSTED_TELEMETRY_UPLOAD_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
@@ -846,6 +887,20 @@ const ENVS_SHAPE = z.object({
     PLAIN_APP_ID: z.string().optional(),
     PLAIN_HMAC_SECRET: z.string().optional(),
 
+    // Agent session tool results over the inline size are stored as records and returned as a reference. Results over the stored size are returned in full.
+    AGENT_SESSION_RESULT_INLINE_MAX_BYTES: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(8 * 1024),
+    AGENT_SESSION_RESULT_STORED_MAX_BYTES: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(2 * 1024 * 1024),
+
     NANGO_AGENT_PLAYGROUND_MODEL: z.string().optional().default('gpt-6-luna'),
     // Without it the Agent Playground answers from a mock model.
     OPENAI_API_KEY: z.string().optional(),
@@ -889,6 +944,13 @@ const ENVS_SHAPE = z.object({
         .positive()
         .max(6 * 3600 * 1000) // capped so tomorrow's partition is always created before midnight reaches it
         .default(1 * 3600 * 1000),
+    // Sending the stored telemetry to Nango.
+    NANGO_INSTALLATION_PRIVATE_KEY: z.string().optional(),
+    NANGO_INSTALLATIONS_API_URL: z.url().optional(),
+    // We only upload the most recent days. Older data has to be requested manually.
+    NANGO_HOSTED_TELEMETRY_UPLOAD_BACKFILL_DAYS: z.coerce.number().int().positive().optional().default(30),
+    // Internal auth key used for the manual export endpoint.
+    NANGO_HOSTED_TELEMETRY_MANUAL_EXPORT_KEY: z.string().optional(),
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
@@ -911,9 +973,12 @@ const ENVS_SHAPE = z.object({
     NANGO_AUDIT_CONSUMER_MAX_MESSAGES: z.coerce.number().int().min(1).max(10).optional().default(10),
     NANGO_AUDIT_CONSUMER_WAIT_TIME_SECONDS: z.coerce.number().int().min(0).max(20).optional().default(20),
     NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().int().min(10).max(43200).optional().default(30),
+    NANGO_AUDIT_CONSUMER_BATCH_MAX_EVENTS: z.coerce.number().int().min(1).max(1000).optional().default(100),
+    NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS: z.coerce.number().int().min(0).optional().default(5000),
 
     // PubSub
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),
+    NANGO_PUBSUB_SNS_PUBLISH_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).optional().default(6),
     NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_PUBSUB_SNS_SQS_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
     NANGO_PUBSUB_SNS_SQS_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
@@ -976,7 +1041,8 @@ const ENVS_SHAPE = z.object({
 
     // Lambda
     LAMBDA_KEEP_WARM_ENABLED: z.stringbool().optional().default(false),
-    LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS: z.coerce.number().default(24 * 60 * 60 * 1000),
+    LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS: z.coerce.number().default(14 * 24 * 60 * 60 * 1000),
+    LAMBDA_KEEP_WARM_EXECUTION_WINDOW_MS: z.coerce.number().default(14 * 24 * 60 * 60 * 1000),
     LAMBDA_KEEP_WARM_SUBSCRIBE_CONCURRENCY: z.coerce.number().min(1).max(10).optional().default(1),
     LAMBDA_DEFAULT_TIMEOUT_BILLING_SECS: z.coerce.number().optional().default(10),
     LAMBDA_ENABLED: z.stringbool().optional().default(false),
@@ -1209,6 +1275,19 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
             message: 'EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set',
             path: ['EMAIL_HTTP_BODY'],
             input: ctx.value.EMAIL_HTTP_BODY
+        });
+    }
+
+    // The oldest buffered audit event waits up to the batch window and then for the write, and must still be
+    // invisible when both are done. Half of what the write timeout leaves is kept for the delete.
+    const auditBatchWaitBudgetMs =
+        (ctx.value.NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS * 1000 * (1 - AUDIT_CONSUMER_WRITE_TIMEOUT_FRACTION_OF_VISIBILITY)) / 2;
+    if (ctx.value.NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS > auditBatchWaitBudgetMs) {
+        ctx.issues.push({
+            code: 'custom',
+            message: `NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS must be at most ${auditBatchWaitBudgetMs}ms with the current NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS`,
+            path: ['NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS'],
+            input: ctx.value.NANGO_AUDIT_CONSUMER_BATCH_MAX_WAIT_MS
         });
     }
 

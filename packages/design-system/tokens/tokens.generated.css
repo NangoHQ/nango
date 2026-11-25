@@ -1,4 +1,4 @@
-/* AUTO-GENERATED — do not edit by hand. Run: npm run tokens:fetch */
+/* AUTO-GENERATED — do not edit by hand. Edit tokens.json, then run: npm run tokens:build */
 
 /*
  * Primitives: raw design scale values prefixed with --ds-.
@@ -318,8 +318,8 @@
     --border-default: #e0e0e0;
     --border-strong: #c4c4c8;
     --border-stronger: #a1a2a5;
-    --border-input: #8b8c8f;
-    --border-input-hover: #505155;
+    --border-input: #c4c4c8;
+    --border-input-hover: #8b8c8f;
     --border-selected: #009cc8;
     --border-danger: #ee4242;
     --border-input-danger: #ee4242;
@@ -398,6 +398,8 @@
     --control-switch-track-off-danger: #a1a2a5;
     --control-switch-thumb-off: #ffffff;
     --control-switch-thumb-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --control-checkbox-border: #8b8c8f;
+    --control-checkbox-border-hover: #505155;
     --dialog-footer-bg: #fafafa;
 }
 
@@ -464,8 +466,8 @@
     --border-default: #ffffff1a;
     --border-strong: #ffffff29;
     --border-stronger: #ffffff3d;
-    --border-input: #ffffff66;
-    --border-input-hover: #ffffffa3;
+    --border-input: #ffffff29;
+    --border-input-hover: #ffffff66;
     --border-selected: #00b2e3;
     --border-danger: #ee4242;
     --border-input-danger: #ee4242;
@@ -544,6 +546,8 @@
     --control-switch-track-off-danger: #18191b;
     --control-switch-thumb-off: #ffffff;
     --control-switch-thumb-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --control-checkbox-border: #ffffff66;
+    --control-checkbox-border-hover: #ffffffa3;
     --dialog-footer-bg: #121212;
 }
 
@@ -688,6 +692,8 @@
     --color-control-switch-track-off: var(--control-switch-track-off);
     --color-control-switch-track-off-danger: var(--control-switch-track-off-danger);
     --color-control-switch-thumb-off: var(--control-switch-thumb-off);
+    --color-control-checkbox-border: var(--control-checkbox-border);
+    --color-control-checkbox-border-hover: var(--control-checkbox-border-hover);
     --color-dialog-footer-bg: var(--dialog-footer-bg);
 }
 @theme inline {
@@ -755,8 +761,8 @@
 
 .type-heading-md {
     font-family: Geist, ui-sans-serif, system-ui, sans-serif;
-    font-size: 20px;
-    font-weight: 400;
+    font-size: 18px;
+    font-weight: 500;
     line-height: 1.2;
     letter-spacing: -0.01em;
 }
@@ -889,22 +895,6 @@
     letter-spacing: 0em;
 }
 
-.type-code-regular-xxs {
-    font-family:
-        Geist Mono,
-        ui-monospace,
-        SFMono-Regular,
-        Menlo,
-        Monaco,
-        Consolas,
-        Liberation Mono,
-        monospace;
-    font-size: 10px;
-    font-weight: 400;
-    line-height: 1.5;
-    letter-spacing: -0.16em;
-}
-
 .type-code-medium-md {
     font-family:
         Geist Mono,
@@ -948,22 +938,6 @@
         Liberation Mono,
         monospace;
     font-size: 11px;
-    font-weight: 500;
-    line-height: 1.5;
-    letter-spacing: 0em;
-}
-
-.type-code-medium-xxs {
-    font-family:
-        Geist Mono,
-        ui-monospace,
-        SFMono-Regular,
-        Menlo,
-        Monaco,
-        Consolas,
-        Liberation Mono,
-        monospace;
-    font-size: 10px;
     font-weight: 500;
     line-height: 1.5;
     letter-spacing: 0em;

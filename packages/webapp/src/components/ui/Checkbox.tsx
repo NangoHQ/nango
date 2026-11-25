@@ -13,8 +13,8 @@ export const checkboxVariants = cva(
     [
         'peer group/checkbox inline-flex shrink-0 cursor-pointer items-center justify-center rounded-ds-xs border-ds-1 outline-none',
         'transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
-        'border-border-input bg-surface-input text-icon-on-accent',
-        'not-disabled:hover:border-border-input-hover',
+        'border-control-checkbox-border bg-surface-input text-icon-on-accent',
+        'not-disabled:hover:border-control-checkbox-border-hover',
         'data-[state=checked]:border-interactive-primary data-[state=checked]:bg-interactive-primary',
         'data-[state=indeterminate]:border-interactive-primary data-[state=indeterminate]:bg-interactive-primary',
         'data-[state=checked]:not-disabled:hover:border-interactive-primary-hover data-[state=checked]:not-disabled:hover:bg-interactive-primary-hover',

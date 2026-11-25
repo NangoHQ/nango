@@ -2,8 +2,7 @@ import { ArrowRight, Check, Copy } from 'lucide-react';
 
 import { IconButton } from '@nangohq/design-system';
 
-import { GithubLogo } from '@/assets/GithubLogo';
-import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { ProviderLogo } from '@/components/patterns/ProviderLogo';
 import { cn } from '@/utils/utils';
 
 interface PromptCardProps {
@@ -22,12 +21,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({ prompt, provider, name, 
     const cardClassName = 'flex gap-3 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-[13px] text-left type-text-regular-sm text-text-default';
     const content = (
         <>
-            {/* Template logos pad their artwork, so a 25px box draws an 18px logo. */}
-            {provider === 'github' ? (
-                <GithubLogo className="-m-[3.5px] size-[25px] shrink-0 text-text-strong" />
-            ) : (
-                <IntegrationLogo provider={provider} className="-m-[3.5px] size-[25px] shrink-0 border-0 bg-transparent p-0" />
-            )}
+            <ProviderLogo provider={provider} />
             <span className="flex-1">
                 <PromptText prompt={prompt} name={name} />
             </span>

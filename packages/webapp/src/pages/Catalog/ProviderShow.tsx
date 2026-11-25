@@ -21,7 +21,7 @@ import { useStore } from '@/store';
 import { getDisplayName } from '../Integrations/utils';
 import PageNotFound from '../PageNotFound';
 import { trackSetupButtonClick } from './analytics';
-import { getCategoryLabel, getInstantSetup, getOneClickSetupBody, getVisibleCategories, hasCustomSetup, isMcp } from './catalog.utils';
+import { getCategoryLabel, getOneClickSetupBody, getVisibleCategories, hasCustomSetup, isMcp } from './catalog.utils';
 import { CatalogFunctions } from './components/CatalogFunctions';
 import { CatalogLogo } from './components/CatalogLogo';
 import { ProviderCallout } from './components/ProviderCallout';
@@ -79,7 +79,7 @@ export const CatalogProviderShow: React.FC = () => {
         try {
             const response = await postIntegration(oneClickSetupBody);
             toast({ title: `${provider.displayName} integration added`, variant: 'success' });
-            await navigate(`/${env}/integrations/${encodeURIComponent(response.data.unique_key)}`);
+            await navigate(`/${env}/integrations/${encodeURIComponent(response.data.unique_key)}/functions`);
         } catch {
             toast({ title: `Failed to add ${provider.displayName}`, variant: 'error' });
         } finally {
@@ -123,7 +123,7 @@ export const CatalogProviderShow: React.FC = () => {
                                     <DropdownMenuItem
                                         onSelect={() => {
                                             trackSetupButtonClick(provider.name, source, 'advanced');
-                                            void navigate(`/${env}/integrations/create/${provider.name}`);
+                                            void navigate(`/${env}/catalog/${provider.name}/add`);
                                         }}
                                     >
                                         Advanced…
@@ -140,7 +140,7 @@ export const CatalogProviderShow: React.FC = () => {
                     </Button>
                 ) : (
                     <ButtonLink
-                        to={`/${env}/integrations/create/${provider.name}`}
+                        to={`/${env}/catalog/${provider.name}/add`}
                         variant="primary"
                         size={size}
                         disabled={!allowed}
@@ -152,7 +152,7 @@ export const CatalogProviderShow: React.FC = () => {
             }}
         </PermissionGate>
     );
-    const instantSetup = getInstantSetup(provider);
+    const { instantSetup } = provider;
     const categories = getVisibleCategories(provider);
 
     const showMoreMenu = Boolean(existingIntegrationId && canSetUp);
@@ -201,7 +201,7 @@ export const CatalogProviderShow: React.FC = () => {
                                 <DropdownMenuItem
                                     onSelect={() => {
                                         trackSetupButtonClick(provider.name, 'more_menu', 'form');
-                                        void navigate(`/${env}/integrations/create/${provider.name}`);
+                                        void navigate(`/${env}/catalog/${provider.name}/add`);
                                     }}
                                 >
                                     Add another integration
@@ -233,7 +233,7 @@ export const CatalogProviderShow: React.FC = () => {
 };
 
 function getCalloutState(provider: ApiProviderListItem, configuredIntegrationIds: string[] | null): ProviderCalloutState {
-    const instantSetup = getInstantSetup(provider);
+    const { instantSetup } = provider;
     if (configuredIntegrationIds === null) {
         // Only instant setup apps always end up with a callout. Elsewhere a placeholder could vanish once the list loads.
         return instantSetup ? { kind: 'loading' } : { kind: 'none' };
@@ -241,7 +241,7 @@ function getCalloutState(provider: ApiProviderListItem, configuredIntegrationIds
     if (configuredIntegrationIds.length > 0) {
         return { kind: 'configured', integrationIds: configuredIntegrationIds };
     }
-    if (instantSetup === 'managed') {
+    if (instantSetup === 'nango-managed-app') {
         return { kind: 'instant-managed' };
     }
     if (instantSetup === 'no-dev-app') {

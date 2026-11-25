@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { Copy, Plus } from 'lucide-react';
 
 import { ICON_BUTTON_SIZES, IconButton } from './button';
 
@@ -23,17 +23,14 @@ const STATES = [
     { label: 'Loading', props: { loading: true } }
 ] as const;
 
-type StorySize = IconButtonSize | '2xs';
-
-const SIZE_SPEC: Record<StorySize, string> = {
-    '2xs': '20 · icon 16',
+const SIZE_SPEC: Record<IconButtonSize, string> = {
     xs: '24 · icon 12',
     sm: '28 · icon 14',
     md: '32 · icon 16',
     lg: '36 · icon 16'
 };
 
-const StateMatrix = ({ variant, sizes }: { variant: IconButtonVariant; sizes: readonly StorySize[] }) => (
+const StateMatrix = ({ variant }: { variant: IconButtonVariant }) => (
     <div className="grid grid-cols-[max-content_repeat(6,max-content)] items-center gap-x-8 gap-y-6">
         <span />
         {STATES.map((state) => (
@@ -41,7 +38,7 @@ const StateMatrix = ({ variant, sizes }: { variant: IconButtonVariant; sizes: re
                 {state.label}
             </span>
         ))}
-        {sizes.map((size) => (
+        {ICON_BUTTON_SIZES.map((size) => (
             <div key={size} className="contents">
                 <span className="flex flex-col text-ds-xs text-text-secondary pr-4">
                     <span className="text-text-strong font-ds-medium">{size}</span>
@@ -59,14 +56,36 @@ const StateMatrix = ({ variant, sizes }: { variant: IconButtonVariant; sizes: re
     </div>
 );
 
-const matrixStory = (variant: IconButtonVariant, sizes: readonly StorySize[] = ICON_BUTTON_SIZES): Story => ({
+const matrixStory = (variant: IconButtonVariant): Story => ({
     name: `${variant} — sizes × states`,
-    render: () => <StateMatrix variant={variant} sizes={sizes} />
+    render: () => <StateMatrix variant={variant} />
 });
 
 export const Primary = matrixStory('primary');
 export const Secondary = matrixStory('secondary');
 export const Outline = matrixStory('outline');
-export const Ghost = matrixStory('ghost', ['2xs', ...ICON_BUTTON_SIZES]);
-export const DangerGhost = matrixStory('danger-ghost', ['2xs', ...ICON_BUTTON_SIZES]);
+export const Ghost = matrixStory('ghost');
+export const DangerGhost = matrixStory('danger-ghost');
 export const Danger = matrixStory('danger');
+
+const INLINE_STATES = STATES.filter((state) => ['Default', 'Hover', 'Focus'].includes(state.label));
+
+export const Inline: Story = {
+    render: () => (
+        <div className="grid grid-cols-[repeat(3,max-content)] items-center gap-x-12 gap-y-4">
+            {INLINE_STATES.map((state) => (
+                <span key={state.label} className="story-section-heading">
+                    {state.label}
+                </span>
+            ))}
+            {INLINE_STATES.map((state) => (
+                <div key={state.label} className="flex items-center gap-1.5">
+                    <span className="text-ds-xs font-ds-medium text-text-secondary">acme-prod-7f3c2a</span>
+                    <IconButton variant="ghost" size="sm" inline label={`Copy connection ID (${state.label})`} {...state.props}>
+                        <Copy />
+                    </IconButton>
+                </div>
+            ))}
+        </div>
+    )
+};

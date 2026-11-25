@@ -1,0 +1,84 @@
+---
+title: 'Tools'
+sidebarTitle: 'Overview'
+description: 'Read and write data across external APIs from your agent or backend'
+---
+
+Tools are functions you call on demand to read or write data in external APIs.
+
+- **10,000+ pre-built tools** — Continuously optimized and maintained by Nango with insights from hundreds of millions of production runs
+- **Clear instructions and schemas** — Parameter descriptions, input and output examples, and guidance on API-specific quirks
+- **Tool annotations** — Labels for reads, writes, and destructive operations
+- **Secure, reliable execution** — Retries, rate-limits, resource scaling, and tenant isolation
+- **Detailed execution logs** — Connection, agent session and underlying API requests for every run
+- **Extend and customize** — Extend pre-built tools, or create custom ones, in code with a git-first workflow
+
+<a id="when-this-fits"></a>
+<a id="how-nango-fits-in"></a>
+<a id="technical-setup"></a>
+
+## Call tools
+
+### From your AI agent
+
+[Agent sessions](/guides/agent-sessions) are the recommended way to give your agent tools. For each session, you choose which tools the agent can use.
+
+To try a tool without code, open **Playground** in the Nango dashboard and select the Gmail starter prompt. If the agent gives you a Connect link, use it to authorize Gmail. Then ask, “List my Gmail labels.”
+
+To make the same call from your own agent, follow the [Quickstart](/getting-started/quickstart) to enable Gmail, create a session, and connect your agent to it. Ask the agent to list your Gmail labels, then check **Logs** to see which tool it called.
+
+### From your backend
+
+Call tools from your backend when you need to synchronously read or write data through an external API. Use the [REST API](/reference/backend/http-api/tools/call) or [Node SDK](/reference/backend/backend-sdk/node#call-a-tool).
+
+To make your first call, use Gmail's `list-labels` catalog tool. It's available as soon as you add the integration.
+
+1. In **Catalog**, select Gmail and click **Add integration**. Choose the Nango-managed OAuth app and copy the integration ID.
+2. In **Connections**, click **Add Test Connection**, select your Gmail integration, and authorize your account. Copy the connection ID.
+3. Get an Environment API key for that environment from **Environment Settings > API Keys**. If you use a scoped key, grant it `environment:tools:call`.
+
+Replace the placeholders below to return the labels in the connected mailbox.
+
+<Tabs>
+  <Tab title="REST API">
+    ```bash
+    curl --fail-with-body --request POST \
+      --url 'https://api.nango.dev/connections/<CONNECTION-ID>/tools/list-labels/calls' \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
+      --header 'Provider-Config-Key: <INTEGRATION-ID>' \
+      --header 'Content-Type: application/json' \
+      --data '{"input":{}}'
+    ```
+  </Tab>
+  <Tab title="Node SDK">
+    Install `@nangohq/node` and set `NANGO_API_KEY` in your backend environment.
+
+    ```typescript
+    import { Nango } from '@nangohq/node';
+
+    const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
+    const result = await nango.callTool(
+        { connectionId: '<CONNECTION-ID>', name: 'list-labels' },
+        { input: {} },
+        { 'provider-config-key': '<INTEGRATION-ID>' }
+    );
+    console.log(result);
+    ```
+  </Tab>
+</Tabs>
+
+Before using a catalog tool in production backend code, [pull and deploy your own copy](/guides/tools/customize-tools#extend-a-catalog-tool) so you control when its version changes.
+
+## Catalog vs. custom tools
+
+**Catalog tools** are ready to call as soon as you enable an integration. Nango maintains and deploys them for you, so updates roll out automatically, new tools appear, and retired tools disappear. Agent sessions are optimized for catalog tools and let agents discover available tools and their current schemas on demand.
+
+You can find catalog tools on the [website](https://nango.dev/api-integrations) and the **Catalog** section in the Nango dashboard.
+
+**Custom tools** live in your Nango functions project. Write one from scratch or pull a catalog tool and deploy it as-is or with changes. Nango runs the version you last deployed to your environment, so your backend can rely on the inputs and outputs you define. Agent sessions discover and call custom tools just like catalog tools.
+
+<a id="what-to-read-next"></a>
+
+## Extend and customize tools
+
+You can extend catalog tools, or write entirely custom tools with code that run on Nango. See [customize tools](/guides/tools/customize-tools).

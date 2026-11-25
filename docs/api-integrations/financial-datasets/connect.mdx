@@ -1,0 +1,42 @@
+---
+title: 'Financial Datasets - How do I link my account?'
+sidebarTitle: 'Financial Datasets'
+---
+
+## Overview
+
+To authenticate with Financial Datasets, you need:
+
+1. **API Key** — an API key from your Financial Datasets dashboard.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Financial Datasets account. [Sign up](https://www.financialdatasets.ai/login) if you don't have one.
+- A funded account: every data call returns `402 Payment Required` until you buy credits or subscribe to a plan. The smallest option is a one-time $20 Credits purchase that includes 1,000 requests.
+
+### Step 1: Create an API key
+
+1. Log in to [Financial Datasets](https://www.financialdatasets.ai/login). You land on the dashboard **Overview** page.
+2. In the **API keys** section, click **Create**.
+
+<img src="/api-integrations/financial-datasets/dashboard_api_keys.png" alt="Financial Datasets dashboard Overview page with the Create button in the API keys section"/>
+
+3. Enter a name for the key, for example `nango`, and click **Create**.
+
+<img src="/api-integrations/financial-datasets/create_api_key_dialog.png" alt="Financial Datasets create API key dialog with a key name entered"/>
+
+4. The new key appears in the **API keys** table. Click the copy icon next to it to copy the full key.
+
+<img src="/api-integrations/financial-datasets/api_key_created.png" alt="Financial Datasets API keys table with the copy icon next to the new key"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Financial Datasets.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form. Nango checks the key and rejects it if it is wrong or revoked. A valid key on an account that is not funded yet still connects, but data calls return `402 Payment Required` until you add credits.
+
+<img src="/api-integrations/financial-datasets/form.png" alt="Financial Datasets Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Financial Datasets.

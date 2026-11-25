@@ -3,6 +3,7 @@ import { fromJsonSchema, McpServer, ProtocolError, ProtocolErrorCode } from '@mo
 import { report } from '@nangohq/utils';
 
 import { findActionInputs, withModelDefinitionsHoisted } from '../../../services/agentSessionToolSearch.service.js';
+import { clientToolTags, TAGS_META_KEY } from '../../../services/agentSessionToolTags.js';
 import { toJsonSchema202012 } from '../../mcp/utils.js';
 import { createConnectionTool } from './createConnection/createConnection.js';
 import { executeDirectToolCall } from './directCall.js';
@@ -135,7 +136,7 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
         const tools = await withActionInputSchemas({ page, actions, environmentId: session.environmentId });
 
         return {
-            tools: tools.map((tool) => ({ ...tool, execution: { taskSupport: 'forbidden' as const } })),
+            tools,
             ...(next < listed.length ? { nextCursor: encodeCursor(next) } : {})
         };
     });
@@ -254,12 +255,13 @@ export function buildSessionTools(session: AgentSession): SessionTools {
             if (!tool.mcp) {
                 actions.set(name, { integrationId, name: tool.name });
             }
+            const tags = clientToolTags(tool.tags);
             listed.push({
                 name,
                 description: tool.description,
                 inputSchema: tool.mcp ? directCallInputSchema(tool.mcp.inputSchema) : PINNED_TOOL_INPUT_SCHEMA,
                 ...(tool.mcp?.annotations ? { annotations: tool.mcp.annotations as ToolAnnotations } : {}),
-                _meta: { [INTEGRATION_META_KEY]: integrationId, [TOOL_META_KEY]: tool.name }
+                _meta: { [INTEGRATION_META_KEY]: integrationId, [TOOL_META_KEY]: tool.name, ...(tags ? { [TAGS_META_KEY]: tags } : {}) }
             });
         }
     }

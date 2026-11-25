@@ -2,70 +2,70 @@
 
 | Function name | Description | Type |
 | - | - | - |
-| `associate-records` | Create a relationship link between two records via a navigation property. | [Tool](/guides/functions/tools) |
-| `create-account` | Create an account. | [Tool](/guides/functions/tools) |
-| `create-appointment` | Create an appointment activity | [Tool](/guides/functions/tools) |
-| `create-case` | Create a customer service case | [Tool](/guides/functions/tools) |
-| `create-contact` | Create a contact. | [Tool](/guides/functions/tools) |
-| `create-email` | Create an email activity record. | [Tool](/guides/functions/tools) |
-| `create-lead` | Create a lead. | [Tool](/guides/functions/tools) |
-| `create-note` | Create a note attached to a parent record. | [Tool](/guides/functions/tools) |
-| `create-opportunity` | Create a sales opportunity | [Tool](/guides/functions/tools) |
-| `create-phone-call` | Create a phone call activity | [Tool](/guides/functions/tools) |
-| `create-record` | Create a record of any Dataverse entity from a field/value payload. | [Tool](/guides/functions/tools) |
-| `create-task` | Create a task. | [Tool](/guides/functions/tools) |
-| `delete-account` | Delete an account | [Tool](/guides/functions/tools) |
-| `delete-case` | Delete a case | [Tool](/guides/functions/tools) |
-| `delete-contact` | Delete a contact. | [Tool](/guides/functions/tools) |
-| `delete-lead` | Delete a lead. | [Tool](/guides/functions/tools) |
-| `delete-opportunity` | Delete an opportunity. | [Tool](/guides/functions/tools) |
-| `delete-record` | Delete a record of any Dataverse entity by id. | [Tool](/guides/functions/tools) |
-| `disassociate-records` | Remove a relationship link between two records via a navigation property. | [Tool](/guides/functions/tools) |
-| `get-account` | Retrieve a single account by id. | [Tool](/guides/functions/tools) |
-| `get-appointment` | Retrieve a single appointment activity by id. | [Tool](/guides/functions/tools) |
-| `get-case` | Retrieve a single case by id. | [Tool](/guides/functions/tools) |
-| `get-contact` | Retrieve a single contact by id | [Tool](/guides/functions/tools) |
-| `get-email` | Retrieve a single email activity by id | [Tool](/guides/functions/tools) |
-| `get-entity-definition` | Get metadata for a single entity by logical name, including its entity set name. | [Tool](/guides/functions/tools) |
-| `get-lead` | Retrieve a single lead by id. | [Tool](/guides/functions/tools) |
-| `get-note` | Retrieve a single note by id | [Tool](/guides/functions/tools) |
-| `get-opportunity` | Retrieve a single opportunity by id. | [Tool](/guides/functions/tools) |
-| `get-phone-call` | Retrieve a single phone call activity by id. | [Tool](/guides/functions/tools) |
-| `get-record` | Retrieve a single record of any Dataverse entity by id | [Tool](/guides/functions/tools) |
-| `get-task` | Retrieve a single Dataverse task by its id. | [Tool](/guides/functions/tools) |
-| `get-team` | Retrieve a single team by id. | [Tool](/guides/functions/tools) |
-| `get-user` | Retrieve a single system user by id. | [Tool](/guides/functions/tools) |
-| `list-accounts` | List accounts (companies/organizations) in Microsoft Dataverse. | [Tool](/guides/functions/tools) |
-| `list-appointments` | List Dataverse appointment activities. | [Tool](/guides/functions/tools) |
-| `list-cases` | List customer service cases (incidents). | [Tool](/guides/functions/tools) |
-| `list-contacts` | List contacts (people). | [Tool](/guides/functions/tools) |
-| `list-emails` | List Dataverse email activities. | [Tool](/guides/functions/tools) |
-| `list-entity-attributes` | List all fields (attributes) defined on a given Dataverse entity, including custom fields. | [Tool](/guides/functions/tools) |
-| `list-entity-definitions` | List metadata for all entities (tables) defined in the org, including custom entities. | [Tool](/guides/functions/tools) |
-| `list-leads` | List leads (unqualified prospects) from Microsoft Dataverse. | [Tool](/guides/functions/tools) |
-| `list-notes` | List Dataverse notes (annotations), optionally scoped to a parent record. | [Tool](/guides/functions/tools) |
-| `list-opportunities` | List sales opportunities. | [Tool](/guides/functions/tools) |
-| `list-phone-calls` | List Dataverse phone call activities. | [Tool](/guides/functions/tools) |
-| `list-records` | List records of any Dataverse entity (standard or custom) with OData query support | [Tool](/guides/functions/tools) |
-| `list-tasks` | List Dataverse tasks (activity records), with optional OData select, filter, orderby, and top controls. | [Tool](/guides/functions/tools) |
-| `list-teams` | List Dataverse teams (read-only). | [Tool](/guides/functions/tools) |
-| `list-users` | List Dataverse system users (read-only) | [Tool](/guides/functions/tools) |
-| `query-records-fetchxml` | Query any Dataverse entity using a raw FetchXML query, for aggregations and joins beyond simple OData $filter. | [Tool](/guides/functions/tools) |
-| `update-account` | Update an account's fields. | [Tool](/guides/functions/tools) |
-| `update-case` | Update a case's fields (e.g. change priority). Does not support resolving or cancelling a case. | [Tool](/guides/functions/tools) |
-| `update-contact` | Update a contact's fields (partial merge: only provided fields are changed) | [Tool](/guides/functions/tools) |
-| `update-lead` | Update a lead's fields. | [Tool](/guides/functions/tools) |
-| `update-opportunity` | Update an opportunity's fields. | [Tool](/guides/functions/tools) |
-| `update-record` | Update (partial merge) fields on an existing record of any Dataverse entity. | [Tool](/guides/functions/tools) |
-| `accounts` | Sync accounts (companies/organizations) from Microsoft Dataverse, incrementally, with a periodic full refresh to detect deletions. | [Sync](/guides/functions/syncs/sync-functions) |
-| `appointments` | Sync appointment activities from Microsoft Dataverse, incrementally by versionnumber, with a periodic full refresh (every 24h) to detect deletions such as appointments cascade-deleted with their parent record. | [Sync](/guides/functions/syncs/sync-functions) |
-| `cases` | Incrementally sync customer service cases (Dataverse incidents) using a versionnumber cursor, with a delete-tracked full refresh every 24 hours | [Sync](/guides/functions/syncs/sync-functions) |
-| `contacts` | Sync contacts (people) from Microsoft Dataverse incrementally, with a periodic full refresh to detect deletions. | [Sync](/guides/functions/syncs/sync-functions) |
-| `emails` | Sync email activities from Microsoft Dataverse, incrementally by versionnumber with a periodic full refresh to detect deletions. | [Sync](/guides/functions/syncs/sync-functions) |
-| `leads` | Sync leads (unqualified prospects) from Microsoft Dataverse, incrementally by versionnumber, with a periodic full refresh to detect deletions. | [Sync](/guides/functions/syncs/sync-functions) |
-| `notes` | Sync notes (annotations) from Microsoft Dataverse, incrementally by versionnumber, with a periodic delete-tracked full refresh. | [Sync](/guides/functions/syncs/sync-functions) |
-| `opportunities` | Sync sales opportunities from Microsoft Dataverse, incrementally by versionnumber with a periodic full refresh to detect deletions. | [Sync](/guides/functions/syncs/sync-functions) |
-| `phone-calls` | Sync Microsoft Dataverse phone call activities, incrementally by `versionnumber`, with a periodic full crawl to detect deletions. | [Sync](/guides/functions/syncs/sync-functions) |
-| `tasks` | Sync task activities from Microsoft Dataverse, incrementally on `versionnumber`, with a periodic full refresh to detect deletions. | [Sync](/guides/functions/syncs/sync-functions) |
-| `teams` | Sync Microsoft Dataverse teams incrementally by versionnumber, with a periodic full refresh to detect deletions. | [Sync](/guides/functions/syncs/sync-functions) |
-| `users` | Incrementally sync Microsoft Dataverse system users (systemusers), with a weekly full refresh to detect hard-deleted users. | [Sync](/guides/functions/syncs/sync-functions) |
+| `associate-records` | Create a relationship link between two records via a navigation property. | [Tool](/guides/tools/customize-tools) |
+| `create-account` | Create an account. | [Tool](/guides/tools/customize-tools) |
+| `create-appointment` | Create an appointment activity | [Tool](/guides/tools/customize-tools) |
+| `create-case` | Create a customer service case | [Tool](/guides/tools/customize-tools) |
+| `create-contact` | Create a contact. | [Tool](/guides/tools/customize-tools) |
+| `create-email` | Create an email activity record. | [Tool](/guides/tools/customize-tools) |
+| `create-lead` | Create a lead. | [Tool](/guides/tools/customize-tools) |
+| `create-note` | Create a note attached to a parent record. | [Tool](/guides/tools/customize-tools) |
+| `create-opportunity` | Create a sales opportunity | [Tool](/guides/tools/customize-tools) |
+| `create-phone-call` | Create a phone call activity | [Tool](/guides/tools/customize-tools) |
+| `create-record` | Create a record of any Dataverse entity from a field/value payload. | [Tool](/guides/tools/customize-tools) |
+| `create-task` | Create a task. | [Tool](/guides/tools/customize-tools) |
+| `delete-account` | Delete an account | [Tool](/guides/tools/customize-tools) |
+| `delete-case` | Delete a case | [Tool](/guides/tools/customize-tools) |
+| `delete-contact` | Delete a contact. | [Tool](/guides/tools/customize-tools) |
+| `delete-lead` | Delete a lead. | [Tool](/guides/tools/customize-tools) |
+| `delete-opportunity` | Delete an opportunity. | [Tool](/guides/tools/customize-tools) |
+| `delete-record` | Delete a record of any Dataverse entity by id. | [Tool](/guides/tools/customize-tools) |
+| `disassociate-records` | Remove a relationship link between two records via a navigation property. | [Tool](/guides/tools/customize-tools) |
+| `get-account` | Retrieve a single account by id. | [Tool](/guides/tools/customize-tools) |
+| `get-appointment` | Retrieve a single appointment activity by id. | [Tool](/guides/tools/customize-tools) |
+| `get-case` | Retrieve a single case by id. | [Tool](/guides/tools/customize-tools) |
+| `get-contact` | Retrieve a single contact by id | [Tool](/guides/tools/customize-tools) |
+| `get-email` | Retrieve a single email activity by id | [Tool](/guides/tools/customize-tools) |
+| `get-entity-definition` | Get metadata for a single entity by logical name, including its entity set name. | [Tool](/guides/tools/customize-tools) |
+| `get-lead` | Retrieve a single lead by id. | [Tool](/guides/tools/customize-tools) |
+| `get-note` | Retrieve a single note by id | [Tool](/guides/tools/customize-tools) |
+| `get-opportunity` | Retrieve a single opportunity by id. | [Tool](/guides/tools/customize-tools) |
+| `get-phone-call` | Retrieve a single phone call activity by id. | [Tool](/guides/tools/customize-tools) |
+| `get-record` | Retrieve a single record of any Dataverse entity by id | [Tool](/guides/tools/customize-tools) |
+| `get-task` | Retrieve a single Dataverse task by its id. | [Tool](/guides/tools/customize-tools) |
+| `get-team` | Retrieve a single team by id. | [Tool](/guides/tools/customize-tools) |
+| `get-user` | Retrieve a single system user by id. | [Tool](/guides/tools/customize-tools) |
+| `list-accounts` | List accounts (companies/organizations) in Microsoft Dataverse. | [Tool](/guides/tools/customize-tools) |
+| `list-appointments` | List Dataverse appointment activities. | [Tool](/guides/tools/customize-tools) |
+| `list-cases` | List customer service cases (incidents). | [Tool](/guides/tools/customize-tools) |
+| `list-contacts` | List contacts (people). | [Tool](/guides/tools/customize-tools) |
+| `list-emails` | List Dataverse email activities. | [Tool](/guides/tools/customize-tools) |
+| `list-entity-attributes` | List all fields (attributes) defined on a given Dataverse entity, including custom fields. | [Tool](/guides/tools/customize-tools) |
+| `list-entity-definitions` | List metadata for all entities (tables) defined in the org, including custom entities. | [Tool](/guides/tools/customize-tools) |
+| `list-leads` | List leads (unqualified prospects) from Microsoft Dataverse. | [Tool](/guides/tools/customize-tools) |
+| `list-notes` | List Dataverse notes (annotations), optionally scoped to a parent record. | [Tool](/guides/tools/customize-tools) |
+| `list-opportunities` | List sales opportunities. | [Tool](/guides/tools/customize-tools) |
+| `list-phone-calls` | List Dataverse phone call activities. | [Tool](/guides/tools/customize-tools) |
+| `list-records` | List records of any Dataverse entity (standard or custom) with OData query support | [Tool](/guides/tools/customize-tools) |
+| `list-tasks` | List Dataverse tasks (activity records), with optional OData select, filter, orderby, and top controls. | [Tool](/guides/tools/customize-tools) |
+| `list-teams` | List Dataverse teams (read-only). | [Tool](/guides/tools/customize-tools) |
+| `list-users` | List Dataverse system users (read-only) | [Tool](/guides/tools/customize-tools) |
+| `query-records-fetchxml` | Query any Dataverse entity using a raw FetchXML query, for aggregations and joins beyond simple OData $filter. | [Tool](/guides/tools/customize-tools) |
+| `update-account` | Update an account's fields. | [Tool](/guides/tools/customize-tools) |
+| `update-case` | Update a case's fields (e.g. change priority). Does not support resolving or cancelling a case. | [Tool](/guides/tools/customize-tools) |
+| `update-contact` | Update a contact's fields (partial merge: only provided fields are changed) | [Tool](/guides/tools/customize-tools) |
+| `update-lead` | Update a lead's fields. | [Tool](/guides/tools/customize-tools) |
+| `update-opportunity` | Update an opportunity's fields. | [Tool](/guides/tools/customize-tools) |
+| `update-record` | Update (partial merge) fields on an existing record of any Dataverse entity. | [Tool](/guides/tools/customize-tools) |
+| `accounts` | Sync accounts (companies/organizations) from Microsoft Dataverse, incrementally, with a periodic full refresh to detect deletions. | [Sync](/guides/syncs/sync-functions) |
+| `appointments` | Sync appointment activities from Microsoft Dataverse, incrementally by versionnumber, with a periodic full refresh (every 24h) to detect deletions such as appointments cascade-deleted with their parent record. | [Sync](/guides/syncs/sync-functions) |
+| `cases` | Incrementally sync customer service cases (Dataverse incidents) using a versionnumber cursor, with a delete-tracked full refresh every 24 hours | [Sync](/guides/syncs/sync-functions) |
+| `contacts` | Sync contacts (people) from Microsoft Dataverse incrementally, with a periodic full refresh to detect deletions. | [Sync](/guides/syncs/sync-functions) |
+| `emails` | Sync email activities from Microsoft Dataverse, incrementally by versionnumber with a periodic full refresh to detect deletions. | [Sync](/guides/syncs/sync-functions) |
+| `leads` | Sync leads (unqualified prospects) from Microsoft Dataverse, incrementally by versionnumber, with a periodic full refresh to detect deletions. | [Sync](/guides/syncs/sync-functions) |
+| `notes` | Sync notes (annotations) from Microsoft Dataverse, incrementally by versionnumber, with a periodic delete-tracked full refresh. | [Sync](/guides/syncs/sync-functions) |
+| `opportunities` | Sync sales opportunities from Microsoft Dataverse, incrementally by versionnumber with a periodic full refresh to detect deletions. | [Sync](/guides/syncs/sync-functions) |
+| `phone-calls` | Sync Microsoft Dataverse phone call activities, incrementally by `versionnumber`, with a periodic full crawl to detect deletions. | [Sync](/guides/syncs/sync-functions) |
+| `tasks` | Sync task activities from Microsoft Dataverse, incrementally on `versionnumber`, with a periodic full refresh to detect deletions. | [Sync](/guides/syncs/sync-functions) |
+| `teams` | Sync Microsoft Dataverse teams incrementally by versionnumber, with a periodic full refresh to detect deletions. | [Sync](/guides/syncs/sync-functions) |
+| `users` | Incrementally sync Microsoft Dataverse system users (systemusers), with a weekly full refresh to detect hard-deleted users. | [Sync](/guides/syncs/sync-functions) |

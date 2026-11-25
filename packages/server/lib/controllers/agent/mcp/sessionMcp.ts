@@ -1,5 +1,5 @@
-import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
-import { isInitializeRequest } from '@modelcontextprotocol/server';
+import { toNodeHandler } from '@modelcontextprotocol/node';
+import { createMcpHandler } from '@modelcontextprotocol/server';
 
 import { report } from '@nangohq/utils';
 
@@ -9,6 +9,9 @@ import { createAgentSessionMcpServer } from './sessionServer.js';
 
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from '@nangohq/types';
 
+/** The requests whose result carries the server instructions: initialize on 2025-era clients, server/discover on 2026-07-28. */
+const INSTRUCTIONS_METHODS = new Set(['initialize', 'server/discover']);
+
 export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionMcp>(async (req, res) => {
     const { account, environment, plan, agentSession } = res.locals;
 
@@ -17,10 +20,10 @@ export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionM
         return;
     }
 
-    // Initialize carries the instructions, which say what is connected. Past that, only an MCP server the
-    // agent may have connected since makes the lookup worth it, because it brings tools of its own.
+    // The instructions say what is connected. Past that, only an MCP server the agent may have
+    // connected since makes the lookup worth it, because it brings tools of its own.
     const session =
-        isInitializeRequest(req.body) || hasPendingMcpServers(agentSession)
+        isInstructionsRequest(req.body) || hasPendingMcpServers(agentSession)
             ? await withConnectionsCreatedInSession(agentSession)
                   .then(async (current) => await withMcpToolsDiscovered({ account, environment, plan, session: current }))
                   .catch((err: unknown) => {
@@ -28,16 +31,13 @@ export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionM
                       return agentSession;
                   })
             : agentSession;
-    const server = createAgentSessionMcpServer({ account, environment, plan, session }, req.body);
-    const transport = new NodeStreamableHTTPServerTransport();
+    const handler = createMcpHandler(() => createAgentSessionMcpServer({ account, environment, plan, session }, req.body));
 
-    res.on('close', () => {
-        void transport.close();
-        void server.close();
-    });
-
-    await server.connect(transport);
-    await transport.handleRequest(req, res, req.body);
+    try {
+        await toNodeHandler(handler)(req, res, req.body);
+    } finally {
+        await handler.close();
+    }
 });
 
 // We have to be explicit about not supporting SSE
@@ -53,3 +53,7 @@ export const getAgentSessionMcp = asyncWrapperWithEnvironment<GetAgentSessionMcp
         })
     );
 });
+
+function isInstructionsRequest(body: unknown): boolean {
+    return typeof body === 'object' && body !== null && 'method' in body && typeof body.method === 'string' && INSTRUCTIONS_METHODS.has(body.method);
+}

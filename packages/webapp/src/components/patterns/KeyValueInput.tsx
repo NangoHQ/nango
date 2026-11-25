@@ -1,7 +1,7 @@
 import { EyeIcon, EyeOffIcon, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { IconButton, Input, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { IconButton, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@nangohq/design-system';
 
 import { cn } from '@/utils/utils';
 
@@ -183,15 +183,9 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
                                         type={visibleSecrets[i] ? 'text' : 'password'}
                                     />
                                     <InputGroupAddon align="inline-end">
-                                        <IconButton
-                                            type="button"
-                                            variant="ghost"
-                                            size="2xs"
-                                            label="Toggle value visibility"
-                                            onClick={() => toggleSecretVisibility(i)}
-                                        >
-                                            {visibleSecrets[i] ? <EyeIcon className="size-4" /> : <EyeOffIcon className="size-4" />}
-                                        </IconButton>
+                                        <InputGroupButton label="Toggle value visibility" onClick={() => toggleSecretVisibility(i)}>
+                                            {visibleSecrets[i] ? <EyeIcon /> : <EyeOffIcon />}
+                                        </InputGroupButton>
                                     </InputGroupAddon>
                                 </InputGroup>
                             ) : (

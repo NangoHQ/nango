@@ -441,6 +441,60 @@ export interface MicrosoftGraphNotificationPayload {
     value?: MicrosoftGraphNotification[];
 }
 
+/** https://developer.okta.com/docs/concepts/event-hooks/#sample-event-delivery-payload */
+export interface OktaEventHookPayload {
+    eventType: 'com.okta.event_hook' | (string & {});
+    eventTypeVersion?: string;
+    cloudEventsVersion?: string;
+    /** `https://{oktaDomain}/api/v1/eventHooks/{eventHookId}` */
+    source: string;
+    eventId?: string;
+    eventTime?: string;
+    contentType?: string;
+    data?: {
+        events?: OktaLogEvent[];
+    };
+}
+
+export interface OktaLogEvent {
+    uuid: string;
+    published: string;
+    eventType: string;
+    displayMessage?: string;
+    severity?: string;
+    actor?: { id: string; type: string; alternateId?: string; displayName?: string };
+    target?: { id: string; type: string; alternateId?: string; displayName?: string }[];
+    [key: string]: unknown;
+}
+
+/**
+ * Event-based webhooks carry `type` and `data`. Field-based (global) webhooks carry `employees` instead.
+ * https://documentation.bamboohr.com/docs/event-based-webhooks
+ */
+export interface BambooHrWebhookPayload {
+    type?:
+        | 'employee.created'
+        | 'employee.updated'
+        | 'employee.deleted'
+        | 'company.updated'
+        | 'company.deleted'
+        | 'company-integrations.updated'
+        | (string & {});
+    timestamp?: string;
+    data?: {
+        companyId?: string;
+        employeeId?: string;
+        changedFields?: string[];
+    };
+    employees?: {
+        id: string;
+        action: 'Created' | 'Updated' | 'Deleted' | (string & {});
+        timestamp?: string;
+        changedFields?: string[];
+        fields?: Record<string, unknown>;
+    }[];
+}
+
 export interface LayloWebhookPayload {
     type: 'rsvp' | 'opt_out' | (string & {});
     email?: string;

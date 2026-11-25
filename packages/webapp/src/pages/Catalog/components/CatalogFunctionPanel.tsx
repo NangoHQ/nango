@@ -6,10 +6,10 @@ import { IconButton } from '@nangohq/design-system';
 import { toFunctionSchemas } from '../../Integrations/providerConfigKey/Functions/functionDetails.utils';
 import { FunctionPanel, FunctionPanelHeader, FunctionSchemaTabs } from '../../Integrations/providerConfigKey/Functions/FunctionPanel';
 
-import type { NangoFunctionTemplate } from '@nangohq/types';
+import type { ProviderTemplatesSuccess } from '@nangohq/types';
 
 interface CatalogFunctionPanelProps {
-    fn: NangoFunctionTemplate;
+    fn: ProviderTemplatesSuccess['data'][number];
     setupButton: React.ReactNode;
     onClose: () => void;
 }

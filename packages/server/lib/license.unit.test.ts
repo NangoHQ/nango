@@ -1,10 +1,10 @@
 import { generateKeyPairSync, sign } from 'node:crypto';
 
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, assert, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { signLicense } from '@nangohq/license';
 
-import { checkEnterpriseLicense } from './license.js';
+import { checkEnterpriseLicense, evaluateLicense } from './license.js';
 
 import type * as licenseModule from '@nangohq/license';
 import type { License } from '@nangohq/types';
@@ -71,10 +71,10 @@ describe('checkEnterpriseLicense', () => {
         vi.useRealTimers();
     });
 
-    it('does nothing when NANGO_LICENSE_CHECK is not set', async () => {
+    it('does nothing when NANGO_LICENSE_CHECK is false', async () => {
         state.envs.NANGO_LICENSE_CHECK = false;
         await checkEnterpriseLicense();
-        expect(state.logger.info).toHaveBeenCalledWith('License check disabled: NANGO_LICENSE_CHECK is not set.');
+        expect(state.logger.info).toHaveBeenCalledWith('License check disabled: NANGO_LICENSE_CHECK is false.');
         expect(state.logger.warning).not.toHaveBeenCalled();
     });
 
@@ -132,5 +132,41 @@ describe('checkEnterpriseLicense', () => {
         state.envs.NANGO_LICENSE = 'not-a-license';
         await checkEnterpriseLicense();
         expect(state.logger.warning).toHaveBeenCalledWith('License check failed: license is not a compact JWS.');
+    });
+});
+
+describe('evaluateLicense', () => {
+    let envelope: string;
+
+    beforeAll(async () => {
+        ({ envelope } = await signLicense(license, key));
+    });
+
+    beforeEach(() => {
+        state.envs.NANGO_LICENSE = envelope;
+    });
+
+    it('is valid before the expiry date', async () => {
+        expect(await evaluateLicense(key.publicKeyPem, new Date('2026-06-01T00:00:00Z'))).toStrictEqual({ status: 'valid', license });
+    });
+
+    it('is expired between the expiry date and the end of the grace period', async () => {
+        expect(await evaluateLicense(key.publicKeyPem, new Date('2027-02-01T00:00:00Z'))).toStrictEqual({ status: 'expired', license });
+    });
+
+    it('is past its grace period after grace_until', async () => {
+        expect(await evaluateLicense(key.publicKeyPem, new Date('2027-04-01T00:00:01Z'))).toStrictEqual({ status: 'grace_ended', license });
+    });
+
+    it('is missing when NANGO_LICENSE is not set', async () => {
+        state.envs.NANGO_LICENSE = undefined;
+        expect(await evaluateLicense(key.publicKeyPem)).toStrictEqual({ status: 'missing' });
+    });
+
+    it('is invalid with the verification reason', async () => {
+        state.envs.NANGO_LICENSE = (await signLicense(license, keyPair())).envelope;
+        const result = await evaluateLicense(key.publicKeyPem);
+        assert(result.status === 'invalid');
+        expect(result.reason).toContain('this build trusts');
     });
 });

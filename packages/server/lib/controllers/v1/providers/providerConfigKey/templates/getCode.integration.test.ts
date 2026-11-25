@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { remoteFileService, seeders } from '@nangohq/shared';
+import { listCatalogEntries, remoteFileService, seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
@@ -33,6 +33,27 @@ describe(`GET ${route}`, () => {
         );
 
         shouldRequireQueryEnv(res);
+    });
+
+    it.skip('returns catalog tool source', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const definition = listCatalogEntries('replicate').find((entry) => entry.type === 'tool');
+        if (definition?.type !== 'tool') {
+            throw new Error('Expected a catalog tool fixture');
+        }
+        const getFileSpy = vi.spyOn(remoteFileService, 'getFile').mockResolvedValue('tool source');
+
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            query: { env: 'dev', type: 'tool' },
+            params: { providerConfigKey: definition.provider, name: definition.name }
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual({ type: 'tool', code: 'tool source' });
+        expect(getFileSpy).toHaveBeenCalledWith(definition.location.ts);
     });
 
     it('should return the source of a catalog function', async () => {

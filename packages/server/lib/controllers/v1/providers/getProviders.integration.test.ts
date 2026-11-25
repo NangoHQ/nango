@@ -42,13 +42,13 @@ describe(`GET ${route}`, () => {
             token: apiKey.secret
         });
         isSuccess(templates.json);
-        const expectedActions = templates.json.data.filter((fn) => fn.type === 'action').length;
+        const expectedTools = templates.json.data.filter((fn) => fn.type === 'action' || fn.type === 'tool').length;
         const expectedSyncs = templates.json.data.filter((fn) => fn.type === 'sync').length;
-        expect(expectedActions).toBeGreaterThan(0);
+        expect(expectedTools).toBeGreaterThan(0);
         expect(expectedSyncs).toBeGreaterThan(0);
 
         const github = res.json.data.find((provider) => provider.name === 'github');
-        expect(github?.functionCounts).toStrictEqual({ actions: expectedActions, syncs: expectedSyncs });
+        expect(github?.functionCounts).toStrictEqual({ tools: expectedTools, syncs: expectedSyncs });
     });
 
     it('should return zero counts for a provider with no templates', async () => {
@@ -57,6 +57,6 @@ describe(`GET ${route}`, () => {
 
         isSuccess(res.json);
         const provider = res.json.data.find((item) => item.name === '3cx');
-        expect(provider?.functionCounts).toStrictEqual({ actions: 0, syncs: 0 });
+        expect(provider?.functionCounts).toStrictEqual({ tools: 0, syncs: 0 });
     });
 });

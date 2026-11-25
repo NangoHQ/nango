@@ -1,0 +1,72 @@
+import { ChevronDown } from 'lucide-react';
+
+import { LogoInverted } from '@/assets/LogoInverted';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
+import { cn } from '@/utils/utils';
+import { isFailed, isUnfinished } from '../replyOutcome';
+import { describeTool } from '../toolDisplay';
+import { RowLogo, StatusIcon } from './ToolCallCard';
+
+import type { IntegrationLabels, ToolDisplay } from '../toolDisplay';
+import type { ReplyEntry } from '../toolGroups';
+import type { DynamicToolUIPart } from 'ai';
+
+const MAX_ICONS = 3;
+const NANGO = 'nango';
+const OTHER = 'other';
+
+export const ToolCallGroup: React.FC<{
+    calls: DynamicToolUIPart[];
+    entries: ReplyEntry[];
+    labels: IntegrationLabels | undefined;
+    chatActive: boolean;
+    approvalSending: boolean;
+    renderEntry: (entry: ReplyEntry) => React.ReactNode;
+}> = ({ calls, entries, labels, chatActive, approvalSending, renderEntry }) => {
+    const displays = calls.map((part) => describeTool(part.toolName, part.input, labels));
+    const icons = [...new Set(displays.map(iconFor))].slice(0, MAX_ICONS);
+    const unfinishedIndex = calls.map(isUnfinished).lastIndexOf(true);
+    const unfinished = calls[unfinishedIndex];
+    const running = unfinished !== undefined && chatActive;
+    const stopped = unfinished !== undefined && !chatActive && !(unfinished.state === 'approval-responded' && approvalSending);
+    const failed = calls.filter(isFailed).length;
+
+    const title = running ? displays[unfinishedIndex]?.title : `Ran ${calls.length} tools`;
+
+    return (
+        <Collapsible className="group/tools flex flex-col gap-3">
+            <CollapsibleTrigger className="mr-[17px] flex min-h-7 items-center gap-2 rounded-ds-xs text-left focus-visible:outline-offset-4 text-body-medium-regular text-text-secondary hover:text-text-default">
+                <span className="flex shrink-0 items-center gap-1">
+                    {icons.map((icon) => (
+                        <GroupIcon key={icon} icon={icon} />
+                    ))}
+                </span>
+                <span className={cn('min-w-0 truncate', running && 'animate-pulse')}>{title}</span>
+                <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
+                    {stopped && <span>Stopped</span>}
+                    {failed > 0 && <span>{`${failed} failed`}</span>}
+                    <StatusIcon running={running} stopped={stopped} failed={failed > 0} />
+                    <ChevronDown className="size-4 transition-transform group-data-[state=open]/tools:rotate-180" />
+                </span>
+            </CollapsibleTrigger>
+            {/* Mounted while closed, so each card still times its run. */}
+            <CollapsibleContent forceMount className="flex flex-col gap-3 pl-6 data-[state=closed]:hidden">
+                {entries.map(renderEntry)}
+            </CollapsibleContent>
+        </Collapsible>
+    );
+};
+
+function iconFor(display: ToolDisplay): string {
+    if (display.kind === 'search') {
+        return NANGO;
+    }
+    return display.integration?.provider ?? OTHER;
+}
+
+const GroupIcon: React.FC<{ icon: string }> = ({ icon }) => {
+    if (icon === NANGO) {
+        return <LogoInverted className="size-4 shrink-0 text-text-strong" />;
+    }
+    return <RowLogo provider={icon === OTHER ? undefined : icon} />;
+};

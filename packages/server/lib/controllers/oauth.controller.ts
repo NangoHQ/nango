@@ -309,7 +309,8 @@ class OAuthController {
                 provider.auth_mode !== 'APP' &&
                 provider.auth_mode !== 'MCP_OAUTH2_GENERIC' &&
                 provider.auth_mode !== 'INSTALL_PLUGIN' &&
-                (config.oauth_client_id == null || config.oauth_client_secret == null)
+                (config.oauth_client_id == null ||
+                    (config.oauth_client_secret == null && !(provider.auth_mode === 'OAUTH2' && provider.token_request_auth_method === 'none')))
             ) {
                 const error = WSErrBuilder.InvalidProviderConfig(providerConfigKey);
                 void logCtx.error(error.message);

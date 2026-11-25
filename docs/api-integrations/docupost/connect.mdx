@@ -1,0 +1,32 @@
+---
+title: 'DocuPost - How do I link my account?'
+sidebarTitle: 'DocuPost'
+---
+
+## Overview
+
+To authenticate with DocuPost, you need:
+
+1. **API Token** — a DocuPost API token.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A DocuPost account. You can [sign up](https://app.docupost.com/signup) online.
+
+### Step 1: Generate an API token
+
+1. Log in to DocuPost and go to the [Developer page](https://app.docupost.com/dashboard?account_settings=api) of your account settings.
+2. Click **Generate API Token**.
+3. Copy the generated token and store it somewhere safe.
+
+You can also enable Sandbox Mode for API requests from this screen.
+
+### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with DocuPost.
+2. Paste the token you copied in Step 1 into the **API Token** field.
+3. Submit the form. The connection is saved without checking the token: if the token is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/docupost/form.png" alt="DocuPost Connect UI form with the API Token field" style={{maxWidth: "450px" }}/>

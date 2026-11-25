@@ -1,13 +1,22 @@
 import { describe, expect, it } from 'vitest';
 
-import { getCatalogTool, isTemplatesZeroPath, listCatalogTools } from './actions.js';
+import {
+    getCatalogEntry,
+    getCatalogFunctionByUuid,
+    getCatalogTool,
+    getFlowsJson,
+    isTemplatesZeroPath,
+    listCatalogEntries,
+    listCatalogTools
+} from './actions.js';
+import { generateCatalogFunctionUuid } from './uuid.js';
 
 describe('catalog tools reader', () => {
     it('returns github create-issue from flows.zero.json', () => {
         const tool = getCatalogTool('github', 'create-issue');
         expect(tool).toBeDefined();
         expect(tool?.name).toBe('create-issue');
-        expect(tool?.module).toBe('action');
+        expect(tool?.type).toBe('action');
         expect(tool?.output.length).toBeGreaterThan(0);
         expect(tool?.sdkVersion.endsWith('-zero')).toBe(true);
         expect(tool?.fileLocation).toBe('templates-zero/github/build/github_actions_create-issue.cjs');
@@ -24,6 +33,31 @@ describe('catalog tools reader', () => {
         const github = listCatalogTools('github');
         expect(github.some((tool) => tool.name === 'create-issue')).toBe(true);
         expect(listCatalogTools('this-provider-does-not-exist')).toEqual([]);
+    });
+
+    it('keeps every published provider compatible with the mixed reader', () => {
+        for (const integration of getFlowsJson()) {
+            const entries = listCatalogEntries(integration.providerConfigKey);
+            const actions = listCatalogTools(integration.providerConfigKey);
+            expect(actions).toEqual(entries.filter((entry) => entry.type === 'action'));
+            expect(actions).toHaveLength(integration.actions.length);
+            for (const action of actions) {
+                expect(getCatalogEntry(integration.providerConfigKey, action.name)).toBe(action);
+                expect(getCatalogTool(integration.providerConfigKey, action.name)).toBe(action);
+            }
+            const functions = entries.filter((entry) => entry.type !== 'action');
+            expect(functions).toHaveLength(integration.functions?.length ?? 0);
+            for (const definition of functions) {
+                expect(getCatalogFunctionByUuid(definition.uuid)).toBe(definition);
+            }
+        }
+    });
+
+    it('does not treat a reserved UUID as catalog membership or turn a legacy action into a native function', () => {
+        const uuid = generateCatalogFunctionUuid({ provider: 'github', name: 'create-issue' });
+
+        expect(getCatalogFunctionByUuid(uuid)).toBeUndefined();
+        expect(getCatalogFunctionByUuid('not-a-uuid')).toBeUndefined();
     });
 
     it('recognizes templates-zero paths', () => {

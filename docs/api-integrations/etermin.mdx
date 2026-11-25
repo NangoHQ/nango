@@ -1,0 +1,93 @@
+---
+title: 'eTermin'
+sidebarTitle: 'eTermin'
+description: 'Integrate your application with the eTermin API'
+---
+
+## 🚀 Quickstart
+
+Connect to eTermin with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _eTermin_.
+    </Step>
+    <Step id="authorize-etermin" title="Authorize eTermin">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your eTermin API key (public key) and secret key (private key). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-etermin-api" title="Call the eTermin API">
+    Let's make your first request to the eTermin API to list your calendars. Nango sends your API key in the `publickey` header. eTermin also needs a `salt` (a new random string per request) and a `signature` (the salt's HMAC-SHA256, keyed with the secret key and base64-encoded) on every call, so you compute these two headers and pass them with the request.
+
+    Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID and, for cURL, the connection's secret key:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            SALT=$(uuidgen)
+            SIGNATURE=$(printf '%s' "$SALT" | openssl dgst -sha256 -hmac "<SECRET-KEY>" -binary | base64)
+
+            curl "https://api.nango.dev/proxy/calendar" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Nango-Proxy-Salt: $SALT" \
+              -H "Nango-Proxy-Signature: $SIGNATURE"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { createHmac, randomUUID } from 'node:crypto';
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        // The secret key is the connection's password
+        const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
+        const { password: secretKey } = connection.credentials as { username: string; password: string };
+
+        const salt = randomUUID();
+        const signature = createHmac('sha256', secretKey).update(salt).digest('base64');
+
+        const res = await nango.get({
+            endpoint: '/calendar',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            headers: { salt, signature }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 eTermin integration guides
+
+- [How do I link my account?](/api-integrations/etermin/connect)  
+Copy your API key and secret key to connect your eTermin account.
+
+Official docs: [eTermin API](https://www.etermin.net/online-terminplaner-api)
+
+## 🧩 Pre-built syncs & tools for eTermin
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/etermin/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
