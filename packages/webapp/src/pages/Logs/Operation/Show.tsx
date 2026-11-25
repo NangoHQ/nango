@@ -22,8 +22,8 @@ import type { ApiError } from '@nangohq/types';
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
     const { operation, loading, error, trigger } = useGetOperation(env, { operationId });
-    const isNotFound =
-        error instanceof APIError && (error.res.status === 404 || (error.json as ApiError<string> | undefined)?.error?.code === 'invalid_uri_params');
+    const errorCode = error instanceof APIError ? (error.json as ApiError<string> | undefined)?.error?.code : undefined;
+    const isNotFound = errorCode === 'not_found' || errorCode === 'invalid_uri_params';
 
     const duration = useMemo<string>(() => {
         if (!operation) {
@@ -104,7 +104,9 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         return (
             <div className="py-8 px-6 flex flex-col gap-2">
                 <h3 className="text-xl font-semibold text-text-strong">Operation not found</h3>
-                <p className="text-s text-text-muted">This operation doesn&apos;t exist or has expired. Logs older than 15 days are automatically cleared.</p>
+                <p className="text-s text-text-muted">
+                    This operation doesn&apos;t exist or has expired. Logs are automatically cleared after the retention period.
+                </p>
             </div>
         );
     }
