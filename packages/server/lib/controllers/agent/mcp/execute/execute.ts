@@ -3,7 +3,6 @@ import tracer from 'dd-trace';
 import { invokeFunction, NangoError, toolService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { executeAction } from '../../../../services/action.service.js';
 import * as agentGettingStartedService from '../../../../services/agentGettingStarted.service.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { resolveSessionConnection } from '../../../../services/agentSessionConnections.service.js';
@@ -11,6 +10,7 @@ import { toolResultForAgent } from '../../../../services/agentSessionResults.ser
 import { executeToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { callRemoteTool, withRemoteMcpSession } from '../../../../services/remoteMcp.service.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
+import { executeMcpAction } from '../../../mcp/actions/execute.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { invalidArgumentsOf, makeAgentSessionMcpTool, RemoteToolResult } from '../sessionTool.js';
@@ -204,12 +204,13 @@ export async function executeSessionTool({
             return Ok(await resultForAgent('data' in result.value ? result.value.data : null));
         }
 
-        const { logCtx, functionSource, result } = await executeAction({
+        const { logCtx, functionSource, result } = await executeMcpAction({
             account,
             environment,
             connectionId: connection.connectionId,
             providerConfigKey: integrationId,
             actionName: toolName,
+            resolvedAction: tool,
             input,
             isAsync: false,
             retryMax: RETRY_MAX,
