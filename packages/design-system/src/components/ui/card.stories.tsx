@@ -81,3 +81,21 @@ export const Selected: Story = {
         </div>
     )
 };
+
+export const Danger: Story = {
+    render: () => (
+        <div className="w-96">
+            <Card variant="danger">
+                <CardHeader>
+                    <CardTitle>Danger zone</CardTitle>
+                    <CardDescription>Deleting an environment can&apos;t be undone.</CardDescription>
+                </CardHeader>
+                <CardFooter>
+                    <Button variant="danger" size="md">
+                        Delete
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
+    )
+};

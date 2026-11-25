@@ -322,6 +322,7 @@
     --border-input-hover: #8b8c8f;
     --border-selected: #009cc8;
     --border-danger: #ee4242;
+    --border-danger-subtle: #f6c6c6;
     --border-input-danger: #ee4242;
     --border-input-danger-hover: #f27474;
     --border-disabled: #c4c4c8;
@@ -470,6 +471,7 @@
     --border-input-hover: #ffffff66;
     --border-selected: #00b2e3;
     --border-danger: #ee4242;
+    --border-danger-subtle: #5a0f0f;
     --border-input-danger: #ee4242;
     --border-input-danger-hover: #f27474;
     --border-disabled: #ffffff1f;
@@ -622,6 +624,7 @@
     --color-border-input-hover: var(--border-input-hover);
     --color-border-selected: var(--border-selected);
     --color-border-danger: var(--border-danger);
+    --color-border-danger-subtle: var(--border-danger-subtle);
     --color-border-input-danger: var(--border-input-danger);
     --color-border-input-danger-hover: var(--border-input-danger-hover);
     --color-border-disabled: var(--border-disabled);

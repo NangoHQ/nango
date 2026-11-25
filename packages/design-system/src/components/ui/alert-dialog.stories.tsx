@@ -64,6 +64,28 @@ export const Destructive: Story = {
     )
 };
 
+export const LargeDestructive: Story = {
+    render: () => (
+        <AlertDialog defaultOpen>
+            <AlertDialogTrigger asChild>
+                <Button variant="danger">Delete environment</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent size="lg" destructive>
+                <AlertDialogHeader icon={<Trash2 />}>
+                    <AlertDialogTitle>Delete the dev environment?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This permanently deletes everything in it, including synced records, API keys and logs. Apps using its API keys stop working right away.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction>Delete environment</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )
+};
+
 /** Small size (320px): centered header, buttons split full-width. */
 export const Small: Story = {
     render: () => (

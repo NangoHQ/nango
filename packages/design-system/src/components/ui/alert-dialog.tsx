@@ -24,7 +24,19 @@ function restoreLeakedRadixBodyPointerEvents(ownerDocument = globalThis?.documen
     });
 }
 
-type AlertDialogSize = 'default' | 'sm';
+type AlertDialogSize = 'default' | 'sm' | 'lg';
+
+const CONTENT_WIDTH: Record<AlertDialogSize, string> = {
+    sm: 'sm:max-w-80',
+    default: 'sm:w-fit sm:min-w-96 sm:max-w-lg',
+    lg: 'sm:max-w-120'
+};
+
+const HEADER_LAYOUT: Record<AlertDialogSize, string> = {
+    sm: 'flex-col items-center gap-3.5',
+    default: 'items-start gap-4 sm:max-w-96',
+    lg: 'items-start gap-4'
+};
 
 interface AlertDialogContextValue {
     size: AlertDialogSize;
@@ -66,7 +78,7 @@ const AlertDialogOverlay = React.forwardRef<
 AlertDialogOverlay.displayName = 'AlertDialogOverlay';
 
 export interface AlertDialogContentProps extends React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> {
-    /** `default` (384px, header row) or `sm` (320px, centered header + split full-width footer). */
+    /** `default` (384px, header row), `lg` (480px, header row, for longer copy or extra content) or `sm` (320px, centered header + split full-width footer). */
     size?: AlertDialogSize;
     /** Danger tone — reddens the title and switches the action button to `danger`. */
     destructive?: boolean;
@@ -95,7 +107,7 @@ const AlertDialogContent = React.forwardRef<React.ElementRef<typeof AlertDialogP
                             // Width is content-driven within a range: floor keeps the Figma default for short
                             // dialogs, ceiling lets it grow for long footer labels (e.g. a verbose danger action)
                             // instead of clipping under the fixed width.
-                            size === 'sm' ? 'sm:max-w-80' : 'sm:w-fit sm:min-w-96 sm:max-w-lg',
+                            CONTENT_WIDTH[size],
                             'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-200',
                             className
                         )}
@@ -144,12 +156,7 @@ export interface AlertDialogHeaderProps extends React.ComponentProps<'div'> {
 const AlertDialogHeader = React.forwardRef<HTMLDivElement, AlertDialogHeaderProps>(({ className, icon, children, ...props }, ref) => {
     const { size } = useAlertDialogContext();
     return (
-        <div
-            ref={ref}
-            data-slot="alert-dialog-header"
-            className={cn('flex p-4', size === 'sm' ? 'flex-col items-center gap-3.5' : 'items-start gap-4 sm:max-w-96', className)}
-            {...props}
-        >
+        <div ref={ref} data-slot="alert-dialog-header" className={cn('flex p-4', HEADER_LAYOUT[size], className)} {...props}>
             {icon != null && <AlertDialogMedia>{icon}</AlertDialogMedia>}
             <div className={cn('flex flex-col gap-1.5', size === 'sm' ? 'w-full text-center' : 'min-w-0 flex-1')}>{children}</div>
         </div>

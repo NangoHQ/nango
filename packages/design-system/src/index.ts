@@ -40,7 +40,7 @@ export {
     SPLIT_BUTTON_SIZES,
     SPLIT_BUTTON_VARIANTS
 } from './components/ui/split-button';
-export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card';
+export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, cardVariants, type CardProps } from './components/ui/card';
 export {
     Dialog,
     DialogBody,

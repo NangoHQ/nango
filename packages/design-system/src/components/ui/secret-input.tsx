@@ -12,10 +12,11 @@ const VISIBLE_SUFFIX = 3;
 const MASK_LENGTH = 20;
 
 function maskSecret(value: string, showSuffix: boolean): string {
-    if (!value) {
-        return '';
-    }
     const mask = '•'.repeat(MASK_LENGTH);
+    // A viewer who can't reveal often isn't sent the secret at all; still show it exists.
+    if (!value) {
+        return showSuffix ? '' : mask;
+    }
     if (!showSuffix || value.length <= VISIBLE_SUFFIX) {
         return mask;
     }
@@ -34,7 +35,7 @@ export interface SecretInputProps extends Omit<InputProps, 'type' | 'value' | 'd
 }
 
 export const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(
-    ({ value, defaultValue, editable = false, canReveal = true, disabledReason, onCopy, disabled, ...props }, ref) => {
+    ({ value, defaultValue, editable = false, canReveal = true, disabledReason, onCopy, disabled, mono = true, ...props }, ref) => {
         const [revealed, setRevealed] = useState(false);
         const isRevealed = canReveal && revealed;
         const revealLabel = isRevealed ? 'Hide secret' : 'Show secret';
@@ -56,6 +57,7 @@ export const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(
                 <InputGroup>
                     <InputGroupInput
                         ref={ref}
+                        mono={mono}
                         type={isRevealed ? 'text' : 'password'}
                         value={value}
                         defaultValue={defaultValue}
@@ -77,7 +79,7 @@ export const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(
 
         return (
             <InputGroup>
-                <InputGroupInput ref={ref} readOnly value={isRevealed ? secret : maskSecret(secret, canReveal)} disabled={disabled} {...props} />
+                <InputGroupInput ref={ref} mono={mono} readOnly value={isRevealed ? secret : maskSecret(secret, canReveal)} disabled={disabled} {...props} />
                 <InputGroupAddon align="inline-end">
                     {!canReveal && disabledReason ? (
                         // disabled buttons get no pointer events, so the tooltip hangs on a wrapper
