@@ -9,17 +9,25 @@ export type Theme = 'light' | 'dark' | 'system';
 // index.html's pre-paint script repeats this fallback; change both or the first paint flashes.
 const DEFAULT_THEME: Theme = 'system';
 
-// --- DOM utility ---
+const systemDarkQuery = () => window.matchMedia('(prefers-color-scheme: dark)');
 
-export function resolveTheme(theme: Theme): boolean {
+function readSystemDark(): boolean {
+    try {
+        return systemDarkQuery().matches;
+    } catch {
+        return false;
+    }
+}
+
+export function resolveTheme(theme: Theme, systemDark = systemDarkQuery().matches): boolean {
     if (theme === 'system') {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return systemDark;
     }
     return theme === 'dark';
 }
 
-export function applyTheme(theme: Theme): void {
-    const dark = resolveTheme(theme);
+export function applyTheme(theme: Theme, systemDark?: boolean): void {
+    const dark = resolveTheme(theme, systemDark);
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
 }
 
@@ -49,7 +57,10 @@ try {
 
 interface ThemeState {
     theme: Theme;
+    // Selectors must read this, not matchMedia. Only a store change re-renders their subscribers.
+    systemDark: boolean;
     setTheme: (theme: Theme) => void;
+    setSystemDark: (systemDark: boolean) => void;
     /** Toggle between dark and light, ignoring/overriding system. */
     toggleDarkMode: () => void;
 }
@@ -60,15 +71,18 @@ export const useThemeStore = create<ThemeState>()(
             // Initialize from localStorage so first render has the correct value
             // (avoids a flash when persist hydrates asynchronously)
             theme: getStoredTheme(),
+            systemDark: readSystemDark(),
             setTheme: (theme) => set({ theme }),
+            setSystemDark: (systemDark) => set({ systemDark }),
             toggleDarkMode: () => {
-                const currentlyDark = resolveTheme(get().theme);
+                const currentlyDark = darkModeSelector(get());
                 set({ theme: currentlyDark ? 'light' : 'dark' });
             }
         }),
         {
             name: LocalStorageKeys.Theme,
             storage: createJSONStorage(() => localStorage),
+            partialize: (s) => ({ theme: s.theme }),
             // Migrate old boolean `darkMode` field
             migrate: (persisted: any) => {
                 if (typeof persisted?.darkMode === 'boolean') {
@@ -82,7 +96,7 @@ export const useThemeStore = create<ThemeState>()(
 );
 
 /** Derived selector: current effective dark value (system resolves to OS preference). */
-export const darkModeSelector = (s: ThemeState) => resolveTheme(s.theme);
+export const darkModeSelector = (s: ThemeState) => resolveTheme(s.theme, s.systemDark);
 
 // --- Hook ---
 
@@ -94,21 +108,20 @@ export const darkModeSelector = (s: ThemeState) => resolveTheme(s.theme);
  */
 export function useTheme(): void {
     const theme = useThemeStore((s) => s.theme);
+    const systemDark = useThemeStore((s) => s.systemDark);
     const setTheme = useThemeStore((s) => s.setTheme);
+    const setSystemDark = useThemeStore((s) => s.setSystemDark);
 
-    // Apply to DOM and track OS preference changes when on 'system'
     useEffect(() => {
-        applyTheme(theme);
+        applyTheme(theme, systemDark);
+    }, [theme, systemDark]);
 
-        if (theme !== 'system') {
-            return;
-        }
-
-        const mq = window.matchMedia('(prefers-color-scheme: dark)');
-        const handler = () => applyTheme('system');
+    useEffect(() => {
+        const mq = systemDarkQuery();
+        const handler = () => setSystemDark(mq.matches);
         mq.addEventListener('change', handler);
         return () => mq.removeEventListener('change', handler);
-    }, [theme]);
+    }, [setSystemDark]);
 
     // Sync theme changes from other tabs
     useEffect(() => {
