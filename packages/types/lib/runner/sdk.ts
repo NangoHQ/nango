@@ -53,6 +53,7 @@ export interface NangoProps {
         | undefined;
     isCLI?: boolean | undefined;
     integrationConfig?: IntegrationConfigForProxy;
+    /** When set on a function, the runner loads this stored agent session result and runs the function with it as its input. */
     agentSessionResult?: { sessionId: string; recordId: string } | undefined;
 
     axios?: {

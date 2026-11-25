@@ -8,6 +8,7 @@ import { envs } from './env.js';
 import { authenticate, authorize, authorizeBodySyncId, rejectTaskCredential } from './middleware/capability.js';
 import { connectionOwnershipMiddleware } from './middleware/connectionOwnership.middleware.js';
 import { syncJobOwnershipMiddleware } from './middleware/syncJobOwnership.middleware.js';
+import { routeHandler as getAgentSessionResultHandler } from './routes/environment/environmentId/connection/connectionId/agentSessionResult/getAgentSessionResult.js';
 import { routeHandler as deleteCheckpointHandler } from './routes/environment/environmentId/connection/connectionId/checkpoint/deleteCheckpoint.js';
 import { routeHandler as getCheckpointHandler } from './routes/environment/environmentId/connection/connectionId/checkpoint/getCheckpoint.js';
 import { routeHandler as putCheckpointHandler } from './routes/environment/environmentId/connection/connectionId/checkpoint/putCheckpoint.js';
@@ -63,6 +64,9 @@ createRoute(server, deleteRecordsHandler, { middleware: [authorize('persist:reco
 createRoute(server, deleteOutdatedRecordsHandler, { middleware: [authorize('persist:records'), syncJobOwnershipMiddleware as RequestHandler, jsonDefault] });
 createRoute(server, deleteHardRecordsHandler, { middleware: [authorize('persist:records'), syncJobOwnershipMiddleware as RequestHandler, jsonDefault] });
 createRoute(server, getRecordsHandler, { middleware: [authorize('persist:records'), connectionOwnershipMiddleware as RequestHandler, jsonDefault] });
+createRoute(server, getAgentSessionResultHandler, {
+    middleware: [authorize('persist:agent-session-result'), connectionOwnershipMiddleware as RequestHandler, jsonDefault]
+});
 createRoute(server, getCursorHandler, { middleware: [authorize('persist:cursor'), connectionOwnershipMiddleware as RequestHandler, jsonDefault] });
 createRoute(server, getCheckpointHandler, { middleware: [authorize('persist:checkpoint'), connectionOwnershipMiddleware as RequestHandler, jsonDefault] });
 createRoute(server, putCheckpointHandler, { middleware: [authorize('persist:checkpoint'), connectionOwnershipMiddleware as RequestHandler, jsonDefault] });

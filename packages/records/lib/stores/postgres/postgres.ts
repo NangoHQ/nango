@@ -212,7 +212,8 @@ export class PostgresStore implements RecordsStore {
         cursor,
         externalIds,
         metadataOnly,
-        sort
+        sort,
+        readFromPrimary
     }: {
         connectionId: number;
         model: string;
@@ -223,6 +224,7 @@ export class PostgresStore implements RecordsStore {
         externalIds?: string[] | undefined;
         metadataOnly?: boolean | undefined;
         sort?: 'asc' | 'desc' | undefined;
+        readFromPrimary?: boolean | undefined;
     }): Promise<Result<GetRecordsResponse>> {
         const activeSpan = tracer.scope().active();
         const span = tracer.startSpan('nango.records.getRecords', {
@@ -238,8 +240,9 @@ export class PostgresStore implements RecordsStore {
 
             const sortOrder = sort ?? 'asc';
             const isDesc = sortOrder === 'desc';
+            const dbRead = readFromPrimary ? this.db : this.dbRead;
 
-            let query = this.dbRead
+            let query = dbRead
                 .from<FormattedRecord>(RECORDS_TABLE)
                 .timeout(60000) // timeout after 1 minute
                 .where({ connection_id: connectionId, model })
@@ -290,7 +293,6 @@ export class PostgresStore implements RecordsStore {
             }
 
             if (filter) {
-                const dbRead = this.dbRead;
                 const formattedFilter = filter.toUpperCase();
                 switch (true) {
                     case formattedFilter.includes('ADDED') && formattedFilter.includes('UPDATED'):
@@ -327,7 +329,7 @@ export class PostgresStore implements RecordsStore {
                 // PostgreSQL stores timestamp with microseconds precision
                 // however, javascript date only supports milliseconds precision
                 // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
-                this.dbRead.raw(`
+                dbRead.raw(`
                     tableoid::regclass as partition,
                     id,
                     external_id,
@@ -407,7 +409,7 @@ export class PostgresStore implements RecordsStore {
                     // Keeping both the array and the Map doubles the reference count on each
                     // encrypted blob, which prevents `dataById.delete()` below from making
                     // them eligible for GC during the loop.
-                    const rows = await this.dbRead
+                    const rows = await dbRead
                         .from(RECORDS_DATA_TABLE)
                         .where({ connection_id: connectionId, model })
                         .whereIn('id', recordIds)
