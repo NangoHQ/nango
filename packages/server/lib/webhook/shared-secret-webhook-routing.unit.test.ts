@@ -5,7 +5,6 @@ import { seeders } from '@nangohq/shared';
 import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
 
 import { InternalNango } from './internal-nango.js';
-import postHogWebhookRouting from './posthog-webhook-routing.js';
 import supabaseWebhookRouting from './supabase-webhook-routing.js';
 import telegramWebhookRouting from './telegram-webhook-routing.js';
 
@@ -52,18 +51,10 @@ interface Case {
     dispatched: Record<string, unknown>;
 }
 
-const POSTHOG_BODY = { event: { uuid: '0193', event: '$pageview', distinct_id: 'user-1', properties: {} }, person: { id: 'person-1' } };
 const SUPABASE_BODY = { type: 'INSERT', table: 'orders', schema: 'public', record: { id: 1 }, old_record: null };
 const TELEGRAM_BODY = { update_id: 10000, message: { message_id: 1, chat: { id: 1111, type: 'private' }, text: 'hi' } };
 
 const cases: Case[] = [
-    {
-        provider: 'posthog',
-        route: postHogWebhookRouting,
-        body: POSTHOG_BODY,
-        secretHeader: 'x-nango-webhook-secret',
-        dispatched: { webhookType: 'event.event' }
-    },
     { provider: 'supabase', route: supabaseWebhookRouting, body: SUPABASE_BODY, secretHeader: 'x-nango-webhook-secret', dispatched: { webhookType: 'type' } },
     {
         provider: 'telegram',

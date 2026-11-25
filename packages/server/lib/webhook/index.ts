@@ -22,7 +22,6 @@ export { default as jobdivaWebhookRouting } from './jobdiva-webhook-routing.js';
 export { default as highlevelWebhookRouting } from './highlevel-webhook-routing.js';
 export { default as notionWebhookRouting } from './notion-webhook-routing.js';
 export { default as affinityWebhookRouting } from './affinity-webhook-routing.js';
-export { default as postHogWebhookRouting } from './posthog-webhook-routing.js';
 export { default as supabaseWebhookRouting } from './supabase-webhook-routing.js';
 export { default as telegramWebhookRouting } from './telegram-webhook-routing.js';
 export { default as shopifyWebhookRouting } from './shopify-webhook-routing.js';

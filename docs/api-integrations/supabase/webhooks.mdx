@@ -37,7 +37,7 @@ In the Nango dashboard, open your Supabase integration and copy the **Webhook UR
 
 ### 3. Create the database webhook in Supabase
 
-1. In the Supabase dashboard, go to **Database** → **Webhooks** and create a webhook.
+1. In the Supabase dashboard, go to **Integrations** → [**Database Webhooks**](https://supabase.com/dashboard/project/_/integrations/webhooks/overview) and create a webhook.
 2. Pick the table and the events to send.
 3. Choose **HTTP Request**, set the method to `POST` and the URL to the URL from step 2.
 4. Add an HTTP header named `X-Nango-Webhook-Secret` with the secret from step 1, and save.
@@ -45,6 +45,10 @@ In the Nango dashboard, open your Supabase integration and copy the **Webhook UR
 <Note>
 The webhook secret on the integration's Settings page is not used for Supabase. Nango only checks the connection's `webhookSecret`.
 </Note>
+
+<Warning>
+Supabase sends database webhooks with `pg_net`, which [writes each request's headers to `net.http_request_queue`](https://supabase.com/kb/troubleshooting/database-roles-can-read-request-headers-queued-by-pg_net-ad6357) until it is sent. While a request waits, any role that can log in to the database can read the secret.
+</Warning>
 
 ## Handle the webhook
 
