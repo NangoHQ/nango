@@ -30,7 +30,7 @@ const integrationLinkClassName =
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
-    const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
+    const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'settings');
     const [functionOpen, setFunctionOpen] = useState(false);
     const functionDrawerOpen = activeTab === 'functions' && functionOpen;
 
