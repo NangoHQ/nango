@@ -40,6 +40,15 @@ function writeStoredWidth(storageKey: string, width: number | null) {
     }
 }
 
+function getMaxWidth(panel: HTMLElement): number | null {
+    const layoutWidth = panel.parentElement?.clientWidth;
+    if (!layoutWidth) {
+        return null;
+    }
+    const isOverlay = getComputedStyle(panel).position === 'absolute';
+    return Math.max(DOCKED_PANEL_MIN_WIDTH, layoutWidth - (isOverlay ? 0 : MAIN_MIN_WIDTH));
+}
+
 export interface DockedPanelProps extends React.HTMLAttributes<HTMLElement> {
     resizeLabel?: string;
     storageKey?: string;
@@ -51,6 +60,7 @@ export const DockedPanel = forwardRef<HTMLElement, DockedPanelProps>(
         const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
         const [width, setWidth] = useState<number | null>(() => readStoredWidth(storageKey));
         const [dragging, setDragging] = useState(false);
+        const [bounds, setBounds] = useState<{ now: number; max: number } | null>(null);
 
         useEffect(() => {
             if (storageKey) {
@@ -70,15 +80,24 @@ export const DockedPanel = forwardRef<HTMLElement, DockedPanelProps>(
             [ref]
         );
 
-        const clamp = (next: number) => {
+        useEffect(() => {
             const panel = panelRef.current;
-            const layoutWidth = panel?.parentElement?.clientWidth;
-            if (!panel || !layoutWidth) {
-                return Math.max(DOCKED_PANEL_MIN_WIDTH, next);
+            const layout = panel?.parentElement;
+            if (!panel || !layout || typeof ResizeObserver === 'undefined') {
+                return;
             }
-            const isOverlay = getComputedStyle(panel).position === 'absolute';
-            const max = Math.max(DOCKED_PANEL_MIN_WIDTH, layoutWidth - (isOverlay ? 0 : MAIN_MIN_WIDTH));
-            return Math.min(max, Math.max(DOCKED_PANEL_MIN_WIDTH, next));
+            const observer = new ResizeObserver(() => {
+                setBounds({ now: panel.offsetWidth, max: getMaxWidth(panel) ?? panel.offsetWidth });
+            });
+            observer.observe(panel);
+            observer.observe(layout);
+            return () => observer.disconnect();
+        }, []);
+
+        const clamp = (next: number) => {
+            const max = panelRef.current ? getMaxWidth(panelRef.current) : null;
+            const atLeastMin = Math.max(DOCKED_PANEL_MIN_WIDTH, next);
+            return max === null ? atLeastMin : Math.min(max, atLeastMin);
         };
 
         const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -115,7 +134,7 @@ export const DockedPanel = forwardRef<HTMLElement, DockedPanelProps>(
                 return;
             }
             e.preventDefault();
-            const current = width ?? panelRef.current?.offsetWidth ?? DOCKED_PANEL_MIN_WIDTH;
+            const current = panelRef.current?.offsetWidth ?? width ?? DOCKED_PANEL_MIN_WIDTH;
             setWidth(clamp(current + (e.key === 'ArrowLeft' ? KEYBOARD_STEP : -KEYBOARD_STEP)));
         };
 
@@ -136,7 +155,8 @@ export const DockedPanel = forwardRef<HTMLElement, DockedPanelProps>(
                     aria-orientation="vertical"
                     aria-label={resizeLabel}
                     aria-valuemin={DOCKED_PANEL_MIN_WIDTH}
-                    aria-valuenow={width ?? undefined}
+                    aria-valuemax={bounds?.max}
+                    aria-valuenow={bounds?.now}
                     tabIndex={0}
                     data-dragging={dragging || undefined}
                     onPointerDown={onPointerDown}
