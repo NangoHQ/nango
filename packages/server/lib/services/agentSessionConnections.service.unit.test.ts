@@ -25,6 +25,30 @@ describe('pickConnectionPerIntegration', () => {
         });
     });
 
+    it('labels the account with the end user display name, then their email', () => {
+        const result = resolve({
+            matches: [
+                match({
+                    integrationId: 'notion',
+                    candidates: [
+                        candidate({
+                            integrationId: 'notion',
+                            connectionId: 'notion-1',
+                            tags: { end_user_display_name: 'Jane Doe', end_user_email: 'jane@example.com' }
+                        })
+                    ]
+                }),
+                match({
+                    integrationId: 'slack',
+                    candidates: [candidate({ integrationId: 'slack', connectionId: 'slack-1', tags: { end_user_email: 'jane@example.com' } })]
+                })
+            ]
+        });
+
+        expect(result.unwrap()['notion']?.accountLabel).toBe('Jane Doe');
+        expect(result.unwrap()['slack']?.accountLabel).toBe('jane@example.com');
+    });
+
     it('treats zero matches as an empty resolution rather than an error', () => {
         const result = resolve({});
 

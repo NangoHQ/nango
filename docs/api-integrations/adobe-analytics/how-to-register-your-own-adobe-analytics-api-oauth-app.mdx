@@ -1,0 +1,37 @@
+---
+title: 'How to register your own Adobe Analytics OAuth app'
+sidebarTitle: 'Adobe Analytics setup'
+description: 'Create an Adobe Developer Console project for Adobe Analytics and configure its credentials in Nango'
+---
+
+This guide shows you how to create an Adobe Developer Console project with the Adobe Analytics API to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Adobe Analytics data.
+
+<Steps>
+    <Step id="get-developer-access" title="Get developer access">
+        Your Adobe organization must have Adobe Analytics, and you need System Admin or Developer rights for it.
+        To be added as a developer, an admin opens the [Adobe Admin Console](https://adminconsole.adobe.com), goes to **Products** -> **Adobe Analytics**, selects a product profile, opens the **Developers** tab, and selects **Add developer**.
+    </Step>
+    <Step id="create-project" title="Create a project">
+        Go to the [Adobe Developer Console](https://developer.adobe.com/console), confirm that you're signed in to the right organization, and select **Create new project**.
+    </Step>
+    <Step id="add-analytics-api" title="Add the Adobe Analytics API">
+        Select **Add API**, choose **Adobe Analytics**, and select **Next**.
+    </Step>
+    <Step id="configure-oauth" title="Configure OAuth user authentication">
+        1. Choose **OAuth User Authentication**, then the **Web App** credential type.
+        2. Set the **Default redirect URI** to `https://api.nango.dev/oauth/callback`.
+        3. Set the **Redirect URI pattern** to `https://api\.nango\.dev/oauth/callback`. Adobe matches it as a regular expression, so escape each period with `\`.
+        4. Save the configuration.
+
+        For other Nango deployments, use the callback URL configured in your Nango environment. Adobe requires HTTPS.
+    </Step>
+    <Step id="configure-integration" title="Enter the credentials in Nango">
+        In the project's OAuth Web App credential, copy the **Client ID** and **Client secret** into your **Adobe Analytics** integration in Nango.
+        Nango requests the `openid`, `AdobeID`, `read_organizations`, `additional_info.projectedProductContext`, `additional_info.job_function`, and `offline_access` scopes by default, which the Adobe Analytics API needs.
+    </Step>
+    <Step id="start-building-integration" title="Start building your integration">
+        Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
+    </Step>
+</Steps>
+
+See Adobe's [Adobe Analytics 2.0 API getting started guide](https://developer.adobe.com/analytics-apis/docs/2.0/guides/) and [OAuth user authentication documentation](https://developer.adobe.com/developer-console/docs/guides/authentication/UserAuthentication/implementation).

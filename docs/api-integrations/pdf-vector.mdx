@@ -1,0 +1,84 @@
+---
+title: 'PDF Vector'
+sidebarTitle: 'PDF Vector'
+description: 'Integrate your application with the PDF Vector API'
+---
+
+## 🚀 Quickstart
+
+Connect to PDF Vector with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _PDF Vector_.
+    </Step>
+    <Step id="authorize-pdf-vector" title="Authorize PDF Vector">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your PDF Vector API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-pdf-vector-api" title="Call the PDF Vector API">
+    Let's make your first request to the PDF Vector API to search academic papers (this request costs 2 credits). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/api/academic/search" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"query": "large language models", "limit": 5}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/api/academic/search',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: { query: 'large language models', limit: 5 }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 PDF Vector integration guides
+
+- [How do I link my account?](/api-integrations/pdf-vector/connect)  
+Create an API key in your PDF Vector instance settings and connect it in the Connect UI.
+
+Official docs: [PDF Vector API reference](https://global.pdfvector.com/api/reference)
+
+## 🧩 Pre-built syncs & tools for PDF Vector
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/pdf-vector/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Nango does not check the key when a connection is created, so a wrong or revoked key still connects and fails on its first call.
+
+---

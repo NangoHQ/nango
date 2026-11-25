@@ -4,7 +4,7 @@ sidebarTitle: "Audit trail"
 description: "Review who changed what in your Nango account."
 ---
 
-The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: connection changes, integration settings, teammate roles, sign-ins.
+The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: connection changes, integration settings, teammate roles, sign-ins. From the **data plane**, it records credential reads, such as fetching a connection's credentials through the API.
 
 Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review.
 
@@ -46,12 +46,12 @@ The audit trail covers the main control-plane operations related to connections,
 
 | Resource | Actions |
 |----------|---------|
-| `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted` |
-| `integration` | `created`, `updated`, `deleted` |
+| `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted`, `credentials_read` |
+| `integration` | `created`, `updated`, `deleted`, `credentials_read` |
 | `function` | `deployed`, `upgraded`, `updated`, `deleted`, `variant_created`, `variant_deleted`, `variant_updated` |
 | `sync` | `enabled`, `disabled`, `paused`, `started`, `triggered`, `cancelled`, `frequency_changed`, `variant_created`, `variant_deleted` |
-| `api_key` | `created`, `updated`, `deleted` |
-| `environment` | `created`, `updated`, `variables_changed`, `webhook_urls_changed`, `webhook_signing_key_rotated`, `deleted` |
+| `api_key` | `created`, `updated`, `deleted`, `credentials_read` |
+| `environment` | `created`, `updated`, `variables_changed`, ~~`webhook_urls_changed`~~ *(historical only)*, `webhook_signing_key_rotated`, `deleted`, `credentials_read` |
 | `member` | `invited`, `invite_accepted`, `invite_declined`, `invite_revoked`, `removed`, `role_changed` |
 | `team` | `updated` |
 | `user` | `updated` |
@@ -60,16 +60,31 @@ The audit trail covers the main control-plane operations related to connections,
 | `billing` | `plan_changed`, `trial_extended`, `details_changed`, `payment_method_added`, `payment_method_removed`, `spend_alert_changed`, `spend_alert_removed` |
 | `audit_trail` | `queried`, `exported` |
 
+`environment.updated` includes changes to environment settings and webhook configuration, including URLs and event subscriptions. Webhook fields appear in `metadata.changedFields` with the `webhooks.*` prefix, such as `webhooks.primary_url`. The former `environment.webhook_urls_changed` event is no longer emitted; existing entries remain available until their retention period ends. To review webhook changes across historical and current records, include both actions in your filters.
+
 `connection.metadata_updated` and `sync.triggered` are recorded for actions taken in the dashboard. The equivalent API endpoints — `POST` / `PATCH /connection/metadata` and `POST /sync/trigger` — are data plane operations and are not recorded; see [Limitations](#limitations).
 
 `function.variant_updated` records the requested `enabled` and `frequency` settings in its metadata. A `frequency` of `null` means the frequency override was reset. Omitted settings are not included.
 
 Secrets, such as API keys and passwords, are stripped from audit log entries.
 
-Reads are generally not recorded. Listing connections, fetching an integration, or opening a page in the dashboard leaves no entry. Our audit trail is designed to answer "what changed", not "what was looked at". Queries to the audit trail are an exception and logged with the actions listed above.
+Two kinds of reads are recorded: queries to the audit trail itself, and reads that return credentials. A credentials read is recorded as `credentials_read`, so you can see who accessed a secret.
+
+Credential reads are recorded from the dashboard and through the API endpoints that manage integrations, API keys, and environments. Requests rejected for lack of permission are recorded too, with the `denied` outcome.
+
+On the data plane, fetching a connection's credentials with `GET /connections/{connectionId}` is recorded as `connection.credentials_read`.
+
+Credential reads cover:
+
+| Resource | Credentials |
+|----------|-------------|
+| `connection` | Connection credentials |
+| `integration` | Integration credentials, such as the client secret |
+| `api_key` | API key secrets |
+| `environment` | Environment secrets, such as the webhook signing key |
 
 <Note>
-The audit trail currently does not cover data plane operations, such as reading connection credentials or fetching sync records. See [Limitations](#limitations) for details.
+Apart from credential reads, the audit trail does not cover data plane operations, such as fetching sync records or proxy requests. See [Limitations](#limitations) for details.
 </Note>
 
 ## Actors
@@ -78,6 +93,7 @@ The audit trail currently does not cover data plane operations, such as reading 
 |-------|---------|
 | `user` | Someone signed in to the Nango dashboard |
 | `api_key` | A call authenticated with an API key. The entry includes the API key's name. |
+| `task_token` | A function run authenticated with a task capability token. The id is `task:` followed by the task id. The entry is not attributed to the environment's API key. |
 | `connect_session` | The end user who completed a Connect flow, identified by the end-user ID you supplied when creating the session, and their email if you supplied one |
 | `anonymous` | Nango knows an attempt was made but cannot name who made it — a rejected sign-in, for example. The email in the request was never verified, so it appears as the target rather than the actor |
 | `public_key` | A connection created through the [legacy public key flow](/guides/platform/migrations/migrate-from-public-key). The key identifies your environment, not a person, so no end user is named |
@@ -94,17 +110,17 @@ Nango staff may access your account to investigate a support request. Actions ta
 We can expand audit trail coverage on request. If you need items logged that aren't covered today, please [reach out](https://nango.dev/demo)!
 </Note>
 
-The audit trail currently covers the control plane, but not the **data plane**: API requests used to work with integrations and exchange data with external APIs.
+The audit trail covers the control plane and credential reads, but not the rest of the **data plane**: API requests used to work with integrations and exchange data with external APIs.
 
 For example, the following activities are not covered:
 
 | Not recorded | Example |
 |--------------|----------|
-| Reading connection credentials | `GET /connection/{connectionId}` |
 | Reading records from Nango | `GET /records` |
 | Deleting/pruning records in Nango | `PATCH /records` pruning |
 | Setting or updating connection metadata via the API | `POST` / `PATCH /connection/metadata` |
 | Triggering a sync via the API | `POST /sync/trigger` |
 | Proxy requests | Every call through `/proxy` |
-| Action executions | `POST /action/trigger` |
-| Reading configuration | Listing or fetching connections, integrations, or functions |
+| Tool calls | `POST /connections/:connectionId/tools/:name/calls` |
+| Legacy action executions (deprecated) | `POST /action/trigger` |
+| Reading configuration without secrets | Listing or fetching connections, integrations, or functions |

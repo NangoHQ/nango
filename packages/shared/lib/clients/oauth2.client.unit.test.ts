@@ -98,6 +98,43 @@ describe('getSimpleOAuth2ClientConfig', () => {
         expect(agents.http).toBe(getOAuthSafeHttpAgents().httpAgent);
         expect(agents.https).toBe(getOAuthSafeHttpAgents().httpsAgent);
     });
+
+    it('passes a secret without line breaks unchanged', () => {
+        const provider = makeProvider({ token_url: 'https://api.example.com/token', authorization_url: 'https://api.example.com/authorize' });
+        const cfg = getSimpleOAuth2ClientConfig(makeConfig({ oauth_client_secret: 'a-secret value' }), provider, {});
+        expect(cfg.client.secret).toBe('a-secret value');
+    });
+
+    // microsoft-admin-cert stores a PEM private key as the secret and signs its own client assertion.
+    it('keeps a private_key_jwt secret away from simple-oauth2', () => {
+        const provider = makeProvider({
+            token_url: 'https://api.example.com/token',
+            authorization_url: 'https://api.example.com/authorize',
+            token_request_auth_method: 'private_key_jwt'
+        });
+        const pem = '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADAN\n-----END PRIVATE KEY-----\n';
+        const cfg = getSimpleOAuth2ClientConfig(makeConfig({ oauth_client_secret: pem }), provider, {});
+        expect(cfg.client.secret).toBe('');
+        const authorizeUrl = new AuthorizationCode(cfg).authorizeURL({ redirect_uri: 'https://cb', state: 's' });
+        expect(authorizeUrl).not.toContain('MIIEvQIBADAN');
+    });
+
+    describe('zoho token host', () => {
+        const provider = makeProvider({
+            token_url: 'https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token || ${connectionConfig.accounts-server}/oauth/v2/token'
+        });
+
+        it.each([
+            ['Canada', { 'accounts-server': 'https://accounts.zohocloud.ca', extension: 'ca' }, 'https://accounts.zohocloud.ca'],
+            ['another extension', { 'accounts-server': 'https://accounts.zoho.eu', extension: 'eu' }, 'https://accounts.zoho.eu'],
+            ['a bare accounts-server code', { 'accounts-server': 'us', extension: 'com' }, 'https://accounts.zoho.com'],
+            ['accounts-server without extension', { 'accounts-server': 'https://accounts.zohocloud.ca' }, 'https://accounts.zohocloud.ca']
+        ])('resolves %s', (_, connectionConfig, expectedHost) => {
+            const cfg = getSimpleOAuth2ClientConfig(makeConfig(), provider, connectionConfig);
+            expect(cfg.auth.tokenHost).toBe(expectedHost);
+            expect(cfg.auth.tokenPath).toBe('/oauth/v2/token');
+        });
+    });
 });
 
 describe('OAuth2 token generation and refresh', () => {
@@ -148,6 +185,41 @@ describe('OAuth2 token generation and refresh', () => {
                 expect(result.success).toBe(true);
                 expect(result.response?.access_token).toBe('refreshed-access-token');
                 expect(assertSafeOAuthUrl).toHaveBeenCalledWith(`${baseUrl}/token`);
+            }
+        );
+    });
+
+    it('getFreshOAuth2Credentials keeps a public client ID override across refreshes', async () => {
+        const receivedClientIds: (string | null)[] = [];
+        await withServer(
+            (req, res) => {
+                let body = '';
+                req.on('data', (chunk) => (body += chunk));
+                req.on('end', () => {
+                    receivedClientIds.push(new URLSearchParams(body).get('client_id'));
+                    res.writeHead(200, { 'content-type': 'application/json' });
+                    res.end(JSON.stringify({ access_token: 'refreshed-access-token', token_type: 'bearer', expires_in: 3600, refresh_token: 'rotated' }));
+                });
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ token_url: `${baseUrl}/token`, token_request_auth_method: 'none' });
+                const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                let credentials: Record<string, unknown> = {
+                    type: 'OAUTH2',
+                    access_token: 'stale-access-token',
+                    refresh_token: 'the-refresh-token',
+                    expires_at: new Date(Date.now() - 60_000),
+                    config_override: { client_id: 'override-client-id' }
+                };
+
+                for (let i = 0; i < 2; i++) {
+                    const connection = { id: 1, environment_id: 1, connection_config: {}, credentials } as unknown as DBConnectionDecrypted;
+                    const result = await getFreshOAuth2Credentials({ connection, config: makeConfig(), provider, logCtx: buffer });
+                    expect(result.success).toBe(true);
+                    credentials = result.response as unknown as Record<string, unknown>;
+                }
+
+                expect(receivedClientIds).toEqual(['override-client-id', 'override-client-id']);
             }
         );
     });
@@ -273,5 +345,87 @@ describe('OAuth2 token generation and refresh', () => {
         const httpLog = (buffer.transport as BufferTransport).buffer.find((msg) => msg.type === 'http');
         expect(httpLog?.response?.code).toBe(504);
         expect(httpLog?.meta?.['body']).toBe('Client request timeout');
+    });
+});
+
+describe('public clients (token_request_auth_method: none)', () => {
+    function captureBody(onBody: (body: URLSearchParams) => void): http.RequestListener {
+        return (req, res) => {
+            let body = '';
+            req.on('data', (chunk) => (body += chunk));
+            req.on('end', () => {
+                onBody(new URLSearchParams(body));
+                res.writeHead(200, { 'content-type': 'application/json' });
+                res.end(JSON.stringify({ access_token: 'new-access-token', token_type: 'bearer', expires_in: 3600 }));
+            });
+        };
+    }
+
+    function staleConnection(): DBConnectionDecrypted {
+        return {
+            id: 1,
+            environment_id: 1,
+            connection_config: {},
+            credentials: { type: 'OAUTH2', access_token: 'stale', refresh_token: 'the-refresh-token', expires_at: new Date(Date.now() - 60_000) }
+        } as unknown as DBConnectionDecrypted;
+    }
+
+    it('sends only client_id when exchanging the authorization code', async () => {
+        let received: URLSearchParams | null = null;
+        await withServer(
+            captureBody((body) => (received = body)),
+            async (baseUrl) => {
+                const provider = makeProvider({ token_url: `${baseUrl}/token`, token_request_auth_method: 'none' });
+                const client = new AuthorizationCode(getSimpleOAuth2ClientConfig(makeConfig({ oauth_client_secret: '' }), provider, {}));
+                await client.getToken({ code: 'the-code', redirect_uri: 'https://cb' });
+
+                expect(received?.getAll('client_id')).toEqual(['client-id']);
+                expect(received?.has('client_secret')).toBe(false);
+                expect(received?.get('code')).toBe('the-code');
+            }
+        );
+    });
+
+    it('sends only client_id when refreshing', async () => {
+        let received: URLSearchParams | null = null;
+        await withServer(
+            captureBody((body) => (received = body)),
+            async (baseUrl) => {
+                const provider = makeProvider({ token_url: `${baseUrl}/token`, token_request_auth_method: 'none' });
+                const result = await getFreshOAuth2Credentials({
+                    connection: staleConnection(),
+                    config: makeConfig({ oauth_client_secret: '' }),
+                    provider,
+                    logCtx: logContextGetter.getBuffer({ accountId: 1 })
+                });
+
+                expect(result.success).toBe(true);
+                expect(received?.getAll('client_id')).toEqual(['client-id']);
+                expect(received?.has('client_secret')).toBe(false);
+                expect(received?.get('refresh_token')).toBe('the-refresh-token');
+            }
+        );
+    });
+
+    it.each([
+        { description: 'a configured secret', clientSecret: 'client-secret' },
+        { description: 'an empty secret', clientSecret: '' }
+    ])('still sends $description as client_secret when the provider does not opt in', async ({ clientSecret }) => {
+        let received: URLSearchParams | null = null;
+        await withServer(
+            captureBody((body) => (received = body)),
+            async (baseUrl) => {
+                const provider = makeProvider({ token_url: `${baseUrl}/token` });
+                await getFreshOAuth2Credentials({
+                    connection: staleConnection(),
+                    config: makeConfig({ oauth_client_secret: clientSecret }),
+                    provider,
+                    logCtx: logContextGetter.getBuffer({ accountId: 1 })
+                });
+
+                expect(received?.get('client_id')).toBe('client-id');
+                expect(received?.get('client_secret')).toBe(clientSecret);
+            }
+        );
     });
 });

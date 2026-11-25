@@ -1,0 +1,38 @@
+---
+title: 'Postmark - How do I link my account?'
+sidebarTitle: 'Postmark'
+---
+
+## Overview
+
+To authenticate with Postmark, you need:
+
+1. **Server API Token** — the API token of the Postmark server you want to connect.
+
+This guide will show you how to find it.
+
+### Prerequisites
+
+- A Postmark account. If you don't have one, [sign up](https://account.postmarkapp.com/sign_up): every account starts on the free Developer plan, which includes 100 emails every month.
+
+### Step 1: Copy your Server API token
+
+1. Sign in to [Postmark](https://account.postmarkapp.com/login) and open [Servers](https://account.postmarkapp.com/servers).
+2. Select the server you want to connect, or click **Create server** to make a new one.
+
+<img src="/api-integrations/postmark/servers_list.png" alt="Postmark Servers page with a server in the list and the Create server button"/>
+
+3. Open the server's **API Tokens** tab.
+4. Copy the token under **Server API tokens**. Click **Generate another token** if you want a separate token for this connection.
+
+<img src="/api-integrations/postmark/server_api_tokens.png" alt="Postmark server API Tokens tab with the Server API tokens field and the Generate another token button"/>
+
+### Step 2: Enter your Server API token in the Connect UI
+
+1. Open the form where you need to authenticate with Postmark.
+2. Enter your token in the **Server API Token** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/postmark/form.png" alt="Postmark Connect UI form with the Server API Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Postmark.

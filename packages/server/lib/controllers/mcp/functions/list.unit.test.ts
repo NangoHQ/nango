@@ -72,7 +72,7 @@ describe('listFunctionsTool', () => {
             source: 'repo',
             input_json_schema: { type: 'string' },
             output_json_schema: null,
-            meta: { instructions: 'Read users', required_scopes: ['read'], tags: { category: 'crm' } }
+            meta: { instructions: 'Read users', required_scopes: { all: ['read'] }, tags: { category: 'crm' } }
         };
         const spy = vi.spyOn(functionLookupService, 'listFunctions').mockResolvedValue(Ok({ rows: [tool], total: 1 }));
         const result = await listFunctionsTool.handler({ integration_id: 'github', type: 'tool' }, context);

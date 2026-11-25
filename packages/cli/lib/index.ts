@@ -14,7 +14,6 @@ import figlet from 'figlet';
 import { getVersionOutput } from './cli.js';
 import { NangoCliExitCode } from './exit-codes.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
-import { cloneTemplate } from './services/clone.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
 import { DryRunService } from './services/dryrun.service.js';
 import { Ensure } from './services/ensure.service.js';
@@ -30,9 +29,10 @@ import { MissingArgumentError } from './utils/errors.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAllFunctions } from './zeroYaml/compile.js';
 import { parseIntegrationDefinitions } from './zeroYaml/definitions.js';
-import { deploy } from './zeroYaml/deploy.js';
+import { deploy, validateDeployArguments } from './zeroYaml/deploy.js';
 import { dev } from './zeroYaml/dev.js';
 import { initZero } from './zeroYaml/init.js';
+import { isPath, resolveEntryPoint } from './zeroYaml/project-path.js';
 import { ReadableError } from './zeroYaml/utils.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
@@ -286,7 +286,7 @@ program
 program
     .command('dryrun')
     .description('Dry run a sync, action, or function against an existing connection in cloud.')
-    .argument('[name]', 'The name of the sync, action, or function to run.')
+    .argument('[file]', 'The path of the sync, action, or function to run. Passing its name instead is deprecated.')
     .argument('[connection_id]', 'The ID of the connection to use.')
     .option('-e, --environment [environment]', 'The Nango environment. If not provided, you will be prompted to select one.')
     .option(
@@ -358,6 +358,19 @@ program
             }
 
             let integrationFilter: string[] | undefined = integrationId ? [integrationId] : undefined;
+            if (name && isPath(name)) {
+                const entryPoint = resolveEntryPoint({ fullPath, file: name, entryPoints: definitions.value.entryPoints });
+                if (entryPoint.isErr()) {
+                    throw entryPoint.error;
+                }
+                if (integrationId) {
+                    throw new Error('--integration-id cannot be used with a file.');
+                }
+                name = entryPoint.value.name;
+                integrationFilter = [entryPoint.value.integrationId];
+            } else if (name) {
+                console.warn(chalk.yellow('Passing a name is deprecated. Use `nango dryrun <file> <connection_id>` instead.'));
+            }
             if (connectionId && !integrationFilter) {
                 // integration id not provided, try to infer it from the connection id
                 const inferred = await inferIntegrationsFromConnectionId(connectionId, environment);
@@ -491,13 +504,14 @@ program
     .command('deploy')
     .description('Deploy a Nango integration')
     .argument('[environment]', 'The target environment (e.g., "dev" or "prod")')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with.')
-    .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
-    .option('-a, --action [actionName]', 'Optional deploy only this action name.')
+    .argument('[file]', 'Optional: Deploy only this script file (e.g., "github/tools/getIssue.ts").')
+    .option('-v, --version [version]', 'Optional: Set the deployment version for syncs/actions. Has no effect on functions.')
+    .option('-s, --sync [syncName]', 'Deprecated, pass the script file instead. Optional deploy only this sync name.')
+    .option('-a, --action [actionName]', 'Deprecated, pass the script file instead. Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
-    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
+    .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation. Requires --auto-confirm.', false)
     .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
-    .action(async function (this: Command, environment?: string) {
+    .action(async function (this: Command, environment?: string, file?: string) {
         const options = this.opts<DeployOptions>();
         const { debug, interactive, dependencyUpdate, sourcemap } = options;
         const fullPath = process.cwd();
@@ -510,6 +524,13 @@ program
             if (err instanceof MissingArgumentError) {
                 this.help();
             }
+            process.exitCode = NangoCliExitCode.DeployError;
+            return;
+        }
+
+        const validArguments = validateDeployArguments({ environment, file, options });
+        if (validArguments.isErr()) {
+            console.error(chalk.red(validArguments.error.message));
             process.exitCode = NangoCliExitCode.DeployError;
             return;
         }
@@ -530,7 +551,7 @@ program
             return;
         }
 
-        const res = await deploy({ fullPath, options, environmentName: environment });
+        const res = await deploy({ fullPath, options, environmentName: environment, file, interactive });
         if (res.isErr()) {
             process.exitCode = NangoCliExitCode.DeployError;
             return;
@@ -625,21 +646,13 @@ program
     });
 
 program
-    .command('clone')
-    .description('Clone integration templates from the integration-templates repository')
-    .argument('<template>', 'Template to clone (e.g., "github", "github/actions", "github/actions/list-repos")')
-    .option('-f, --force', 'Overwrite existing files without prompting', false)
-    .action(async function (this: Command, template: string) {
-        const { debug, autoConfirm, force } = this.opts<GlobalOptions & { force: boolean }>();
-        const fullPath = process.cwd();
-
-        const precheck = await verificationService.ensureZeroYaml({ fullPath, debug });
-        if (!precheck) return;
-
-        const success = await cloneTemplate({ fullPath, templatePath: template, debug, force, autoConfirm });
-        if (!success) {
-            process.exitCode = 1;
-        }
+    .command('clone', { hidden: true })
+    .argument('[template]')
+    .allowUnknownOption()
+    .action(() => {
+        console.error(chalk.red('`nango clone` has been removed.'));
+        console.error(chalk.gray('Pull a catalog function with: nango pull <integration> <function> --catalog'));
+        process.exitCode = 1;
     });
 program
     .command('pull')
@@ -648,6 +661,7 @@ program
     .argument('<name>', 'Function name')
     .option('-c, --catalog', 'Pull from the public catalog')
     .option('-e, --env <environment>', 'Pull from a deployed function in this environment')
+    .option('-t, --target <integration>', 'With --catalog, the integration to write the function for, when its name differs from the provider')
     .option('-s, --sync', 'Disambiguate to a sync when multiple functions share the name')
     .option('-a, --action', 'Disambiguate to an action when multiple functions share the name')
     .option('--on-event', 'Disambiguate to an on-event script when multiple functions share the name')
@@ -657,6 +671,7 @@ program
         const opts = this.opts<{
             catalog?: boolean;
             env?: string;
+            target?: string;
             sync?: boolean;
             action?: boolean;
             onEvent?: boolean;
@@ -671,6 +686,14 @@ program
             console.error(chalk.gray('Examples:'));
             console.error(chalk.gray('  nango pull github list-repos --catalog'));
             console.error(chalk.gray('  nango pull github list-repos --env dev'));
+            process.exitCode = 1;
+            return;
+        }
+
+        if (opts.target && !opts.catalog) {
+            console.error(chalk.red('--target can only be used with --catalog.'));
+            console.error(chalk.gray('Example:'));
+            console.error(chalk.gray('  nango pull github list-repos --catalog --target my-github'));
             process.exitCode = 1;
             return;
         }
@@ -696,7 +719,7 @@ program
 
         let success: boolean;
         if (opts.catalog) {
-            success = await pullFromCatalog(baseOptions);
+            success = await pullFromCatalog({ ...baseOptions, target: opts.target });
         } else {
             let environmentName: string;
             try {

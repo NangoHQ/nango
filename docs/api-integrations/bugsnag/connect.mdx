@@ -1,0 +1,54 @@
+---
+title: 'Bugsnag - How do I link my account?'
+sidebarTitle: 'Bugsnag'
+---
+
+## Overview
+
+To authenticate with Bugsnag, you need:
+
+1. **API Host** — the Bugsnag API host that matches your dashboard.
+2. **Personal Auth Token** — a token generated in your Bugsnag account.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Bugsnag account with access to the organization you want to connect.
+
+### Step 1: Find your API host
+
+Look at the address of the Bugsnag dashboard you log in to and pick the matching API host:
+
+| Dashboard | API host |
+| --- | --- |
+| `app.bugsnag.com` | `api.bugsnag.com` |
+| `app.bugsnag.smartbear.com` | `api.bugsnag.smartbear.com` |
+| On-premise install on `your-domain` | `api.your-domain` |
+
+Enter the host only, without `https://`. Use the host of the dashboard where you generate the token in the next step.
+
+### Step 2: Generate a personal auth token
+
+1. Log in to your Bugsnag dashboard.
+2. Open **Settings** > **My account** > **Personal auth tokens**, then click **Generate new token**.
+
+<img src="/api-integrations/bugsnag/personal_auth_tokens_page.png" alt="Bugsnag Personal auth tokens page with the Generate new token button"/>
+
+3. Enter a description for the token, select your organization, and click **Generate token**.
+
+<img src="/api-integrations/bugsnag/generate_token_dialog.png" alt="Bugsnag Generate token dialog with the description and organization fields"/>
+
+4. Copy the token. Bugsnag shows it only once.
+
+<img src="/api-integrations/bugsnag/auth_token_created.png" alt="Bugsnag Auth token generated dialog with the copy button"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Bugsnag.
+2. Enter your **API Host** and **Personal Auth Token** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/bugsnag/form.png" alt="Bugsnag Connect UI form with the API Host and Personal Auth Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Bugsnag.

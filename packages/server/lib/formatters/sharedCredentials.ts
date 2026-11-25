@@ -10,6 +10,7 @@ export function sharedCredentialsToApi(provider: DBSharedCredentials): SharedCre
             scopes: provider.credentials.oauth_scopes,
             app_link: provider.credentials.app_link
         },
+        enabled: provider.enabled,
         created_at: provider.created_at.toISOString(),
         updated_at: provider.updated_at.toISOString()
     };

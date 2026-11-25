@@ -26,7 +26,6 @@ describe('deployTemplateTool', () => {
         expect(deploySpy).toHaveBeenCalledWith({
             account: context.account,
             environment: context.environment,
-            plan: context.plan,
             body: { type: 'template', integration_id: 'airtable', template: 'tables', function_type: 'sync' }
         });
     });
@@ -64,6 +63,17 @@ describe('deployTemplateTool', () => {
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(PublicMcpError);
+        }
+    });
+
+    it('returns the deprecation message publicly', async () => {
+        const message = 'Actions are deprecated. Use createTool instead.';
+        vi.spyOn(functionDeploymentService, 'deployTemplate').mockResolvedValue(Err(new functionDeploymentService.LegacyActionsDeprecatedError()));
+        const result = await deployTemplateTool.handler({ integration_id: 'github', template: 'legacy', function_type: 'action' }, context);
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toBe(message);
         }
     });
 

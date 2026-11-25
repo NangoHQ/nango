@@ -21,11 +21,10 @@ type DeploymentResponse = Response<PostFunctionDeployment['Reply'], RequestLocal
 const logger = getLogger('Server.PostFunctionDeployment');
 
 async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeploymentTemplateBody): Promise<void> {
-    const { environment, account, plan } = res.locals;
+    const { environment, account } = res.locals;
     const result = await functionDeploymentService.deployTemplate({
         environment,
         account,
-        plan,
         body
     });
     if (result.isErr()) {
@@ -77,6 +76,9 @@ export const postFunctionDeployment = asyncWrapperWithEnvironment<PostFunctionDe
 
 function sendDeployFunctionError(res: DeploymentResponse, error: DeployFunctionServiceError): void {
     switch (error.code) {
+        case 'legacy_actions_deprecated':
+            res.status(403).send({ error: { code: error.code, message: error.message } });
+            return;
         case 'customer_api_key_required':
             res.status(403).send({ error: { code: 'forbidden', message: error.message } });
             return;
@@ -103,6 +105,9 @@ function sendDeployFunctionError(res: DeploymentResponse, error: DeployFunctionS
 
 function sendDeployTemplateError(res: DeploymentResponse, error: DeployTemplateServiceError): void {
     switch (error.code) {
+        case 'legacy_actions_deprecated':
+            res.status(403).send({ error: { code: error.code, message: error.message } });
+            return;
         case 'integration_not_found':
             res.status(404).send({ error: { code: 'integration_not_found', message: error.message } });
             return;
@@ -113,8 +118,8 @@ function sendDeployTemplateError(res: DeploymentResponse, error: DeployTemplateS
         case 'template_already_deployed':
             res.status(409).send({ error: { code: error.code, message: error.message } });
             return;
-        case 'plan_limit':
-            res.status(400).send({ error: { code: error.code, message: error.message } });
+        case 'invalid_request':
+            res.status(400).send({ error: { code: 'invalid_request', message: error.message } });
             return;
         case 'non_runnable_template':
             if (error.cause) {

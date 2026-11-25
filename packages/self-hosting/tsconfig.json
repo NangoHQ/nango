@@ -1,0 +1,28 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "lib",
+        "outDir": "dist"
+    },
+    "references": [
+        {
+            "path": "../clickhouse-migrations"
+        },
+        {
+            "path": "../hosted-telemetry"
+        },
+        {
+            "path": "../license"
+        },
+        {
+            "path": "../migrations"
+        },
+        {
+            "path": "../types"
+        },
+        {
+            "path": "../utils"
+        }
+    ],
+    "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
+}

@@ -54,6 +54,7 @@ import { getPublicEnvironment } from './controllers/environment/getEnvironment.j
 import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { patchPublicEnvironmentApiKey } from './controllers/environment/patchApiKey.js';
+import { patchPublicEnvironment } from './controllers/environment/patchEnvironment.js';
 import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
 import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
@@ -82,6 +83,7 @@ import { getConnectionToolsMcp, postConnectionToolsMcp, requireConnectionMcp } f
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
+import { getPublicProviderTemplateCode } from './controllers/providers/provider/templates/getCode.js';
 import { getPublicProviderTemplates } from './controllers/providers/provider/templates/getTemplates.js';
 import { allPublicProxy } from './controllers/proxy/allProxy.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
@@ -104,6 +106,7 @@ import { acceptLanguageMiddleware } from './middleware/accept-language.middlewar
 import authMiddleware from './middleware/access.middleware.js';
 import {
     auditConnectionCreated,
+    auditDeprecatedProviderConfigCredentialsRead,
     auditFunctionDeployedCli,
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
@@ -112,14 +115,19 @@ import {
     auditFunctionVariantDeleted,
     auditFunctionVariantUpdated,
     auditPublicApiKeyCreated,
+    auditPublicApiKeyCredentialsRead,
     auditPublicApiKeyDeleted,
     auditPublicApiKeyUpdated,
+    auditPublicConnectionCredentialsRead,
     auditPublicConnectionDeleted,
     auditPublicConnectionUpdated,
     auditPublicEnvironmentCreated,
+    auditPublicEnvironmentCredentialsRead,
     auditPublicEnvironmentDeleted,
+    auditPublicEnvironmentUpdated,
     auditPublicFunctionDeleted,
     auditPublicIntegrationCreated,
+    auditPublicIntegrationCredentialsRead,
     auditPublicIntegrationDeleted,
     auditPublicIntegrationUpdated,
     auditPublicQuickstartIntegrationCreated,
@@ -130,19 +138,20 @@ import {
     auditSyncVariantCreated,
     auditSyncVariantDeleted
 } from './middleware/audit/index.js';
+import { catalogCodeRateLimit } from './middleware/catalogCodeRateLimit.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
+import { apiAuth, envAuth } from './middleware/env-auth.js';
 import { withEnvironmentTarget } from './middleware/environment-target.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
+import { withTaskCapability } from './middleware/task-capability.js';
 import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { RequestLocals } from './utils/express.js';
 import type { Request, RequestHandler } from 'express';
 
-const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
-const envAuth: RequestHandler[] = [...apiAuth, resolveEnvironment];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const agentSessionAuth: RequestHandler[] = [authMiddleware.agentSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
@@ -276,11 +285,13 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrEnvAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrEnvAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProvider);
 publicAPI.route('/providers/:provider/templates').get(envAuth, withEnvironmentTarget, getPublicProviderTemplates);
+publicAPI.route('/providers/:provider/templates/:name/code').get(envAuth, withEnvironmentTarget, catalogCodeRateLimit, getPublicProviderTemplateCode);
 
 publicAPI.use('/environments', jsonContentTypeMiddleware);
 publicAPI.route('/environments').get(apiAuth, can('account:environments:list'), getPublicEnvironments);
-publicAPI.route('/environments/:environmentUuid').get(apiAuth, can('account:environments:read'), getPublicEnvironment);
+publicAPI.route('/environments/:environmentUuid').get(apiAuth, auditPublicEnvironmentCredentialsRead, can('account:environments:read'), getPublicEnvironment);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, can('account:environments:create'), postPublicEnvironment);
+publicAPI.route('/environments/:environmentUuid').patch(apiAuth, auditPublicEnvironmentUpdated, can('account:environments:update'), patchPublicEnvironment);
 publicAPI.route('/environments/:environmentUuid').delete(apiAuth, auditPublicEnvironmentDeleted, can('account:environments:delete'), deletePublicEnvironment);
 publicAPI
     .route('/environments/:environmentUuid/api-keys')
@@ -288,7 +299,7 @@ publicAPI
     .post(apiAuth, auditPublicApiKeyCreated, can('account:environments:api_keys:create'), postPublicEnvironmentApiKey);
 publicAPI
     .route('/environments/:environmentUuid/api-keys/:keyUuid')
-    .get(apiAuth, can('account:environments:api_keys:read'), getPublicEnvironmentApiKey)
+    .get(apiAuth, auditPublicApiKeyCredentialsRead, can('account:environments:api_keys:read'), getPublicEnvironmentApiKey)
     .patch(apiAuth, auditPublicApiKeyUpdated, can('account:environments:api_keys:update'), patchPublicEnvironmentApiKey)
     .delete(apiAuth, auditPublicApiKeyDeleted, can('account:environments:api_keys:delete'), deletePublicEnvironmentApiKey);
 
@@ -297,6 +308,7 @@ publicAPI
     .route('/config/:providerConfigKey')
     .get(
         envAuth,
+        auditDeprecatedProviderConfigCredentialsRead,
         can('environment:integrations:read', 'environment:integrations:read_credentials'),
         trackDeprecatedPublicEndpoint('GET /config/:providerConfigKey'),
         configController.getProviderConfig.bind(configController)
@@ -308,13 +320,20 @@ publicAPI
     .route('/integrations')
     .get(connectSessionOrEnvAuth, can('environment:integrations:list', 'environment:integrations:list_credentials'), getPublicListIntegrations);
 publicAPI.route('/integrations').post(envAuth, auditPublicIntegrationCreated, can('environment:integrations:create'), postPublicIntegration);
+// TODO: remove this deprecated alias of POST /integrations with NANGO_MANAGED credentials (NAN-7880)
 publicAPI
     .route('/integrations/quickstart')
-    .post(envAuth, auditPublicQuickstartIntegrationCreated, can('environment:integrations:create'), postPublicQuickstartIntegration);
+    .post(
+        envAuth,
+        auditPublicQuickstartIntegrationCreated,
+        can('environment:integrations:create'),
+        trackDeprecatedPublicEndpoint('POST /integrations/quickstart'),
+        postPublicQuickstartIntegration
+    );
 publicAPI.route('/integrations/:uniqueKey').patch(envAuth, auditPublicIntegrationUpdated, can('environment:integrations:update'), patchPublicIntegration);
 publicAPI
     .route('/integrations/:uniqueKey')
-    .get(envAuth, can('environment:integrations:read', 'environment:integrations:read_credentials'), getPublicIntegration);
+    .get(...withTaskCapability('api:integration:read', { beforeCan: [auditPublicIntegrationCredentialsRead] }), getPublicIntegration);
 
 publicAPI.route('/integrations/:uniqueKey').delete(envAuth, auditPublicIntegrationDeleted, can('environment:integrations:delete'), deletePublicIntegration);
 publicAPI.route('/integrations/:uniqueKey/functions/:name/code').get(envAuth, can('environment:functions:read'), getFunctionCode);
@@ -329,6 +348,7 @@ publicAPI.use('/connection', jsonContentTypeMiddleware);
 // @deprecated
 publicAPI.route('/connection/:connectionId').get(
     envAuth,
+    auditPublicConnectionCredentialsRead,
     can('environment:connections:read', 'environment:connections:read_credentials'),
     trackDeprecatedPublicEndpoint('GET /connection/:connectionId', (req) => req.get('Nango-Is-Sync') === 'true'),
     getPublicConnection
@@ -393,17 +413,17 @@ publicAPI
 publicAPI.use('/connections', jsonContentTypeMiddleware);
 publicAPI.route('/connections').post(envAuth, auditConnectionCreated, can('environment:connections:create'), postPublicConnection);
 publicAPI.route('/connections').get(envAuth, can('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
-publicAPI.route('/connections/metadata').post(envAuth, can('environment:connections:update'), postPublicMetadata);
-publicAPI.route('/connections/metadata').patch(envAuth, can('environment:connections:update'), patchPublicMetadata);
+publicAPI.route('/connections/metadata').post(...withTaskCapability('api:metadata:write'), postPublicMetadata);
+publicAPI.route('/connections/metadata').patch(...withTaskCapability('api:metadata:write'), patchPublicMetadata);
 publicAPI
     .route('/connections/:connectionId')
-    .get(envAuth, can('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
+    .get(...withTaskCapability('api:connection:read', { beforeCan: [auditPublicConnectionCredentialsRead] }), getPublicConnection);
 publicAPI.route('/connections/:connectionId').patch(envAuth, auditPublicConnectionUpdated, can('environment:connections:update'), patchPublicConnection);
 publicAPI.route('/connections/:connectionId').delete(envAuth, auditPublicConnectionDeleted, can('environment:connections:delete'), deletePublicConnection);
 
 // Config
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
-publicAPI.route('/environment-variables').get(envAuth, can('environment:variables:read'), getPublicEnvironmentVariables);
+publicAPI.route('/environment-variables').get(...withTaskCapability('api:env-vars:read'), getPublicEnvironmentVariables);
 
 publicAPI.use('/environment', jsonContentTypeMiddleware);
 publicAPI
@@ -430,9 +450,9 @@ publicAPI.route('/records/prune').patch(envAuth, can('environment:records:write'
 
 // Syncs (continued)
 publicAPI.use('/sync', jsonContentTypeMiddleware);
-publicAPI.route('/sync/trigger').post(envAuth, can('environment:syncs:execute'), postPublicTrigger);
+publicAPI.route('/sync/trigger').post(...withTaskCapability('api:sync:trigger'), postPublicTrigger);
 publicAPI.route('/sync/pause').post(envAuth, auditSyncPaused, can('environment:syncs:execute'), postPublicSyncPause);
-publicAPI.route('/sync/start').post(envAuth, auditSyncStarted, can('environment:syncs:execute'), postPublicSyncStart);
+publicAPI.route('/sync/start').post(...withTaskCapability('api:sync:trigger', { beforeCan: [auditSyncStarted] }), postPublicSyncStart);
 publicAPI.route('/sync/status').get(envAuth, can('environment:syncs:read'), getPublicSyncStatus);
 publicAPI.route('/sync/:name/variant/:variant').post(envAuth, auditSyncVariantCreated, can('environment:syncs:variant:create'), postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(envAuth, auditSyncVariantDeleted, can('environment:syncs:variant:delete'), deleteSyncVariant);
@@ -486,7 +506,7 @@ publicAPI
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
-publicAPI.route('/action/trigger').post(envAuth, can('environment:tools:call'), postPublicTriggerAction); //TODO: to deprecate
+publicAPI.route('/action/trigger').post(...withTaskCapability('api:action:trigger'), postPublicTriggerAction); //TODO: to deprecate
 publicAPI.route('/action/:id').get(envAuth, can('environment:tools:call'), getAsyncActionResult);
 
 // Connect sessions

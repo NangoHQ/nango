@@ -68,6 +68,13 @@ describe('mergeFlags', () => {
         }
     });
 
+    it('should record credential reads on the data plane by default on every plan but free', () => {
+        expect(getPlanDefinition('free')?.flags.audit_trail_data_plane_scopes).toEqual([]);
+        for (const plan of plansList.filter((p) => p.code !== 'free')) {
+            expect(plan.flags.audit_trail_data_plane_scopes, plan.code).toEqual(['read_credentials']);
+        }
+    });
+
     it('should show the overdue invoices banner on every plan but enterprise', () => {
         const enterprisePlans: PlanDefinition['code'][] = ['enterprise', 'enterprise-cloud-hosted'];
         for (const plan of plansList) {
@@ -168,7 +175,6 @@ describe('mergeFlags', () => {
                     has_otel: true,
                     api_rate_limit_size: '2xl',
                     proxy_max: 99_999_999,
-                    auto_idle: true,
                     can_disable_connect_ui_watermark: false,
                     has_audit_trail_control_plane: false,
                     has_audit_trail_access: true
@@ -187,11 +193,22 @@ describe('mergeFlags', () => {
                 api_rate_limit_size: '2xl', // Keep override
                 has_audit_trail_control_plane: true // New plan grants it, so a paid plan always ends up recording
                 // proxy_max: new plan more generous default (null)
-                // auto_idle: new plan more generous default (false)
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
             expect(newFlags).not.toHaveProperty('has_audit_trail_access');
         });
+    });
+
+    it('should keep data-plane scopes set by hand on an upgrade, without repeating the ones the plan grants', () => {
+        const currentPlan = makePlan({ code: 'free', flagOverrides: { audit_trail_data_plane_scopes: ['read_credentials'] } });
+        const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition('starter-v2')! });
+        expect(newFlags.audit_trail_data_plane_scopes).toEqual(['read_credentials']);
+    });
+
+    it('should drop data-plane scopes on a downgrade to free', () => {
+        const currentPlan = makePlan({ code: 'starter-v2', flagOverrides: { audit_trail_data_plane_scopes: ['read_credentials'] } });
+        const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition('free')! });
+        expect(newFlags.audit_trail_data_plane_scopes).toEqual([]);
     });
 
     describe.each([{ from: 'free' }, { from: 'starter-v2' }, { from: 'growth-v2' }] as { from: PlanDefinition['code'] }[])(
@@ -339,22 +356,17 @@ function makePlan({
         orb_future_plan: null,
         orb_future_plan_at: null,
         orb_subscribed_at: null,
-        trial_start_at: null,
-        trial_end_at: null,
-        trial_extension_count: 0,
-        trial_end_notified_at: null,
-        trial_expired: null,
         api_rate_limit_size: 'm',
         monthly_actions_max: null,
         monthly_active_records_max: null,
         sync_frequency_secs_min: 3600,
-        auto_idle: false,
         has_otel: false,
         has_webhooks_forward: false,
         has_webhooks_script: false,
         has_rbac: false,
         has_audit_trail_control_plane: false,
         has_audit_trail_access: false,
+        audit_trail_data_plane_scopes: [],
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { getSyncConfigRaw, remoteFileService, seeders, updatePlan } from '@nangohq/shared';
+import { getSyncConfigRaw, remoteFileService, seeders } from '@nangohq/shared';
 
 import db from '../../../../../../database/lib/index.js';
 import flowService from '../../../../services/flow.service.js';
@@ -42,6 +42,25 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             error: { code: 'invalid_body', message: 'No template exists for this provider and script name' }
         });
+    });
+
+    it('fails to deploy an action when the account has no active legacy actions', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const template = vi.spyOn(flowService, 'getFlowByIntegrationAndName').mockReturnValue(seeders.getTestStdSyncConfig({ type: 'action' }));
+        try {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                body: { providerConfigKey: 'github', scriptName: 'legacy', type: 'action' }
+            });
+            expect(res.res.status).toBe(403);
+            expect(res.json).toEqual({ error: { code: 'legacy_actions_deprecated', message: 'Actions are deprecated. Use createTool instead.' } });
+            expect(await db.knex('_nango_sync_configs').where({ environment_id: env.id })).toHaveLength(0);
+        } finally {
+            template.mockRestore();
+        }
     });
 
     it('should deploy a template', async () => {
@@ -96,34 +115,5 @@ describe(`POST ${endpoint}`, () => {
             version: template.version,
             webhook_subscriptions: null
         });
-    });
-
-    it('should ignore stale expired trial fields for non-auto-idling plans', async () => {
-        vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
-        const { env, plan, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'airtable-paid', 'airtable');
-        await updatePlan(db.knex, {
-            id: plan.id,
-            name: 'starter-v2',
-            auto_idle: false,
-            trial_start_at: new Date(Date.now() - 2 * 86400 * 1000),
-            trial_end_at: new Date(Date.now() - 86400 * 1000),
-            trial_end_notified_at: new Date(Date.now() - 12 * 3600 * 1000),
-            trial_extension_count: 3,
-            trial_expired: true
-        });
-
-        const res = await api.fetch(endpoint, {
-            method: 'POST',
-            query: { env: 'dev' },
-            token: apiKey.secret,
-            body: { providerConfigKey: 'airtable-paid', scriptName: 'tables', type: 'sync' }
-        });
-
-        isSuccess(res.json);
-        expect(res.res.status).toBe(201);
-
-        const sync = await getSyncConfigRaw({ environmentId: env.id, config_id: integration.id!, name: 'tables', isAction: false });
-        expect(sync?.enabled).toBe(true);
     });
 });

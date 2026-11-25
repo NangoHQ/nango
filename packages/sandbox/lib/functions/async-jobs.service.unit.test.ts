@@ -151,10 +151,20 @@ describe('toFunctionDeploymentResult', () => {
         });
     });
 
+    it('returns deployed functions without a version', () => {
+        const row = createDeploymentRow({
+            status: 'success',
+            result: { deployed: true, deployed_functions: [{ name: 'fetchIssues' }] },
+            has_result: true
+        });
+
+        expect(toFunctionDeploymentResult(row).deployed_functions).toStrictEqual([{ name: 'fetchIssues' }]);
+    });
+
     it('omits deployment result fields when the stored result is invalid', () => {
         const row = createDeploymentRow({
             status: 'failed',
-            result: { deployed: true, deployed_functions: [{ name: 'function' }] },
+            result: { deployed: true, deployed_functions: [{ name: 'function', version: 1 }] },
             has_result: true,
             error: { code: 'deployment_error', message: 'Deployment failed' }
         });

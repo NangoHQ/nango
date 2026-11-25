@@ -29,6 +29,7 @@ import type {
     DBPlan,
     DBTeam,
     DBUser,
+    EnvironmentWithoutSecrets,
     PersistAuthContext,
     Result,
     SignupAcquisition,
@@ -70,36 +71,102 @@ class ShadowAuthCache {
 
 const customerKeyShadowCache = new ShadowAuthCache('customer_key', envs.AUTH_SHADOW_CACHE_TTL_MS);
 
-/**
- * In-process cache of the persist auth context, keyed by the secret's hash. The cached
- * PersistAuthContext holds no secret material (account/environment ids, environment name,
- * and a few plan fields), so the only trade-off is staleness: a served entry can be up to
- * the TTL old, delaying visibility of revoked keys, deleted environments, and plan changes.
- * Enable/disable and TTL are configured via AUTH_PERSIST_CONTEXT_CACHE_* (see parse.ts).
- */
-class PersistAuthContextCache {
-    // TTL is a startup config; the enabled flag is read per-call so it can be toggled at runtime.
-    private cache = new TTLFixedSizeMap<string, PersistAuthContext>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
+export interface TaskTokenAccountContext {
+    account: DBTeam;
+    environment: EnvironmentWithoutSecrets;
+    plan: DBPlan | null;
+}
 
-    get(hash: string): PersistAuthContext | undefined {
-        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+/**
+ * In-process cache of an auth context. Each instance has its own enabled flag, read per call so it
+ * can be toggled at runtime. TTL is a startup config shared with the persist cache. The only
+ * trade-off is staleness: a served entry can be up to the TTL old.
+ */
+class AuthContextCache<T> {
+    private cache = new TTLFixedSizeMap<string, T>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
+
+    constructor(
+        private readonly metricCache: string,
+        private readonly enabled: () => boolean
+    ) {}
+
+    get(key: string): T | undefined {
+        if (!this.enabled()) {
             return undefined;
         }
-        const cached = this.cache.get(hash);
-        metrics.increment(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_internal_secret', result: cached ? 'hit' : 'miss' });
+        const cached = this.cache.get(key);
+        metrics.increment(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: this.metricCache, result: cached ? 'hit' : 'miss' });
         return cached;
     }
 
-    set(hash: string, context: PersistAuthContext): void {
-        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+    set(key: string, context: T): void {
+        if (!this.enabled()) {
             return;
         }
         // The cached instance is shared across requests; callers must not mutate it.
-        this.cache.set(hash, context);
+        this.cache.set(key, context);
     }
 }
 
-const persistAuthContextCache = new PersistAuthContextCache();
+const persistSecretAuthCache = new AuthContextCache<PersistAuthContext>('persist_internal_secret', () => envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED);
+const persistEnvironmentAuthCache = new AuthContextCache<PersistAuthContext>('persist_environment', () => envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED);
+const taskTokenAuthCache = new AuthContextCache<TaskTokenAccountContext>('task_token', () => envs.AUTH_TASK_TOKEN_CONTEXT_CACHE_ENABLED);
+
+interface PersistAuthContextRow {
+    environment_id: number;
+    environment_name: string;
+    account_id: number;
+    plan_id: number | null;
+    plan_name: DBPlan['name'] | null;
+    records_store: DBPlan['records_store'] | null;
+}
+
+/** Stored columns of `_nango_environments`, excluding the secret columns a task token must never load. */
+const ENVIRONMENT_COLUMNS = [
+    'id',
+    'uuid',
+    'name',
+    'account_id',
+    'public_key',
+    'callback_url',
+    'webhook_url',
+    'webhook_url_secondary',
+    'hmac_enabled',
+    'always_send_webhook',
+    'send_auth_webhook',
+    'pending_public_key',
+    'slack_notifications',
+    'is_production',
+    'created_at',
+    'updated_at',
+    'deleted',
+    'deleted_at'
+] as const satisfies readonly (keyof EnvironmentWithoutSecrets)[];
+
+type TaskTokenEnvironmentColumns = Pick<EnvironmentWithoutSecrets, (typeof ENVIRONMENT_COLUMNS)[number]>;
+
+function planFromRow(plan: DBPlan): DBPlan {
+    return {
+        ...plan,
+        created_at: new Date(plan.created_at),
+        updated_at: new Date(plan.updated_at),
+        orb_subscribed_at: plan.orb_subscribed_at ? new Date(plan.orb_subscribed_at) : plan.orb_subscribed_at,
+        orb_future_plan_at: plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : plan.orb_future_plan_at,
+        growth_features_starts_at: plan.growth_features_starts_at ? new Date(plan.growth_features_starts_at) : plan.growth_features_starts_at,
+        growth_features_ends_at: plan.growth_features_ends_at ? new Date(plan.growth_features_ends_at) : plan.growth_features_ends_at
+    };
+}
+
+function persistAuthContextFromRow(row: PersistAuthContextRow): PersistAuthContext {
+    return {
+        account: { id: row.account_id },
+        environment: { id: row.environment_id, name: row.environment_name },
+        plan:
+            row.plan_id !== null && row.plan_name !== null && row.records_store !== null
+                ? { id: row.plan_id, name: row.plan_name, records_store: row.records_store }
+                : null
+    };
+}
 
 interface AccountContext {
     account: DBTeam;
@@ -261,14 +328,19 @@ class AccountService {
         return account[0].uuid;
     }
 
-    async getOrCreateAccount(name: string, acquisition?: SignupAcquisition, advertising?: SignupAdvertising): Promise<DBTeam | null> {
+    async getOrCreateAccount(
+        name: string,
+        acquisition?: SignupAcquisition,
+        advertising?: SignupAdvertising
+    ): Promise<{ account: DBTeam; created: boolean } | null> {
         const account = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ name });
 
         if (account == null || account.length == 0 || !account[0]) {
-            return await this.createAccount({ name, acquisition, advertising });
+            const created = await this.createAccount({ name, acquisition, advertising });
+            return created ? { account: created, created: true } : null;
         }
 
-        return account[0];
+        return { account: account[0], created: false };
     }
 
     /**
@@ -570,18 +642,7 @@ class AccountService {
                 updated_at: new Date(res.environment.updated_at),
                 deleted_at: res.environment.deleted_at ? new Date(res.environment.deleted_at) : res.environment.deleted_at
             },
-            plan: res.plan
-                ? {
-                      ...res.plan,
-                      created_at: new Date(res.plan.created_at),
-                      updated_at: new Date(res.plan.updated_at),
-                      trial_start_at: res.plan.trial_start_at ? new Date(res.plan.trial_start_at) : res.plan.trial_start_at,
-                      trial_end_at: res.plan.trial_end_at ? new Date(res.plan.trial_end_at) : res.plan.trial_end_at,
-                      trial_end_notified_at: res.plan.trial_end_notified_at ? new Date(res.plan.trial_end_notified_at) : res.plan.trial_end_notified_at,
-                      orb_subscribed_at: res.plan.orb_subscribed_at ? new Date(res.plan.orb_subscribed_at) : res.plan.orb_subscribed_at,
-                      orb_future_plan_at: res.plan.orb_future_plan_at ? new Date(res.plan.orb_future_plan_at) : res.plan.orb_future_plan_at
-                  }
-                : null,
+            plan: res.plan ? planFromRow(res.plan) : null,
             secret: defaultSecret
         };
     }
@@ -718,18 +779,7 @@ class AccountService {
                     updated_at: new Date(row.environment.updated_at),
                     deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
                 },
-                plan: row.plan
-                    ? {
-                          ...row.plan,
-                          created_at: new Date(row.plan.created_at),
-                          updated_at: new Date(row.plan.updated_at),
-                          trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
-                          trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
-                          trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
-                          orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
-                          orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
-                      }
-                    : null,
+                plan: row.plan ? planFromRow(row.plan) : null,
                 secret: defaultSecret,
                 auth
             });
@@ -883,18 +933,7 @@ class AccountService {
                 created_at: new Date(row.account.created_at),
                 updated_at: new Date(row.account.updated_at)
             },
-            plan: row.plan
-                ? {
-                      ...row.plan,
-                      created_at: new Date(row.plan.created_at),
-                      updated_at: new Date(row.plan.updated_at),
-                      trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
-                      trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
-                      trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
-                      orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
-                      orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
-                  }
-                : null,
+            plan: row.plan ? planFromRow(row.plan) : null,
             ...environmentContext,
             principal: {
                 type: 'api_key',
@@ -947,34 +986,15 @@ class AccountService {
 
         const hash = await this.hashSecretWithCache(secretKey);
 
-        const cached = persistAuthContextCache.get(hash);
+        const cached = persistSecretAuthCache.get(hash);
         if (cached) {
             return cached;
         }
 
-        const row = await db.readOnly
-            .select<{
-                environment_id: number;
-                environment_name: string;
-                account_id: number;
-                plan_id: number | null;
-                plan_name: DBPlan['name'] | null;
-                records_store: DBPlan['records_store'] | null;
-            }>(
-                '_nango_environments.id as environment_id',
-                '_nango_environments.name as environment_name',
-                '_nango_accounts.id as account_id',
-                'plans.id as plan_id',
-                'plans.name as plan_name',
-                'plans.records_store as records_store'
-            )
-            .from<DBAPISecret>('api_secrets')
-            .join('_nango_environments', '_nango_environments.id', 'api_secrets.environment_id')
-            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
-            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+        const row = await this.persistAuthContextQuery()
+            .join<DBAPISecret>('api_secrets', '_nango_environments.id', 'api_secrets.environment_id')
             .where('api_secrets.hashed', hash)
             .where('api_secrets.is_default', true)
-            .where('_nango_environments.deleted', false)
             .first();
 
         if (!row) {
@@ -983,15 +1003,113 @@ class AccountService {
 
         // Store only successful lookups to avoid polluting the cache
         hashLocalCache.set(secretKey, hash);
-        const context: PersistAuthContext = {
-            account: { id: row.account_id },
-            environment: { id: row.environment_id, name: row.environment_name },
-            plan:
-                row.plan_id !== null && row.plan_name !== null && row.records_store !== null
-                    ? { id: row.plan_id, name: row.plan_name, records_store: row.records_store }
-                    : null
+        const context = persistAuthContextFromRow(row);
+        persistSecretAuthCache.set(hash, context);
+        return context;
+    }
+
+    /**
+     * Resolves the same minimal context as getPersistAuthContext, from the task token's
+     * environmentId claim. No secret is read or decrypted. Ok(null) means the environment
+     * is missing or deleted.
+     */
+    async getPersistAuthContextByEnvironmentId(environmentId: number): Promise<Result<PersistAuthContext | null>> {
+        try {
+            return Ok(await this.resolvePersistAuthContextByEnvironmentId(environmentId));
+        } catch (err) {
+            return Err(err instanceof Error ? err : new Error('failed_to_resolve_persist_auth_context', { cause: err }));
+        }
+    }
+
+    private persistAuthContextQuery() {
+        return db.readOnly
+            .select<PersistAuthContextRow>(
+                '_nango_environments.id as environment_id',
+                '_nango_environments.name as environment_name',
+                '_nango_accounts.id as account_id',
+                'plans.id as plan_id',
+                'plans.name as plan_name',
+                'plans.records_store as records_store'
+            )
+            .from('_nango_environments')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+            .where('_nango_environments.deleted', false);
+    }
+
+    private async resolvePersistAuthContextByEnvironmentId(environmentId: number): Promise<PersistAuthContext | null> {
+        const cacheKey = String(environmentId);
+        const cached = persistEnvironmentAuthCache.get(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        const row = await this.persistAuthContextQuery().where('_nango_environments.id', environmentId).first();
+        if (!row) {
+            return null;
+        }
+
+        const context = persistAuthContextFromRow(row);
+        persistEnvironmentAuthCache.set(cacheKey, context);
+        return context;
+    }
+
+    /**
+     * Account context for a verified task capability token. The environment id comes from the token.
+     * The query never selects secret_key, pending_secret_key, hmac_key or otlp_settings, and the
+     * result is cached without them. Ok(null) means the environment is missing or deleted.
+     */
+    async getTaskTokenAccountContext(environmentId: number): Promise<Result<TaskTokenAccountContext | null>> {
+        try {
+            return Ok(await this.resolveTaskTokenAccountContext(environmentId));
+        } catch (err) {
+            return Err(err instanceof Error ? err : new Error('failed_to_resolve_task_token_account_context', { cause: err }));
+        }
+    }
+
+    private async resolveTaskTokenAccountContext(environmentId: number): Promise<TaskTokenAccountContext | null> {
+        const cacheKey = String(environmentId);
+        const cached = taskTokenAuthCache.get(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        const row = await db.readOnly
+            .select<TaskTokenEnvironmentColumns & { account: DBTeam; plan: DBPlan | null }>(
+                ...ENVIRONMENT_COLUMNS.map((column) => `_nango_environments.${column}`),
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                db.knex.raw('row_to_json(plans.*) as plan')
+            )
+            .from('_nango_environments')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+            .where('_nango_environments.id', environmentId)
+            .where('_nango_environments.deleted', false)
+            .first();
+        if (!row) {
+            return null;
+        }
+
+        const { account, plan, pending_public_key: pendingPublicKey, ...columns } = row;
+        const context: TaskTokenAccountContext = {
+            account: {
+                ...account,
+                created_at: new Date(account.created_at),
+                updated_at: new Date(account.updated_at)
+            },
+            environment: {
+                ...columns,
+                // Not columns. The dashboard environment endpoint fills these in; a raw row does not have them.
+                websockets_path: null,
+                webhook_receive_url: null,
+                created_at: new Date(columns.created_at),
+                updated_at: new Date(columns.updated_at),
+                deleted_at: columns.deleted_at ? new Date(columns.deleted_at) : null,
+                ...(pendingPublicKey != null ? { pending_public_key: pendingPublicKey } : {})
+            },
+            plan: plan ? planFromRow(plan) : null
         };
-        persistAuthContextCache.set(hash, context);
+        taskTokenAuthCache.set(cacheKey, context);
         return context;
     }
 
@@ -1056,18 +1174,7 @@ class AccountService {
                 updated_at: new Date(row.environment.updated_at),
                 deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
             },
-            plan: row.plan
-                ? {
-                      ...row.plan,
-                      created_at: new Date(row.plan.created_at),
-                      updated_at: new Date(row.plan.updated_at),
-                      trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
-                      trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
-                      trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
-                      orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
-                      orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
-                  }
-                : null,
+            plan: row.plan ? planFromRow(row.plan) : null,
             secret: defaultSecret,
             auth: {
                 source: 'api_secret' as const,

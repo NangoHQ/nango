@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 
 import { metrics, report } from '@nangohq/utils';
 
-import type { RequestLocals, RequestLocalsWithEnvironment } from './express.js';
+import type { RequestLocals, RequestLocalsWithAnyEnvironment, RequestLocalsWithEnvironment } from './express.js';
 import type { DBEnvironment, Endpoint } from '@nangohq/types';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
@@ -58,6 +58,11 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
     });
 }
 
+/** A task token stores `EnvironmentWithoutSecrets`. Every other auth path stores a `DBEnvironment`. */
+export function hasDbEnvironment(locals: RequestLocals): locals is RequestLocals & { environment: DBEnvironment } {
+    return locals.authType !== 'taskToken' && locals.environment != null;
+}
+
 /**
  * Returns the request's environment, or null *after having responded* 500 if it has none.
  *
@@ -65,12 +70,36 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
  * is a wiring mistake rather than a client error.
  */
 export function requireEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | null {
-    const { environment } = res.locals;
-    if (!environment) {
-        report(new Error('handler_requires_environment'), { route: req.route?.path ?? req.originalUrl });
-        res.status(500).send({ error: { code: 'server_error' } });
+    if (!hasDbEnvironment(res.locals)) {
+        respondMissingEnvironment(req, res);
         return null;
     }
 
-    return environment;
+    return res.locals.environment;
+}
+
+/**
+ * Same as {@link asyncWrapperWithEnvironment}, for routes that also accept a task capability token.
+ * The handler sees `DBEnvironment | EnvironmentWithoutSecrets` because a task token never loads secrets.
+ */
+export function asyncWrapperWithAnyEnvironment<TEndpoint extends Endpoint<any>>(
+    fn: (
+        req: Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>,
+        res: Response<TEndpoint['Reply'], RequestLocalsWithAnyEnvironment>,
+        next: NextFunction
+    ) => Promise<void> | void
+): RequestHandler<any, TEndpoint['Reply'], any, any, any> {
+    return asyncWrapper<TEndpoint>(async (req, res, next) => {
+        if (!res.locals.environment) {
+            respondMissingEnvironment(req, res);
+            return;
+        }
+
+        await fn(req, res as Response<TEndpoint['Reply'], RequestLocalsWithAnyEnvironment>, next);
+    });
+}
+
+function respondMissingEnvironment(req: Request, res: Response): void {
+    report(new Error('handler_requires_environment'), { route: req.route?.path ?? req.originalUrl });
+    res.status(500).send({ error: { code: 'server_error' } });
 }

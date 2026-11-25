@@ -14,8 +14,6 @@ import { FirstStep } from './FirstStep';
 import { SecondStep } from './SecondStep';
 import { ThirdStep } from './ThirdStep';
 
-import type { GetGettingStarted } from '@nangohq/types';
-
 export const GettingStarted: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data: gettingStartedResult, error, refetch, isLoading } = useGettingStarted(env);
@@ -24,7 +22,7 @@ export const GettingStarted: React.FC = () => {
     const { toast } = useToast();
 
     if (error && !gettingStarted) {
-        return <ErrorPageComponent title="Getting started" error={error.json as GetGettingStarted['Errors']} />;
+        return <ErrorPageComponent title="Getting started" error={error} />;
     }
 
     let currentStep = gettingStarted?.connection ? (gettingStarted?.step ?? 0) : 0;
@@ -39,7 +37,7 @@ export const GettingStarted: React.FC = () => {
     }
 
     return (
-        <DashboardLayout title="Getting started" className="flex flex-col gap-10">
+        <DashboardLayout width="wide" className="flex flex-col gap-10">
             <Helmet>
                 <title>Getting Started - Nango</title>
             </Helmet>
@@ -118,25 +116,25 @@ export const GettingStarted: React.FC = () => {
 
                     <div className="flex flex-col gap-5">
                         <DocCard
-                            to="https://nango.dev/docs/guides/auth/auth-guide"
+                            to="https://nango.dev/docs/guides/auth/setup#auth-from-your-app"
                             icon={CodeXml}
                             title="Embed in your app"
                             description="Let your users authorize 3rd-party APIs seamlessly."
                         />
                         <DocCard
-                            to="https://nango.dev/docs/guides/platform/proxy-requests"
+                            to="https://nango.dev/docs/guides/auth/proxy-requests"
                             icon={Waypoints}
                             title="Proxy"
                             description="Run authenticated API requests to external APIs."
                         />
                         <DocCard
-                            to="https://nango.dev/docs/guides/functions/syncs/sync-functions"
+                            to="https://nango.dev/docs/guides/syncs/sync-functions"
                             icon={RefreshCcw}
                             title="Syncs"
                             description="Continously sync data from external APIs."
                         />
                         <DocCard
-                            to="https://nango.dev/docs/getting-started/use-cases/webhooks-from-external-apis"
+                            to="https://nango.dev/docs/guides/triggers/overview"
                             icon={Webhook}
                             title="Webhooks"
                             description="Listen to webhooks from external APIs."

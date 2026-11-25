@@ -34,7 +34,7 @@ interface Props {
     onRetryFunctions: () => void;
 }
 
-const selectTriggerClassName = 'rounded-ds-xs border-ds-hairline border-border-muted bg-surface-input hover:bg-surface-input hover:border-border-input';
+const selectTriggerClassName = 'border-border-muted bg-surface-input hover:bg-surface-input';
 
 export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functionsReady, functionsError, onRetryFunctions }) => {
     const navigate = useNavigate();
@@ -82,8 +82,8 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
             .map((fn) => ({
                 value: functionOptionValue(fn.type, fn.name),
                 label: fn.name,
-                filterValue: `${fn.name} ${fn.type}`,
-                tag: <Badge case="capitalize">{fn.type}</Badge>
+                filterValue: fn.type === 'action' ? `${fn.name} ${fn.type} tool` : `${fn.name} ${fn.type}`,
+                tag: <Badge case="capitalize">{fn.type === 'action' ? 'tool' : fn.type}</Badge>
             }));
         if (selectedFunctionValue && playgroundFunction && !opts.some((option) => option.value === selectedFunctionValue)) {
             opts.unshift({ value: selectedFunctionValue, label: playgroundFunction, filterValue: playgroundFunction });
@@ -129,6 +129,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
                 onSearchValueChange={setPlaygroundConnectionSearch}
                 showCheckbox={false}
                 emptyText="No connections found"
+                modal
                 footer={
                     <div className="flex items-center justify-between gap-3">
                         <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Need a new connection?</span>
@@ -157,6 +158,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, functions, functions
                 searchPlaceholder="Search functions"
                 showCheckbox={false}
                 emptyText="No functions found"
+                modal
                 footer={
                     playgroundIntegration ? (
                         <div className="flex items-center justify-between gap-3">

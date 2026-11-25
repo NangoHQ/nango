@@ -1,9 +1,10 @@
-import { getProvider } from '@nangohq/shared';
+import { functionConfigService, getProvider, listCatalogEntries } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import flowService from './flow.service.js';
 
-import type { NangoSyncConfig, Provider } from '@nangohq/types';
+import type { CatalogEntry, CatalogFunctionDefinition } from '@nangohq/shared';
+import type { ApiProviderFunctionCounts, NangoSyncConfig, Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export type GetProviderServiceErrorCode = 'not_found' | 'get_failed' | 'list_templates_failed';
@@ -23,10 +24,12 @@ export class ProviderServiceError<TCode extends ProviderServiceErrorCode = Provi
 export type GetProviderServiceError = ProviderServiceError<GetProviderServiceErrorCode>;
 export type ListProviderTemplatesServiceError = ProviderServiceError<ListProviderTemplatesServiceErrorCode>;
 
+export type ProviderTemplateConfig = NangoSyncConfig | CatalogFunctionDefinition;
+
 export interface RetrievedProvider {
     name: string;
     provider: Provider;
-    templates?: NangoSyncConfig[] | undefined;
+    templates?: ProviderTemplateConfig[] | undefined;
 }
 
 export class ProviderService {
@@ -71,10 +74,31 @@ export class ProviderService {
         }
     }
 
-    listTemplates({ providerName }: { providerName: string }): Result<NangoSyncConfig[], ListProviderTemplatesServiceError> {
+    countTemplatesByProvider(): Result<Map<string, ApiProviderFunctionCounts>, ListProviderTemplatesServiceError> {
+        try {
+            const counts = new Map<string, ApiProviderFunctionCounts>();
+            for (const entry of flowService.getAllAvailableFlowsAsStandardConfig()) {
+                counts.set(entry.providerConfigKey, {
+                    tools: entry.actions.length + catalogToolTemplates(entry.providerConfigKey).length,
+                    syncs: entry.syncs.length
+                });
+            }
+            return Ok(counts);
+        } catch (err) {
+            return Err(
+                new ProviderServiceError({
+                    code: 'list_templates_failed',
+                    message: 'Failed to count provider templates',
+                    cause: err
+                })
+            );
+        }
+    }
+
+    listTemplates({ providerName }: { providerName: string }): Result<ProviderTemplateConfig[], ListProviderTemplatesServiceError> {
         try {
             const entry = flowService.getAllAvailableFlowsAsStandardConfig().find((value) => value.providerConfigKey === providerName);
-            return Ok(entry ? [...entry.actions, ...entry.syncs] : []);
+            return Ok([...(entry ? [...entry.actions, ...entry.syncs] : []), ...catalogToolTemplates(providerName)]);
         } catch (err) {
             return Err(
                 new ProviderServiceError({
@@ -85,6 +109,14 @@ export class ProviderService {
             );
         }
     }
+}
+
+export function isCatalogToolTemplate(template: CatalogEntry | NangoSyncConfig): template is CatalogFunctionDefinition {
+    return 'trigger' in template && functionConfigService.isTool(template);
+}
+
+function catalogToolTemplates(providerName: string): CatalogFunctionDefinition[] {
+    return listCatalogEntries(providerName).filter(isCatalogToolTemplate);
 }
 
 export default new ProviderService();

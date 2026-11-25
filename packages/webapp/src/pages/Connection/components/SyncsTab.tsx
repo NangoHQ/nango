@@ -37,6 +37,7 @@ import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { useStore } from '@/store';
 import { UserFacingSyncCommand } from '@/types';
 import { getLogsUrl } from '@/utils/logs';
+import { findScrollParent } from '@/utils/scroll';
 import { cn, formatDateToUSFormat, formatFrequency, formatQuantity, getRunTime, interpretNextRun, truncateMiddle } from '@/utils/utils';
 
 import type { RunSyncCommand } from '@/types';
@@ -340,7 +341,7 @@ const SyncRow = memo(function SyncRow({
             <TableCell className={cn(cellLayout, col.actions)}>
                 <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
-                        <IconButton variant="ghost" size="2xs" label="Sync actions" loading={isPending}>
+                        <IconButton variant="ghost" size="sm" label="Sync actions" loading={isPending}>
                             <Ellipsis />
                         </IconButton>
                     </DropdownMenuTrigger>
@@ -504,14 +505,7 @@ function useScrollParent() {
         if (!node) {
             return;
         }
-        for (let parent = node.parentElement; parent; parent = parent.parentElement) {
-            const { overflowY } = getComputedStyle(parent);
-            if (overflowY === 'auto' || overflowY === 'scroll') {
-                setResolved({ scrollParent: parent, offsetTop: node.offsetTop });
-                return;
-            }
-        }
-        setResolved({ scrollParent: null, offsetTop: node.offsetTop });
+        setResolved({ scrollParent: findScrollParent(node), offsetTop: node.offsetTop });
     }, []);
 
     return { ref, ...resolved };

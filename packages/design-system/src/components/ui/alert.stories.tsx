@@ -1,6 +1,7 @@
-import { CircleAlert, CircleCheck, ExternalLink, Info, TriangleAlert } from 'lucide-react';
+import { CircleAlert, CircleCheck, ExternalLink, Info, TriangleAlert, Zap } from 'lucide-react';
 
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from './alert';
+import { Button } from './button';
 
 import type { AlertProps } from './alert';
 import type { Meta, StoryObj } from '@storybook/react';
@@ -44,25 +45,24 @@ interface Shape {
     dismissible?: boolean;
     /** Defaults to true. */
     icon?: boolean;
-    /** Only the first group of each story runs every status — the rest vary shape, not colour. */
     allVariants?: boolean;
 }
 
 // Titled shapes first, then the description-only ones together, ending with the barest.
 const SHAPES: Shape[] = [
     { label: 'With title', title: true, allVariants: true },
-    { label: 'With title and action', title: true, withAction: true },
+    { label: 'With title and action', title: true, withAction: true, allVariants: true },
     { label: 'With title and action, not dismissible', title: true, withAction: true, dismissible: false },
     { label: 'Description only' },
-    { label: 'Description only, with action', withAction: true },
+    { label: 'Description only, with action', withAction: true, allVariants: true },
     { label: 'Description only, no icon or dismiss', icon: false, dismissible: false }
 ];
 
 const TOAST_SHAPES: Shape[] = [
     { label: 'Description only', allVariants: true },
-    { label: 'Description only, with action', withAction: true },
+    { label: 'Description only, with action', withAction: true, allVariants: true },
     { label: 'With title', title: true },
-    { label: 'With title and action', title: true, withAction: true }
+    { label: 'With title and action', title: true, withAction: true, allVariants: true }
 ];
 
 const ShapeGroups = ({ shapes, size, description, className }: { shapes: Shape[]; size: AlertProps['size']; description: string; className?: string }) => (
@@ -97,4 +97,30 @@ export const Compact: Story = {
 
 export const Toast: Story = {
     render: () => <ShapeGroups shapes={TOAST_SHAPES} size="toast" description="This is an alert toast description." className="w-[350px]" />
+};
+
+export const ButtonCta: Story = {
+    name: 'Button CTA',
+    render: () => (
+        <Alert variant="neutral" size="wide" cta="button" onDismiss={onDismiss}>
+            <Zap data-filled />
+            <AlertTitle>This is an alert title</AlertTitle>
+            <AlertDescription>This is an alert description.</AlertDescription>
+            <AlertActions>
+                <Button variant="primary" size="md">
+                    Button
+                </Button>
+            </AlertActions>
+        </Alert>
+    )
+};
+
+export const IconColor: Story = {
+    render: () => (
+        <Alert variant="neutral" icon="success">
+            <CircleCheck />
+            <AlertTitle>Icon: success</AlertTitle>
+            <AlertDescription>{DESCRIPTION}</AlertDescription>
+        </Alert>
+    )
 };

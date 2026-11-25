@@ -1,6 +1,6 @@
-import { FieldLabel } from '@nangohq/design-system';
+import { FieldLabel, SecretInput } from '@nangohq/design-system';
 
-import { SecretInput } from '@/components/patterns/SecretInput';
+import { PERMISSION_DENIED_REASON } from '@/components/patterns/PermissionGate';
 
 import type { BasicApiCredentials } from '@nangohq/types';
 
@@ -12,12 +12,12 @@ export const BasicCredentialsComponent: React.FC<{
         <>
             <div className="flex flex-col gap-2">
                 <FieldLabel htmlFor="username">Username</FieldLabel>
-                <SecretInput id="username" value={credentials.username} disabled copy canRead={canRead} />
+                <SecretInput id="username" value={credentials.username} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
             </div>
 
             <div className="flex flex-col gap-2">
                 <FieldLabel htmlFor="password">Password</FieldLabel>
-                <SecretInput id="password" value={credentials.password} disabled copy canRead={canRead} />
+                <SecretInput id="password" value={credentials.password} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
             </div>
         </>
     );

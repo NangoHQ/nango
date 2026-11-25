@@ -1,0 +1,38 @@
+---
+title: 'Logo.dev - How do I link my account?'
+sidebarTitle: 'Logo.dev'
+---
+
+## Overview
+
+To authenticate with Logo.dev, you need:
+
+1. **Secret Key** — the API secret key from your Logo.dev dashboard.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Logo.dev account. You can sign up for free at [logo.dev](https://www.logo.dev/signup).
+- On a team, only an admin can create keys.
+
+### Step 1: Copy your secret key
+
+1. Sign in to [Logo.dev](https://www.logo.dev/login) and open **API Keys** under **Manage** in the dashboard sidebar.
+2. Use an existing key pair, such as **Default**, or click **Create API keys**, enter a name and confirm to create one for this connection.
+
+<img src="/api-integrations/logo-dev/api_keys_page.png" alt="The API Keys page in the Logo.dev dashboard with the Create API keys button"/>
+
+3. In the key pair's row, click the copy button next to **API Secret Key**. The secret key starts with `sk_`. Don't use the **CDN Publishable Key** (`pk_`): it only works for logo images and can't call the API.
+
+<img src="/api-integrations/logo-dev/copy_secret_key.png" alt="The copy button next to the API Secret Key of a Logo.dev key pair"/>
+
+### Step 2: Enter your secret key in the Connect UI
+
+1. Open the form where you need to authenticate with Logo.dev.
+2. Enter your **Secret Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/logo-dev/form.png" alt="The Logo.dev connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Logo.dev.

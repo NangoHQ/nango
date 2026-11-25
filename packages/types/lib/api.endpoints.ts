@@ -78,6 +78,7 @@ import type {
     PatchApiKey,
     PatchEnvironment,
     PatchPublicApiKey,
+    PatchPublicEnvironment,
     PostEnvironment,
     PostPublicApiKey,
     PostPublicEnvironment,
@@ -99,9 +100,11 @@ import type {
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
+    GetProviderTemplateCode,
     GetProviderTemplates,
     GetPublicIntegrationFunction,
     GetPublicIntegrationFunctions,
+    GetPublicProviderTemplateCode,
     GetPublicProviderTemplates,
     PatchConnectionFunction,
     PatchFunction,
@@ -117,7 +120,14 @@ import type {
     PostFunctionVariant,
     PostToolCall
 } from './functions/api.js';
-import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
+import type {
+    GetAgentGettingStarted,
+    GetGettingStarted,
+    PatchGettingStarted,
+    PostAgentGettingStartedDismiss,
+    PostAgentGettingStartedRestart
+} from './gettingStarted/api.js';
+import type { GetInstallation } from './installation/api.js';
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
@@ -149,7 +159,6 @@ import type {
     GetSpendAlert,
     GetUpcomingInvoice,
     PostPlanChange,
-    PostPlanExtendTrial,
     PutBillingInvoicingDetails,
     PutSpendAlert
 } from './plans/http.api.js';
@@ -254,9 +263,11 @@ export type PublicApiEndpoints =
     | PostToolCall
     | DeletePublicIntegrationFunction
     | GetPublicProviderTemplates
+    | GetPublicProviderTemplateCode
     | PostPublicRotateWebhookSigningKey
     | AllPublicProxy
     | PostPublicEnvironment
+    | PatchPublicEnvironment
     | DeletePublicEnvironment
     | GetPublicEnvironment
     | GetPublicEnvironments
@@ -278,7 +289,6 @@ export type PrivateApiEndpoints =
     | PostLogout
     | GetTeam
     | PutTeam
-    | PostPlanExtendTrial
     | PostPlanChange
     | PutBillingInvoicingDetails
     | GetOverdueInvoices
@@ -312,6 +322,7 @@ export type PrivateApiEndpoints =
     | DeleteIntegrationFunction
     | GetIntegrationTemplates
     | GetProviderTemplates
+    | GetProviderTemplateCode
     | DeleteIntegration
     | PatchIntegration
     | GetIntegration
@@ -325,6 +336,7 @@ export type PrivateApiEndpoints =
     | GetConnectionRecords
     | GetConnectionSyncs
     | GetInvite
+    | GetInstallation
     | GetMeta
     | GetEmailByExpiredToken
     | GetEmailByUuid
@@ -358,6 +370,9 @@ export type PrivateApiEndpoints =
     | PostSharedCredentialsProvider
     | PatchSharedCredentialsProvider
     | GetGettingStarted
+    | GetAgentGettingStarted
+    | PostAgentGettingStartedRestart
+    | PostAgentGettingStartedDismiss
     | PatchGettingStarted
     | GetConnectUISettings
     | PutConnectUISettings

@@ -69,6 +69,7 @@ export const PUBLIC_ACCOUNT_SCOPES = [
     'account:environments:list',
     'account:environments:read',
     'account:environments:read_secret',
+    'account:environments:update',
     'account:environments:create', // any environment
     'account:environments:delete',
     'account:environments:set_production',
@@ -103,6 +104,7 @@ export const PRIVATE_SCOPES = [
     'account:billing:spend_alert:update',
     'account:plan:update',
     'account:audit_trail:read',
+    'account:installation:read',
     'account:api_keys:list',
 
     // ── environment namespace ──

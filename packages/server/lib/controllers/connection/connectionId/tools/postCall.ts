@@ -91,10 +91,12 @@ export const postToolCall = asyncWrapperWithEnvironment<PostToolCall>(async (req
     }
     if (tool.kind === 'function') {
         const { result } = await invokeFunction({
+            operation: { type: 'tool', action: 'call' },
             account,
             environment,
             connectionId,
-            functionUuid: tool.fn.config.uuid,
+            integrationId,
+            functionUuid: tool.uuid,
             input,
             request: { method: 'POST', path: req.path, headers: redactHeaders({ headers: getHeaders(req.headers) }), query: {} },
             invocationType: 'wait',

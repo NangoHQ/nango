@@ -2,7 +2,7 @@ import { Prism } from '@mantine/prism';
 import { X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { LinkButton } from '@nangohq/design-system';
 
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
@@ -18,9 +18,9 @@ const TARGETS_SHOWN_COLLAPSED = 10;
 const JSON_LINES_SHOWN_COLLAPSED = 40;
 
 const ExpandToggle: React.FC<{ expanded: boolean; hidden: number; noun: string; onClick: () => void }> = ({ expanded, hidden, noun, onClick }) => (
-    <Button variant="link-accent" size="sm" aria-expanded={expanded} onClick={onClick}>
+    <LinkButton size="sm" aria-expanded={expanded} onClick={onClick}>
         {expanded ? 'Show less' : `Show ${hidden.toLocaleString()} more ${noun}`}
-    </Button>
+    </LinkButton>
 );
 
 const Meta: React.FC<{ label: string; value: string; mono?: boolean }> = ({ label, value, mono }) => (
@@ -106,7 +106,7 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                         <Meta label="Version" value={event.version} mono />
                     </dl>
 
-                    <div className="mx-6 mb-6 rounded bg-surface-panel-inset p-4 text-sm text-text-muted">
+                    <div className="mx-6 mb-6 rounded border border-border-muted bg-surface-code p-4 text-sm text-text-muted">
                         <Prism
                             language="json"
                             className="transparent-code"

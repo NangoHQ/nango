@@ -1,10 +1,10 @@
-import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
-import { cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, NangoError, productTracking, startTrial } from '@nangohq/shared';
+import { cleanIncomingFlow, deploy, errorManager, functionLookupService, getAndReconcileDifferences, NangoError, productTracking } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
+import { LegacyActionsDeprecatedError } from '../../../services/functionDeployment.service.js';
 import { startFunctionDeletion } from '../../../tasks/startFunctionDeletion.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
@@ -30,7 +30,19 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
     }
 
     const body: PostDeploy['Body'] = val.data;
-    const { environment, account, plan } = res.locals;
+    const { environment, account } = res.locals;
+    const { scope } = val.data;
+
+    const actions = body.flowConfigs.filter((flow) => flow.type === 'action');
+    if (actions.length > 0) {
+        const canDeployActions = await functionLookupService.hasActiveLegacyActions({ accountId: account.id });
+        if (!canDeployActions) {
+            const actionNames = actions.map((flow) => `${flow.providerConfigKey}/${flow.syncName}`);
+            const error = new LegacyActionsDeprecatedError({ actionNames });
+            res.status(403).send({ error: { code: error.code, message: error.message } });
+            return;
+        }
+    }
 
     // Prevent concurrent deploys per environment, fail immediately if another deploy is in flight.
     const locking = await getLocking();
@@ -65,16 +77,13 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
             logContextGetter,
             sdkVersion: body.sdkVersion,
             orchestrator,
-            source: body.source ?? 'repo'
+            source: body.source ?? 'repo',
+            scope
         });
 
         if (!success || !syncConfigDeployResult) {
             errorManager.errResFromNangoErr(res, error);
             return;
-        }
-
-        if (plan && !plan.trial_end_at && plan.auto_idle) {
-            await startTrial(db.knex, plan);
         }
 
         if (body.reconcile) {
@@ -84,7 +93,7 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
                 flows: body.flowConfigs,
                 performAction: body.reconcile,
                 debug: body.debug,
-                deployMode: body.deployMode,
+                scope,
                 logCtx,
                 logContextGetter,
                 orchestrator,

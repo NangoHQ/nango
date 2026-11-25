@@ -13,4 +13,5 @@ export interface DBSharedCredentials extends Timestamps {
     id: number;
     name: string;
     credentials: SharedCredentials;
+    enabled: boolean;
 }

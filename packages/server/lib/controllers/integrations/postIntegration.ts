@@ -19,20 +19,40 @@ import type { Response } from 'express';
 
 const logger = getLogger('Server.PostIntegration');
 
-const baseValidationBody = z
+const nangoManagedCredentialsSchema = z.object({ type: z.literal('NANGO_MANAGED') }).strict();
+
+const createCredentialsSchema = z.discriminatedUnion('type', [...integrationCredentialsSchema.options, nangoManagedCredentialsSchema], {
+    error: () => ({ message: 'invalid credentials object' })
+});
+
+const validationBody = z
     .object({
         provider: providerSchema,
         unique_key: providerConfigKeySchema,
         display_name: integrationDisplayNameSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema
+        forward_webhooks: integrationForwardWebhooksSchema,
+        credentials: createCredentialsSchema.optional(),
+        integration_config: z.record(z.string(), z.string().max(8192)).optional(),
+        custom: z.record(z.string(), z.string()).optional()
     })
-    .strict();
-
-const validationBody = baseValidationBody.extend({
-    credentials: integrationCredentialsSchema.optional(),
-    integration_config: z.record(z.string(), z.string().max(8192)).optional(),
-    custom: z.record(z.string(), z.string()).optional()
-});
+    .strict()
+    .superRefine((body, ctx) => {
+        if (body.credentials?.type !== 'NANGO_MANAGED') {
+            return;
+        }
+        for (const field of ['integration_config', 'custom'] as const) {
+            if (body[field] !== undefined) {
+                ctx.addIssue({ code: 'custom', path: [field], message: `${field} is not supported with NANGO_MANAGED credentials` });
+            }
+        }
+    })
+    .transform((body): PostPublicIntegration['Body'] => {
+        const { credentials, integration_config, custom, ...rest } = body;
+        if (credentials?.type === 'NANGO_MANAGED') {
+            return { ...rest, credentials };
+        }
+        return { ...rest, credentials, integration_config, custom };
+    });
 
 export const postPublicIntegration = asyncWrapperWithEnvironment<PostPublicIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -49,14 +69,16 @@ export const postPublicIntegration = asyncWrapperWithEnvironment<PostPublicInteg
 
     const { environment, account } = res.locals;
     const body: PostPublicIntegration['Body'] = valBody.data;
+    const credentials = body.credentials;
+    const nangoManaged = credentials?.type === 'NANGO_MANAGED';
     const result = await integrationService.create({
         environmentId: environment.id,
         provider: body.provider,
         uniqueKey: body.unique_key,
-        credentialSource: 'own',
+        credentialSource: nangoManaged ? 'nango' : 'own',
         displayName: body.display_name,
         forwardWebhooks: body.forward_webhooks,
-        credentials: body.credentials,
+        credentials: nangoManaged ? undefined : credentials,
         integrationConfig: body.integration_config,
         custom: body.custom,
         environment,
@@ -73,6 +95,16 @@ export const postPublicIntegration = asyncWrapperWithEnvironment<PostPublicInteg
     });
 });
 
+// TODO: remove this deprecated alias of POST /integrations with NANGO_MANAGED credentials (NAN-7880)
+const quickstartValidationBody = z
+    .object({
+        provider: providerSchema,
+        unique_key: providerConfigKeySchema,
+        display_name: integrationDisplayNameSchema.optional(),
+        forward_webhooks: integrationForwardWebhooksSchema
+    })
+    .strict();
+
 export const postPublicQuickstartIntegration = asyncWrapperWithEnvironment<PostPublicQuickstartIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
@@ -80,7 +112,7 @@ export const postPublicQuickstartIntegration = asyncWrapperWithEnvironment<PostP
         return;
     }
 
-    const valBody = baseValidationBody.safeParse(req.body);
+    const valBody = quickstartValidationBody.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
         return;
@@ -128,7 +160,7 @@ function sendCreateIntegrationError(res: Response, error: CreateIntegrationServi
             return;
         case 'nango_credentials_unsupported':
             res.status(400).send({
-                error: { code: 'invalid_body', message: 'Quickstart is only available for providers that require a developer app' }
+                error: { code: 'invalid_body', message: 'Nango-managed credentials are only available for providers that require a developer app' }
             });
             return;
         case 'shared_credentials_not_found':

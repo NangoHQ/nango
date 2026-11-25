@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { createdAgentSessionToPublicApi } from '../../formatters/agentSession.js';
@@ -127,10 +128,14 @@ const metaToolsShape = {
     nango_tool_search: metaToolSchema.optional(),
     nango_execute: metaToolSchema.optional(),
     nango_proxy: metaToolSchema.optional(),
-    nango_create_connection: createConnectionMetaToolSchema.optional()
+    nango_create_connection: createConnectionMetaToolSchema.optional(),
+    nango_run_code: metaToolSchema.optional()
 } satisfies Record<keyof AgentSessionMetaToolsSummary, z.ZodType>;
 
 const META_TOOL_NAMES = Object.keys(metaToolsShape);
+
+// Not offered until the feature is ready, so an account without the flag is told it does not exist.
+const RUN_CODE_META_TOOL = 'nango_run_code';
 
 /**
  * Unknown keys pass validation so they can be rejected as unknown_meta_tool, which names them,
@@ -143,7 +148,8 @@ export const agentSessionMetaToolsSchema = z.looseObject(metaToolsShape).transfo
         ...(requested.nango_proxy && { nangoProxy: requested.nango_proxy.enabled }),
         ...(requested.nango_create_connection && {
             nangoCreateConnection: { enabled: requested.nango_create_connection.enabled, tags: requested.nango_create_connection.tags ?? {} }
-        })
+        }),
+        ...(requested.nango_run_code && { nangoRunCode: requested.nango_run_code.enabled })
     };
 
     return { metaTools, unknown: Object.keys(requested).filter((key) => !META_TOOL_NAMES.includes(key)) };
@@ -186,20 +192,26 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
         return;
     }
 
-    const unknownMetaTools = body.data.meta_tools?.unknown ?? [];
+    const { account, environment, plan } = res.locals;
+
+    const runCodeAvailable = await getFlags().isAgentSessionRunCodeEnabled(account.uuid);
+    const supportedMetaTools = runCodeAvailable ? META_TOOL_NAMES : META_TOOL_NAMES.filter((name) => name !== RUN_CODE_META_TOOL);
+    const unknownMetaTools = [
+        ...(body.data.meta_tools?.unknown ?? []),
+        ...(!runCodeAvailable && body.data.meta_tools?.metaTools.nangoRunCode !== undefined ? [RUN_CODE_META_TOOL] : [])
+    ];
     if (unknownMetaTools.length > 0) {
         res.status(400).send({
             error: {
                 code: 'unknown_meta_tool',
-                message: `${unknownMetaTools.length} ${unknownMetaTools.length === 1 ? 'key is' : 'keys are'} not a meta tool Nango ships. Supported meta tools are ${META_TOOL_NAMES.join(', ')}.`,
+                message: `${unknownMetaTools.length} ${unknownMetaTools.length === 1 ? 'key is' : 'keys are'} not a meta tool Nango ships. Supported meta tools are ${supportedMetaTools.join(', ')}.`,
                 payload: { meta_tools: unknownMetaTools }
             }
         });
         return;
     }
 
-    const { account, environment, plan } = res.locals;
-    const created = await agentSessionService.createAgentSession({
+    const params = {
         account,
         environment,
         plan,
@@ -208,7 +220,8 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
         pinnedTools: body.data.pinned_tools,
         metaTools: body.data.meta_tools?.metaTools,
         expiresInMs: body.data.expires_in
-    });
+    };
+    const created = await agentSessionService.createAgentSession(params);
 
     if (created.isErr()) {
         if (created.error.code === 'server_error') {
@@ -226,7 +239,7 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
         return;
     }
 
-    trackAgentSessionCreated(created.value.session);
+    trackAgentSessionCreated(created.value.session, params, req.body);
 
     res.status(201).send({ data: createdAgentSessionToPublicApi(created.value) });
 });

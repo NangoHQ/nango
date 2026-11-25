@@ -1,0 +1,37 @@
+---
+title: 'Superfiliate - How do I link my account?'
+sidebarTitle: 'Superfiliate'
+---
+
+## Overview
+
+To authenticate with Superfiliate, you need:
+
+1. **Client ID** and **Client Secret** — a Superfiliate API key pair.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Superfiliate account with access to **Settings** → **Developers**.
+
+### Step 1: Create an API key
+
+1. Log in to the Superfiliate app.
+2. Go to **Settings** → **Developers**.
+3. Create a new API key and choose the scopes your integration needs. A key's scopes can't be edited later, so choose every scope you need when you create it.
+4. Copy the **Client ID** (starts with `sfci1_`) and the **Client Secret** (starts with `sfcs1_`).
+
+<Note>
+Each key is scoped to one store and to the scopes you choose. A request to an endpoint whose scope the key doesn't have returns `403 Forbidden`.
+</Note>
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Superfiliate.
+2. Enter your **Client ID** and **Client Secret** in the designated fields.
+3. Submit the form. The connection is saved without checking the credentials: if the credentials are wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/superfiliate/form.png" alt="Superfiliate Connect UI form with the Client ID and Client Secret fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Superfiliate.

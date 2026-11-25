@@ -32,6 +32,10 @@ const agentConfig = {
     }
 };
 
+// Zoho's token_url builds accounts.zoho.<extension>, but Canada's accounts server is accounts.zohocloud.ca
+// (accounts.zoho.ca doesn't exist), so refreshes for Canadian connections need the host swapped.
+const tokenHostOverrides = new Map([['accounts.zoho.ca', 'accounts.zohocloud.ca']]);
+
 export function getSimpleOAuth2ClientConfig(
     providerConfig: ProviderConfig,
     provider: Provider,
@@ -46,6 +50,11 @@ export function getSimpleOAuth2ClientConfig(
         // fallback to placeholder URL if interpolation fails
         // this can happen when token_url is not yet available (e.g., waiting for redirect_uri_metadata)
         tokenUrl = new URL('https://placeholder.invalid');
+    }
+
+    const tokenHostOverride = tokenHostOverrides.get(tokenUrl.host);
+    if (tokenHostOverride) {
+        tokenUrl.host = tokenHostOverride;
     }
 
     const headers = { 'User-Agent': 'Nango' };
@@ -63,11 +72,17 @@ export function getSimpleOAuth2ClientConfig(
         authSection.authorizePath = authorizeUrl.pathname;
     }
 
+    // public clients send no secret. simple-oauth2 always writes one in body mode, so it's written to client_id instead.
+    const isPublicClient = authConfig.token_request_auth_method === 'none';
+    const secret = authConfig.token_request_auth_method === 'private_key_jwt' ? '' : providerConfig.oauth_client_secret;
+
     return {
-        client: {
-            id: providerConfig.oauth_client_id,
-            secret: providerConfig.oauth_client_secret
-        },
+        client: isPublicClient
+            ? { id: providerConfig.oauth_client_id, secret: providerConfig.oauth_client_id, secretParamName: 'client_id' }
+            : {
+                  id: providerConfig.oauth_client_id,
+                  secret
+              },
         http: {
             headers,
             // @ts-expect-error agents are not specified in the types, but are available as an option
@@ -75,7 +90,7 @@ export function getSimpleOAuth2ClientConfig(
         },
         auth: authSection,
         options: {
-            authorizationMethod: authConfig.authorization_method || 'body',
+            authorizationMethod: isPublicClient ? 'body' : authConfig.authorization_method || 'body',
             bodyFormat: authConfig.body_format === 'json' ? 'json' : 'form',
             // @ts-expect-error seems unused ?
             scopeSeparator: provider.scope_separator || ' '
@@ -101,6 +116,8 @@ export async function getFreshOAuth2Credentials({
             oauth_client_id: credentials.config_override.client_id,
             oauth_client_secret: credentials.config_override.client_secret
         };
+    } else if (credentials.config_override?.client_id && provider.auth_mode === 'OAUTH2' && provider.token_request_auth_method === 'none') {
+        config = { ...config, oauth_client_id: credentials.config_override.client_id };
     }
     const simpleOAuth2ClientConfig = getSimpleOAuth2ClientConfig(config, provider, connection.connection_config);
     if (provider.token_request_auth_method === 'basic') {
@@ -225,6 +242,8 @@ export async function getFreshOAuth2Credentials({
                 client_id: credentials.config_override.client_id,
                 client_secret: credentials.config_override.client_secret
             };
+        } else if (credentials.config_override?.client_id && provider.auth_mode === 'OAUTH2' && provider.token_request_auth_method === 'none') {
+            newCredentials.config_override = { client_id: credentials.config_override.client_id };
         }
 
         return { success: true, error: null, response: newCredentials };

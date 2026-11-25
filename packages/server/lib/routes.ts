@@ -63,7 +63,8 @@ router.use(staticSite);
 
 // -------
 // Error handling.
-router.use((err: any, req: Request, res: Response<ApiError<'invalid_json'> | ApiError<'request_too_large'> | ApiError<'unsupported_content_type'>>, _: any) => {
+type ErrorHandlerResponse = ApiError<'invalid_json'> | ApiError<'request_too_large'> | ApiError<'unsupported_content_type'> | ApiError<'invalid_uri'>;
+router.use((err: any, req: Request, res: Response<ErrorHandlerResponse>, _: any) => {
     if (err instanceof SyntaxError && 'body' in err && 'type' in err && err.type === 'entity.parse.failed') {
         res.status(400).send({ error: { code: 'invalid_json', message: err.message } });
         return;
@@ -75,11 +76,16 @@ router.use((err: any, req: Request, res: Response<ApiError<'invalid_json'> | Api
         return;
     }
 
+    if (err instanceof URIError && 'status' in err && err.status === 400) {
+        res.status(400).send({ error: { code: 'invalid_uri', message: err.message } });
+        return;
+    }
+
     if (err instanceof Error && err.message.startsWith('Unsupported content type:') && req.path.startsWith('/proxy')) {
         res.status(400).send({
             error: {
                 code: 'unsupported_content_type',
-                message: `${err.message}. The "Content-Type" header on a request to the Nango proxy must be "multipart/form-data" or omitted. To send this Content-Type to the destination API, set it via the "nango-proxy-Content-Type" header instead (see https://docs.nango.dev/guides/platform/proxy-requests).`
+                message: `${err.message}. The "Content-Type" header on a request to the Nango proxy must be "multipart/form-data" or omitted. To send this Content-Type to the destination API, set it via the "nango-proxy-Content-Type" header instead (see https://docs.nango.dev/guides/auth/proxy-requests).`
             }
         });
         return;

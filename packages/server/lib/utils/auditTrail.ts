@@ -3,8 +3,9 @@ import { getPlanSafe } from '@nangohq/shared';
 import { flagHasPlan, flags } from '@nangohq/utils';
 
 import { auditBackend } from '../audit.js';
+import { envs } from '../env.js';
 
-import type { DBPlan } from '@nangohq/types';
+import type { AuditTrailDataPlaneScope, DBPlan } from '@nangohq/types';
 import type { Request } from 'express';
 
 type AuditTrailEntitlement = 'has_audit_trail_control_plane' | 'has_audit_trail_access';
@@ -20,9 +21,22 @@ async function isEntitled(loadPlan: () => EntitlementPlan | Promise<EntitlementP
     return plan?.[entitlement] === true;
 }
 
-/** Whether the account's activity is recorded at all. */
-export async function canRecordAuditTrail(plan: Pick<DBPlan, 'has_audit_trail_control_plane'> | null | undefined): Promise<boolean> {
-    return await isEntitled(() => plan, 'has_audit_trail_control_plane');
+/** Whether the account's activity is recorded at all. A data-plane event also needs its scope in the plan's data-plane scopes. */
+export async function canRecordAuditTrail(
+    plan: (Pick<DBPlan, 'has_audit_trail_control_plane'> & Partial<Pick<DBPlan, 'audit_trail_data_plane_scopes'>>) | null | undefined,
+    dataPlaneScope?: AuditTrailDataPlaneScope
+): Promise<boolean> {
+    if (!(await isEntitled(() => plan, 'has_audit_trail_control_plane'))) {
+        return false;
+    }
+    if (!dataPlaneScope) {
+        return true;
+    }
+    // No plans layer (self-hosted, local dev): the deployment picks its scopes.
+    if (!flagHasPlan) {
+        return envs.FLAG_AUDIT_TRAIL_DATA_PLANE_SCOPES.includes(dataPlaneScope);
+    }
+    return plan?.audit_trail_data_plane_scopes?.includes(dataPlaneScope) ?? false;
 }
 
 /** For emitters with no request behind them, so no `res.locals.plan` to read the entitlement from. */

@@ -54,6 +54,13 @@ export class ActionError<T = Record<string, unknown>> extends Error {
     }
 }
 
+export class FunctionError<T = Record<string, unknown>> extends ActionError<T> {
+    constructor(payload?: T) {
+        super(payload);
+        this.type = 'function_runtime_error';
+    }
+}
+
 export class ExecutionError extends Error {
     type: string;
     payload: RunnerOutputError['payload'];

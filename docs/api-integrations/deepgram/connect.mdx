@@ -1,0 +1,53 @@
+---
+title: 'Deepgram - How do I link my account?'
+sidebarTitle: 'Deepgram'
+---
+
+## Overview
+
+To authenticate with Deepgram, you need:
+
+1. **Region** — the Deepgram API host that processes your data.
+2. **API Key** — a Deepgram API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Deepgram account. You can [sign up for free](https://console.deepgram.com/signup).
+
+### Step 1: Choose your region
+
+Deepgram serves its API from these hosts:
+
+- **Global** — `api.deepgram.com`
+- **EU** — `api.eu.deepgram.com`
+- **Australia** — `api.au.deepgram.com`
+- **India** — `api.in.deepgram.com`
+
+Pick the host your requests should go to. Use `api.deepgram.com` unless you need your data processed in a specific region. The same API key works on every host. See [Regional Endpoints](https://developers.deepgram.com/reference/regional-endpoints).
+
+### Step 2: Create an API key
+
+1. Log in to the [Deepgram Console](https://console.deepgram.com). If you have more than one project, pick the project from the drop-down at the top.
+2. Click **API keys** under **Manage** in the left sidebar, then click **Create a new API key**.
+
+<img src="/api-integrations/deepgram/api_keys_page.png" alt="Deepgram Console API keys page with the Create a new API key button"/>
+
+3. Enter a **Friendly name** and choose an expiration. Optionally open **Advanced** to add tags and choose a role. **Default** only allows using Deepgram services; **Member** also lets the key view usage and logs. See [Working with Roles](https://developers.deepgram.com/guides/deep-dives/working-with-roles). Click **Create key**.
+
+<img src="/api-integrations/deepgram/create_api_key_dialog.png" alt="Create an API key dialog in the Deepgram Console with the Member role selected and the Create key button"/>
+
+4. Click the copy button next to the secret and store it safely. Deepgram won't show it again. Tick **I know I can't access this key's secret again** and click **Got it**.
+
+<img src="/api-integrations/deepgram/api_key_created.png" alt="Your new API key dialog in the Deepgram Console with the copy button next to the secret"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Deepgram.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/deepgram/form.png" alt="Deepgram connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Deepgram.

@@ -1,0 +1,57 @@
+---
+title: 'Kickbox - How do I link my account?'
+sidebarTitle: 'Kickbox'
+---
+
+## Overview
+
+To authenticate with Kickbox, you need:
+
+1. **Region** — the Kickbox API host for your account.
+2. **API Key** — a production (`live_`) or sandbox (`test_`) API key from your Kickbox dashboard.
+
+This guide will show you how to find your region and create an API key.
+
+### Prerequisites
+
+- A Kickbox account. If you don't have one, [sign up for free](https://app.kickbox.com/signup).
+
+### Step 1: Find your region
+
+Check the address you use to sign in to Kickbox:
+
+- If you sign in at `app.kickbox.com`, choose `api.kickbox.com`.
+- If you have an EU-only account and sign in at `app.eu.kickbox.com`, choose `api.eu.kickbox.com`.
+
+### Step 2: Create an API key
+
+1. Sign in to your Kickbox dashboard and click **API** in the left navigation, then click **Manage Keys**. This opens **Settings** > **API Keys**.
+
+<img src="/api-integrations/kickbox/api_nav.png" alt="Kickbox dashboard with API highlighted in the left navigation"/>
+
+2. On the **API Keys** page, click the blue **+** button at the top right to create a new key.
+
+<img src="/api-integrations/kickbox/create_api_key_button.png" alt="Kickbox API Keys page with the blue plus button to create a key"/>
+
+3. Enter a **Key Name** and choose a mode:
+    - **Production Mode** creates a `live_` key that verifies real addresses and uses verification credits.
+    - **Sandbox Mode** creates a `test_` key that returns mock results without using credits.
+
+    You can't switch a key between modes later.
+4. Under **Permissions**, tick the endpoints the key may use (for example **Verify single email address**), then click **Create**. Sandbox keys only offer **Verify single email address**, which is ticked for you.
+
+<img src="/api-integrations/kickbox/create_api_key_dialog.png" alt="Kickbox Create API Key dialog with the key name, mode and permissions"/>
+
+5. The new key appears in the list. Click the eye icon to reveal it, then copy it.
+
+<img src="/api-integrations/kickbox/api_key_created.png" alt="Kickbox API Keys list showing the new key and the eye icon to reveal it"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Kickbox.
+2. Choose your **Region** and enter your API key in the **API Key** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/kickbox/form.png" alt="Kickbox Connect UI form with the Region and API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Kickbox.

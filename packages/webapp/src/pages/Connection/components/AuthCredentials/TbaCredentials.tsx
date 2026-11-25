@@ -1,6 +1,6 @@
-import { FieldLabel } from '@nangohq/design-system';
+import { FieldLabel, SecretInput } from '@nangohq/design-system';
 
-import { SecretInput } from '@/components/patterns/SecretInput';
+import { PERMISSION_DENIED_REASON } from '@/components/patterns/PermissionGate';
 
 import type { TbaCredentials } from '@nangohq/types';
 
@@ -12,12 +12,12 @@ export const TbaCredentialsComponent: React.FC<{
         <>
             <div className="flex flex-col gap-2">
                 <FieldLabel htmlFor="token_id">Token ID</FieldLabel>
-                <SecretInput id="token_id" value={credentials.token_id} disabled copy canRead={canRead} />
+                <SecretInput id="token_id" value={credentials.token_id} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
             </div>
 
             <div className="flex flex-col gap-2">
                 <FieldLabel htmlFor="token_secret">Token secret</FieldLabel>
-                <SecretInput id="token_secret" value={credentials.token_secret} disabled copy canRead={canRead} />
+                <SecretInput id="token_secret" value={credentials.token_secret} canReveal={canRead} disabledReason={PERMISSION_DENIED_REASON} />
             </div>
 
             {credentials.config_override && (
@@ -25,14 +25,24 @@ export const TbaCredentialsComponent: React.FC<{
                     {credentials.config_override.client_id && (
                         <div className="flex flex-col gap-2">
                             <FieldLabel htmlFor="client_id_override">Client ID override</FieldLabel>
-                            <SecretInput id="client_id_override" value={credentials.config_override.client_id} disabled copy canRead={canRead} />
+                            <SecretInput
+                                id="client_id_override"
+                                value={credentials.config_override.client_id}
+                                canReveal={canRead}
+                                disabledReason={PERMISSION_DENIED_REASON}
+                            />
                         </div>
                     )}
 
                     {credentials.config_override.client_secret && (
                         <div className="flex flex-col gap-2">
                             <FieldLabel htmlFor="client_secret_override">Client secret override</FieldLabel>
-                            <SecretInput id="client_secret_override" value={credentials.config_override.client_secret} disabled copy canRead={canRead} />
+                            <SecretInput
+                                id="client_secret_override"
+                                value={credentials.config_override.client_secret}
+                                canReveal={canRead}
+                                disabledReason={PERMISSION_DENIED_REASON}
+                            />
                         </div>
                     )}
                 </>

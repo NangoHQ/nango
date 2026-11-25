@@ -2,7 +2,7 @@ import { useForm } from '@tanstack/react-form';
 import { Info, Lock } from 'lucide-react';
 import React, { useRef } from 'react';
 
-import { Button, Field, FieldDescription, FieldError, FieldLabel, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { Button, Field, FieldDescription, FieldError, FieldLabel, LinkButton, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
@@ -54,10 +54,8 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
 const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled, form }) => (
     <form.Field name="showWatermark">
         {(field: any) => (
-            <Field orientation="horizontal" className="gap-5">
-                <FieldLabel htmlFor={field.name} className={disabled ? 'text-text-muted' : undefined}>
-                    Show &quot;Secured by Nango&quot;
-                </FieldLabel>
+            <Field orientation="inline" className="gap-5">
+                <FieldLabel htmlFor={field.name}>Show &quot;Secured by Nango&quot;</FieldLabel>
                 <Switch
                     id={field.name}
                     name={field.name}
@@ -143,7 +141,7 @@ export const ConnectUISettings = () => {
                                     </Select>
                                     <FieldDescription className="whitespace-normal">
                                         Override it per session from the{' '}
-                                        <Button asChild variant="link-accent" size="xs">
+                                        <LinkButton asChild size="sm">
                                             <a
                                                 href="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
                                                 target="_blank"
@@ -151,7 +149,7 @@ export const ConnectUISettings = () => {
                                             >
                                                 Frontend SDK
                                             </a>
-                                        </Button>
+                                        </LinkButton>
                                         .
                                     </FieldDescription>
                                 </Field>

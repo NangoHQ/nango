@@ -55,7 +55,7 @@ Connect to Grain with Nango and see data flow in 2 minutes.
     </Step>
 
     <Step title="Implement Nango in your app">
-        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+        Follow our [Auth implementation guide](/guides/auth/overview) to integrate Nango in your app.
     </Step>
 </Steps>
 
@@ -76,9 +76,9 @@ Official docs: [Grain API docs](https://developers.grain.com/overview.html)
 - List endpoints, such as `POST /_/public-api/v2/recordings`, use `POST` with a JSON body and cursor pagination. Pass the returned `cursor` to fetch the next page; a `null` cursor means there are no more results.
 - Rate limits apply per token: a burst of 30 requests, refilling at 2 requests per second. Requests over the limit return `429` with a `Retry-After` header.
 
-## 🧩 Pre-built syncs & actions for Grain
+## 🧩 Pre-built syncs & tools for Grain
 
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+Enable them in your dashboard. [Extend and customize](/guides/platform/functions/functions-guide#extend-a-template) to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/grain-api-key/PreBuiltUseCases.mdx"
 

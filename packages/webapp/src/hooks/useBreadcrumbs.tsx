@@ -1,11 +1,11 @@
 import { useMatches, useSearchParams } from 'react-router-dom';
 
 export interface BreadcrumbHandle {
-    breadcrumb?: string | ((params: Record<string, string | undefined>, searchParams: URLSearchParams) => string);
+    breadcrumb?: string | ((params: Record<string, string | undefined>, searchParams: URLSearchParams) => React.ReactNode);
 }
 
 export interface BreadcrumbItem {
-    label: string;
+    label: React.ReactNode;
     path: string;
 }
 
@@ -21,7 +21,7 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
             return;
         }
 
-        let breadcrumb: string | undefined;
+        let breadcrumb: React.ReactNode;
 
         if (typeof handle.breadcrumb === 'string') {
             breadcrumb = handle.breadcrumb;

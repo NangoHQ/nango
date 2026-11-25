@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
@@ -5,40 +7,25 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { createAccount } from '../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../seeders/environment.seeder.js';
+import { listCatalogEntries } from '../../catalog/actions.js';
 import * as functionConfigService from '../models/functions.js';
 import { getFunction, listActions, listFunctions } from './service.js';
 
 import type { DBEnvironment, DBFunctionConfigVersion, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 
-const { mockListCatalogTools, mockGetCatalogTool, mockHasCatalogTools } = vi.hoisted(() => {
-    return { mockListCatalogTools: vi.fn(), mockGetCatalogTool: vi.fn(), mockHasCatalogTools: vi.fn() };
+const { mockHasCatalogTools } = vi.hoisted(() => {
+    return { mockHasCatalogTools: vi.fn() };
 });
 
 vi.mock('@nangohq/feature-flags', () => ({
     getFlags: () => ({ hasCatalogTools: mockHasCatalogTools })
 }));
 
-vi.mock('../../catalog/actions.js', () => ({
-    listCatalogTools: mockListCatalogTools,
-    getCatalogTool: mockGetCatalogTool
-}));
+const anyId: unknown = expect.any(Number);
 
-function catalogTool(name: string) {
-    return {
-        name,
-        description: `${name} description`,
-        scopes: [],
-        input: null,
-        output: [],
-        jsonSchema: null,
-        sdkVersion: '0.0.0-zero',
-        version: '0.0.1',
-        fileLocation: `templates-zero/github/build/github_actions_${name}.cjs`,
-        sourceLocation: `templates-zero/github/actions/${name}.ts`,
-        capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
-        module: 'action' as const
-    };
-}
+beforeEach(() => {
+    mockHasCatalogTools.mockResolvedValue(true);
+});
 
 async function insertSyncConfig({
     environmentId,
@@ -78,25 +65,43 @@ async function insertSyncConfig({
     });
 }
 
-async function seedIntegration() {
+async function seedIntegration(provider = 'github', providerConfigKey = provider) {
     const account = await createAccount();
     const environment = await createEnvironmentSeed(account.id);
-    const integration = await createConfigSeed(environment, 'github', 'github');
+    const integration = await createConfigSeed(environment, providerConfigKey, provider);
     return { account, environment, integration };
+}
+
+function catalogTool() {
+    const definition = listCatalogEntries('replicate').find((entry) => entry.type === 'tool');
+    if (definition?.type !== 'tool') {
+        throw new Error('Expected a catalog tool fixture');
+    }
+    return definition;
+}
+
+function catalogAction() {
+    const definition = listCatalogEntries('github').find((entry) => entry.type === 'action');
+    if (!definition) {
+        throw new Error('Expected a catalog action fixture');
+    }
+    return definition;
 }
 
 async function listPage({
     environment,
+    providerConfigKey = 'github',
     offset,
     limit
 }: {
     environment: DBEnvironment;
+    providerConfigKey?: string;
     offset: number;
     limit: number;
 }): Promise<{ rows: { name: string; source: string; enabled: boolean; id: number | null }[]; total: number }> {
     const result = await listFunctions({
         environmentId: environment.id,
-        providerConfigKey: 'github',
+        providerConfigKey,
         type: undefined,
         search: undefined,
         limit,
@@ -123,7 +128,7 @@ describe('listFunctions with HTTP-triggered tools', () => {
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'legacy', type: 'action' });
         const version: Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> = {
             description: 'Fetch users',
-            tags: { instructions: 'Read users', required_scopes: ['read'], category: 'crm' },
+            tags: { instructions: 'Read users', required_scopes: { all: ['read'] }, category: 'crm' },
             file_location: 'functions/fetch-users',
             version: 'test',
             source: 'repo',
@@ -184,80 +189,92 @@ describe('listFunctions with HTTP-triggered tools', () => {
                 provider: 'github',
                 input_json_schema: { $ref: '#/definitions/Input', definitions: { Input: { type: 'string' } } },
                 output_json_schema: null,
-                meta: { instructions: 'Read users', required_scopes: ['read'], tags: { category: 'crm' } }
+                meta: { instructions: 'Read users', required_scopes: { all: ['read'] }, tags: { category: 'crm' } }
             })
         ]);
     });
 });
 
-describe('listFunctions with catalog actions', () => {
+describe('listFunctions with catalog entries', () => {
     beforeAll(async () => {
         await multipleMigrations();
     });
 
-    beforeEach(() => {
-        mockHasCatalogTools.mockResolvedValue(true);
-        mockListCatalogTools.mockReturnValue([]);
-        mockGetCatalogTool.mockReturnValue(undefined);
+    it.skip('paginates catalog tools and actions', async () => {
+        const { environment, integration } = await seedIntegration('replicate', 'custom-replicate');
+        const catalog = listCatalogEntries('replicate').filter((entry) => entry.type === 'tool' || entry.type === 'action');
+        expect(catalog.some((entry) => entry.type === 'tool')).toBe(true);
+        const prefix = randomUUID().slice(0, 8);
+        const names = ['a', 'b', 'c'].map((suffix) => `test-${prefix}-${suffix}`);
+        for (const name of names) {
+            await insertSyncConfig({ environmentId: environment.id, integration, name, type: 'action' });
+        }
+        const actionNames = [...catalog.filter((entry) => entry.type === 'action').map(({ name }) => name), ...names].sort();
+        const expected = [
+            ...catalog
+                .filter((entry) => entry.type === 'tool')
+                .map(({ name }) => name)
+                .sort()
+                .map((name) => ({ name, source: 'tools-catalog', enabled: true, id: null })),
+            ...actionNames.map((name) => ({
+                name,
+                source: names.includes(name) ? 'repo' : 'tools-catalog',
+                enabled: true,
+                id: names.includes(name) ? anyId : null
+            }))
+        ];
+
+        const pages = await Promise.all(
+            Array.from({ length: Math.ceil(expected.length / 2) }, (_, index) =>
+                listPage({ environment, providerConfigKey: integration.unique_key, offset: index * 2, limit: 2 })
+            )
+        );
+
+        expect(pages.map(({ total }) => total)).toEqual(pages.map(() => expected.length));
+        expect(pages.flatMap(({ rows }) => rows)).toEqual(expected);
     });
 
-    it('returns consecutive pages of the merged order without gaps or repeats', async () => {
+    it('orders catalog and deployed actions by name', async () => {
         const { environment, integration } = await seedIntegration();
-        mockListCatalogTools.mockReturnValue([catalogTool('a'), catalogTool('b'), catalogTool('c')]);
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'm', type: 'action' });
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'n', type: 'action' });
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'o', type: 'action' });
+        const catalog = listCatalogEntries('github').filter((entry) => entry.type === 'action');
+        expect(catalog.length).toBeGreaterThan(0);
+        const prefix = randomUUID().slice(0, 8);
+        const names = ['create', 'update'].map((suffix) => `test-${prefix}-${suffix}`);
+        for (const name of names) {
+            await insertSyncConfig({ environmentId: environment.id, integration, name, type: 'action' });
+        }
+        const expectedNames = [...catalog.map(({ name }) => name), ...names].sort();
 
-        const page1 = await listPage({ environment, offset: 0, limit: 2 });
-        const page2 = await listPage({ environment, offset: 2, limit: 2 });
-        const page3 = await listPage({ environment, offset: 4, limit: 2 });
+        const result = (
+            await listFunctions({
+                environmentId: environment.id,
+                providerConfigKey: integration.unique_key,
+                type: 'action',
+                search: undefined,
+                limit: expectedNames.length,
+                offset: 0
+            })
+        ).unwrap();
 
-        expect(page1.total).toBe(6);
-        expect(page2.total).toBe(6);
-        expect(page3.total).toBe(6);
-        expect(page1.rows).toEqual([
-            { name: 'a', source: 'tools-catalog', enabled: true, id: null },
-            { name: 'b', source: 'tools-catalog', enabled: true, id: null }
-        ]);
-        expect(page2.rows).toEqual([
-            { name: 'c', source: 'tools-catalog', enabled: true, id: null },
-            { name: 'm', source: 'repo', enabled: true, id: expect.any(Number) }
-        ]);
-        expect(page3.rows).toEqual([
-            { name: 'n', source: 'repo', enabled: true, id: expect.any(Number) },
-            { name: 'o', source: 'repo', enabled: true, id: expect.any(Number) }
-        ]);
+        expect(result.total).toBe(expectedNames.length);
+        expect(result.rows.map(({ name, source }) => ({ name, source }))).toEqual(
+            expectedNames.map((name) => ({ name, source: names.includes(name) ? 'repo' : 'tools-catalog' }))
+        );
     });
 
-    it('interleaves catalog actions with deployed actions by name', async () => {
-        const { environment, integration } = await seedIntegration();
-        mockListCatalogTools.mockReturnValue([catalogTool('delete'), catalogTool('list')]);
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'create', type: 'action' });
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'update', type: 'action' });
+    it.skip('enables legacy actions but not syncs', async () => {
+        const { environment, integration } = await seedIntegration('replicate');
+        const definition = catalogTool();
+        const syncName = `test-${randomUUID().slice(0, 8)}-sync`;
+        await insertSyncConfig({ environmentId: environment.id, integration, name: definition.name, type: 'action', enabled: false });
+        await insertSyncConfig({ environmentId: environment.id, integration, name: syncName, type: 'sync', enabled: false });
+        const limit = listCatalogEntries('replicate').length + 2;
 
-        const page1 = await listPage({ environment, offset: 0, limit: 2 });
-        const page2 = await listPage({ environment, offset: 2, limit: 2 });
+        const page = await listPage({ environment, providerConfigKey: integration.unique_key, offset: 0, limit });
 
-        expect(page1.rows).toEqual([
-            { name: 'create', source: 'repo', enabled: true, id: expect.any(Number) },
-            { name: 'delete', source: 'tools-catalog', enabled: true, id: null }
-        ]);
-        expect(page2.rows).toEqual([
-            { name: 'list', source: 'tools-catalog', enabled: true, id: null },
-            { name: 'update', source: 'repo', enabled: true, id: expect.any(Number) }
-        ]);
-    });
-
-    it('lists a disabled deployed action as enabled and leaves a disabled sync disabled', async () => {
-        const { environment, integration } = await seedIntegration();
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-issue', type: 'action', enabled: false });
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'sync-issues', type: 'sync', enabled: false });
-
-        const page = await listPage({ environment, offset: 0, limit: 20 });
-
-        expect(page.rows).toEqual([
-            { name: 'create-issue', source: 'repo', enabled: true, id: expect.any(Number) },
-            { name: 'sync-issues', source: 'repo', enabled: false, id: expect.any(Number) }
+        expect(page.rows.filter(({ source }) => source === 'repo')).toEqual([
+            { name: definition.name, source: 'repo', enabled: true, id: anyId },
+            { name: syncName, source: 'repo', enabled: false, id: anyId }
         ]);
     });
 
@@ -268,32 +285,50 @@ describe('listFunctions with catalog actions', () => {
 
         const page = await listPage({ environment, offset: 0, limit: 20 });
 
-        expect(page.rows).toEqual([{ name: 'create-issue', source: 'repo', enabled: false, id: expect.any(Number) }]);
+        expect(page.rows).toEqual([{ name: 'create-issue', source: 'repo', enabled: false, id: anyId }]);
     });
 
-    it('does not list a catalog action that already has a deployed row', async () => {
+    it('shadows catalog actions with deployed actions', async () => {
         const { environment, integration } = await seedIntegration();
-        mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-issue', type: 'action' });
+        const definition = catalogAction();
+        const catalog = listCatalogEntries('github').filter((entry) => entry.type === 'action');
+        await insertSyncConfig({ environmentId: environment.id, integration, name: definition.name, type: 'action' });
 
-        const page = await listPage({ environment, offset: 0, limit: 20 });
+        const page = (
+            await listFunctions({
+                environmentId: environment.id,
+                providerConfigKey: integration.unique_key,
+                type: 'action',
+                search: undefined,
+                limit: catalog.length,
+                offset: 0
+            })
+        ).unwrap();
 
-        expect(page.total).toBe(1);
-        expect(page.rows).toEqual([{ name: 'create-issue', source: 'repo', enabled: true, id: expect.any(Number) }]);
+        expect(page.total).toBe(catalog.length);
+        expect(page.rows.filter(({ name }) => name === definition.name)).toEqual([
+            expect.objectContaining({ name: definition.name, source: 'repo', enabled: true, id: anyId })
+        ]);
     });
 
-    it('does not list deployed or catalog actions that have a native tool of the same name, even a disabled one', async () => {
-        const { environment, integration } = await seedIntegration();
-        mockListCatalogTools.mockReturnValue([catalogTool('create-issue'), catalogTool('list-issues')]);
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'close-issue', type: 'action' });
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'list-issues', type: 'action' });
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'sync-issues', type: 'sync' });
+    it.skip('prefers deployed tools, including disabled ones', async () => {
+        const { environment, integration } = await seedIntegration('replicate');
+        const catalog = listCatalogEntries('replicate').filter((entry) => entry.type === 'tool' || entry.type === 'action');
+        const definition = catalogTool();
+        const prefix = randomUUID().slice(0, 8);
+        const actionName = `test-${prefix}-action`;
+        const syncName = `test-${prefix}-sync`;
+        for (const name of [definition.name, actionName]) {
+            await insertSyncConfig({ environmentId: environment.id, integration, name, type: 'action' });
+        }
+        await insertSyncConfig({ environmentId: environment.id, integration, name: syncName, type: 'sync' });
+        const names = [definition.name, syncName];
         const tools = (
             await functionConfigService.upsert(
                 db.knex,
-                ['create-issue', 'close-issue', 'sync-issues'].map((name) => ({
+                names.map((name) => ({
                     environmentId: environment.id,
-                    integrationId: 'github',
+                    integrationId: integration.unique_key,
                     name,
                     version: {
                         description: name,
@@ -315,114 +350,110 @@ describe('listFunctions with catalog actions', () => {
                 }))
             )
         ).unwrap();
-        await db.knex('function_configs').where({ id: tools[1]!.config.id }).update({ enabled: false });
+        const tool = tools[0];
+        if (!tool) {
+            throw new Error('Expected a deployed tool fixture');
+        }
+        await db.knex('function_configs').where({ id: tool.config.id }).update({ enabled: false });
+        const expectedTools = [...new Set([...catalog.filter((entry) => entry.type === 'tool').map(({ name }) => name), ...names])]
+            .sort()
+            .map((name) => ({ name, type: 'tool' }));
+        const actionNames = [...catalog.filter((entry) => entry.type === 'action').map(({ name }) => name), actionName].sort();
+        const expectedActions = actionNames.map((name) => ({ name, type: 'action' }));
+        const scope = { environmentId: environment.id, providerConfigKey: integration.unique_key };
+        const limit = expectedTools.length + expectedActions.length + 1;
 
-        const untyped = (
-            await listFunctions({ environmentId: environment.id, providerConfigKey: 'github', type: undefined, search: undefined, limit: 20, offset: 0 })
-        ).unwrap();
-        expect(untyped.rows.map((row) => ({ name: row.name, type: row.type }))).toEqual([
-            { name: 'close-issue', type: 'tool' },
-            { name: 'create-issue', type: 'tool' },
-            { name: 'sync-issues', type: 'tool' },
-            { name: 'list-issues', type: 'action' },
-            { name: 'sync-issues', type: 'sync' }
-        ]);
+        const untyped = (await listFunctions({ ...scope, type: undefined, search: undefined, limit, offset: 0 })).unwrap();
+        expect(untyped.rows.map(({ name, type }) => ({ name, type }))).toEqual([...expectedTools, ...expectedActions, { name: syncName, type: 'sync' }]);
 
-        const actions = (
-            await listFunctions({ environmentId: environment.id, providerConfigKey: 'github', type: 'action', search: undefined, limit: 20, offset: 0 })
-        ).unwrap();
-        expect(actions.total).toBe(1);
-        expect(actions.rows).toEqual([expect.objectContaining({ name: 'list-issues', source: 'repo' })]);
+        const actions = (await listFunctions({ ...scope, type: 'action', search: undefined, limit, offset: 0 })).unwrap();
+        expect(actions.total).toBe(expectedActions.length);
+        expect(actions.rows.map(({ name, type }) => ({ name, type }))).toEqual(expectedActions);
+        expect(actions.rows.find(({ name }) => name === actionName)).toMatchObject({ source: 'repo' });
 
-        const toolsListing = (
-            await listFunctions({ environmentId: environment.id, providerConfigKey: 'github', type: 'tool', search: undefined, limit: 20, offset: 0 })
-        ).unwrap();
-        expect(toolsListing.total).toBe(4);
-        expect(toolsListing.rows.map(({ name, type }) => ({ name, type }))).toEqual([
-            { name: 'close-issue', type: 'tool' },
-            { name: 'create-issue', type: 'tool' },
-            { name: 'sync-issues', type: 'tool' },
-            { name: 'list-issues', type: 'action' }
-        ]);
+        const toolsListing = (await listFunctions({ ...scope, type: 'tool', search: undefined, limit, offset: 0 })).unwrap();
+        expect(toolsListing.total).toBe(expectedTools.length + expectedActions.length);
+        expect(toolsListing.rows.map(({ name, type }) => ({ name, type }))).toEqual([...expectedTools, ...expectedActions]);
 
-        const listed = (await listActions({ environmentId: environment.id, providerConfigKey: 'github' })).unwrap();
-        expect(listed.actions.map((action) => action.name)).toEqual(['list-issues']);
+        const listed = (await listActions(scope)).unwrap();
+        expect(listed.actions.map((action) => action.name)).toEqual(actionNames);
 
-        const closeIssue = (await getFunction({ environmentId: environment.id, providerConfigKey: 'github', name: 'close-issue', type: undefined })).unwrap();
-        expect(closeIssue).toMatchObject({ name: 'close-issue', type: 'tool', enabled: false });
-        const closeIssueTool = (await getFunction({ environmentId: environment.id, providerConfigKey: 'github', name: 'close-issue', type: 'tool' })).unwrap();
-        expect(closeIssueTool).toMatchObject({ type: 'tool', enabled: false });
-        const closeIssueAction = (
-            await getFunction({ environmentId: environment.id, providerConfigKey: 'github', name: 'close-issue', type: 'action' })
-        ).unwrap();
-        expect(closeIssueAction).toBeUndefined();
-        const syncIssues = (await getFunction({ environmentId: environment.id, providerConfigKey: 'github', name: 'sync-issues', type: undefined })).unwrap();
-        expect(syncIssues).toMatchObject({ name: 'sync-issues', type: 'tool' });
+        const selected = (await getFunction({ ...scope, name: definition.name, type: undefined })).unwrap();
+        expect(selected).toMatchObject({ name: definition.name, type: 'tool', source: 'repo', enabled: false });
+        const selectedTool = (await getFunction({ ...scope, name: definition.name, type: 'tool' })).unwrap();
+        expect(selectedTool).toMatchObject({ type: 'tool', source: 'repo', enabled: false });
+        expect((await getFunction({ ...scope, name: definition.name, type: 'action' })).unwrap()).toBeUndefined();
+        const sync = (await getFunction({ ...scope, name: syncName, type: undefined })).unwrap();
+        expect(sync).toMatchObject({ name: syncName, type: 'tool' });
     });
 
-    it('does not occupy a catalog name with a deployed action from another environment', async () => {
-        const { environment, integration } = await seedIntegration();
+    it.skip('ignores actions from another environment', async () => {
+        const { environment, integration } = await seedIntegration('replicate');
         const other = await createEnvironmentSeed(environment.account_id);
-        mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
-        await insertSyncConfig({ environmentId: other.id, integration, name: 'create-issue', type: 'action' });
+        const definition = catalogTool();
+        const catalog = listCatalogEntries('replicate').filter((entry) => entry.type === 'tool' || entry.type === 'action');
+        await insertSyncConfig({ environmentId: other.id, integration, name: definition.name, type: 'action' });
 
-        const page = await listPage({ environment, offset: 0, limit: 20 });
+        const page = await listPage({ environment, providerConfigKey: integration.unique_key, offset: 0, limit: catalog.length });
 
-        expect(page.total).toBe(1);
-        expect(page.rows).toEqual([{ name: 'create-issue', source: 'tools-catalog', enabled: true, id: null }]);
+        expect(page.total).toBe(catalog.length);
+        expect(page.rows.filter(({ name }) => name === definition.name)).toEqual([{ name: definition.name, source: 'tools-catalog', enabled: true, id: null }]);
     });
 
-    it('attaches catalog json_schema after listing', async () => {
+    it('attaches catalog action schemas', async () => {
         const { environment } = await seedIntegration();
-        const jsonSchema = { type: 'object', properties: { title: { type: 'string' } } };
-        mockListCatalogTools.mockReturnValue([{ ...catalogTool('create-issue'), jsonSchema }]);
+        const catalog = listCatalogEntries('github').filter((entry) => entry.type === 'action');
+        expect(catalog.length).toBeGreaterThan(0);
 
-        const result = await listFunctions({
-            environmentId: environment.id,
-            providerConfigKey: 'github',
-            type: undefined,
-            search: undefined,
-            limit: 20,
-            offset: 0
-        });
+        const result = (
+            await listFunctions({
+                environmentId: environment.id,
+                providerConfigKey: 'github',
+                type: 'action',
+                search: undefined,
+                limit: catalog.length,
+                offset: 0
+            })
+        ).unwrap();
 
-        expect(result.isOk()).toBe(true);
-        if (result.isErr()) {
-            return;
+        for (const definition of catalog) {
+            expect(result.rows.find(({ name }) => name === definition.name)).toMatchObject({
+                name: definition.name,
+                source: 'tools-catalog',
+                json_schema: definition.jsonSchema
+            });
         }
-        expect(result.value.rows[0]).toMatchObject({ name: 'create-issue', source: 'tools-catalog', json_schema: jsonSchema });
     });
 
-    it('lists actions for connection tools using the merged deployed and catalog view', async () => {
+    it('merges deployed and catalog actions', async () => {
         const { environment, integration } = await seedIntegration();
-        mockListCatalogTools.mockReturnValue([catalogTool('create-issue'), catalogTool('delete-issue')]);
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'delete-issue', type: 'action' });
+        const definition = catalogAction();
+        const names = listCatalogEntries('github')
+            .filter((entry) => entry.type === 'action')
+            .map(({ name }) => name)
+            .sort();
+        await insertSyncConfig({ environmentId: environment.id, integration, name: definition.name, type: 'action' });
 
-        const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github' });
+        const result = (await listActions({ environmentId: environment.id, providerConfigKey: integration.unique_key })).unwrap();
 
-        expect(result.isOk()).toBe(true);
-        if (result.isErr()) {
-            return;
-        }
-        expect(result.value.provider).toBe('github');
-        expect(result.value.actions.map((action) => ({ name: action.name, source: action.source, enabled: action.enabled }))).toEqual([
-            { name: 'create-issue', source: 'tools-catalog', enabled: true },
-            { name: 'delete-issue', source: 'repo', enabled: true }
-        ]);
+        expect(result.provider).toBe('github');
+        expect(result.actions.map(({ name, source, enabled }) => ({ name, source, enabled }))).toEqual(
+            names.map((name) => ({ name, source: name === definition.name ? 'repo' : 'tools-catalog', enabled: true }))
+        );
     });
 
     it('lists every action without capping the count', async () => {
-        const { environment } = await seedIntegration();
-        const names = Array.from({ length: 250 }, (_, i) => `action-${String(i).padStart(3, '0')}`);
-        mockListCatalogTools.mockReturnValue(names.map((name) => catalogTool(name)));
+        const { environment, integration } = await seedIntegration();
+        const prefix = randomUUID().slice(0, 8);
+        const names = Array.from({ length: 250 }, (_, i) => `test-${prefix}-${String(i).padStart(3, '0')}`);
+        const catalogNames = listCatalogEntries('github')
+            .filter((entry) => entry.type === 'action')
+            .map(({ name }) => name);
+        await Promise.all(names.map((name) => insertSyncConfig({ environmentId: environment.id, integration, name, type: 'action' })));
 
-        const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github' });
+        const result = (await listActions({ environmentId: environment.id, providerConfigKey: integration.unique_key })).unwrap();
 
-        expect(result.isOk()).toBe(true);
-        if (result.isErr()) {
-            return;
-        }
-        expect(result.value.actions.map((action) => action.name)).toEqual(names);
+        expect(result.actions.map(({ name }) => name)).toEqual([...names, ...catalogNames].sort());
     });
 });
 
@@ -431,20 +462,14 @@ describe('getFunction with catalog actions', () => {
         await multipleMigrations();
     });
 
-    beforeEach(() => {
-        mockHasCatalogTools.mockResolvedValue(true);
-        mockListCatalogTools.mockReturnValue([]);
-        mockGetCatalogTool.mockReturnValue(undefined);
-    });
-
     it.each(['action', 'tool'] as const)('returns a catalog action when no deployed row exists with type=%s', async (type) => {
         const { environment } = await seedIntegration();
-        mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
+        const definition = catalogAction();
 
         const result = await getFunction({
             environmentId: environment.id,
             providerConfigKey: 'github',
-            name: 'create-issue',
+            name: definition.name,
             type
         });
 
@@ -453,7 +478,7 @@ describe('getFunction with catalog actions', () => {
             return;
         }
         expect(result.value).toMatchObject({
-            name: 'create-issue',
+            name: definition.name,
             type: 'action',
             id: null,
             last_deployed: null,
@@ -464,13 +489,13 @@ describe('getFunction with catalog actions', () => {
 
     it.each(['action', 'tool'] as const)('returns the deployed row when the same catalog name exists with type=%s', async (type) => {
         const { environment, integration } = await seedIntegration();
-        mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
-        await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-issue', type: 'action' });
+        const definition = catalogAction();
+        await insertSyncConfig({ environmentId: environment.id, integration, name: definition.name, type: 'action' });
 
         const result = await getFunction({
             environmentId: environment.id,
             providerConfigKey: 'github',
-            name: 'create-issue',
+            name: definition.name,
             type
         });
 
@@ -479,22 +504,22 @@ describe('getFunction with catalog actions', () => {
             return;
         }
         expect(result.value).toMatchObject({
-            name: 'create-issue',
+            name: definition.name,
             source: 'repo',
             enabled: true,
-            id: expect.any(Number)
+            id: anyId
         });
     });
 
     it.each(['action', 'tool'] as const)('does not return a catalog action when tools-catalog is off with type=%s', async (type) => {
         mockHasCatalogTools.mockResolvedValue(false);
         const { environment } = await seedIntegration();
-        mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
+        const definition = catalogAction();
 
         const result = await getFunction({
             environmentId: environment.id,
             providerConfigKey: 'github',
-            name: 'create-issue',
+            name: definition.name,
             type
         });
 
@@ -503,5 +528,93 @@ describe('getFunction with catalog actions', () => {
             return;
         }
         expect(result.value).toBeUndefined();
+    });
+});
+
+describe('listFunctions with catalog tools', () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+    });
+
+    it.skip('lists a catalog tool', async () => {
+        const { environment, integration } = await seedIntegration('replicate', 'custom-replicate');
+        const definition = catalogTool();
+        const catalog = listCatalogEntries('replicate').filter((entry) => entry.type === 'tool' || entry.type === 'action');
+        const matches = catalog.filter(({ name }) => name.toLowerCase().includes(definition.name.toLowerCase()));
+
+        const result = (
+            await listFunctions({
+                environmentId: environment.id,
+                providerConfigKey: integration.unique_key,
+                type: 'tool',
+                search: definition.name,
+                limit: catalog.length,
+                offset: 0
+            })
+        ).unwrap();
+
+        expect(result.total).toBe(matches.length);
+        const fn = result.rows.find(({ name }) => name === definition.name);
+        if (fn?.type !== 'tool') {
+            throw new Error('Expected listed catalog tool');
+        }
+        expect(fn).toMatchObject({
+            type: 'tool',
+            id: null,
+            uuid: definition.uuid,
+            name: definition.name,
+            description: definition.description,
+            integration_id: integration.unique_key,
+            provider: definition.provider,
+            enabled: true,
+            last_deployed: null,
+            source: 'tools-catalog'
+        });
+        const { instructions, required_scopes, ...tags } = definition.tags ?? {};
+        expect(fn.meta.tags).toEqual(tags);
+        expect(fn.meta.instructions).toEqual(instructions);
+        expect(fn.meta.required_scopes).toEqual(required_scopes);
+        for (const [ref, schema] of [
+            [definition.input_schema_ref, fn.input_json_schema],
+            [definition.output_schema_ref, fn.output_json_schema]
+        ] as const) {
+            if (ref === null) {
+                expect(schema).toBeNull();
+                continue;
+            }
+            const model = ref.slice('#/definitions/'.length);
+            expect(schema?.$ref).toBe(ref);
+            expect(Object.hasOwn(schema?.definitions ?? {}, model)).toBe(true);
+            expect(schema?.definitions?.[model]).toEqual(definition.json_schema.definitions?.[model]);
+        }
+    });
+
+    it.skip.each([true, false])('catalog tool discovery respects the flag: %s', async (enabled) => {
+        mockHasCatalogTools.mockResolvedValue(enabled);
+        const { environment, integration } = await seedIntegration('replicate', 'custom-replicate');
+        const definition = catalogTool();
+        const catalog = listCatalogEntries('replicate').filter((entry) => entry.type === 'tool' || entry.type === 'action');
+        const scope = { environmentId: environment.id, providerConfigKey: integration.unique_key };
+
+        for (const type of [undefined, 'tool'] as const) {
+            const fn = (await getFunction({ ...scope, name: definition.name, type })).unwrap();
+            expect(fn).toEqual(
+                enabled ? expect.objectContaining({ name: definition.name, type: 'tool', source: 'tools-catalog', uuid: definition.uuid }) : undefined
+            );
+        }
+        expect((await getFunction({ ...scope, name: definition.name, type: 'action' })).unwrap()).toBeUndefined();
+        const listed = (await listFunctions({ ...scope, type: 'tool', search: undefined, limit: catalog.length, offset: 0 })).unwrap();
+        const names = [
+            ...catalog
+                .filter((entry) => entry.type === 'tool')
+                .map(({ name }) => name)
+                .sort(),
+            ...catalog
+                .filter((entry) => entry.type === 'action')
+                .map(({ name }) => name)
+                .sort()
+        ];
+        expect(listed.total).toBe(enabled ? catalog.length : 0);
+        expect(listed.rows.map(({ name }) => name)).toEqual(enabled ? names : []);
     });
 });

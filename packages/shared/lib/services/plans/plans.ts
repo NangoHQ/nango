@@ -1,5 +1,3 @@
-import ms from 'ms';
-
 import { Err, flagHasPlan, Ok } from '@nangohq/utils';
 
 import {
@@ -16,8 +14,6 @@ import {
 import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
-
-export const TRIAL_DURATION = ms('15days');
 
 const BIGINT_COLUMNS = ['connections_max', 'data_transfer_max'] as const;
 type BigintColumn = (typeof BIGINT_COLUMNS)[number];
@@ -47,18 +43,6 @@ function normalizePlan(plan: PgPlan): DBPlan {
         normalized[field] = normalizeSafeInteger(plan[field], field);
     }
     return normalized;
-}
-
-function getTrialStartFields(
-    plan: Pick<DBPlan, 'trial_start_at' | 'trial_extension_count'>
-): Pick<DBPlan, 'trial_start_at' | 'trial_end_at' | 'trial_end_notified_at' | 'trial_extension_count' | 'trial_expired'> {
-    return {
-        trial_start_at: plan.trial_start_at || new Date(),
-        trial_end_at: new Date(Date.now() + TRIAL_DURATION),
-        trial_end_notified_at: null,
-        trial_extension_count: plan.trial_extension_count + 1,
-        trial_expired: false
-    };
 }
 
 export async function getPlan(
@@ -163,44 +147,6 @@ export async function updatePlanByTeam(
         return updatedPlan ? Ok(normalizePlan(updatedPlan)) : Err(new Error('unknown_plan_for_account'));
     } catch (err) {
         return Err(new Error('failed_to_update_plan', { cause: err }));
-    }
-}
-
-export async function startTrial(db: Knex, plan: DBPlan): Promise<Result<boolean>> {
-    return await updatePlan(db, {
-        id: plan.id,
-        ...getTrialStartFields(plan)
-    });
-}
-
-export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { daysLeft: number }): Promise<Result<DBPlan[]>> {
-    const dateThreshold = new Date();
-    dateThreshold.setDate(dateThreshold.getDate() + daysLeft);
-    try {
-        const res = await db
-            .from<PgPlan>('plans')
-            .select('plans.*')
-            .join('_nango_accounts', '_nango_accounts.id', 'plans.account_id')
-            .where('trial_end_at', '<=', dateThreshold.toISOString())
-            .whereNull('trial_end_notified_at')
-            .where('plans.auto_idle', true);
-        return Ok(res.map((plan) => normalizePlan(plan)));
-    } catch (err) {
-        return Err(new Error('failed_to_get_trials', { cause: err }));
-    }
-}
-
-export async function getExpiredTrials(db: Knex): Promise<Result<DBPlan[]>> {
-    try {
-        const plans = await db
-            .from<PgPlan>('plans')
-            .select('*')
-            .where('plans.trial_end_at', '<=', db.raw('NOW()'))
-            .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'))
-            .where('plans.auto_idle', true);
-        return Ok(plans.map((plan) => normalizePlan(plan)));
-    } catch (err) {
-        return Err(new Error('failed_to_get_expired_trials', { cause: err }));
     }
 }
 
@@ -310,16 +256,6 @@ export async function handlePlanChanged(
         orb_future_plan_at: null,
         ...(orbCustomerId ? { orb_customer_id: orbCustomerId } : {}),
         ...(isCurrentFree && isNewPaid ? { orb_subscribed_at: new Date() } : {}),
-        ...(currentPlan.auto_idle && mergedFlags.auto_idle === false
-            ? {
-                  trial_start_at: null,
-                  trial_end_at: null,
-                  trial_end_notified_at: null,
-                  trial_extension_count: 0,
-                  trial_expired: null
-              }
-            : {}),
-        ...(isDowngrade && !isNewPaid ? getTrialStartFields(currentPlan) : {}),
         ...mergedFlags
     });
 
@@ -375,11 +311,6 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
             case 'orb_future_plan':
             case 'orb_future_plan_at':
             case 'orb_subscribed_at':
-            case 'trial_start_at':
-            case 'trial_end_at':
-            case 'trial_extension_count':
-            case 'trial_end_notified_at':
-            case 'trial_expired':
             case 'fleet_node_routing_override':
             case 'records_store':
             case 'created_at':
@@ -391,8 +322,7 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
                 break;
             // BOOLEAN FLAGS - keep override if false
             case 'has_records_autopruning':
-            case 'has_overdue_invoices_banner':
-            case 'auto_idle': {
+            case 'has_overdue_invoices_banner': {
                 overrides[key] = !currentPlan[key] ? false : newPlanDefinition.flags[key];
                 break;
             }
@@ -414,6 +344,11 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
             case 'lambda_tenant_isolation':
             case 'sync_lambda_checkpoint_required': {
                 overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
+                break;
+            }
+            // LIST FLAGS - keep values added on top of the plan
+            case 'audit_trail_data_plane_scopes': {
+                overrides[key] = [...new Set([...currentPlan[key], ...(newPlanDefinition.flags[key] ?? [])])];
                 break;
             }
             // NUMBER FLAGS - keep override if higher, null means unlimited

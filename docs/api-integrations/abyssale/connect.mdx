@@ -1,0 +1,53 @@
+---
+title: 'Abyssale - How do I link my account?'
+sidebarTitle: 'Abyssale'
+---
+
+## Overview
+
+To authenticate with Abyssale, you need:
+
+1. **API Key** - A workspace API key that lets Nango call the Abyssale API on behalf of your workspace.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- An Abyssale workspace on the Pro plan or higher. The Start plan does not include API access.
+- At least the **Admin** role on the workspace, which is needed to read the API key.
+
+### Step 1: Create an API key
+
+1. Log in to [Abyssale](https://app.abyssale.com/login) and click **Workspace settings** at the bottom of the left menu.
+
+<img src="/api-integrations/abyssale/workspace_settings.png" alt="Workspace settings link at the bottom of the Abyssale left menu"/>
+
+2. In the settings menu, click **API key**.
+
+<img src="/api-integrations/abyssale/api_key_menu.png" alt="API key item in the Abyssale workspace settings menu"/>
+
+3. Click the green **Create new API key** button.
+
+<img src="/api-integrations/abyssale/create_api_key.png" alt="Create new API key button on the Abyssale API key page"/>
+
+4. Enter a name for the key and click **Create API Key**.
+
+<img src="/api-integrations/abyssale/name_api_key.png" alt="Abyssale dialog to name a new API key"/>
+
+5. In the new key's row, click the copy icon on the right to copy the key.
+
+<img src="/api-integrations/abyssale/copy_api_key.png" alt="Copy icon on the right of the API key row in Abyssale"/>
+
+<Note>
+Abyssale says a new key can take about 30 seconds to become available. If the connection fails right after you create the key, wait and try again.
+</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Abyssale.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/abyssale/form.png" alt="Abyssale connection form in Nango's Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Abyssale.

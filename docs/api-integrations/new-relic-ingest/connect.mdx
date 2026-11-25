@@ -1,0 +1,52 @@
+---
+title: 'New Relic Ingest - How do I link my account?'
+sidebarTitle: 'New Relic Ingest'
+---
+
+## Overview
+
+To authenticate with New Relic Ingest, you need:
+
+1. **Data Center Region** — the New Relic data center that hosts your account (US, EU or JP).
+2. **License Key** — a New Relic key of the **Ingest - License** type.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A New Relic account. If you don't have one, [sign up for free](https://newrelic.com/signup).
+
+### Step 1: Find your data center region
+
+Your data center is the one your account was created in. Check the address you use to log in to New Relic and pick the matching region:
+
+| You log in at          | Data Center Region (select in Nango) |
+|------------------------|--------------------------------------|
+| `one.newrelic.com`     | `metric-api.newrelic.com`            |
+| `one.eu.newrelic.com`  | `metric-api.eu.newrelic.com`         |
+| `one.jp.newrelic.com`  | `metric-api.jp.nr-data.net`          |
+
+### Step 2: Create a license key
+
+1. Log in to New Relic, open the user menu and go to **Administration** > **API Keys**.
+2. Click **Create a key** in the top-right corner.
+
+<img src="/api-integrations/new-relic-ingest/api_keys_page.png" alt="New Relic API Keys page with the Create a key button"/>
+
+3. Choose the account, select **Ingest - License** as the **Key type**, enter a name and optional notes, then click **Create a key**.
+
+<img src="/api-integrations/new-relic-ingest/create_key_dialog.png" alt="New Relic Create an API key dialog with Key type set to Ingest - License"/>
+
+4. Click **Copy key** in the banner to copy the new license key. Copy it now: the banner says you won't be able to see it again.
+
+<img src="/api-integrations/new-relic-ingest/key_created.png" alt="New Relic API Keys page with the Copy key button for the new license key"/>
+
+### Step 3: Enter your region and license key in the Connect UI
+
+1. Open the form where you need to authenticate with New Relic Ingest.
+2. Select your **Data Center Region** and enter your key in the **License Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/new-relic-ingest/form.png" alt="New Relic Ingest Connect UI form with the Data Center Region and License Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to New Relic Ingest.

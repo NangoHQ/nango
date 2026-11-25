@@ -5,11 +5,15 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { createAccount } from '../../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../../seeders/environment.seeder.js';
-import { getCatalogTool } from '../../../catalog/actions.js';
+import { getCatalogEntry, getCatalogTool } from '../../../catalog/actions.js';
 import * as functionConfigService from '../../models/functions.js';
-import { findActiveFunctionAvailability, findInputSchemas, findIntegrationFunctions } from './functions.js';
+import { resolveTool } from '../../tools.js';
+import { findActiveByName } from './functions.js';
+import { hasActiveLegacyActions } from './legacy.js';
+import { findActiveFunctionAvailability } from './templates.js';
+import { findInputSchemas, findToolsetInventory } from './tools.js';
 
-import type { DBEnvironment, DBFunctionConfigVersion, DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
+import type { DBEnvironment, DBFunctionConfigVersion, DBSyncConfig, IntegrationConfig, NangoConfigMetadata, ToolTags } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 const { mockHasCatalogTools } = vi.hoisted(() => {
@@ -74,24 +78,28 @@ async function insertSyncConfig({
     });
 }
 
-async function insertTool({
+async function insertFunction({
     environment,
     integrationId,
     name,
-    enabled = true
+    enabled = true,
+    subscriptions,
+    tags = {}
 }: {
     environment: DBEnvironment;
     integrationId: string;
     name: string;
     enabled?: boolean;
+    subscriptions?: string[] | undefined;
+    tags?: ToolTags;
 }): Promise<void> {
     const version: Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> = {
         description: `${name} tool`,
-        tags: {},
+        tags,
         file_location: `functions/${name}`,
         version: 'test',
         source: 'repo',
-        trigger: { kind: 'http' },
+        trigger: { kind: 'http', ...(subscriptions !== undefined && { subscriptions }) },
         requires: { connection: true, outbound: false, invoke: false },
         capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
         limits: { concurrency: { perConnection: 'max' } },
@@ -116,9 +124,90 @@ const objectInput: { definitions: Record<string, JSONSchema7> } = {
     definitions: { SendEmailInput: { type: 'object', properties: { to: { type: 'string' } }, required: ['to'] } }
 };
 
+describe(hasActiveLegacyActions, () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+    });
+
+    it.each(['repo', 'standalone', 'catalog'] as const)('counts disabled persisted %s actions across environments', async (source) => {
+        const account = await createAccount();
+        await createEnvironmentSeed(account.id);
+        const environment = await createEnvironmentSeed(account.id);
+        const integration = await createConfigSeed(environment, 'github', 'github');
+        const scope = { accountId: account.id };
+        expect(await hasActiveLegacyActions(scope)).toBe(false);
+        await insertSyncConfig({ environmentId: environment.id, integration, name: 'legacy', type: 'action', enabled: false });
+        await db.knex('_nango_sync_configs').where({ environment_id: environment.id }).update({ source });
+        await insertFunction({ environment, integrationId: integration.unique_key, name: 'legacy' });
+        expect(await hasActiveLegacyActions(scope)).toBe(true);
+        expect(await hasActiveLegacyActions({ accountId: (await createAccount()).id })).toBe(false);
+        await db.knex('_nango_sync_configs').where({ environment_id: environment.id }).update({ deleted: true });
+        expect(await hasActiveLegacyActions(scope)).toBe(false);
+    });
+
+    it.each(['inactive', 'deleted-action', 'deleted-integration', 'deleted-environment', 'sync'] as const)('excludes %s', async (exclusion) => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const integration = await createConfigSeed(environment, 'github', 'github');
+        await insertSyncConfig({
+            environmentId: environment.id,
+            integration,
+            name: 'legacy',
+            type: exclusion === 'sync' ? 'sync' : 'action',
+            active: exclusion !== 'inactive',
+            deleted: exclusion === 'deleted-action'
+        });
+        if (exclusion === 'deleted-integration') {
+            await db.knex('_nango_configs').where({ id: integration.id }).update({ deleted: true });
+        }
+        if (exclusion === 'deleted-environment') {
+            await db.knex('_nango_environments').where({ id: environment.id }).update({ deleted_at: new Date() });
+        }
+        expect(await hasActiveLegacyActions({ accountId: account.id })).toBe(false);
+    });
+});
+
 describe(findActiveFunctionAvailability, () => {
     beforeAll(async () => {
         await multipleMigrations();
+    });
+
+    it('HTTP functions with subscriptions are not tools', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+        const name = 'handle-issue';
+        await insertFunction({ environment, integrationId: github.unique_key, name, subscriptions: ['issues.opened'] });
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name, type: 'action' });
+
+        const scope = { environmentId: environment.id, providerConfigKey: github.unique_key };
+        expect((await findActiveFunctionAvailability(scope)).toolNames).toEqual([]);
+        expect(await findToolsetInventory({ environmentId: environment.id })).toEqual([expect.objectContaining({ name, type: 'action' })]);
+        expect(await findActiveByName({ ...scope, name, type: 'tool' })).toMatchObject({ name, type: 'action' });
+        expect((await resolveTool({ accountUuid: account.uuid, environmentId: environment.id, integration: github, name })).unwrap()).toMatchObject({
+            kind: 'deployed',
+            config: { sync_name: name }
+        });
+    });
+
+    it.each([undefined, []])('HTTP functions without subscriptions are tools (subscriptions: %j)', async (subscriptions) => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+        const name = 'create-issue';
+        await insertFunction({ environment, integrationId: github.unique_key, name, subscriptions });
+
+        const scope = { environmentId: environment.id, providerConfigKey: github.unique_key };
+        expect((await findActiveFunctionAvailability(scope)).toolNames).toEqual([name]);
+        expect(await findToolsetInventory({ environmentId: environment.id })).toEqual([expect.objectContaining({ name, type: 'tool' })]);
+        expect(await findActiveByName({ ...scope, name, type: 'tool' })).toMatchObject({ name, type: 'tool' });
+        expect((await resolveTool({ accountUuid: account.uuid, environmentId: environment.id, integration: github, name })).unwrap()).toMatchObject({
+            kind: 'function',
+            source: 'repo',
+            inputSchemaRef: '#/definitions/ToolInput'
+        });
     });
 
     it('reports a disabled action as enabled and leaves a disabled sync alone when tools-catalog is on', async () => {
@@ -153,7 +242,7 @@ describe(findActiveFunctionAvailability, () => {
     });
 });
 
-describe(findIntegrationFunctions, () => {
+describe(findToolsetInventory, () => {
     beforeAll(async () => {
         await multipleMigrations();
     });
@@ -170,7 +259,7 @@ describe(findIntegrationFunctions, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'paused_sync', type: 'sync', enabled: false });
         await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
 
-        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+        const functions = await findToolsetInventory({ environmentId: environment.id });
 
         expect(functions).toEqual(
             expect.arrayContaining([
@@ -198,18 +287,34 @@ describe(findIntegrationFunctions, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'read_doc', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'archive_doc', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'sync_pages', type: 'sync' });
-        await insertTool({ environment, integrationId: 'notion', name: 'read_doc' });
-        await insertTool({ environment, integrationId: 'notion', name: 'archive_doc', enabled: false });
-        await insertTool({ environment, integrationId: 'notion', name: 'sync_pages' });
-        await insertTool({ environment, integrationId: 'github', name: 'create-issue' });
-        await insertTool({ environment, integrationId: 'gmail', name: 'send_email' });
+        const instructions = 'Read before updating.';
+        const tags: ToolTags = {
+            read_only_hint: 'true',
+            category: 'documents',
+            labels: ['read', 'notes'],
+            required_scopes: { all: ['documents:read'] }
+        };
+        await insertFunction({ environment, integrationId: 'notion', name: 'read_doc', tags: { ...tags, instructions } });
+        await insertFunction({ environment, integrationId: 'notion', name: 'archive_doc', enabled: false });
+        await insertFunction({ environment, integrationId: 'notion', name: 'sync_pages' });
+        await insertFunction({ environment, integrationId: 'github', name: 'create-issue' });
+        await insertFunction({ environment, integrationId: 'gmail', name: 'send_email', tags: { instructions } });
 
-        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+        const functions = await findToolsetInventory({ environmentId: environment.id });
 
         const seeded = ['archive_doc', 'read_doc', 'sync_pages'];
         expect(functions.filter((row) => row.integration_id === 'notion' && seeded.includes(row.name ?? ''))).toEqual([
             { integration_id: 'notion', provider: 'notion', name: 'archive_doc', type: 'tool', description: 'archive_doc tool', enabled: false },
-            { integration_id: 'notion', provider: 'notion', name: 'read_doc', type: 'tool', description: 'read_doc tool', enabled: true },
+            {
+                integration_id: 'notion',
+                provider: 'notion',
+                name: 'read_doc',
+                type: 'tool',
+                description: 'read_doc tool',
+                instructions,
+                tags,
+                enabled: true
+            },
             { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'sync', description: null, enabled: true },
             { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'tool', description: 'sync_pages tool', enabled: true }
         ]);
@@ -217,7 +322,33 @@ describe(findIntegrationFunctions, () => {
             { integration_id: 'github', provider: 'github', name: 'create-issue', type: 'tool', description: 'create-issue tool', enabled: true }
         ]);
         expect(functions.filter((row) => row.integration_id === 'gmail' && (row.name === null || row.type === 'tool'))).toEqual([
-            { integration_id: 'gmail', provider: 'google', name: 'send_email', type: 'tool', description: 'send_email tool', enabled: true }
+            { integration_id: 'gmail', provider: 'google', name: 'send_email', type: 'tool', description: 'send_email tool', instructions, enabled: true }
+        ]);
+    });
+
+    it.skip('returns catalog tools with their instructions', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'replicate', 'replicate');
+
+        const catalog = getCatalogEntry('replicate', 'get-model');
+        if (catalog?.type !== 'tool') {
+            throw new Error('Expected a catalog tool');
+        }
+        const { instructions, ...tags } = catalog.tags ?? {};
+        const functions = await findToolsetInventory({ environmentId: environment.id });
+
+        expect(functions.filter((row) => row.name === 'get-model')).toEqual([
+            {
+                integration_id: 'replicate',
+                provider: 'replicate',
+                name: 'get-model',
+                type: 'tool',
+                description: catalog.description,
+                ...(instructions !== undefined && { instructions }),
+                ...(Object.keys(tags).length > 0 && { tags }),
+                enabled: true
+            }
         ]);
     });
 
@@ -230,7 +361,7 @@ describe(findIntegrationFunctions, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'removed', type: 'action', deleted: true });
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'kept', type: 'action' });
 
-        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+        const functions = await findToolsetInventory({ environmentId: environment.id });
 
         expect(functions.map((row) => row.name)).toContain('kept');
         expect(functions.map((row) => row.name)).not.toContain('old_version');
@@ -246,12 +377,12 @@ describe(findIntegrationFunctions, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'upsert_doc', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action' });
 
-        const functions = await findIntegrationFunctions({ environmentId: environment.id, providerConfigKeys: ['notion'] });
+        const functions = await findToolsetInventory({ environmentId: environment.id, providerConfigKeys: ['notion'] });
 
         expect(functions.every((row) => row.integration_id === 'notion')).toBe(true);
         expect(functions.map((row) => row.name)).toContain('upsert_doc');
         expect(functions.some((row) => row.integration_id === 'github')).toBe(false);
-        expect(await findIntegrationFunctions({ environmentId: environment.id, providerConfigKeys: [] })).toEqual([]);
+        expect(await findToolsetInventory({ environmentId: environment.id, providerConfigKeys: [] })).toEqual([]);
     });
 
     it('does not leak another environment', async () => {
@@ -264,7 +395,7 @@ describe(findIntegrationFunctions, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'mine', type: 'action' });
         await insertSyncConfig({ environmentId: other.id, integration: otherNotion, name: 'theirs', type: 'action' });
 
-        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+        const functions = await findToolsetInventory({ environmentId: environment.id });
 
         expect(functions.map((row) => row.name)).toContain('mine');
         expect(functions.map((row) => row.name)).not.toContain('theirs');
@@ -277,7 +408,7 @@ describe(findIntegrationFunctions, () => {
         const github = await createConfigSeed(environment, 'github', 'github');
         await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
 
-        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+        const functions = await findToolsetInventory({ environmentId: environment.id });
 
         expect(mockHasCatalogTools).toHaveBeenCalledWith(account.uuid);
         expect(functions.some((row) => row.name === 'create-issue')).toBe(false);
@@ -294,7 +425,7 @@ describe(findIntegrationFunctions, () => {
 
         await insertSyncConfig({ environmentId: other.id, integration: notion, name: 'stray', type: 'action' });
 
-        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+        const functions = await findToolsetInventory({ environmentId: environment.id });
 
         expect(functions.every((row) => row.integration_id === 'notion')).toBe(true);
         expect(functions.map((row) => row.name)).not.toContain('stray');
@@ -343,8 +474,8 @@ describe(findInputSchemas, () => {
                 modelsJsonSchema: objectInput
             });
         }
-        await insertTool({ environment, integrationId: 'github', name: 'create-issue' });
-        await insertTool({ environment, integrationId: 'github', name: 'list-issues', enabled: false });
+        await insertFunction({ environment, integrationId: 'github', name: 'create-issue' });
+        await insertFunction({ environment, integrationId: 'github', name: 'list-issues', enabled: false });
 
         const rows = await findInputSchemas({
             environmentId: environment.id,

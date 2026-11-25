@@ -6,12 +6,12 @@ import { environmentService } from '@nangohq/shared';
 import { principalFor } from '../../authz/principal.js';
 import { resolveAuditAttribution } from '../../middleware/audit/index.js';
 import { trackMcpServer } from '../../services/mcpAnalytics.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapper, hasDbEnvironment } from '../../utils/asyncWrapper.js';
 import { createManagementMcpServer } from './managementServer.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type { ManagementMcpEnvironment } from './managementTool.js';
-import type { GetManagementMcp, PostManagementMcp } from '@nangohq/types';
+import type { DBEnvironment, GetManagementMcp, PostManagementMcp } from '@nangohq/types';
 
 export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res) => {
     const { account, plan } = res.locals;
@@ -35,6 +35,7 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
                       plan,
                       grantedScopes: res.locals['apiKeyPrincipal']?.scopes,
                       customerApiKeyId: getCustomerApiKeyId(res.locals),
+                      apiKeyPrincipal: res.locals.apiKeyPrincipal,
                       audit: resolveAuditAttribution(req, res.locals)
                   }
               } as const);
@@ -165,8 +166,8 @@ function getCustomerApiKeyId(locals: RequestLocals): number | undefined {
     return locals.apiKeyAuthSource === 'customer_key' ? locals.apiKeyId : undefined;
 }
 
-function requireApiKeyEnvironment(locals: RequestLocals) {
-    if (!locals.environment) {
+function requireApiKeyEnvironment(locals: RequestLocals): DBEnvironment {
+    if (!hasDbEnvironment(locals)) {
         throw new Error('Management MCP API-key authentication requires an environment');
     }
     return locals.environment;

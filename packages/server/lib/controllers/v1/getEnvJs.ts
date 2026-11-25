@@ -1,3 +1,4 @@
+import { licensePublicKey } from '@nangohq/license';
 import { envs } from '@nangohq/logs';
 import {
     basePublicUrl,
@@ -37,6 +38,7 @@ export const getEnvJs: RequestHandler = (_, res) => {
         isCloud,
         isHosted,
         isEnterprise,
+        isManaged: Boolean(licensePublicKey),
         features: {
             logs: envs.NANGO_LOGS_ENABLED,
             scripts: flagHasScripts,
@@ -46,7 +48,8 @@ export const getEnvJs: RequestHandler = (_, res) => {
             gettingStarted: true,
             slack: flagHasSlack,
             plan: flagHasPlan,
-            authRoles: flags.hasAuthRoles
+            authRoles: flags.hasAuthRoles,
+            mfa: flags.hasMFA
         }
     };
     res.setHeader('content-type', 'text/javascript');

@@ -34,7 +34,7 @@ export const SpendAlertsSection: React.FC<{
             ) : (
                 thresholdInCents !== null && (
                     <Card>
-                        <div className="p-3 flex items-center justify-between gap-4">
+                        <div className="px-3 py-2 flex items-center justify-between gap-4">
                             <span className="text-text-strong text-body-medium-regular">
                                 {/* Without a currency there's no symbol, but the amount is still what the customer set. */}
                                 {formatMoneyFromCents(thresholdInCents, currency) ?? (thresholdInCents / 100).toFixed(2)}

@@ -97,6 +97,13 @@ export function buildFlags(client: FeatureFlagsClient) {
             return client.isEnabled('agent-playground', { targetingKey: accountUuid, accountUuid }, false);
         },
         /**
+         * Whether this account can create agent sessions with `nango_run_code`. Without it the setting
+         * is rejected as an unknown meta tool. Default `false`.
+         */
+        isAgentSessionRunCodeEnabled(accountUuid: string) {
+            return client.isEnabled('agent-session-run-code', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
          * Whether the deprecated `search` query param on GET /connections is still honored for this
          * account. Deprecation: default `true`; on cloud, Unleash restricts it to an allowlist.
          */
@@ -116,6 +123,13 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         isConnectionMcpEnabled(accountUuid: string) {
             return client.isEnabled('connection-mcp', { targetingKey: accountUuid, accountUuid }, true);
+        },
+        /**
+         * Whether GitHub App connections can carry their own app `private_key` and `webhook_secret`.
+         * Temporary workaround for BYOA GitHub Apps. Default `false`.
+         */
+        isGithubAppConnectionCredentialsEnabled() {
+            return client.isEnabled('github-app-connection-credentials', {}, false);
         }
     };
 }

@@ -54,7 +54,8 @@ export const patchSharedCredentialsProvider = asyncWrapper<PatchSharedCredential
         client_id: providerData.client_id,
         client_secret: providerData.client_secret,
         scopes: providerData.scopes,
-        app_link: providerData.app_link
+        app_link: providerData.app_link,
+        enabled: providerData.enabled
     });
 
     if (result.isErr()) {

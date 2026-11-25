@@ -1,7 +1,7 @@
 import * as z from 'zod/v4';
 
-import { functionListTypeSchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
-import { functionIntegrationIdSchema, runnableFunctionTypeSchema } from '../../functions/validation.js';
+import { functionListTypeSchema, providerConfigKeySchema, runnableFunctionTypeSchema, syncNameSchema } from '../../../helpers/validation.js';
+import { functionIntegrationIdSchema } from '../../functions/validation.js';
 
 export const deployFunctionArgumentsSchema = z
     .object({
@@ -45,7 +45,7 @@ export const getDeploymentStatusOutputSchema = z
         completed_at: z.iso.datetime().optional(),
         duration_ms: z.number().int().nonnegative().optional(),
         deployed: z.boolean().optional(),
-        deployed_functions: z.array(z.object({ name: z.string(), version: z.string() }).strict()).optional(),
+        deployed_functions: z.array(z.object({ name: z.string(), version: z.string().optional() }).strict()).optional(),
         output: z.string().optional(),
         error: z
             .object({
@@ -124,7 +124,13 @@ const deployedToolFunctionSchema = z
         meta: z
             .object({
                 instructions: z.string().optional(),
-                required_scopes: z.array(z.string()).optional(),
+                required_scopes: z
+                    .union([
+                        z.object({ all: z.tuple([z.string()], z.string()) }).strict(),
+                        z.object({ any: z.tuple([z.string()], z.string()) }).strict(),
+                        z.object({ none: z.literal(true) }).strict()
+                    ])
+                    .optional(),
                 tags: z.record(z.string(), z.union([z.string(), z.array(z.string())]))
             })
             .strict()

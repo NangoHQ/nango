@@ -1,0 +1,50 @@
+---
+title: 'Clientary - How do I link my account?'
+sidebarTitle: 'Clientary'
+---
+
+## Overview
+
+To authenticate with Clientary, you need:
+
+1. **Subdomain** — the part of your Clientary URL before `.clientary.com`.
+2. **API Token** — the personal API Token from your Clientary user profile, entered as both the username and the password.
+
+This guide will show you where to find each of them.
+
+### Prerequisites
+
+- A Clientary account. Every plan comes with a 14-day [free trial](https://www.clientary.com/pricing), no credit card required.
+
+### Step 1: Find your subdomain
+
+Your subdomain is the part of your Clientary URL before `.clientary.com`: for `https://acme.clientary.com`, enter `acme`.
+
+### Step 2: Generate your API token
+
+Every user in a Clientary account has their own API Token.
+
+1. Log in to your Clientary account at `https://<subdomain>.clientary.com`.
+2. Click your name at the bottom of the left sidebar to open your user profile.
+
+<img src="/api-integrations/clientary/open_user_profile.png" alt="Clientary sidebar with the user name at the bottom that opens the user profile" />
+
+3. Next to **API Token**, click **Request Token** (or **Regenerate** if you already have one).
+
+<img src="/api-integrations/clientary/request_api_token.png" alt="Clientary user profile with the Request Token link next to API Token" />
+
+4. Copy the API Token shown on your user profile.
+
+<img src="/api-integrations/clientary/api_token_created.png" alt="Clientary user profile showing the generated API Token" />
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Clientary.
+2. In **Subdomain**, enter your subdomain from Step 1 (for example, `acme`).
+3. In the first **API Token** field (the username), paste the API Token from Step 2.
+4. In the second **API Token** field (the password), paste the same API Token again.
+5. Submit the form. Nango checks that both **API Token** fields hold the same token and that Clientary accepts it before saving the connection.
+
+<img src="/api-integrations/clientary/form.png" alt="Clientary Connect UI form with the Subdomain field and two API Token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Clientary.

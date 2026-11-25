@@ -12,7 +12,7 @@ export function sanitizeEmailSubject(subject: string): string {
 // Encoding matters: URLSearchParams.get() turns "+" into a space, so a plus-addressed email
 // would come back malformed and the dashboard would silently drop the prefill.
 export function buildInvitePrefillUrl(email: string): string {
-    return `${basePublicUrl}/team-settings?invite_email=${encodeURIComponent(email)}`;
+    return `${basePublicUrl}/team?invite_email=${encodeURIComponent(email)}`;
 }
 
 export async function sendVerificationEmail(email: string, name: string, token: string) {
@@ -107,48 +107,6 @@ export async function sendAccountInvitationRequestEmail({
 <p>Their email address has been verified.</p>
 
 <p><a href="${he.encode(inviteUrl)}">Invite them to your team</a></p>
-
-<p>Best,<br>
-Team Nango</p>
-            `
-    );
-}
-
-export async function sendTrialAlmostOverEmail({ user, inDays }: { user: Pick<DBUser, 'name' | 'email'>; inDays: number }) {
-    const emailClient = EmailClient.getInstance();
-    await emailClient.send(
-        user.email,
-        `Some Nango features will pause in ${inDays} days`,
-        `<p>Hi ${he.encode(user.name)},</p>
-
-<p>Some Nango features (syncs & actions) will pause in ${inDays} days. All other features—like authorization flows, credential retrieval, and the proxy—will keep working as usual.</p>
-
-<p>You can delay the idle from the Integrations tab in the <a href="https://app.nango.dev">Nango UI</a>.</p>
-
-<p>We idle syncs & actions because they use dedicated infrastructure, which is too costly to run indefinitely on free plans. <a href="https://app.nango.dev/prod/team/billing">Upgrade</a> to prevent auto idling forever.</p>
-
-<p>Need help or have questions? Join us in the <a href="https://nango.dev/slack">Slack community</a>!</p>
-
-<p>Best,<br>
-Team Nango</p>
-            `
-    );
-}
-
-export async function sendTrialHasExpired({ user }: { user: Pick<DBUser, 'name' | 'email'> }) {
-    const emailClient = EmailClient.getInstance();
-    await emailClient.send(
-        user.email,
-        `Some Nango features have been paused`,
-        `<p>Hi ${he.encode(user.name)},</p>
-
-<p>Some Nango features (syncs & actions) have been paused. All other features—like authorization flows, credential retrieval, and the proxy—still work as usual.</p>
-
-<p>You can reactivate any sync or action in the <a href="https://app.nango.dev">Nango UI</a> for 14 more days.</p>
-
-<p>We idle syncs & actions because they use dedicated infrastructure, which is too costly to run indefinitely on free plans. <a href="https://app.nango.dev/prod/team/billing">Upgrade</a> to prevent auto idling forever.</p>
-
-<p>Need help or have questions? Join us in the <a href="https://nango.dev/slack">Slack community</a>!</p>
 
 <p>Best,<br>
 Team Nango</p>

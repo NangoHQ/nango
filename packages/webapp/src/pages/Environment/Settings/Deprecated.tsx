@@ -1,11 +1,11 @@
+import { ArrowUpRight, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
-import { FieldLabel } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, FieldLabel, SecretInput } from '@nangohq/design-system';
 
 import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { EditableInput } from '@/components/patterns/EditableInput';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { SecretInput } from '@/components/patterns/SecretInput';
+import { PERMISSION_DENIED_REASON, PermissionGate } from '@/components/patterns/PermissionGate';
 import { Spinner } from '@/components/ui/Spinner';
 import { Switch } from '@/components/ui/Switch';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -46,6 +46,19 @@ export const DeprecatedSettings: React.FC = () => {
 
     return (
         <SettingsContent title="Deprecated authorization">
+            <Alert variant="warning">
+                <TriangleAlert />
+                <AlertTitle>Public key and HMAC authorization are deprecated</AlertTitle>
+                <AlertDescription>Move to Connect sessions before these methods are removed.</AlertDescription>
+                <AlertActions>
+                    <AlertButton asChild>
+                        <a href="https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key" target="_blank" rel="noopener noreferrer">
+                            Migration guide
+                            <ArrowUpRight />
+                        </a>
+                    </AlertButton>
+                </AlertActions>
+            </Alert>
             <SettingsGroup
                 label={
                     <div className="flex gap-1.5">
@@ -58,7 +71,12 @@ export const DeprecatedSettings: React.FC = () => {
                 }
             >
                 <fieldset className="flex flex-col gap-4">
-                    <SecretInput copy name="publicKey" value={environmentAndAccount.environment.public_key} canRead={canReadEnvironmentKey} disabled />
+                    <SecretInput
+                        name="publicKey"
+                        value={environmentAndAccount.environment.public_key}
+                        canReveal={canReadEnvironmentKey}
+                        disabledReason={PERMISSION_DENIED_REASON}
+                    />
                 </fieldset>
             </SettingsGroup>
             <SettingsGroup

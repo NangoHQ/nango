@@ -1,10 +1,10 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
-import { ArrowRight, ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
+import { ArrowUp, ArrowUpRight, BookOpen, ChevronDown, CircleAlert, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import {
     Alert,
@@ -19,10 +19,10 @@ import {
     InputGroupTextarea
 } from '@nangohq/design-system';
 
-import { GithubLogo } from '@/assets/GithubLogo';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { OpenAIIcon } from '@/assets/OpenAIIcon';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { PromptCard } from '@/components/patterns/PromptCard';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
@@ -38,26 +38,23 @@ import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
 import { approvalProperties, pendingApprovals } from './approvalTracking';
 import { describeChatError } from './chatError';
+import { AddIntegrationCard } from './components/AddIntegrationCard';
 import { HeroIllustration } from './components/HeroIllustration';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
+import { readPlaygroundDraft } from './draft';
 import { hasReplyContent, hasVisibleContent, markStopped, outcomeDisplay, setReplyOutcome } from './replyOutcome';
+import { continueOncePerSetUp, createdIntegrationIds, isAdded, isSetUpPart, providersToAdd, setUpApps, setUpResults } from './setUpTool';
+import { STARTER_PROMPTS } from './starterPrompts';
 import { hideTrailingLink } from './streamingMarkdown';
 import { humanize, integrationLabels, labelFor } from './toolDisplay';
+import { useResumeAfterSetUp } from './useResumeAfterSetUp';
 
 import type { PendingApproval } from './approvalTracking';
+import type { PlaygroundDraft } from './draft';
 import type { IntegrationLabels } from './toolDisplay';
 import type { PlaygroundMessage } from '@/store/agentPlaygroundChat';
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundReplyOutcome, AgentPlaygroundSessionCreated } from '@nangohq/types';
-
-const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
-    { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
-    { prompt: 'Summarize my 3 latest emails in Gmail', provider: 'google-mail', name: 'Gmail' },
-    { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
-    { prompt: 'Send me "Hello, world!" on Slack', provider: 'slack', name: 'Slack' },
-    { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
-    { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot', name: 'HubSpot' }
-];
 
 function providerName(provider: string): string {
     return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
@@ -69,40 +66,64 @@ export const AgentPlayground: React.FC = () => {
     const { can } = usePermissions();
     const [toolbarSlot, setToolbarSlot] = useState<HTMLDivElement | null>(null);
     const [chatKey, setChatKey] = useState(0);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [draft, setDraft] = useState(() => readPlaygroundDraft(location.state));
+    if (draft && draft.env !== env) {
+        setDraft(undefined);
+    }
+    useEffect(() => {
+        if (readPlaygroundDraft(location.state) !== undefined) {
+            // Clears the draft, so a reload doesn't open another new chat with it.
+            void navigate(location.pathname + location.search, { replace: true, state: null });
+        }
+    }, [location, navigate]);
 
     if (!meta) {
         return null;
     }
     if (!meta.data.agentPlayground) {
         return (
-            <DashboardLayout title="Agent Playground">
+            <DashboardLayout>
                 <p className="text-text-secondary">The Agent Playground is not enabled for this account.</p>
             </DashboardLayout>
         );
     }
     if (!can('environment:agent_sessions:write')) {
         return (
-            <DashboardLayout title="Agent Playground">
+            <DashboardLayout>
                 <p className="text-text-secondary">{`Your role can't use the Agent Playground in this environment.`}</p>
             </DashboardLayout>
         );
     }
 
     return (
-        <DashboardLayout fullWidth className="h-full" title="Agent Playground" titleActions={<div ref={setToolbarSlot} />}>
+        <DashboardLayout width="narrow" className="h-full" actions={<div ref={setToolbarSlot} />}>
             <Helmet>
                 <title>Agent Playground - Nango</title>
             </Helmet>
-            <Chat key={`${env}-${chatKey}`} env={env} toolbarSlot={toolbarSlot} onNewChat={() => setChatKey((key) => key + 1)} />
+            <Chat
+                key={`${env}-${chatKey}`}
+                env={env}
+                draft={chatKey === 0 && draft?.env === env ? draft : undefined}
+                toolbarSlot={toolbarSlot}
+                onNewChat={() => setChatKey((key) => key + 1)}
+            />
         </DashboardLayout>
     );
 };
 
-const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({ env, toolbarSlot, onNewChat }) => {
+const Chat: React.FC<{ env: string; draft: PlaygroundDraft | undefined; toolbarSlot: HTMLElement | null; onNewChat: () => void }> = ({
+    env,
+    draft: playgroundDraft,
+    toolbarSlot,
+    onNewChat
+}) => {
     const { user } = useUser();
     const userId = user?.uuid;
+    const draft = playgroundDraft?.text;
     const [{ chatId, messages: storedMessages }] = useState(() =>
-        userId ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
+        userId && draft === undefined ? openAgentPlaygroundChat(env, userId) : { chatId: crypto.randomUUID(), messages: undefined }
     );
 
     const sessionId = useRef<string | undefined>(undefined);
@@ -123,10 +144,11 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
     };
     const failure = useRef<string | undefined>(undefined);
     const leaving = useRef(false);
+    const [continuesAfterSetUp] = useState(continueOncePerSetUp);
     const { messages, setMessages, sendMessage, regenerate, status, stop, clearError, addToolApprovalResponse } = useChat<PlaygroundMessage>({
         transport,
         ...(storedMessages ? { messages: storedMessages } : {}),
-        sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
+        sendAutomaticallyWhen: (options) => lastAssistantMessageIsCompleteWithApprovalResponses(options) || continuesAfterSetUp(options),
         onError: (err) => {
             failure.current = err.message;
         },
@@ -218,8 +240,32 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
         }
     };
 
-    const { data: integrations } = useListIntegrations(env);
+    const isAwaitingSetUp = providersToAdd(messages.at(-1)).length > 0;
+    const { data: integrations, dataUpdatedAt: integrationsUpdatedAt, refetch: refetchIntegrations } = useListIntegrations(env, { watch: isAwaitingSetUp });
     const labels = useMemo(() => (integrations ? integrationLabels(integrations.data) : undefined), [integrations]);
+    const refetchedFor = useRef(new Set<string>());
+    useEffect(() => {
+        const unlabelled = createdIntegrationIds(messages).filter((id) => labels && !labels.has(id) && !refetchedFor.current.has(id));
+        if (unlabelled.length > 0) {
+            unlabelled.forEach((id) => refetchedFor.current.add(id));
+            void refetchIntegrations();
+        }
+    }, [messages, labels, refetchIntegrations]);
+    const addedIntegrations = useMemo(() => {
+        // Matches the server's existingIntegrationFor, so the notice links to the integration the agent uses.
+        const rank = (key: string, provider: string) => [provider, `pg-${provider}`].indexOf(key) >>> 0;
+        const added = new Map<string, string>();
+        for (const integration of integrations?.data ?? []) {
+            const current = added.get(integration.provider);
+            if (
+                integration.missing_fields.length === 0 &&
+                (!current || rank(integration.unique_key, integration.provider) < rank(current, integration.provider))
+            ) {
+                added.set(integration.provider, integration.unique_key);
+            }
+        }
+        return added;
+    }, [integrations]);
     const integrationNames = useCallback((ids: string[]) => ids.map((id) => labelFor(id, labels).integrationName).join(' and '), [labels]);
 
     const [pendingConnections, setPendingConnections] = useState<string[]>([]);
@@ -240,6 +286,16 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
         () => new Set([...pendingConnections, ...messages.flatMap((message) => message.metadata?.connectedIntegrations ?? [])]),
         [pendingConnections, messages]
     );
+
+    useResumeAfterSetUp({
+        messages,
+        integrationsLoaded: Boolean(integrations),
+        integrationsUpdatedAt,
+        addedIntegrations,
+        canSend: !busy && !awaitingApproval,
+        providerName,
+        sendMessage
+    });
 
     const [newLinkRequests, setNewLinkRequests] = useState<string[]>([]);
     const onRequestNewLink = useCallback((integrationId: string) => {
@@ -286,18 +342,32 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
 
     const firstSessionMessageId = messages.find((message) => message.metadata?.sessionCreated)?.id;
 
-    const composer = <Composer busy={busy} awaitingApproval={awaitingApproval} onSend={send} onStop={() => void stop()} />;
+    const sendFromComposer = (text: string): boolean => {
+        // An edited draft may ask about another app. Only an unedited one sets up its starter's integration.
+        const isUneditedDraft = messages.length === 0 && playgroundDraft !== undefined && text.trim() === playgroundDraft.text.trim();
+        return send(text, isUneditedDraft ? playgroundDraft.starterProvider : undefined);
+    };
+    const composer = (
+        <Composer
+            // The composer remounts when the first message appears, so passing the draft after that would refill it.
+            draft={messages.length === 0 ? draft : undefined}
+            busy={busy}
+            awaitingApproval={awaitingApproval}
+            onSend={sendFromComposer}
+            onStop={() => void stop()}
+        />
+    );
 
     if (messages.length === 0) {
         return (
-            <div className="mx-auto flex h-full max-w-[800px] flex-col">
-                <EmptyState composer={composer} onPick={send} />
+            <div className="flex h-full flex-col">
+                <EmptyState composer={composer} suggested={draft !== undefined} onPick={send} />
             </div>
         );
     }
 
     return (
-        <div className="mx-auto flex h-full max-w-3xl flex-col">
+        <div className="flex h-full flex-col">
             {toolbarSlot &&
                 createPortal(
                     <Button onClick={onReset}>
@@ -337,6 +407,7 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
                                     env={env}
                                     setup={message.metadata.integrationSetup}
                                     labels={labels}
+                                    addedIntegrations={addedIntegrations}
                                     onTryAgain={message.id === lastMessage?.id && !busy ? () => void regenerate() : undefined}
                                 />
                             )}
@@ -348,6 +419,17 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
                                     return part.text ? (
                                         <Markdown key={index}>{part.state === 'streaming' ? hideTrailingLink(part.text) : part.text}</Markdown>
                                     ) : null;
+                                }
+                                if (part.type === 'dynamic-tool' && isSetUpPart(part)) {
+                                    return setUpResults(part).map((setup) => (
+                                        <IntegrationSetupNotice
+                                            key={`${part.toolCallId}-${setup.provider}`}
+                                            env={env}
+                                            setup={setup}
+                                            labels={labels}
+                                            addedIntegrations={addedIntegrations}
+                                        />
+                                    ));
                                 }
                                 if (part.type === 'dynamic-tool') {
                                     return (
@@ -382,16 +464,40 @@ const Chat: React.FC<{ env: string; toolbarSlot: HTMLElement | null; onNewChat: 
     );
 };
 
+function prefersReducedMotion(): boolean {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 // Holds the draft itself, so typing doesn't re-render the message list.
-const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (text: string) => boolean; onStop: () => void }> = ({
+const Composer: React.FC<{ draft: string | undefined; busy: boolean; awaitingApproval: boolean; onSend: (text: string) => boolean; onStop: () => void }> = ({
+    draft,
     busy,
     awaitingApproval,
     onSend,
     onStop
 }) => {
-    const [input, setInput] = useState('');
+    const [input, setInput] = useState(() => (draft !== undefined && prefersReducedMotion() ? draft : ''));
+    const [typing, setTyping] = useState(() => draft !== undefined && !prefersReducedMotion());
+    const stopTyping = useRef<() => void>(() => {});
+    useEffect(() => {
+        if (draft === undefined || prefersReducedMotion()) {
+            return;
+        }
+        let typed = 0;
+        const step = Math.max(8, Math.min(20, 450 / draft.length));
+        const interval = window.setInterval(() => {
+            typed += 1;
+            setInput(draft.slice(0, typed));
+            if (typed >= draft.length) {
+                window.clearInterval(interval);
+                setTyping(false);
+            }
+        }, step);
+        stopTyping.current = () => window.clearInterval(interval);
+        return () => stopTyping.current();
+    }, [draft]);
     const submit = () => {
-        if (onSend(input)) {
+        if (!typing && onSend(input)) {
             setInput('');
         }
     };
@@ -407,9 +513,18 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
             <InputGroup size="composer">
                 <InputGroupTextarea
                     value={input}
+                    autoFocus={draft !== undefined}
+                    onFocus={(e) => {
+                        const end = e.currentTarget.value.length;
+                        e.currentTarget.setSelectionRange(end, end);
+                    }}
                     rows={1}
                     placeholder={awaitingApproval ? 'Approve or deny the change to continue…' : 'Ask the agent to do something…'}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => {
+                        stopTyping.current();
+                        setTyping(false);
+                        setInput(e.target.value);
+                    }}
                     onKeyDown={(e) => {
                         // Safari sends the key that ends an IME composition with isComposing false and keyCode 229.
                         const composing = e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229;
@@ -434,7 +549,14 @@ const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (te
                             <Square className="size-3 fill-current" />
                         </InputGroupButton>
                     ) : (
-                        <InputGroupButton key="send" label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim() || awaitingApproval}>
+                        <InputGroupButton
+                            key="send"
+                            label="Send"
+                            type="submit"
+                            variant="primary"
+                            size="icon-sm"
+                            disabled={!input.trim() || awaitingApproval || typing}
+                        >
                             <ArrowUp />
                         </InputGroupButton>
                     )}
@@ -495,6 +617,10 @@ function workingLabel(messages: PlaygroundMessage[]): string | null {
     if (part?.type === 'text') {
         return null;
     }
+    if (part?.type === 'dynamic-tool' && isSetUpPart(part) && (part.state === 'input-streaming' || part.state === 'input-available')) {
+        const apps = setUpApps(part);
+        return apps.length > 0 ? `Adding ${apps.map(providerName).join(' and ')}…` : 'Adding integrations…';
+    }
     if (part?.type === 'dynamic-tool') {
         if (
             part.state === 'approval-requested' ||
@@ -530,59 +656,64 @@ const IntegrationSetupNotice: React.FC<{
     env: string;
     setup: AgentPlaygroundIntegrationSetup;
     labels: IntegrationLabels | undefined;
+    addedIntegrations: Map<string, string>;
     onTryAgain?: (() => void) | undefined;
-}> = ({ env, setup, labels, onTryAgain }) => {
-    const name = (setup.integrationId && labels?.get(setup.integrationId)?.integrationName) || providerName(setup.provider);
-    const href = setup.integrationId ? `/${env}/integrations/${setup.integrationId}` : `/${env}/integrations/create/${setup.provider}`;
+}> = ({ env, setup, labels, addedIntegrations, onTryAgain }) => {
+    const addedSince = isAdded(setup) ? undefined : addedIntegrations.get(setup.provider);
+    const integrationId = addedSince ?? setup.integrationId;
+    const name = (integrationId && labels?.get(integrationId)?.integrationName) || setup.displayName || providerName(setup.provider);
+    const href = integrationId ? `/${env}/integrations/${integrationId}` : `/${env}/catalog/${setup.provider}/add`;
 
-    if (setup.outcome === 'created' || setup.outcome === 'existing') {
+    if (addedSince) {
+        return <AddedIntegrationRow provider={setup.provider} text={`Using your ${name} integration`} href={href} />;
+    }
+
+    if (setup.outcome === 'missing_credentials') {
         return (
-            <div className="flex min-h-7 items-center gap-2 pr-[17px] text-body-medium-regular text-text-secondary" role="status">
-                <IntegrationLogo provider={setup.provider} className="-mx-0.5 size-5 shrink-0 border-0 bg-transparent p-0" />
-                <span className="min-w-0 truncate">{setup.outcome === 'created' ? `Created the ${name} integration` : `Using your ${name} integration`}</span>
-                <span className="ml-auto flex shrink-0 items-center gap-2 pl-2">
-                    <ButtonLink to={href} variant="outline" size="sm">
-                        View integration
-                    </ButtonLink>
-                </span>
-            </div>
+            <Alert variant="warning">
+                <CircleAlert />
+                <AlertTitle>{`Finish setting up your ${name} integration`}</AlertTitle>
+                <AlertDescription>It&apos;s missing its client ID or secret. Add them, then try again.</AlertDescription>
+                <AlertActions>
+                    <AlertButton asChild>
+                        <Link to={href}>
+                            <Settings2 /> Open integration
+                        </Link>
+                    </AlertButton>
+                    {onTryAgain && (
+                        <AlertButton onClick={onTryAgain}>
+                            <RotateCcw /> Try again
+                        </AlertButton>
+                    )}
+                </AlertActions>
+            </Alert>
         );
     }
 
+    if (!isAdded(setup)) {
+        return <AddIntegrationCard provider={setup.provider} name={name} outcome={setup.outcome} href={href} />;
+    }
+
     return (
-        <Alert variant="warning">
-            <CircleAlert />
-            <AlertTitle>
-                {setup.outcome === 'missing_credentials' ? `Finish setting up your ${name} integration` : `Create a ${name} integration to continue`}
-            </AlertTitle>
-            <AlertDescription>
-                {setup.outcome === 'missing_credentials'
-                    ? "It's missing its client ID or secret. Add them, then try again."
-                    : `This session needs a ${name} integration in this environment.`}
-            </AlertDescription>
-            <AlertActions>
-                <AlertButton asChild>
-                    <Link to={href}>
-                        {setup.outcome === 'missing_credentials' ? (
-                            <>
-                                <Settings2 /> Open integration
-                            </>
-                        ) : (
-                            <>
-                                <Plus /> Create integration
-                            </>
-                        )}
-                    </Link>
-                </AlertButton>
-                {onTryAgain && (
-                    <AlertButton onClick={onTryAgain}>
-                        <RotateCcw /> Try again
-                    </AlertButton>
-                )}
-            </AlertActions>
-        </Alert>
+        <AddedIntegrationRow
+            provider={setup.provider}
+            text={setup.outcome === 'created' ? `Created the ${name} integration` : `Using your ${name} integration`}
+            href={href}
+        />
     );
 };
+
+const AddedIntegrationRow: React.FC<{ provider: string; text: string; href: string }> = ({ provider, text, href }) => (
+    <div className="flex min-h-7 items-center gap-2 pr-[17px] text-body-medium-regular text-text-secondary" role="status">
+        <IntegrationLogo provider={provider} className="-mx-0.5 size-5 shrink-0 border-0 bg-transparent p-0" />
+        <span className="min-w-0 truncate">{text}</span>
+        <span className="ml-auto flex shrink-0 items-center gap-2 pl-2">
+            <ButtonLink to={href} variant="outline" size="sm">
+                View integration
+            </ButtonLink>
+        </span>
+    </div>
+);
 
 function sessionNoticeText(reason: AgentPlaygroundSessionCreated['reason'], replaced: boolean): string {
     switch (reason) {
@@ -632,48 +763,23 @@ const SessionNotice: React.FC<{ created: AgentPlaygroundSessionCreated; replaced
     );
 };
 
-const StarterPromptText: React.FC<{ prompt: string; name: string }> = ({ prompt, name }) => {
-    const start = prompt.indexOf(name);
-    if (start === -1) {
-        return prompt;
-    }
-    return (
-        <>
-            {prompt.slice(0, start)}
-            <span className="type-text-medium-sm">{name}</span>
-            {prompt.slice(start + name.length)}
-        </>
-    );
-};
-
-const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
+const EmptyState: React.FC<{ composer: React.ReactNode; suggested: boolean; onPick: (prompt: string, provider: string) => void }> = ({
+    composer,
+    suggested,
+    onPick
+}) => {
     return (
         <div className="flex flex-1 flex-col items-center text-center">
             <div className="flex w-full flex-[3] flex-col items-center justify-end gap-12 pb-6">
-                <HeroIllustration />
+                <HeroIllustration animated={!suggested} />
                 <h2 className="text-heading-medium text-text-strong">Explore how Nango works with an agent</h2>
             </div>
             {composer}
             <div className="grid w-full flex-[4] auto-rows-min grid-cols-2 gap-3 pt-6">
-                {STARTER_PROMPTS.map(({ prompt, provider, name }) => (
-                    <button
-                        key={prompt}
-                        type="button"
-                        onClick={() => onPick(prompt, provider)}
-                        className="group flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-muted px-3 py-[13px] text-left type-text-regular-sm text-text-default transition-[background-color,border-color,box-shadow] hover:border-border-strong hover:bg-surface-panel hover:shadow-container-panel"
-                    >
-                        {/* Template logos pad their artwork, so a 25px box draws an 18px logo. */}
-                        {provider === 'github' ? (
-                            <GithubLogo className="-m-[3.5px] size-[25px] shrink-0 text-text-strong" />
-                        ) : (
-                            <IntegrationLogo provider={provider} className="-m-[3.5px] size-[25px] shrink-0 border-0 bg-transparent p-0" />
-                        )}
-                        <span className="flex-1">
-                            <StarterPromptText prompt={prompt} name={name} />
-                        </span>
-                        <ArrowRight className="size-3.5 shrink-0 text-text-muted transition-colors group-hover:text-text-default" />
-                    </button>
-                ))}
+                {!suggested &&
+                    STARTER_PROMPTS.map(({ prompt, provider, name }) => (
+                        <PromptCard key={prompt} prompt={prompt} provider={provider} name={name} action="send" onClick={() => onPick(prompt, provider)} />
+                    ))}
             </div>
         </div>
     );

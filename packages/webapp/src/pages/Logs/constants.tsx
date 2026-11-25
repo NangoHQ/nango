@@ -149,7 +149,7 @@ export const typesOptions: FilterOption<SearchOperationsType>[] = [
             { label: 'Connection deletion webhook', value: 'webhook:connection_delete' }
         ]
     },
-    { value: 'action', label: 'Action' },
+    { value: 'tool', label: 'Tool', children: [{ label: 'Tool called', value: 'tool:call' }] },
     { value: 'events', label: 'Event-based execution' },
     { value: 'proxy', label: 'Proxy' },
     { value: 'deploy', label: 'Deploy' },
@@ -168,4 +168,8 @@ export const typesOptions: FilterOption<SearchOperationsType>[] = [
         ]
     }
 ];
-export const typesList = typesOptions.flatMap((opt) => [opt.value, ...(opt.children?.map((child) => child.value) ?? [])]);
+export const typesList: SearchOperationsType[] = [
+    'action',
+    'action:run',
+    ...typesOptions.flatMap((opt) => [opt.value, ...(opt.children?.map((child) => child.value) ?? [])])
+];

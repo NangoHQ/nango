@@ -1,0 +1,45 @@
+---
+title: 'Elastic Email - How do I link my account?'
+sidebarTitle: 'Elastic Email'
+---
+
+## Overview
+
+To authenticate with Elastic Email, you need:
+
+1. **API Key** — an API key from your Elastic Email settings.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- An Elastic Email account. You can [sign up for free](https://app.elasticemail.com/marketing/create-account).
+
+### Step 1: Create an API key
+
+1. Log in to [Elastic Email](https://app.elasticemail.com/) and click **Settings** in the left sidebar.
+2. In the **API** section, click **Manage API keys**.
+
+<img src="/api-integrations/elastic-email/settings_api_section.png" alt="Elastic Email Settings page with Manage API keys highlighted in the API section"/>
+
+3. On the **API Keys** page, click **Create**.
+
+<img src="/api-integrations/elastic-email/api_keys_create.png" alt="Elastic Email API Keys page with the Create button highlighted"/>
+
+4. Enter a name for the key and choose the permissions your integration needs: **View only** for read-only access, or **Custom** to pick access per area. Optionally set an expiration date or an access restriction, then click **Create**.
+
+<img src="/api-integrations/elastic-email/create_api_key_form.png" alt="Elastic Email API key form with a name entered, View only permissions selected and the Create button highlighted"/>
+
+5. In the **API key created** popup, click **Copy** and save the key. It is only shown once.
+
+<img src="/api-integrations/elastic-email/api_key_created.png" alt="Elastic Email API key created popup with the Copy button highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Elastic Email.
+2. Enter your key in the **API Key** field.
+3. Submit the form. The connection is saved without checking the key: if the key is wrong, the first API request returns an authentication error.
+
+<img src="/api-integrations/elastic-email/form.png" alt="Elastic Email Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Elastic Email.

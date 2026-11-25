@@ -29,12 +29,14 @@ export const postDeployConfirmation = asyncWrapperWithEnvironment<PostDeployConf
 
     metrics.increment(metrics.Types.DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
+    const { scope } = val.data;
+
     const syncAndActionDifferences = await getAndReconcileDifferences({
         environmentId,
         flows: body.flowConfigs,
         performAction: false,
         debug: body.debug,
-        deployMode: body.deployMode,
+        scope,
         logContextGetter,
         orchestrator
     });
@@ -48,7 +50,7 @@ export const postDeployConfirmation = asyncWrapperWithEnvironment<PostDeployConf
         const diff = await onEventScriptService.diffChanges({
             environmentId,
             onEventScriptsByProvider: body.onEventScriptsByProvider,
-            deployMode: body.deployMode ?? 'all',
+            scope,
             sdkVersion: body.sdkVersion
         });
         result = {

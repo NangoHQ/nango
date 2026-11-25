@@ -58,7 +58,7 @@ export interface ApiPublicIntegrationInclude {
 }
 
 export type GetPublicListIntegrations = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'no credentials returned' };
     Method: 'GET';
     Path: '/integrations';
     Querystring?: { connect_session_token: string };
@@ -75,19 +75,28 @@ export type PostPublicIntegration = ApiEndpoint<{
         provider: string;
         unique_key: string;
         display_name?: string | undefined;
-        credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
-        // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
-        // Validated server-side against the provider schema and persisted to the `custom` column.
-        integration_config?: Record<string, string> | undefined;
-        // Free-form custom values, for providers without an `integration_config` schema.
-        custom?: Record<string, string> | undefined;
-    };
+    } & (
+        | {
+              credentials?: ApiPublicIntegrationCredentials | undefined;
+              // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
+              // Validated server-side against the provider schema and persisted to the `custom` column.
+              integration_config?: Record<string, string> | undefined;
+              // Free-form custom values, for providers without an `integration_config` schema.
+              custom?: Record<string, string> | undefined;
+          }
+        | {
+              credentials: { type: 'NANGO_MANAGED' };
+              integration_config?: never;
+              custom?: never;
+          }
+    );
     Success: {
         data: ApiPublicIntegration;
     };
 }>;
 
+// TODO: remove this deprecated alias of POST /integrations with NANGO_MANAGED credentials (NAN-7880)
 export type PostPublicQuickstartIntegration = ApiEndpoint<{
     Audit: AuditPolicy<'integration', 'created', 'environment'>;
     Method: 'POST';
@@ -104,7 +113,7 @@ export type PostPublicQuickstartIntegration = ApiEndpoint<{
 }>;
 
 export type GetPublicIntegration = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'integration', 'credentials_read', 'environment'>;
     Method: 'GET';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
@@ -197,7 +206,7 @@ export type ApiIntegrationList = ApiIntegration & {
 };
 
 export type GetIntegrations = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'no credentials returned' };
     Method: 'GET';
     Path: '/api/v1/integrations';
     Success: {
@@ -287,7 +296,7 @@ export type PostIntegration = ApiEndpoint<{
 }>;
 
 export type GetIntegration = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'integration', 'credentials_read', 'environment'>;
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey';
     Querystring: { env: string };

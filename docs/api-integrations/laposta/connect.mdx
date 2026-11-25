@@ -1,0 +1,47 @@
+---
+title: 'Laposta - How do I link my account?'
+sidebarTitle: 'Laposta'
+---
+
+## Overview
+
+To authenticate with Laposta, you need:
+
+1. **API Key** — an API key (API sleutel) from the **Koppelingen** page of your Laposta account.
+
+This guide will show you how to create an API key in Laposta.
+
+### Prerequisites
+
+- A Laposta account. If you don't have one, [sign up for free](https://account.laposta.nl/).
+
+### Step 1: Create an API key
+
+1. Log in to [Laposta](https://login.laposta.nl/). In the account menu at the bottom left, click **Koppelingen**. This opens **Software koppelen** > **API sleutels**.
+
+<img src="/api-integrations/laposta/open_koppelingen.png" alt="Laposta account menu with Koppelingen highlighted"/>
+
+2. On the **API sleutels** page, click **Nieuw API sleutel**.
+
+<img src="/api-integrations/laposta/new_api_key.png" alt="Laposta API sleutels page with the Nieuw API sleutel button"/>
+
+3. Enter a **Naam** (name) for the key, for example `nango`, and optionally an **Omschrijving** (description).
+4. Under **Wachtwoord**, enter your own Laposta account password to confirm, then click **Opslaan en sleutel tonen**.
+
+<img src="/api-integrations/laposta/create_key_form.png" alt="Laposta Nieuwe API sleutel form with the name, password and Opslaan en sleutel tonen button"/>
+
+5. Copy the key shown under **Nieuwe sleutel** right away. Laposta shows it only once; afterwards you only see its first four characters.
+
+<img src="/api-integrations/laposta/key_created.png" alt="Laposta Nieuwe sleutel notice showing the new API key once"/>
+
+<Note>A free Laposta account can have at most three API keys.</Note>
+
+### Step 2: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Laposta.
+2. Enter your API key in the **API Key** field. Laposta needs no password, so there is no password field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/laposta/form.png" alt="Laposta Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Laposta.

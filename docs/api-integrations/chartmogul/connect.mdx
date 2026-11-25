@@ -1,0 +1,42 @@
+---
+title: 'ChartMogul - How do I link my account?'
+sidebarTitle: 'ChartMogul'
+---
+
+## Overview
+
+To authenticate with ChartMogul, you need:
+
+1. **API Key** — a ChartMogul API key, either Read-only or Read & Write.
+
+This guide will show you how to create it.
+
+### Prerequisites
+
+- A ChartMogul account. If you don't have one, [sign up](https://app.chartmogul.com/sign_up): you can start a 14-day trial without a credit card. Free-plan accounts with more than $10k MRR cannot access the API and must upgrade.
+
+### Step 1: Create an API key
+
+1. Sign in to [ChartMogul](https://app.chartmogul.com/).
+2. Open **Settings** and, under **Your Account**, click **API Keys**. Then click **Add API Key**.
+
+<img src="/api-integrations/chartmogul/api_keys_page.png" alt="ChartMogul Settings page with API Keys selected under Your Account and the Add API Key button"/>
+
+3. Enter a unique **Name** for the key and choose the **Access Level**: **Read-only** is enough to read data, **Read & Write** is needed to create, update or delete data. Only Staff, Admin and Owner users can choose the access level.
+4. Click **Add**.
+
+<img src="/api-integrations/chartmogul/create_api_key_dialog.png" alt="ChartMogul Create New API Key dialog with the Name and Access Level fields and the Add button"/>
+
+5. In the new key's row, click the **Reveal** icon to show the key, then the **Copy** icon to copy it.
+
+<img src="/api-integrations/chartmogul/api_key_created.png" alt="ChartMogul API Keys list showing the new key with its Copy and Reveal icons"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with ChartMogul.
+2. Enter your API key in the **API Key** field. ChartMogul needs no password, so the form does not ask for one.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/chartmogul/form.png" alt="ChartMogul Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to ChartMogul.

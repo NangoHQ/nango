@@ -1,0 +1,48 @@
+---
+title: 'Honeybadger - How do I link my account?'
+sidebarTitle: 'Honeybadger'
+---
+
+## Overview
+
+To authenticate with Honeybadger, you need:
+
+1. **Region** — the Honeybadger region your account is in (US or EU).
+2. **Personal auth token** — the personal API key from the **API Access** tab of your Honeybadger user settings.
+
+This guide will show you how to find both.
+
+### Prerequisites
+
+- A Honeybadger account. If you don't have one, [sign up](https://app.honeybadger.io/users/sign_up).
+
+### Step 1: Find your region
+
+Check the address you use to sign in to Honeybadger:
+
+- `app.honeybadger.io`: your account is in the US region. Choose `app.honeybadger.io`.
+- `eu-app.honeybadger.io`: your account is in the EU region. Choose `eu-app.honeybadger.io`.
+
+### Step 2: Copy your personal auth token
+
+1. Sign in to Honeybadger ([US](https://app.honeybadger.io) or [EU](https://eu-app.honeybadger.io)). Click your name in the top-right corner and choose **My settings**.
+2. Open the **API Access** tab.
+
+<img src="/api-integrations/honeybadger/user_settings_api_access_tab.png" alt="Honeybadger user settings with the API Access tab selected"/>
+
+3. Copy the value shown under **Personal API Key**. This is your personal auth token.
+
+<img src="/api-integrations/honeybadger/personal_api_key.png" alt="Honeybadger API Access tab with the Personal API Key value highlighted"/>
+
+<Note>Use the **Personal API Key**, not a project API key or a token from the **Tokens and applications** section.</Note>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Honeybadger.
+2. Choose your region in the **Region** field.
+3. Paste your personal API key in the **Personal auth token** field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/honeybadger/form.png" alt="Honeybadger Connect UI form with the Region and Personal auth token fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Honeybadger.

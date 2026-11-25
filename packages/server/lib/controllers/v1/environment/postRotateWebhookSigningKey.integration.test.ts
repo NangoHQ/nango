@@ -93,6 +93,7 @@ describe(`POST ${route}`, () => {
             throw before.error;
         }
 
+        // @ts-expect-error The request helper requires a body, but this route also accepts no body.
         const { res, json } = await api.fetch('/environment/webhook-signing-key/rotate', { method: 'POST', token: apiKey.secret });
 
         isSuccess(json);

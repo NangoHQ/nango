@@ -1,8 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatKeyToLabel } from './utils.js';
+import { cn, formatKeyToLabel } from './utils.js';
 
 describe('utils', () => {
+    describe('cn', () => {
+        it('keeps a one-side token border width next to a border colour on the same side', () => {
+            expect(cn('border-l-ds-2', 'border-l-interactive-selected-fill')).toBe('border-l-ds-2 border-l-interactive-selected-fill');
+        });
+
+        it('lets the last one-side token border width win', () => {
+            expect(cn('border-b-ds-hairline', 'border-b-ds-2')).toBe('border-b-ds-2');
+        });
+    });
+
     describe('formatKeyToLabel', () => {
         it('should format snake_case to label', () => {
             expect(formatKeyToLabel('api_key')).toBe('Api key');

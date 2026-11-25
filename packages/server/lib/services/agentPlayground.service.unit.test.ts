@@ -22,7 +22,7 @@ import {
 import { sessionOwner } from './agentPlaygroundTags.js';
 
 import type { PlaygroundUIMessage } from './agentPlayground.service.js';
-import type { AgentSession } from '@nangohq/types';
+import type { AgentSession, DBSyncConfig } from '@nangohq/types';
 
 const executeAction = vi.hoisted(() => vi.fn());
 vi.mock('./action.service.js', () => ({ executeAction }));
@@ -157,7 +157,7 @@ describe('toolNeedsApproval', () => {
         { toolName: 'pg-google-docs__export-document', input: {}, expected: false },
         { toolName: 'pg-slack__post-message', input: {}, expected: true },
         { toolName: 'pg-slack__open-dm', input: {}, expected: true },
-        { toolName: 'nango_tool_search', input: { query: 'delete event' }, expected: false },
+        { toolName: 'nango_tool_search', input: { queries: ['delete event'] }, expected: false },
         { toolName: 'nango_create_connection', input: {}, expected: false }
     ])('$toolName $input → $expected', ({ toolName, input, expected }) => {
         expect(toolNeedsApproval(toolName, input)).toBe(expected);
@@ -165,18 +165,18 @@ describe('toolNeedsApproval', () => {
 });
 
 describe('existingIntegrationFor', () => {
-    it('prefers the playground integration, then the one keyed by the provider name, then the oldest', () => {
+    it('prefers the one keyed by the provider name, then an older pg- one, then the oldest', () => {
         const integrations = [
-            { unique_key: 'slack', provider: 'slack', missing_fields: [] },
             { unique_key: 'pg-slack', provider: 'slack', missing_fields: [] },
+            { unique_key: 'slack', provider: 'slack', missing_fields: [] },
             { unique_key: 'old-calendar', provider: 'google-calendar', missing_fields: [] },
-            { unique_key: 'google-calendar', provider: 'google-calendar', missing_fields: [] },
+            { unique_key: 'pg-google-calendar', provider: 'google-calendar', missing_fields: [] },
             { unique_key: 'new-github', provider: 'github', missing_fields: [] },
             { unique_key: 'newer-github', provider: 'github', missing_fields: [] }
         ];
 
-        expect(existingIntegrationFor(integrations, 'slack')?.unique_key).toBe('pg-slack');
-        expect(existingIntegrationFor(integrations, 'google-calendar')?.unique_key).toBe('google-calendar');
+        expect(existingIntegrationFor(integrations, 'slack')?.unique_key).toBe('slack');
+        expect(existingIntegrationFor(integrations, 'google-calendar')?.unique_key).toBe('pg-google-calendar');
         expect(existingIntegrationFor(integrations, 'github')?.unique_key).toBe('new-github');
         expect(existingIntegrationFor(integrations, 'linear')).toBeUndefined();
     });
@@ -237,7 +237,7 @@ describe('buildMcpTools', () => {
     let close: (() => Promise<void>) | undefined;
 
     beforeEach(async () => {
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'deployed', config: { enabled: true } as DBSyncConfig }));
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { title: 'Roadmap' } }) });
 
         const server = createAgentSessionMcpServer({

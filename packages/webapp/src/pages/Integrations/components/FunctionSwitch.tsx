@@ -6,7 +6,6 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 import { useFlowDisable, useFlowEnable, usePreBuiltDeployFlow } from '../../../hooks/useFlow.js';
-import { useCurrentPlan } from '../../../hooks/usePlan.js';
 import { useToast } from '../../../hooks/useToast.js';
 import { APIError } from '../../../utils/api.js';
 
@@ -15,13 +14,9 @@ import type { ApiError, ApiIntegration, ListedNangoActionFunction, ListedNangoSy
 export const FunctionSwitch: React.FC<{
     flow: ListedNangoSyncFunction | ListedNangoActionFunction;
     integration: ApiIntegration;
-    /** Checked track. Sync rows use success (green); the default track is the brand color. */
-    variant?: 'default' | 'success';
-}> = ({ flow, integration, variant = 'default' }) => {
+}> = ({ flow, integration }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
-    const { data: environmentData, refetch: refetchEnv } = useCurrentPlan(env);
-    const plan = environmentData?.plan;
 
     const { can } = usePermissions();
     const canWriteFlows = can('environment:syncs:update');
@@ -88,12 +83,13 @@ export const FunctionSwitch: React.FC<{
                 await deployFlow(body);
             }
             toast({ title: `Enabled successfully`, variant: 'success' });
-            if (plan && plan.auto_idle && !plan.trial_end_at) {
-                void refetchEnv();
-            }
         } catch (err) {
             if (err instanceof APIError) {
                 const { code, message } = (err.json as ApiError<string>).error;
+                if (code === 'legacy_actions_deprecated') {
+                    toast({ title: 'Actions are deprecated and can no longer be enabled. Use tools instead.', variant: 'error' });
+                    return;
+                }
                 if (code === 'resource_capped' || code === 'plan_limit') {
                     toast({ title: message, variant: 'error' });
                     return;
@@ -135,9 +131,7 @@ export const FunctionSwitch: React.FC<{
                 {(allowed) => (
                     <Switch
                         name="script"
-                        variant={variant}
                         checked={flow.enabled}
-                        className="cursor-pointer"
                         disabled={loading || !allowed || flow.source === 'tools-catalog'}
                         onClick={(e) => {
                             e.preventDefault();

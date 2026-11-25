@@ -1,0 +1,41 @@
+---
+title: 'API2PDF - How do I link my account?'
+sidebarTitle: 'API2PDF'
+---
+
+## Overview
+
+To authenticate with API2PDF, you need:
+
+1. **API Key** - the API key of an API2PDF application.
+
+This guide shows you how to get it.
+
+### Prerequisites
+
+- An API2PDF account. You can [register](https://portal.api2pdf.com/register) with an email address, Google or GitHub.
+
+### Step 1: Create an application and copy its API key
+
+1. Sign in to the [API2PDF portal](https://portal.api2pdf.com/login/).
+2. On the **Applications** page, click **Create application**. Each application has its own API key. You can also use the key of an existing application, such as **My First App**, by clicking **View** next to it and skipping to step 4.
+
+<img src="/api-integrations/api2pdf/applications_create.png" alt="API2PDF Applications page with the Create application button"/>
+
+3. Enter an **Application name**, for example `Nango`, and click **Create**.
+
+<img src="/api-integrations/api2pdf/create_application_dialog.png" alt="API2PDF Create application dialog with the Application name field and the Create button"/>
+
+4. On the application's page, under **Credentials**, click **Copy** next to the **API key**.
+
+<img src="/api-integrations/api2pdf/api_key_created.png" alt="API2PDF application page with the Copy button next to the API key"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with API2PDF.
+2. Enter your **API Key** in the designated field.
+3. Click **Connect**. Nango checks the key with API2PDF and rejects it if it is wrong.
+
+<img src="/api-integrations/api2pdf/form.png" alt="Nango Connect UI form for entering the API2PDF API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to API2PDF.
