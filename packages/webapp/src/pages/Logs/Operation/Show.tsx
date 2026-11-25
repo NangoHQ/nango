@@ -10,15 +10,20 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useGetOperation } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
+import { APIError } from '../../../utils/api';
 import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
 import { OperationTag } from '../components/OperationTag';
 import { ProviderTag } from '../components/ProviderTag';
 import { StatusTag } from '../components/StatusTag';
 import { Logs } from './components/Logs';
 
+import type { ApiError } from '@nangohq/types';
+
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
     const { operation, loading, error, trigger } = useGetOperation(env, { operationId });
+    const isNotFound =
+        error instanceof APIError && (error.res.status === 404 || (error.json as ApiError<string> | undefined)?.error?.code === 'invalid_uri_params');
 
     const duration = useMemo<string>(() => {
         if (!operation) {
@@ -36,9 +41,12 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
     }, [operation?.createdAt]);
 
     const isLive = useMemo(() => {
+        if (isNotFound) {
+            return false;
+        }
         // We keep refreshing N seconds after end to catch logs that could be indexed after the operation is done
         return !operation || !operation.endedAt || new Date(operation.endedAt).getTime() > Date.now() - 160_000;
-    }, [operation]);
+    }, [operation, isNotFound]);
 
     const sessionId = operation?.actor?.kind === 'session' ? operation.actor.id : null;
     const isToolCall = operation?.operation.type === 'action' || operation?.operation.type === 'tool';
@@ -92,9 +100,19 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         );
     }
 
+    if (isNotFound) {
+        return (
+            <div className="py-8 px-6 flex flex-col gap-2">
+                <h3 className="text-xl font-semibold text-text-strong">Operation not found</h3>
+                <p className="text-s text-text-muted">This operation doesn&apos;t exist or has expired. Logs older than 15 days are automatically cleared.</p>
+            </div>
+        );
+    }
+
     if (error || !operation) {
         return (
-            <div className="py-6 px-6 flex flex-col gap-9">
+            <div className="py-8 px-6 flex flex-col gap-5">
+                <h3 className="text-xl font-semibold text-text-strong">Operation Details</h3>
                 <Alert variant="danger">
                     <AlertDescription>An error occurred</AlertDescription>
                 </Alert>
@@ -103,7 +121,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
     }
 
     return (
-        <div className="py-8 px-6 flex flex-col gap-5 h-screen">
+        <div className="py-8 px-6 flex flex-col gap-5 h-full">
             <header className="flex gap-2 flex-col border-b border-b-border-muted pb-5">
                 <h3 className="text-xl font-semibold text-text-strong">Operation Details</h3>
                 <div className="flex gap-3 items-center">
