@@ -82,7 +82,7 @@ describe('trackAgentSessionCreated', () => {
             is_execute_enabled: true,
             is_proxy_enabled: false,
             is_create_connection_enabled: false,
-            is_run_code_enabled: false
+            is_query_result_enabled: false
         });
     });
 
@@ -154,7 +154,7 @@ describe('trackAgentSessionCreated', () => {
                     nango_proxy: true,
                     nango_execute: { enabled: false },
                     nango_create_connection: { enabled: true, tags: { end_user_id: 'user-1' } },
-                    nango_run_code: true
+                    nango_query_result: true
                 },
                 expires_in: '1h'
             })
@@ -170,7 +170,7 @@ describe('trackAgentSessionCreated', () => {
                     nango_proxy: true,
                     nango_execute: { enabled: false },
                     nango_create_connection: { enabled: true, tags: ['end_user_id'] },
-                    nango_run_code: true
+                    nango_query_result: true
                 },
                 expires_in: '1h'
             }

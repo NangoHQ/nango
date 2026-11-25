@@ -17,11 +17,11 @@ export interface AgentSessionMetaTools {
     readonly nangoProxy: boolean;
     readonly nangoCreateConnection: AgentSessionCreateConnectionConfig;
     /** Stores tool results over the inline threshold for the agent to run code over. Absent on sessions created before it, which read as off. */
-    readonly nangoRunCode?: boolean;
+    readonly nangoQueryResult?: boolean;
 }
 
 /** Nango's own tools, as opposed to the integration tools an account deploys. */
-export type AgentSessionMetaTool = 'nango_execute' | 'nango_proxy' | 'nango_tool_search' | 'nango_create_connection';
+export type AgentSessionMetaTool = 'nango_execute' | 'nango_proxy' | 'nango_tool_search' | 'nango_create_connection' | 'nango_query_result';
 
 /** One ranked tool, as the search returned it. Confidence runs from 0, nothing matched, to 1. */
 export interface AgentSessionToolSearchHit {

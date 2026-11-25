@@ -10,6 +10,7 @@ import { executeDirectToolCall } from './directCall.js';
 import { directCallInputSchema } from './directCallSchema.js';
 import { executeTool } from './execute/execute.js';
 import { proxyTool } from './proxy/proxy.js';
+import { queryResultTool } from './queryResult/queryResult.js';
 import { buildSessionInstructions } from './sessionInstructions.js';
 import { callAgentSessionTool, MAX_TOOL_NAME_LENGTH } from './sessionTool.js';
 import { toolSearchTool } from './toolSearch/search.js';
@@ -35,7 +36,7 @@ const UNSAFE_NAME_CHARACTERS = /[^a-zA-Z0-9_-]/g;
 
 type SessionTool = Tool & { description: string };
 
-const META_TOOLS: AgentSessionMcpTool[] = [toolSearchTool, executeTool, proxyTool, createConnectionTool];
+const META_TOOLS: AgentSessionMcpTool[] = [toolSearchTool, executeTool, proxyTool, createConnectionTool, queryResultTool];
 
 /**
  * The compiled toolset stores no argument schema for a deployed action, so tools/list reads the one it

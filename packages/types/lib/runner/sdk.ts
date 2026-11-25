@@ -15,6 +15,7 @@ export type ScriptType = 'function' | 'sync' | 'action' | 'webhook' | 'on-event'
 
 export interface NangoProps {
     scriptType: ScriptType;
+    execMode?: 'module' | 'transform' | undefined;
     host?: string;
     secretKey: string;
     team: Pick<DBTeam, 'id' | 'name'>;
@@ -52,6 +53,7 @@ export interface NangoProps {
         | undefined;
     isCLI?: boolean | undefined;
     integrationConfig?: IntegrationConfigForProxy;
+    agentSessionResult?: { sessionId: string; recordId: string } | undefined;
 
     axios?: {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;
