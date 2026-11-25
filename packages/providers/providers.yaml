@@ -8253,7 +8253,6 @@ carta:
             enum:
                 - login.app.carta.com
                 - login.playground.carta.team
-            default_value: login.app.carta.com
             order: 1
             doc_section: '#step-1-select-your-carta-environment'
         apiHost:
@@ -8264,7 +8263,6 @@ carta:
             enum:
                 - api.carta.com
                 - api.playground.carta.team
-            default_value: api.carta.com
             order: 2
             doc_section: '#step-1-select-your-carta-environment'
 carta-mcp:
