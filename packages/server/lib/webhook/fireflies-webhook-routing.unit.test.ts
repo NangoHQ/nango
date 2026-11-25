@@ -56,7 +56,7 @@ function getSignedHeaders(rawBody: string, secret: string = CONNECTION_SECRET): 
 function getBody(overrides?: Partial<FirefliesWebhookPayload>): FirefliesWebhookPayload {
     return {
         event: 'meeting.transcribed',
-        timestamp: 1763900000000,
+        timestamp: Date.now(),
         meeting_id: '01KAB2C3D4E5F6G7H8J9K0',
         ...overrides
     };
@@ -89,6 +89,26 @@ describe('Fireflies webhook routing', () => {
 
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalledWith(expect.objectContaining({ webhookType: 'eventType', connectionIdentifierValue: CONNECTION_ID }));
+    });
+
+    it.each([
+        ['sent more than 5 minutes ago', () => getBody({ timestamp: Date.now() - 6 * 60 * 1000 })],
+        [
+            'without a timestamp',
+            () => {
+                const { timestamp: _timestamp, ...body } = getBody();
+                return body;
+            }
+        ]
+    ])('rejects a validly signed Webhooks V2 delivery %s, as a replay', async (_case, makeBody) => {
+        const { nango, execute } = getNangoMock();
+        const body = makeBody();
+        const rawBody = JSON.stringify(body);
+
+        const result = await FirefliesWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, QUERY);
+
+        expect(result.isErr() && result.error).toMatchObject({ type: 'webhook_invalid_signature' });
+        expect(execute).not.toHaveBeenCalled();
     });
 
     it('rejects a webhook without nangoConnectionId', async () => {

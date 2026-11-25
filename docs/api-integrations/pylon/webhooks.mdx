@@ -20,9 +20,13 @@ In the Nango dashboard, open your Pylon integration and copy the **Webhook URL**
 
 ### 2. Register the webhook in Pylon
 
-1. In Pylon, go to **Settings** → **Webhooks** and create a webhook with the URL from step 1.
-2. Copy the webhook's secret. Pylon only shows it once.
-3. Call the webhook from the triggers or macros that should send events.
+1. In Pylon, go to **Settings** → **Integrations & dev** → [**Webhooks**](https://app.usepylon.com/settings/webhooks), click **Create Webhook** and set the URL from step 1.
+2. Click **Create** and copy the webhook's secret. Pylon only shows it once and can't rotate it, so replacing a secret means creating a new webhook.
+3. In **Settings** → **Workflows** → [**Triggers**](https://app.usepylon.com/settings/triggers), add a **Send webhook** action to the triggers that should send events, and write the body in **JSON payload**. Macros can send webhooks too.
+
+<Note>
+A test sent while creating the webhook is unsigned, because its secret doesn't exist yet, so Nango rejects it. Test from **Edit** on the saved webhook instead: those tests are signed.
+</Note>
 
 ### 3. Set the webhook secret in Nango
 

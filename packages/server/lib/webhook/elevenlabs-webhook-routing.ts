@@ -5,9 +5,18 @@ import { isFreshTimestamp, validateHmacSignature } from './signature.js';
 
 import type { WebhookHandler } from './types.js';
 
-/** https://elevenlabs.io/docs/product-guides/administration/webhooks */
+/** https://elevenlabs.io/docs/eleven-api/resources/webhooks */
 export interface ElevenLabsWebhookPayload {
-    type: 'post_call_transcription' | 'post_call_audio' | 'call_initiation_failure' | (string & {});
+    type:
+        | 'post_call_transcription'
+        | 'post_call_audio'
+        | 'call_initiation_failure'
+        | 'voice_removal_notice'
+        | 'voice_removal_notice_withdrawn'
+        | 'voice_removed'
+        | 'flows_generation'
+        | 'flows_template_run'
+        | (string & {});
     event_timestamp: number;
     data: Record<string, unknown>;
 }

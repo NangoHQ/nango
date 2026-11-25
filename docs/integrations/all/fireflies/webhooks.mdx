@@ -7,12 +7,12 @@ description: 'Learn how to receive real-time Fireflies meeting events in your ap
 ## How it works
 
 1. Fireflies sends a POST request to your Nango webhook URL when a meeting event happens, for example `meeting.transcribed`.
-2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's `X-Hub-Signature` against that connection's own webhook secret. The signature is an HMAC-SHA256 of the request body.
+2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's `X-Hub-Signature` against that connection's own webhook secret. The signature is an HMAC-SHA256 of the request body. Webhooks V2 bodies carry a `timestamp` of when the delivery was sent, and Nango rejects V2 deliveries sent more than 5 minutes ago.
 3. Nango routes the event to that connection, using the payload's `event` field (`eventType` for Fireflies' original webhooks) as the webhook type.
 
-Fireflies payloads don't say which account they come from, so each connection needs its own webhook in Fireflies and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected. Fireflies only signs deliveries when the webhook has a secret, so set one.
+Fireflies payloads don't say which account they come from, so each connection needs its own webhook in Fireflies and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected. A Webhooks V2 signing secret is optional in Fireflies, and Fireflies only signs deliveries when the webhook has one, so set one.
 
-Fireflies doesn't sign a timestamp, so Nango can't reject a replayed delivery. Fireflies payloads carry the meeting ID and event details but not the meeting's contents, so fetch the meeting from the Fireflies API before acting on it.
+Original (V1) webhook bodies have no timestamp, so Nango can't reject a replayed V1 delivery. Fireflies payloads carry the meeting ID and event details but not the meeting's contents, so fetch the meeting from the Fireflies API before acting on it.
 
 ## Setup
 
@@ -24,13 +24,12 @@ In the Nango dashboard, open your Fireflies integration and copy the **Webhook U
 
 <Tabs>
   <Tab title="Webhooks V2">
-    1. In Fireflies' **Developer settings**, add a Webhooks V2 webhook.
+    1. In Fireflies, open the [Webhooks V2 page](https://app.fireflies.ai/integrations/api/webhook) and add a webhook.
     2. Set the URL to the URL from step 1, and pick the events to receive.
     3. Enter a **Signing Secret**. Copy it for step 3.
   </Tab>
-  <Tab title="Original webhook">
-    1. In Fireflies' **Developer settings**, set the webhook URL to the URL from step 1.
-    2. Enter a 16 to 32 character secret, or generate one. Copy it for step 3.
+  <Tab title="Existing V1 webhook">
+    Fireflies no longer lets you create or change V1 webhooks, so create new ones with Webhooks V2. An existing V1 webhook keeps working: its URL must be the one from step 1, and you can read its secret in **Settings** → **Developer settings** → **Webhook** → **View Configuration**.
   </Tab>
 </Tabs>
 

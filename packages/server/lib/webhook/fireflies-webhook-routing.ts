@@ -1,7 +1,7 @@
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { validateHmacSignature } from './signature.js';
+import { isFreshTimestamp, validateHmacSignature } from './signature.js';
 
 import type { WebhookHandler } from './types.js';
 
@@ -26,6 +26,9 @@ const SIGNATURE_HEADER = 'x-hub-signature';
 // Fireflies signs the raw body with HMAC-SHA256 keyed by the webhook's secret and sends the hex digest in
 // `x-hub-signature`, prefixed with `sha256=` by Webhooks V2 and bare by V1.
 // https://docs.fireflies.ai/graphql-api/webhooks-v2
+// Fireflies signs no timestamp header, but a Webhooks V2 body carries `timestamp`, the Unix milliseconds the
+// delivery was sent, new on every retry. It is signed with the body, so V2 deliveries more than 5 minutes off are
+// rejected as replays. V1 bodies have no timestamp.
 // The payload carries no workspace or user identifier, so each webhook is registered with
 // `?nangoConnectionId=` and verified against the secret stored on that connection.
 const route: WebhookHandler<FirefliesWebhookPayload> = async (nango, headers, body, rawBody, query) => {
@@ -39,12 +42,12 @@ const route: WebhookHandler<FirefliesWebhookPayload> = async (nango, headers, bo
         return Err(new NangoError('webhook_missing_signature'));
     }
 
-    // An unknown connection, one without a secret and a wrong signature all return the same error, so the
-    // endpoint can't be used to check which connection ids exist.
+    // An unknown connection, one without a secret, a stale V2 delivery and a wrong signature all return the same
+    // error, so the endpoint can't be used to check which connection ids exist.
     const connection = await nango.getConnectionForWebhook(nangoConnectionId);
     // TODO: NAN-6927 move off metadata
     const secret = connection?.metadata?.['webhookSecret'];
-    if (typeof secret !== 'string' || !secret || !validateHmacSignature({ secret, rawBody, signature, prefix: 'sha256=' })) {
+    if (typeof secret !== 'string' || !secret || !validateHmacSignature({ secret, rawBody, signature, prefix: 'sha256=' }) || !isFreshV2Delivery(body)) {
         return Err(new NangoError('webhook_invalid_signature'));
     }
 
@@ -62,5 +65,12 @@ const route: WebhookHandler<FirefliesWebhookPayload> = async (nango, headers, bo
         toForward: body
     });
 };
+
+function isFreshV2Delivery(body: FirefliesWebhookPayload): boolean {
+    if (body.event === undefined) {
+        return true;
+    }
+    return typeof body.timestamp === 'number' && isFreshTimestamp(Math.floor(body.timestamp / 1000));
+}
 
 export default route;
