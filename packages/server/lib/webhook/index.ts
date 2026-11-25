@@ -32,6 +32,12 @@ export { default as googleDriveWebhookRouting } from './google-drive-webhook-rou
 export { default as googleWebhookRouting } from './google-webhook-routing.js';
 export { default as sellsyWebhookRouting } from './sellsy-webhook-routing.js';
 export { default as fathomWebhookRouting } from './fathom-webhook-routing.js';
+export {
+    incidentIoWebhookRouting,
+    clerkWebhookRouting,
+    resendWebhookRouting,
+    openaiWebhookRouting
+} from './standard-webhooks-connection-routing.js';
 export { default as calComWebhookRouting } from './cal-com-webhook-routing.js';
 export { default as streakWebhookRouting } from './streak-webhook-routing.js';
 export { default as folkWebhookRouting } from './folk-webhook-routing.js';
