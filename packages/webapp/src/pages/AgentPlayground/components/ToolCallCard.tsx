@@ -217,8 +217,10 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
                     ) : (
                         <RowLogo provider={display.integration?.provider} />
                     )}
-                    {source && <span className="shrink-0 text-body-medium-medium text-text-default">{source}</span>}
-                    <span className={cn('shrink-0', running && 'animate-pulse')}>{display.title}</span>
+                    <span className="shrink-0">
+                        {source && <span className="text-body-medium-medium text-text-default">{source} </span>}
+                        <span className={cn(running && 'animate-pulse')}>{display.title}</span>
+                    </span>
                     {rowSubtitle}
                     <span className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-body-small-regular">
                         {status}

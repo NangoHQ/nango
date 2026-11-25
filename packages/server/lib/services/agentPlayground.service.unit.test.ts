@@ -22,7 +22,7 @@ import {
 import { sessionOwner } from './agentPlaygroundTags.js';
 
 import type { PlaygroundUIMessage } from './agentPlayground.service.js';
-import type { AgentSession, DBSyncConfig } from '@nangohq/types';
+import type { AgentPlaygroundSessionCreated, AgentSession, DBSyncConfig } from '@nangohq/types';
 
 const executeAction = vi.hoisted(() => vi.fn());
 vi.mock('./action.service.js', () => ({ executeAction }));
@@ -86,6 +86,18 @@ describe('describeTurn', () => {
         const setupOnly: PlaygroundUIMessage = { id: 'setup', role: 'assistant', parts: [] };
 
         expect(describeTurn([userMessage('Show my calendar'), setupOnly, userMessage('List my issues')], undefined)).toStrictEqual({
+            isFirstTurn: true
+        });
+    });
+
+    it('still treats the first typed message as first after a reply stopped with only its session', () => {
+        const sessionOnly: PlaygroundUIMessage = {
+            id: 'stopped',
+            role: 'assistant',
+            parts: [{ type: 'data-session', data: { request: {} as AgentPlaygroundSessionCreated['request'] } }]
+        };
+
+        expect(describeTurn([userMessage('Show my calendar'), sessionOnly, userMessage('List my issues')], undefined)).toStrictEqual({
             isFirstTurn: true
         });
     });

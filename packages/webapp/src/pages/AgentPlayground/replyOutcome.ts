@@ -65,5 +65,9 @@ export function outcomeDisplay(message: PlaygroundMessage): {
 }
 
 export function hasVisibleContent(message: PlaygroundMessage): boolean {
-    return Boolean(message.metadata?.integrationSetup || message.metadata?.replyOutcome) || hasReplyContent(message);
+    return (
+        Boolean(message.metadata?.integrationSetup || message.metadata?.replyOutcome) ||
+        message.parts.some((part) => part.type === 'data-session') ||
+        hasReplyContent(message)
+    );
 }
