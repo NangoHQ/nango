@@ -25,9 +25,11 @@ export type GetPublicProvider = ApiEndpoint<{
 }>;
 
 export interface ApiProviderFunctionCounts {
-    actions: number;
+    tools: number;
     syncs: number;
 }
+
+export type ProviderInstantSetup = 'nango-managed-app' | 'no-dev-app' | null;
 
 export interface ApiProviderListItem {
     name: string;
@@ -40,6 +42,7 @@ export interface ApiProviderListItem {
     docs_connect?: string | undefined;
     preConfigured: boolean;
     preConfiguredScopes: string[];
+    instantSetup: ProviderInstantSetup;
     clientRegistration?: McpOAuth2ClientRegistration;
     integration_config?: Record<string, SimplifiedJSONSchema> | undefined;
     functionCounts: ApiProviderFunctionCounts;

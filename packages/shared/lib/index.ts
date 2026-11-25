@@ -28,6 +28,7 @@ export * as signatureClient from './auth/signature.js';
 export * as awsSigV4Client from './auth/aws-sigv4.js';
 export * from './services/connections/credentials/refresh.js';
 export * from './services/sandbox-api-key.js';
+export * from './services/agentSessionResults.js';
 export * from './services/functions/index.js';
 export * from './services/on-event-scripts.service.js';
 export * from './services/sync/sync.service.js';
@@ -70,12 +71,20 @@ export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
-export { listCatalogTools, getCatalogTool, isTemplatesZeroPath } from './services/catalog/actions.js';
-export type { CatalogTool } from './services/catalog/actions.js';
+export {
+    listCatalogEntries,
+    getCatalogEntry,
+    getCatalogFunctionByUuid,
+    listCatalogTools,
+    getCatalogTool,
+    isTemplatesZeroPath
+} from './services/catalog/actions.js';
+export { generateCatalogFunctionUuid, isCatalogFunctionUuid } from './services/catalog/uuid.js';
+export type { CatalogEntry, CatalogFunctionDefinition, CatalogTool } from './services/catalog/actions.js';
 export { findCatalogFunctions } from './services/catalog/functions.js';
 export type { CatalogFunction } from './services/catalog/functions.js';
-export { resolveRunnableTool } from './services/catalog/resolveTool.js';
-export type { ResolveRunnableToolResult } from './services/catalog/resolveTool.js';
+export { resolveLegacyAction } from './services/catalog/resolveLegacyAction.js';
+export type { ResolvedLegacyAction } from './services/catalog/resolveLegacyAction.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 export * as mcpClient from './clients/mcp.client.js';

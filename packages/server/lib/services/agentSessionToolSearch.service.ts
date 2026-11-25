@@ -7,14 +7,18 @@ import { filterJsonSchemaForModels, report } from '@nangohq/utils';
 import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
 import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
+import { clientToolTags, TAGS_META_KEY } from './agentSessionToolTags.js';
 
+import type { ClientToolTags } from './agentSessionToolTags.js';
 import type { ActionInputSchemaRow } from '@nangohq/shared';
 import type {
     AgentSession,
     AgentSessionToolConnectionState,
     AgentSessionToolInput,
     AgentSessionToolMatch,
+    AgentSessionToolRelated,
     AgentSessionToolSearchHit,
+    AgentSessionToolSearchIntegrationState,
     AgentSessionToolSearchQueryResult,
     AgentSessionToolSearchResult,
     DBEnvironment,
@@ -85,7 +89,6 @@ const STOPWORDS = new Set([
     'your'
 ]);
 
-// Ranked from 0, everything matched, to 1, nothing matched.
 const BEST_MATCH_SCORE = 0.4;
 const MAX_MATCH_SCORE = 0.85;
 
@@ -93,7 +96,10 @@ const LEADING_MATCH_SCORE = 0.65;
 const LEADING_MATCH_MARGIN = 0.1;
 
 const MAX_BEST_MATCHES = 5;
-const MAX_RELATED_MATCHES = 15;
+const MAX_RELATED_WITH_MATCH = 3;
+const MAX_RELATED_WITHOUT_MATCH = 5;
+// Kept deeper than either cap, so a query that loses tools to another query in the same call still has some left.
+const MAX_RELATED_CANDIDATES = 15;
 
 interface SearchCandidate {
     slug: string;
@@ -104,6 +110,7 @@ interface SearchCandidate {
     connection: AgentSessionToolConnectionState;
     listed: boolean;
     input?: AgentSessionToolInput;
+    tags?: ClientToolTags;
 }
 
 /** A candidate with the score it was ranked on, so how well a search did outlives the ranking. */
@@ -115,6 +122,16 @@ type ScoredCandidate = SearchCandidate & { score: number };
  */
 export type ToolSlugLookup = (tool: { integration: string; action: string }) => string | undefined;
 
+/**
+ * Searches the session's tools, one ranking per query, and returns each query's matches with
+ * their input schema and its related tools by name only.
+ *
+ * A query that names a tool is that tool's match (toolNamed). Any other query is scored word by
+ * word against every tool in the session (scoreCandidates), cut
+ * into matches and related tools at a line that follows the top score (bestMatchScoreFor), with
+ * a tie for the top broken or left unpromoted (breakLeadingTie). Related tools are then trimmed
+ * across the queries in the call, so each is listed once (trimRelated).
+ */
 export async function searchSessionTools({
     account,
     environment,
@@ -142,18 +159,20 @@ export async function searchSessionTools({
             void logCtx.warn('Could not look up connections created in this session', { error: err });
             return session;
         });
-        const ranked = queries.map((query) => ({ query, ...rankSessionTools({ session: current, query, slugOf }) }));
+        const ranked = trimRelated(queries.map((query) => ({ query, ...rankSessionTools({ session: current, query, slugOf }) })));
         const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.flatMap(({ best }) => best) });
 
-        const results = ranked.map(({ query, best, related: weaker }): AgentSessionToolSearchQueryResult => {
+        const results = ranked.map(({ query, best, related: weaker, relatedElsewhere, tied }): AgentSessionToolSearchQueryResult => {
             // It's possible a tool was removed after the session compiled, so we set input as unavailable.
             const matches = best.map((candidate) =>
                 toMatch(candidate, candidate.input ?? inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' })
             );
-            const related = weaker.map((candidate) => toMatch(candidate, undefined));
+            const related = weaker.map(toRelated);
+            const guidance = queryGuidance({ matches, related, relatedElsewhere, tied });
 
-            return { query, guidance: guidanceFor({ session, query, matches, related }), matches, related };
+            return { query, ...(guidance ? { guidance } : {}), matches, related };
         });
+        const returned = ranked.flatMap(({ best, related }) => [...best, ...related]);
 
         await logCtx.enrichOperation({ meta: searchOperationMeta({ goal, results }) });
         for (const { query, matches } of results) {
@@ -173,7 +192,7 @@ export async function searchSessionTools({
             });
         }
 
-        return { results };
+        return { guidance: searchGuidance({ session, results, returned }), integrations: integrationStates(returned), results };
     } catch (err) {
         void logCtx.error('Failed to search the session tools', { error: err });
         await logCtx.failed();
@@ -195,31 +214,102 @@ export async function searchSessionTools({
     }
 }
 
+/** Keeps at most MAX_BEST_MATCHES matches, and MAX_RELATED_CANDIDATES related tools for trimRelated to pick from. */
 export function rankSessionTools({ session, query, slugOf }: { session: AgentSession; query: string; slugOf: ToolSlugLookup }): {
     best: ScoredCandidate[];
     related: ScoredCandidate[];
+    tied: boolean;
 } {
     const candidates = buildSearchCandidateList({ session, slugOf });
-    const scored = scoreCandidates({ candidates, query });
+
+    const named = toolNamed({ candidates, query });
+    if (named) {
+        const others = scoreCandidates({ candidates: candidates.filter((candidate) => candidate !== named), terms: queryTerms(query) });
+        return {
+            best: [{ ...named, score: 0 }],
+            related: others.slice(0, MAX_RELATED_CANDIDATES).map(({ candidate, score }) => ({ ...candidate, score })),
+            tied: false
+        };
+    }
+
+    const { scored, lead } = breakLeadingTie({ scored: scoreCandidates({ candidates, terms: queryTerms(query) }), query });
     const bestMatchScore = bestMatchScoreFor(scored[0]?.score);
+    const maxBest = lead === 'single' ? MAX_BEST_MATCHES : lead === 'tie_broken' ? 1 : 0;
 
     const best: ScoredCandidate[] = [];
     const related: ScoredCandidate[] = [];
 
     for (const { candidate, score } of scored) {
-        if (score <= bestMatchScore && best.length < MAX_BEST_MATCHES) {
+        if (score <= bestMatchScore && best.length < maxBest) {
             best.push({ ...candidate, score });
-        } else if (related.length < MAX_RELATED_MATCHES) {
+        } else if (related.length < MAX_RELATED_CANDIDATES) {
             related.push({ ...candidate, score });
         }
     }
 
-    return { best, related };
+    // A tie among tools too weak to match anyway is not worth telling the agent about.
+    return { best, related, tied: lead === 'tied' && (scored[0]?.score ?? 1) <= bestMatchScore };
 }
 
-// Unmatched query words can give even a well-fitting top tool a high score, so the cutting line follows the top result.
-// If there are no matches or the top one is weaker than LEADING_MATCH_SCORE, the cutting line is BEST_MATCH_SCORE.
-// Else it is whichever is greater, BEST_MATCH_SCORE or topScore plus a margin. Lower scores are better matches.
+/**
+ * A query that is a tool's slug names that tool, and so does an action name only one tool in the
+ * session has. Scoring cannot be trusted here, since 'update-issue' ties with 'update-issue-label'.
+ */
+function toolNamed({ candidates, query }: { candidates: SearchCandidate[]; query: string }): SearchCandidate | undefined {
+    const name = query.trim().toLowerCase();
+    const bySlug = candidates.find((candidate) => candidate.slug.toLowerCase() === name);
+    if (bySlug) {
+        return bySlug;
+    }
+
+    const byAction = candidates.filter((candidate) => candidate.action.toLowerCase() === name);
+    return byAction.length === 1 ? byAction[0] : undefined;
+}
+
+/**
+ * When several tools share the top score, the one whose name and description hold the most query
+ * words, stopwords included, is the only match. If the words cannot tell them apart either, none is
+ * a match. Words are compared exactly, since a fuzzy 'get' also hits 'delete'.
+ */
+function breakLeadingTie({ scored, query }: { scored: { candidate: SearchCandidate; score: number }[]; query: string }): {
+    scored: { candidate: SearchCandidate; score: number }[];
+    lead: 'single' | 'tie_broken' | 'tied';
+} {
+    const top = scored[0]?.score;
+    const leaders = scored.filter(({ score }) => top !== undefined && sameScore(score, top));
+    if (leaders.length < 2) {
+        return { scored, lead: 'single' };
+    }
+
+    const words = new Set(queryWords(query).map(singular));
+    const wordsFound = new Map(
+        leaders.map(({ candidate }) => {
+            const own = new Set(queryWords(`${candidate.action} ${candidate.description}`).map(singular));
+            return [candidate, [...words].filter((word) => own.has(word)).length];
+        })
+    );
+    const tieBreak = ({ candidate }: { candidate: SearchCandidate }) => wordsFound.get(candidate) ?? 0;
+    const reordered = [...leaders].sort((a, b) => tieBreak(b) - tieBreak(a));
+
+    const [first, second] = reordered;
+    const broken = first !== undefined && second !== undefined && tieBreak(first) > tieBreak(second);
+
+    return { scored: [...reordered, ...scored.slice(leaders.length)], lead: broken ? 'tie_broken' : 'tied' };
+}
+
+function sameScore(a: number, b: number): boolean {
+    return Math.abs(a - b) < 1e-9;
+}
+
+function singular(word: string): string {
+    return word.length > 3 && word.endsWith('s') ? word.slice(0, -1) : word;
+}
+
+/**
+ * Unmatched query words can give even a well-fitting top tool a high score, so the line follows the
+ * top result: a margin behind it when it scores within LEADING_MATCH_SCORE, never stricter than
+ * BEST_MATCH_SCORE, and BEST_MATCH_SCORE alone otherwise. Lower scores are better.
+ */
 function bestMatchScoreFor(topScore: number | undefined): number {
     if (topScore === undefined || topScore > LEADING_MATCH_SCORE) {
         return BEST_MATCH_SCORE;
@@ -229,12 +319,44 @@ function bestMatchScoreFor(topScore: number | undefined): number {
 }
 
 /**
- * Scored a word at a time rather than as one string, because Fuse matches a query as a single
- * pattern and a use case phrased as a sentence then matches nothing at all. Every word counts the
- * same, so a tool answering three of four words outranks one that answers a single word exactly.
+ * A related tool is listed once per call, under the closest query that still has room, and not at
+ * all when another query returns it as a match. A query keeps at most MAX_RELATED_WITH_MATCH related
+ * tools when it has a match, and MAX_RELATED_WITHOUT_MATCH otherwise. Matches are never trimmed, so
+ * every query keeps its own answer.
  */
-function scoreCandidates({ candidates, query }: { candidates: SearchCandidate[]; query: string }): { candidate: SearchCandidate; score: number }[] {
-    const terms = queryTerms(query);
+export function trimRelated<T extends { best: ScoredCandidate[]; related: ScoredCandidate[] }>(rankings: T[]): (T & { relatedElsewhere: boolean })[] {
+    const matched = new Set(rankings.flatMap(({ best }) => best.map((candidate) => candidate.slug)));
+    const kept = rankings.map(({ best }) => ({ max: best.length > 0 ? MAX_RELATED_WITH_MATCH : MAX_RELATED_WITHOUT_MATCH, tools: [] as ScoredCandidate[] }));
+    const placedIn = new Map<string, number>();
+
+    const offers = rankings
+        .flatMap(({ related }, index) => related.map((candidate) => ({ index, candidate })))
+        .sort((a, b) => a.candidate.score - b.candidate.score || a.index - b.index);
+
+    for (const { index, candidate } of offers) {
+        const query = kept[index];
+        if (!query || matched.has(candidate.slug) || placedIn.has(candidate.slug) || query.tools.length >= query.max) {
+            continue;
+        }
+
+        query.tools.push(candidate);
+        placedIn.set(candidate.slug, index);
+    }
+
+    return rankings.map((ranking, index) => ({
+        ...ranking,
+        related: kept[index]?.tools ?? [],
+        relatedElsewhere: ranking.related.some(({ slug }) => matched.has(slug) || (placedIn.get(slug) ?? index) !== index)
+    }));
+}
+
+/**
+ * Each word is fuzzy matched on its own against the tool's action, description, integration and
+ * provider, because Fuse matches a query as one pattern and a sentence then matches nothing. A
+ * tool's score is the share of words it fails to answer, from 0 (all) to 1 (none), and a tool
+ * above MAX_MATCH_SCORE is dropped.
+ */
+function scoreCandidates({ candidates, terms }: { candidates: SearchCandidate[]; terms: string[] }): { candidate: SearchCandidate; score: number }[] {
     if (terms.length === 0) {
         return [];
     }
@@ -261,18 +383,19 @@ function scoreCandidates({ candidates, query }: { candidates: SearchCandidate[];
         );
 }
 
-/**
- * A query with nothing but stopwords in it is searched as written, on the grounds that a caller who
- * searched for 'how to' meant something by it and an empty result teaches them nothing.
- */
+// Stopwords are dropped, unless nothing else is left: a query like 'how to' is searched as written.
 function queryTerms(query: string): string[] {
-    const words = query
-        .toLowerCase()
-        .split(/[^a-z0-9]+/)
-        .filter(Boolean);
+    const words = queryWords(query);
     const meaningful = words.filter((word) => word.length > 1 && !STOPWORDS.has(word));
 
     return meaningful.length > 0 ? meaningful : words;
+}
+
+function queryWords(query: string): string[] {
+    return query
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter(Boolean);
 }
 
 function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; slugOf: ToolSlugLookup }): SearchCandidate[] {
@@ -283,8 +406,9 @@ function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; 
         const tools = [...compiled.pinned.map((tool) => ({ tool, listed: true })), ...compiled.searchable.map((tool) => ({ tool, listed: false }))];
 
         return tools.flatMap(({ tool, listed }): SearchCandidate[] => {
-            // A tool with no name cannot be called, so returning it would only waste the agent's turn.
+            // Defensive: a tool the listing has no slug for cannot be called.
             const slug = slugOf({ integration, action: tool.name });
+            const tags = clientToolTags(tool.tags);
 
             return slug
                 ? [
@@ -296,6 +420,7 @@ function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; 
                           description: tool.description,
                           connection,
                           listed,
+                          ...(tags ? { tags } : {}),
                           ...(tool.mcp ? { input: { kind: 'schema', schema: tool.mcp.inputSchema as JSONSchema7 } as const } : {})
                       }
                   ]
@@ -408,82 +533,108 @@ export function searchOperationMeta({ goal, results }: { goal: string; results: 
     };
 }
 
-function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | undefined): AgentSessionToolMatch {
-    return {
-        tool: candidate.slug,
-        integration: candidate.integration,
-        action: candidate.action,
-        provider: candidate.provider,
-        description: candidate.description,
-        listed: candidate.listed,
-        connection: candidate.connection,
-        ...(input ? { input } : {})
-    };
+function toRelated(candidate: SearchCandidate): AgentSessionToolRelated {
+    return { tool: candidate.slug, integration: candidate.integration, description: candidate.description };
 }
 
-function guidanceFor({
+// The dialect URL would repeat on every match, and the guidance already says what the schemas are.
+function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput): AgentSessionToolMatch {
+    const meta = candidate.tags ? { _meta: { [TAGS_META_KEY]: candidate.tags } } : {};
+    if (input.kind !== 'schema') {
+        return { ...toRelated(candidate), input, ...meta };
+    }
+
+    const schema = { ...input.schema };
+    delete schema.$schema;
+    return { ...toRelated(candidate), input: { kind: 'schema', schema }, ...meta };
+}
+
+function integrationStates(candidates: SearchCandidate[]): Record<string, AgentSessionToolSearchIntegrationState> {
+    return Object.fromEntries(candidates.map(({ integration, connection }) => [integration, connection.status]));
+}
+
+/** What holds for the whole call, said once rather than under every query it applies to. */
+function searchGuidance({
     session,
-    query,
-    matches,
-    related
+    results,
+    returned
 }: {
     session: AgentSession;
-    query: string;
-    matches: AgentSessionToolMatch[];
-    related: AgentSessionToolMatch[];
+    results: AgentSessionToolSearchQueryResult[];
+    returned: SearchCandidate[];
 }): string {
-    if (matches.length === 0 && related.length === 0) {
-        return `No tool in this session matches '${query}'. Try a shorter query, or words describing the operation rather than the product, and note that this session may simply not carry a tool for it.`;
+    if (returned.length === 0) {
+        return 'No query matched a tool in this session.';
     }
 
     const lines: string[] = [];
 
-    if (matches.length > 0) {
+    if (results.some(({ matches }) => matches.length > 0)) {
         lines.push(
-            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the tool of the one you want, exactly as given, and the input its schema describes. A schema is a JSON Schema document, rooted at its \`$ref\` when it has one.`
-        );
-
-        const takesNothing = matches.filter((match) => match.input?.kind === 'none');
-        if (takesNothing.length > 0) {
-            lines.push(`${toolNames(takesNothing)} ${takesNothing.length === 1 ? 'takes' : 'take'} no arguments.`);
-        }
-
-        const unreadable = matches.filter((match) => match.input?.kind === 'unavailable');
-        if (unreadable.length > 0) {
-            lines.push(
-                `The arguments of ${toolNames(unreadable)} could not be read, so ${unreadable.length === 1 ? 'it has' : 'they have'} to be called on a guess at the shape, and may fail.`
-            );
-        }
-    } else {
-        lines.push(
-            `No tool closely matches '${query}', but ${related.length} ${related.length === 1 ? 'is' : 'are'} related. Search again with wording closer to one of them to get its input schema.`
+            "Call `nango_execute` with a match's `tool`, exactly as given, and an input that fits its schema.",
+            'Schemas are JSON Schema, rooted at their `$ref` when they have one.'
         );
     }
 
-    if (matches.length > 0 && related.length > 0) {
-        lines.push(
-            `${related.length} more ${related.length === 1 ? 'tool is' : 'tools are'} loosely related, listed without their input schemas. Search again to pull one up.`
-        );
+    if (results.some(({ related }) => related.length > 0)) {
+        lines.push('Related tools come without a schema. Search again with wording closer to one to get it.');
     }
 
-    const alreadyListed = [...matches, ...related].filter((match) => match.listed);
-    if (alreadyListed.length > 0) {
-        lines.push(`${toolNames(alreadyListed)} ${alreadyListed.length === 1 ? 'is' : 'are'} also in your tool list under the same name.`);
+    const listed = [...new Set(returned.filter((candidate) => candidate.listed).map(({ slug }) => slug))];
+    if (listed.length > 0) {
+        lines.push(`${codeList(listed)} ${listed.length === 1 ? 'is' : 'are'} also in your tool list under the same name.`);
     }
 
-    const unconnected = [...new Set([...matches, ...related].filter((match) => match.connection.status === 'not_connected').map((match) => match.integration))];
-    if (unconnected.length > 0) {
-        lines.push(
-            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has no connection' : 'have no connections'} in this session. Their tools are listed for completeness and will fail if you call them.`,
-            ...new Set(unconnected.map((integration) => notConnectedGuidance(integration, session)))
-        );
+    const unconnected = [...new Set(returned.filter(({ connection }) => connection.status === 'not_connected').map(({ integration }) => integration))];
+    for (const integration of unconnected) {
+        lines.push(`\`${integration}\` has no connection in this session, so its tools will fail. ${notConnectedGuidance(integration, session)}`);
     }
 
-    return lines.join(' ');
+    return lines.join('\n');
 }
 
-function toolNames(matches: AgentSessionToolMatch[]): string {
-    return matches.map((match) => `'${match.tool}'`).join(', ');
+function queryGuidance({
+    matches,
+    related,
+    relatedElsewhere,
+    tied
+}: {
+    matches: AgentSessionToolMatch[];
+    related: AgentSessionToolRelated[];
+    relatedElsewhere: boolean;
+    tied: boolean;
+}): string | undefined {
+    if (matches.length === 0 && related.length === 0) {
+        return relatedElsewhere
+            ? 'No close match. The closest tools are listed under another query.'
+            : 'No tool in this session matches. Try a shorter query, or words for the operation rather than the product. This session may not carry a tool for it.';
+    }
+
+    const lines: string[] = [];
+
+    if (matches.length === 0) {
+        lines.push(
+            tied
+                ? 'Several tools fit equally well, so none is a match. Search again with the `tool` of the one you want to get its schema.'
+                : 'No close match, only related tools.'
+        );
+    }
+
+    const takesNothing = matches.filter(({ input }) => input.kind === 'none').map(({ tool }) => tool);
+    if (takesNothing.length > 0) {
+        lines.push(`${codeList(takesNothing)} ${takesNothing.length === 1 ? 'takes' : 'take'} no arguments.`);
+    }
+
+    const unreadable = matches.filter(({ input }) => input.kind === 'unavailable').map(({ tool }) => tool);
+    if (unreadable.length > 0) {
+        lines.push(`The arguments of ${codeList(unreadable)} could not be read. Guess the shape, and expect the call may fail.`);
+    }
+
+    return lines.length > 0 ? lines.join('\n') : undefined;
+}
+
+function codeList(names: string[]): string {
+    return names.map((name) => `\`${name}\``).join(', ');
 }
 
 /** Scores run from 0, everything matched, to 1, nothing matched, and the event reports the other way round. */

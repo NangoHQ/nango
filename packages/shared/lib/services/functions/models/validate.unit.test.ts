@@ -51,6 +51,18 @@ describe('validateFunctionInput', () => {
         clearFunctionInputValidatorCache();
     });
 
+    it('validates catalog input', () => {
+        const catalog = {
+            uuid: 'ca7a10c0-9582-8b46-8c47-f39eee45f2b3',
+            version: 'schema-a',
+            input_schema_ref: version.input_schema_ref,
+            json_schema: version.json_schema
+        };
+
+        expect(validateFunctionInput(catalog, { user: { id: 'user-1' } }).isOk()).toBe(true);
+        expect(validateFunctionInput(catalog, { user: { id: 1 } }).isErr()).toBe(true);
+    });
+
     it('validates input against the referenced definition', () => {
         const input = { user: { id: 'user-1' } };
 

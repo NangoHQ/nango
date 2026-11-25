@@ -5,7 +5,7 @@ import { Button } from './button';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
-    title: 'Design System/Components/Button',
+    title: 'Design System/Components/Buttons/Button',
     parameters: { layout: 'padded' }
 };
 

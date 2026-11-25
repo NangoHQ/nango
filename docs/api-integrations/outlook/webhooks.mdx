@@ -36,7 +36,7 @@ Nango rejects any webhook received where the `clientState` does not match the in
 
 Subscribing requires the same delegated permission you'd need to read the resource directly (e.g., `Mail.Read` for messages, `Calendars.Read` for events, `Contacts.Read` for contacts). Add the scope to your Outlook integration's **Scopes** field in the Nango dashboard and re-authorize the connection if it was created before the scope was added.
 
-You can automate creating the subscription for new connections with a [post-connection-creation script](/guides/functions/event-functions). 
+You can automate creating the subscription for new connections with a [post-connection-creation script](/guides/platform/functions/event-functions). 
 
 ```typescript
 import { createOnEvent, ProxyConfiguration } from 'nango';
@@ -218,8 +218,8 @@ export default createOnEvent({
 
 Once routed to a connection, you have two options:
 
-- **Forward it to your app** — Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
-- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+- **Forward it to your app** — Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/triggers/webhook-forwarding).
+- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/syncs/realtime-syncs).
 
 A single delivery's body is a `changeNotificationCollection` — an array of notifications under `value`, since Microsoft Graph batches notifications for the same `notificationUrl`:
 

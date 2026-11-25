@@ -1,0 +1,43 @@
+---
+title: 'Ascora - How do I link my account?'
+sidebarTitle: 'Ascora'
+---
+
+## Overview
+
+To authenticate with Ascora, you need:
+
+1. **API Key** — an Ascora Integration Key, or your account's Company Key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- An Ascora account where you are an Administrator. Only Administrators can open API Settings.
+
+### Step 1: Create an Integration Key
+
+1. Sign in to Ascora and go to **Administration** > **Integrations & API** > **API Settings**.
+2. In the **Integration Keys** section, click **+ New Key**.
+
+<img src="/api-integrations/ascora/api_settings_new_key.png" alt="Ascora API Settings page with the New Key button in the Integration Keys section"/>
+
+3. Enter a **Name** that says what uses the key, choose when it **Expires**, and tick **Read** (and **Write** if your integration needs it) for each area under **Access**. **Read everything** ticks every Read box. Then click **Save**.
+
+<img src="/api-integrations/ascora/new_integration_key_dialog.png" alt="Ascora new Integration Key dialog with access options and the Save button"/>
+
+4. Copy the key from the **Copy Your New Key** window. It starts with `ascora_` and is shown only once: if you lose it, revoke it and create a new one.
+
+<img src="/api-integrations/ascora/copy_new_integration_key.png" alt="Ascora Copy Your New Key window showing the new Integration Key"/>
+
+To use your Company Key instead, go to the **Company Key** section of the same page. If the key is not enabled yet, click **Generate New API Key**, then click **Show** or **Copy to Clipboard** to copy it. Generating a new Company Key replaces the old one.
+
+<img src="/api-integrations/ascora/company_key_created.png" alt="Ascora Company Key section with the Show, Generate New API Key and Copy to Clipboard buttons"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Ascora.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form. Nango checks the key with Ascora and rejects it if it is wrong, revoked or expired.
+
+<img src="/api-integrations/ascora/form.png" alt="Ascora Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>

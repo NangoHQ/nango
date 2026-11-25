@@ -19,7 +19,6 @@ import { deployIntegrationTemplate } from './integrationTemplate.service.js';
 import type { FunctionDeploymentError } from '@nangohq/sandbox';
 import type {
     DBEnvironment,
-    DBPlan,
     DBTeam,
     DeployedFunction,
     FunctionDeploymentCodeBody,
@@ -47,7 +46,6 @@ export type DeployTemplateServiceErrorCode =
     | 'integration_not_found'
     | 'template_not_found'
     | 'ambiguous_function'
-    | 'plan_limit'
     | 'template_already_deployed'
     | 'non_runnable_template'
     | 'template_deployment_failed'
@@ -90,7 +88,6 @@ export interface DeployFunctionParams {
 export interface DeployTemplateParams {
     account: DBTeam;
     environment: DBEnvironment;
-    plan: DBPlan | null;
     body: FunctionDeploymentTemplateBody;
 }
 
@@ -245,7 +242,6 @@ export async function deployFunction({
 export async function deployTemplate({
     account,
     environment,
-    plan,
     body
 }: DeployTemplateParams): Promise<Result<FunctionDeploymentCreateSuccess, DeployTemplateServiceError>> {
     // TODO: support tool and function templates
@@ -261,7 +257,6 @@ export async function deployTemplate({
     const outcome = await deployIntegrationTemplate({
         environment,
         account,
-        plan,
         providerConfigKey: body.integration_id,
         name: body.template,
         type: body.function_type
@@ -290,13 +285,6 @@ export async function deployTemplate({
                     new FunctionDeploymentServiceError({
                         code: 'ambiguous_function',
                         message: `'${body.template}' exists as both a sync and an action; specify 'function_type' to disambiguate`
-                    })
-                );
-            case 'plan_limit':
-                return Err(
-                    new FunctionDeploymentServiceError({
-                        code: 'plan_limit',
-                        message: "Can't enable more functions, upgrade or extend your trial period"
                     })
                 );
             case 'template_already_deployed':

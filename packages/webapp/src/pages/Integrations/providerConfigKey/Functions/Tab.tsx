@@ -62,7 +62,7 @@ function FunctionNameCell({ name, description }: { name: string; description?: s
                 <div className="flex min-w-0 items-center gap-1">
                     <span className="truncate type-code-medium-sm text-text-default">{name}</span>
                     <span className="flex shrink-0 opacity-0 transition-opacity group-focus-within/function-row:opacity-100 group-hover/function-row:opacity-100">
-                        <CopyButton size="2xs" value={name} />
+                        <CopyButton size="sm" inline value={name} />
                     </span>
                 </div>
                 {description && (
@@ -93,7 +93,7 @@ function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integrat
     return (
         <div className="flex items-center gap-1.5">
             <span className={cn('type-label-sm', fn.enabled ? 'text-text-link-success' : 'text-text-secondary')}>{fn.enabled ? 'Enabled' : 'Disabled'}</span>
-            {isSyncOrAction(fn) && <FunctionSwitch flow={fn} integration={integration} variant="success" />}
+            {isSyncOrAction(fn) && <FunctionSwitch flow={fn} integration={integration} />}
         </div>
     );
 }
@@ -450,7 +450,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                 <EmptyCard>
                     <h3 className="text-title-body text-text-strong">No functions deployed in this integration yet</h3>
                     <p className="text-text-secondary text-body-medium-regular text-center">Build your own custom functions.</p>
-                    <ButtonLink to="https://nango.dev/docs/guides/functions/functions-guide" target="_blank" variant="secondary">
+                    <ButtonLink to="https://nango.dev/docs/guides/platform/functions/functions-guide" target="_blank" variant="secondary">
                         <Code /> Build custom
                     </ButtonLink>
                 </EmptyCard>
@@ -511,7 +511,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, onFunct
                             <DropdownMenuContent align="end" className="w-64">
                                 <DropdownMenuItem asChild>
                                     <a
-                                        href="https://nango.dev/docs/guides/functions/functions-guide#guide"
+                                        href="https://nango.dev/docs/guides/platform/functions/functions-guide#guide"
                                         target="_blank"
                                         rel="noreferrer"
                                         className="flex items-center gap-4"

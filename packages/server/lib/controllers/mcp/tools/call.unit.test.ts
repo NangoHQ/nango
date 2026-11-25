@@ -10,7 +10,7 @@ import { callToolsTool } from './call.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
 import type * as NangoShared from '@nangohq/shared';
-import type { Config, functionConfigService, FunctionInvokeError } from '@nangohq/shared';
+import type { Config, FunctionInvokeError, ResolvedTool } from '@nangohq/shared';
 import type { DBSyncConfig, FunctionInvocationErrorCode } from '@nangohq/types';
 
 const mocks = vi.hoisted(() => ({ invokeFunction: vi.fn() }));
@@ -32,7 +32,7 @@ describe('callToolsTool', () => {
     });
 
     it('invokes a tool function and returns its result', async () => {
-        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'function', fn: functionFixture }));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(functionFixture));
         mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Ok({ data: { title: 'MCP support' } }) });
         const executeSpy = vi.spyOn(actionService, 'executeAction');
 
@@ -44,7 +44,8 @@ describe('callToolsTool', () => {
             account: context.account,
             environment: context.environment,
             connectionId: 'connection-id',
-            functionUuid: functionFixture.config.uuid,
+            integrationId: integration.unique_key,
+            functionUuid: functionFixture.uuid,
             input: { id: '1' },
             request: { method: 'POST', path: '/mcp', headers: {}, query: {} },
             invocationType: 'wait',
@@ -58,7 +59,7 @@ describe('callToolsTool', () => {
     });
 
     it('returns an internal error when the function invocation is asynchronous', async () => {
-        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'function', fn: functionFixture }));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(functionFixture));
         mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Ok({ id: 'invocation-id', statusUrl: '/status' }) });
 
         const result = await callToolsTool.handler(validArguments, context);
@@ -80,7 +81,7 @@ describe('callToolsTool', () => {
         { code: 'function_failed', cause: new Error('boom'), expected: PublicMcpError },
         { code: 'server_error', expected: InternalMcpError }
     ])('maps function invocation error $code to $expected.name', async ({ code, cause, expected }) => {
-        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'function', fn: functionFixture }));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(functionFixture));
         mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Err(functionInvokeError(code, cause)) });
 
         const result = await callToolsTool.handler(validArguments, context);
@@ -92,7 +93,7 @@ describe('callToolsTool', () => {
     });
 
     it('includes validation errors in the public error message', async () => {
-        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok({ kind: 'function', fn: functionFixture }));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(functionFixture));
         mocks.invokeFunction.mockResolvedValue({
             logCtx: undefined,
             result: Err(functionInvokeError('validation_error', undefined, [{ path: '/id', message: 'must be string' }]))
@@ -103,6 +104,36 @@ describe('callToolsTool', () => {
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error.message).toBe('validation_error: [{"path":"/id","message":"must be string"}]');
+        }
+    });
+
+    it.each([
+        { payload: { error: { message: 'Missing timeMin parameter.' } }, detail: ': Missing timeMin parameter.' },
+        { payload: { error: { message: 'x'.repeat(600) } }, detail: `: ${'x'.repeat(500)}` },
+        { payload: { request: { authorization: 'secret' } }, detail: '' }
+    ])('includes bounded function failure details: $detail', async ({ payload, detail }) => {
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(functionFixture));
+        const cause = new NangoError('script_http_error', payload);
+        mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Err(functionInvokeError('function_failed', cause)) });
+
+        const result = await callToolsTool.handler(validArguments, context);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toBe(`${cause.message}${detail}`);
+        }
+    });
+
+    it('keeps the function failure message when its cause is not a NangoError', async () => {
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(functionFixture));
+        mocks.invokeFunction.mockResolvedValue({ logCtx: undefined, result: Err(functionInvokeError('function_failed', new Error('private details'))) });
+
+        const result = await callToolsTool.handler(validArguments, context);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toBe('function_failed');
         }
     });
 
@@ -238,6 +269,8 @@ const context = {
 const actionFixture = { sync_name: 'fetchIssue', enabled: true } as DBSyncConfig;
 
 const functionFixture = {
-    config: { uuid: '11111111-1111-4111-8111-111111111111', name: 'fetchIssue', enabled: true },
-    integration: { id: 1, unique_key: 'github', provider: 'github' }
-} as functionConfigService.CurrentFunctionConfig;
+    kind: 'function',
+    uuid: '11111111-1111-4111-8111-111111111111',
+    source: 'repo',
+    inputSchemaRef: '#/definitions/Input'
+} satisfies ResolvedTool;

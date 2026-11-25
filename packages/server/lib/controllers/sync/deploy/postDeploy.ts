@@ -1,16 +1,6 @@
-import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
-import {
-    cleanIncomingFlow,
-    deploy,
-    errorManager,
-    functionLookupService,
-    getAndReconcileDifferences,
-    NangoError,
-    productTracking,
-    startTrial
-} from '@nangohq/shared';
+import { cleanIncomingFlow, deploy, errorManager, functionLookupService, getAndReconcileDifferences, NangoError, productTracking } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -40,7 +30,7 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
     }
 
     const body: PostDeploy['Body'] = val.data;
-    const { environment, account, plan } = res.locals;
+    const { environment, account } = res.locals;
     const { scope } = val.data;
 
     const actions = body.flowConfigs.filter((flow) => flow.type === 'action');
@@ -94,10 +84,6 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
         if (!success || !syncConfigDeployResult) {
             errorManager.errResFromNangoErr(res, error);
             return;
-        }
-
-        if (plan && !plan.trial_end_at && plan.auto_idle) {
-            await startTrial(db.knex, plan);
         }
 
         if (body.reconcile) {

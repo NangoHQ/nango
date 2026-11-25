@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { rankSessionTools, searchOperationMeta, toolInputOf, withModelDefinitionsHoisted } from './agentSessionToolSearch.service.js';
+import { rankSessionTools, searchOperationMeta, toolInputOf, trimRelated, withModelDefinitionsHoisted } from './agentSessionToolSearch.service.js';
 
 import type { ToolSlugLookup } from './agentSessionToolSearch.service.js';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, AgentSessionToolMatch } from '@nangohq/types';
@@ -79,6 +79,32 @@ const ledger: AgentSessionCompiledToolset = {
     }
 };
 
+const messages: AgentSessionCompiledToolset = {
+    gmail: {
+        provider: 'google-mail',
+        pinned: [],
+        searchable: [
+            { name: 'delete_message', description: 'Delete a message.' },
+            { name: 'get_message', description: 'Retrieve a message.' },
+            { name: 'list_messages', description: 'List the messages in the mailbox.' }
+        ]
+    }
+};
+
+const issueSchema: JSONSchema7 = { type: 'object', properties: { id: { type: 'string' } } };
+
+const issues: AgentSessionCompiledToolset = {
+    linear: {
+        provider: 'linear',
+        pinned: [],
+        searchable: [
+            { name: 'update-issue', description: 'Update an issue.', mcp: { inputSchema: issueSchema as Record<string, unknown> } },
+            { name: 'update-issue-label', description: 'Update an issue label.' },
+            { name: 'update-issue-relation', description: 'Update an issue relation.' }
+        ]
+    }
+};
+
 describe('rankSessionTools', () => {
     it('finds a tool by what it does rather than by its name', () => {
         const { best } = rank({ compiledToolset: mailbox, query: 'send a message to a recipient' });
@@ -151,11 +177,93 @@ describe('rankSessionTools', () => {
         expect(related.map((match) => match.action)).toContain('create_invoice');
     });
 
-    it('returns every tool tied for the lead, since the query cannot tell them apart', () => {
-        const { best, related } = rank({ compiledToolset: ledger, query: 'list records' });
+    it('promotes none of the tools tied for the lead when the query cannot tell them apart', () => {
+        const { best, related, tied } = rank({ compiledToolset: ledger, query: 'list records' });
 
-        expect(best.map((match) => match.action)).toStrictEqual(['list_accounts', 'list_contacts', 'list_invoices']);
-        expect(related).toStrictEqual([]);
+        expect(best).toStrictEqual([]);
+        expect(related.map((match) => match.action)).toStrictEqual(['list_accounts', 'list_contacts', 'list_invoices']);
+        expect(tied).toBe(true);
+    });
+
+    it('breaks a tie for the lead on the query words a tool holds, stopwords included', () => {
+        const { best, related, tied } = rank({ compiledToolset: messages, query: 'get message' });
+
+        expect(best.map((match) => match.action)).toStrictEqual(['get_message']);
+        expect(related.map((match) => match.action)).toStrictEqual(['delete_message', 'list_messages']);
+        expect(tied).toBe(false);
+    });
+
+    it('does not break a tie on a word a tool only approximates', () => {
+        const { best, tied } = rank({
+            compiledToolset: {
+                gmail: {
+                    provider: 'google-mail',
+                    pinned: [],
+                    searchable: [
+                        { name: 'delete_message', description: 'Delete a message.' },
+                        { name: 'list_messages', description: 'List the messages in the mailbox.' }
+                    ]
+                }
+            },
+            query: 'get message'
+        });
+
+        // A fuzzy 'get' would pick delete_message.
+        expect(best).toStrictEqual([]);
+        expect(tied).toBe(true);
+    });
+
+    it('returns the tool a query names by its slug as the only match, with its input', () => {
+        const { best, related, tied } = rank({ compiledToolset: issues, query: 'linear__update-issue' });
+
+        expect(best.map((match) => match.slug)).toStrictEqual(['linear__update-issue']);
+        expect(best[0]?.input).toStrictEqual({ kind: 'schema', schema: issueSchema });
+        expect(related.map((match) => match.action).sort()).toStrictEqual(['update-issue-label', 'update-issue-relation']);
+        expect(tied).toBe(false);
+    });
+
+    it('returns the tool a query names by an action only it has', () => {
+        const { best } = rank({ compiledToolset: issues, query: 'update-issue' });
+
+        expect(best.map((match) => match.slug)).toStrictEqual(['linear__update-issue']);
+    });
+
+    it('does not take an action name several tools share as naming one of them', () => {
+        const { best, tied } = rank({
+            compiledToolset: { ...issues, jira: { provider: 'jira', pinned: [], searchable: [{ name: 'update-issue', description: 'Update an issue.' }] } },
+            query: 'update-issue'
+        });
+
+        expect(best.map((match) => match.slug)).toStrictEqual([]);
+        expect(tied).toBe(true);
+    });
+
+    it('still ties a query that only shares words with the names', () => {
+        const { best, tied } = rank({ compiledToolset: issues, query: 'update issue' });
+
+        expect(best).toStrictEqual([]);
+        expect(tied).toBe(true);
+    });
+
+    it("carries a tool's tags, without its required scopes", () => {
+        const { best } = rank({
+            compiledToolset: {
+                gmail: {
+                    provider: 'google-mail',
+                    pinned: [],
+                    searchable: [
+                        {
+                            name: 'list_labels',
+                            description: 'List the labels in the mailbox.',
+                            tags: { read_only_hint: 'true', required_scopes: { all: ['gmail.readonly'] } }
+                        }
+                    ]
+                }
+            },
+            query: 'list labels'
+        });
+
+        expect(best[0]?.tags).toStrictEqual({ read_only_hint: 'true' });
     });
 
     it('searches pinned tools too and carries the slug they are listed under', () => {
@@ -232,7 +340,10 @@ describe('rankSessionTools', () => {
     });
 
     it('caps each tier so a large toolset cannot flood the context window', () => {
-        const searchable = Array.from({ length: 100 }, (_, index) => ({ name: `send_email_${index}`, description: 'Send an email message.' }));
+        const searchable = [
+            { name: 'send_email', description: 'Send an email message.' },
+            ...Array.from({ length: 100 }, (_, index) => ({ name: `send_mail_${index}`, description: 'Send mail.' }))
+        ];
         const { best, related } = rank({ compiledToolset: { gmail: { provider: 'google-mail', pinned: [], searchable } }, query: 'send an email' });
 
         expect(best).toHaveLength(5);
@@ -348,16 +459,107 @@ describe('withModelDefinitionsHoisted', () => {
     });
 });
 
+describe('trimRelated', () => {
+    function scored(slug: string, score: number) {
+        return {
+            slug,
+            integration: 'gmail',
+            action: slug,
+            provider: 'google-mail',
+            description: '',
+            connection: { status: 'not_connected' } as const,
+            listed: false,
+            score
+        };
+    }
+
+    function tools(prefix: string, count: number) {
+        return Array.from({ length: count }, (_, index) => scored(`${prefix}_${index}`, 0.5 + index / 100));
+    }
+
+    function slugs(ranking: { related: { slug: string }[] } | undefined) {
+        return ranking?.related.map(({ slug }) => slug);
+    }
+
+    it('keeps fewer related tools when the query already has a match', () => {
+        const [withMatch, withoutMatch] = trimRelated([
+            { best: [scored('send_email', 0.1)], related: tools('a', 15) },
+            { best: [], related: tools('b', 15) }
+        ]);
+
+        expect(slugs(withMatch)).toStrictEqual(['a_0', 'a_1', 'a_2']);
+        expect(slugs(withoutMatch)).toStrictEqual(['b_0', 'b_1', 'b_2', 'b_3', 'b_4']);
+    });
+
+    it('drops a related tool that another query returns as a match', () => {
+        const [send, read] = trimRelated([
+            { best: [scored('send_email', 0.1)], related: [scored('get_message', 0.6)] },
+            { best: [scored('get_message', 0.2)], related: [scored('send_email', 0.7), scored('list_labels', 0.7)] }
+        ]);
+
+        expect(slugs(send)).toStrictEqual([]);
+        expect(slugs(read)).toStrictEqual(['list_labels']);
+    });
+
+    it('lists a tool related to several queries once, under the one it scores best on', () => {
+        const [first, second, third] = trimRelated([
+            { best: [], related: [scored('list_labels', 0.7)] },
+            { best: [], related: [scored('list_labels', 0.5)] },
+            { best: [], related: [scored('list_labels', 0.5)] }
+        ]);
+
+        expect(slugs(first)).toStrictEqual([]);
+        expect(slugs(second)).toStrictEqual(['list_labels']);
+        expect(slugs(third)).toStrictEqual([]);
+    });
+
+    it('passes a tool on to its next closest query when the closest one is full', () => {
+        const [full, open] = trimRelated([
+            { best: [scored('send_email', 0.1)], related: [...tools('a', 3), scored('get_thread', 0.6)] },
+            { best: [], related: [scored('get_thread', 0.7)] }
+        ]);
+
+        expect(slugs(full)).toStrictEqual(['a_0', 'a_1', 'a_2']);
+        expect(slugs(open)).toStrictEqual(['get_thread']);
+        expect(open?.relatedElsewhere).toBe(false);
+    });
+
+    it('fills the cap from deeper down when a query loses tools to another', () => {
+        const [first, second] = trimRelated([
+            { best: [scored('send_email', 0.1)], related: tools('a', 3) },
+            { best: [scored('get_message', 0.1)], related: [...tools('a', 3), ...tools('b', 3)] }
+        ]);
+
+        expect(slugs(first)).toStrictEqual(['a_0', 'a_1', 'a_2']);
+        expect(slugs(second)).toStrictEqual(['b_0', 'b_1', 'b_2']);
+    });
+
+    it('says when a query lost related tools to another query', () => {
+        const [first, second, third] = trimRelated([
+            { best: [], related: [scored('list_labels', 0.5)] },
+            { best: [], related: [scored('list_labels', 0.6)] },
+            { best: [], related: [] }
+        ]);
+
+        expect(first?.relatedElsewhere).toBe(false);
+        expect(second?.relatedElsewhere).toBe(true);
+        expect(third?.relatedElsewhere).toBe(false);
+    });
+
+    it('trims a single query the same way', () => {
+        const [only] = trimRelated([{ best: [scored('send_email', 0.1)], related: tools('a', 15) }]);
+
+        expect(slugs(only)).toHaveLength(3);
+        expect(only?.relatedElsewhere).toBe(false);
+    });
+});
+
 describe('searchOperationMeta', () => {
     function match(tool: string): AgentSessionToolMatch {
         return {
             tool,
             integration: 'gmail',
-            action: 'send_email',
-            provider: 'google-mail',
             description: 'Send an email message to one or more recipients.',
-            listed: false,
-            connection: { status: 'connected', connection_id: 'conn-1' },
             input: { kind: 'schema', schema: { definitions: { SendEmailInput: { type: 'object' } }, $ref: '#/definitions/SendEmailInput' } }
         };
     }
@@ -367,8 +569,8 @@ describe('searchOperationMeta', () => {
             searchOperationMeta({
                 goal: 'email the weekly report to the team',
                 results: [
-                    { query: 'send an email', guidance: '', matches: [match('gmail__send_email')], related: [match('gmail__list_labels')] },
-                    { query: 'list calendar events', guidance: '', matches: [], related: [] }
+                    { query: 'send an email', matches: [match('gmail__send_email')], related: [match('gmail__list_labels')] },
+                    { query: 'list calendar events', matches: [], related: [] }
                 ]
             })
         ).toStrictEqual({

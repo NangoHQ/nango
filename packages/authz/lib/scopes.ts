@@ -104,6 +104,7 @@ export const PRIVATE_SCOPES = [
     'account:billing:spend_alert:update',
     'account:plan:update',
     'account:audit_trail:read',
+    'account:installation:read',
     'account:api_keys:list',
 
     // ── environment namespace ──

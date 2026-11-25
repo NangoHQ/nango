@@ -9,7 +9,7 @@ import { directCallInputSchema } from './directCallSchema.js';
 import { actionInputSchemaOf, buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
 
 import type * as ToolSearchService from '../../../services/agentSessionToolSearch.service.js';
-import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools, AgentSessionToolInput } from '@nangohq/types';
+import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools, AgentSessionToolInput, DBSyncConfig } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 const executeAction = vi.hoisted(() => vi.fn());
@@ -24,6 +24,7 @@ vi.mock('../../../services/agentSessionToolSearch.service.js', async (importOrig
 const DRAFT_07 = 'http://json-schema.org/draft-07/schema#';
 
 const OPEN_INPUT_SCHEMA = directCallInputSchema(undefined);
+const LEGACY_ACTION = { kind: 'deployed', config: { enabled: true } as DBSyncConfig } as const;
 
 function session({
     compiledToolset = {},
@@ -57,7 +58,7 @@ describe('createAgentSessionMcpServer', () => {
     beforeEach(() => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
         findActionInputs.mockReset().mockResolvedValue(new Map());
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(LEGACY_ACTION));
     });
 
     async function listTools(compiledToolset: AgentSessionCompiledToolset) {
@@ -211,7 +212,7 @@ describe('direct tool calls', () => {
 
     beforeEach(() => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
-        vi.spyOn(toolService, 'findTool').mockResolvedValue(Ok(null));
+        vi.spyOn(toolService, 'resolveTool').mockResolvedValue(Ok(LEGACY_ACTION));
     });
 
     async function callTool(args: Record<string, unknown>) {
@@ -534,6 +535,30 @@ describe('listSessionTools', () => {
         expect(listed.map((tool) => tool.name)).toContain('a_b__c');
         expect(callable.get('a_b__c')).toStrictEqual({ integrationId: 'a.b', name: 'c', description: 'c description', pinned: true });
         expect(callable.get('a_b__c_2')).toStrictEqual({ integrationId: 'a_b', name: 'c', description: 'c description', pinned: false });
+    });
+
+    it("lists a tool's tags in _meta, without its required scopes", () => {
+        const { listed } = buildSessionTools(
+            session({
+                compiledToolset: {
+                    notion: {
+                        provider: 'notion',
+                        pinned: [
+                            { ...tool('read_doc'), tags: { read_only_hint: 'true', labels: ['docs'], required_scopes: { all: ['documents:read'] } } },
+                            { ...tool('upsert_doc'), tags: { required_scopes: { all: ['documents:write'] } } }
+                        ],
+                        searchable: []
+                    }
+                }
+            })
+        );
+
+        expect(listed.find((tool) => tool.name === 'notion__read_doc')?._meta).toStrictEqual({
+            'nango/integration': 'notion',
+            'nango/tool': 'read_doc',
+            'nango/tags': { read_only_hint: 'true', labels: ['docs'] }
+        });
+        expect(listed.find((tool) => tool.name === 'notion__upsert_doc')?._meta).toStrictEqual({ 'nango/integration': 'notion', 'nango/tool': 'upsert_doc' });
     });
 
     it('keeps a page worth of tools listable', () => {

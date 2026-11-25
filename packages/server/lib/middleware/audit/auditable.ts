@@ -83,10 +83,12 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
 };
 
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
+    if (locals.authType === 'taskToken') {
+        return { type: 'task_token', id: locals.principal?.subject.id ?? 'unknown' };
+    }
     if (locals.authType === 'secretKey') {
-        // Functions currently call the API with a secret key too, distinguished only by the
-        // client-settable Nango-Is-Script header — spoofable, so we don't trust it for attribution.
-        // Every secret-key caller is classified as api_key until functions get their own tokens.
+        // A secret-key caller stays an api_key. Function runs that present a task token are
+        // attributed above and never fall through to the environment secret.
         // Only a customer key has a uuid; the other auth sources have no key row, so they keep the internal id.
         return {
             type: 'api_key',
@@ -225,9 +227,9 @@ async function auditedAccountPlan(account: { id: number }, locals: Partial<Reque
     return account.id === locals.account?.id ? locals.plan : await getPlanSafe(db.knex, { accountId: account.id });
 }
 
-async function canRecordSpec(policy: AuditPolicy, account: { id: number; uuid: string }, locals: Partial<RequestLocals>): Promise<boolean> {
+async function canRecordSpec(policy: AuditPolicy, account: { id: number }, locals: Partial<RequestLocals>): Promise<boolean> {
     const plan = await auditedAccountPlan(account, locals);
-    return await canRecordAuditTrail(plan, policy.dataPlaneScope ? { scope: policy.dataPlaneScope, accountUuid: account.uuid } : undefined);
+    return await canRecordAuditTrail(plan, policy.dataPlaneScope);
 }
 
 interface AuditSubject {

@@ -19,6 +19,7 @@ export { default as docusignPostConnection } from './providers/docusign/post-con
 export { default as gustoPostConnection } from './providers/gusto/post-connection.js';
 export { default as workablePostConnection } from './providers/workable/post-connection.js';
 export { default as adobeUmapiPostConnection } from './providers/adobe-umapi/post-connection.js';
+export { default as adobeAnalyticsPostConnection } from './providers/adobe-analytics/post-connection.js';
 export { default as basecampPostConnection } from './providers/basecamp/post-connection.js';
 export { default as lastpassCredentialsVerification } from './providers/lastpass/credentials-verification.js';
 export { default as expensifyCredentialsVerification } from './providers/expensify/credentials-verification.js';
@@ -64,3 +65,15 @@ export { default as enginemailerCredentialsVerification } from './providers/engi
 export { default as sendsparkPostConnection } from './providers/sendspark/post-connection.js';
 export { default as eventzillaCredentialsVerification } from './providers/eventzilla/credentials-verification.js';
 export { default as baselinkerCredentialsVerification } from './providers/baselinker/credentials-verification.js';
+export { default as ascoraCredentialsVerification } from './providers/ascora/credentials-verification.js';
+export { default as asticaAiCredentialsVerification } from './providers/astica-ai/credentials-verification.js';
+export { default as boltIotCredentialsVerification } from './providers/bolt-iot/credentials-verification.js';
+export { default as censusBureauCredentialsVerification } from './providers/census-bureau/credentials-verification.js';
+export { default as apiSportsCredentialsVerification } from './providers/api-sports/credentials-verification.js';
+export { default as benzingaCredentialsVerification } from './providers/benzinga/credentials-verification.js';
+export { default as classmarkerCredentialsVerification } from './providers/classmarker/credentials-verification.js';
+export { default as data247CredentialsVerification } from './providers/data247/credentials-verification.js';
+export { default as eterminCredentialsVerification } from './providers/etermin/credentials-verification.js';
+export { default as zerobounceCredentialsVerification } from './providers/zerobounce/credentials-verification.js';
+export { default as financialDatasetsCredentialsVerification } from './providers/financial-datasets/credentials-verification.js';
+export { default as clientaryCredentialsVerification } from './providers/clientary/credentials-verification.js';

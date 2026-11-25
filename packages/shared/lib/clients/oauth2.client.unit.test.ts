@@ -99,6 +99,26 @@ describe('getSimpleOAuth2ClientConfig', () => {
         expect(agents.https).toBe(getOAuthSafeHttpAgents().httpsAgent);
     });
 
+    it('passes a secret without line breaks unchanged', () => {
+        const provider = makeProvider({ token_url: 'https://api.example.com/token', authorization_url: 'https://api.example.com/authorize' });
+        const cfg = getSimpleOAuth2ClientConfig(makeConfig({ oauth_client_secret: 'a-secret value' }), provider, {});
+        expect(cfg.client.secret).toBe('a-secret value');
+    });
+
+    // microsoft-admin-cert stores a PEM private key as the secret and signs its own client assertion.
+    it('keeps a private_key_jwt secret away from simple-oauth2', () => {
+        const provider = makeProvider({
+            token_url: 'https://api.example.com/token',
+            authorization_url: 'https://api.example.com/authorize',
+            token_request_auth_method: 'private_key_jwt'
+        });
+        const pem = '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADAN\n-----END PRIVATE KEY-----\n';
+        const cfg = getSimpleOAuth2ClientConfig(makeConfig({ oauth_client_secret: pem }), provider, {});
+        expect(cfg.client.secret).toBe('');
+        const authorizeUrl = new AuthorizationCode(cfg).authorizeURL({ redirect_uri: 'https://cb', state: 's' });
+        expect(authorizeUrl).not.toContain('MIIEvQIBADAN');
+    });
+
     describe('zoho token host', () => {
         const provider = makeProvider({
             token_url: 'https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token || ${connectionConfig.accounts-server}/oauth/v2/token'
@@ -165,6 +185,41 @@ describe('OAuth2 token generation and refresh', () => {
                 expect(result.success).toBe(true);
                 expect(result.response?.access_token).toBe('refreshed-access-token');
                 expect(assertSafeOAuthUrl).toHaveBeenCalledWith(`${baseUrl}/token`);
+            }
+        );
+    });
+
+    it('getFreshOAuth2Credentials keeps a public client ID override across refreshes', async () => {
+        const receivedClientIds: (string | null)[] = [];
+        await withServer(
+            (req, res) => {
+                let body = '';
+                req.on('data', (chunk) => (body += chunk));
+                req.on('end', () => {
+                    receivedClientIds.push(new URLSearchParams(body).get('client_id'));
+                    res.writeHead(200, { 'content-type': 'application/json' });
+                    res.end(JSON.stringify({ access_token: 'refreshed-access-token', token_type: 'bearer', expires_in: 3600, refresh_token: 'rotated' }));
+                });
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ token_url: `${baseUrl}/token`, token_request_auth_method: 'none' });
+                const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                let credentials: Record<string, unknown> = {
+                    type: 'OAUTH2',
+                    access_token: 'stale-access-token',
+                    refresh_token: 'the-refresh-token',
+                    expires_at: new Date(Date.now() - 60_000),
+                    config_override: { client_id: 'override-client-id' }
+                };
+
+                for (let i = 0; i < 2; i++) {
+                    const connection = { id: 1, environment_id: 1, connection_config: {}, credentials } as unknown as DBConnectionDecrypted;
+                    const result = await getFreshOAuth2Credentials({ connection, config: makeConfig(), provider, logCtx: buffer });
+                    expect(result.success).toBe(true);
+                    credentials = result.response as unknown as Record<string, unknown>;
+                }
+
+                expect(receivedClientIds).toEqual(['override-client-id', 'override-client-id']);
             }
         );
     });

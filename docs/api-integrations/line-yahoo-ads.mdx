@@ -1,0 +1,93 @@
+---
+title: 'LINE Yahoo Ads'
+sidebarTitle: 'LINE Yahoo Ads'
+description: 'Integrate your application with the LINE Yahoo Ads API'
+---
+
+## 🚀 Quickstart
+
+Connect to LINE Yahoo Ads with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _LINE Yahoo Ads_.
+
+    <Note>
+      LINE Yahoo Ads has no Nango-managed OAuth app. Register your own by following the [setup guide](/api-integrations/line-yahoo-ads/how-to-register-your-own-line-yahoo-ads-api-oauth-app) and enter its client ID and client secret when you create the integration.
+    </Note>
+
+    </Step>
+    <Step id="authorize-line-yahoo-ads" title="Authorize LINE Yahoo Ads">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then log in with a Business ID that has access to your advertising accounts. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-line-yahoo-ads-api" title="Call the LINE Yahoo Ads API">
+    Let's make your first request to the LINE Yahoo Ads API to list the accounts your Business ID can access. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/api/v20/BaseAccountService/get" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/api/v20/BaseAccountService/get',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {}
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 LINE Yahoo Ads integration guides
+
+- [How to register your own LINE Yahoo Ads OAuth app](/api-integrations/line-yahoo-ads/how-to-register-your-own-line-yahoo-ads-api-oauth-app)  
+Register a LINE Yahoo Ads API application and obtain credentials to connect it to Nango.
+
+Official docs: [LINE Yahoo Ads API](https://ads-developers.yahoo.co.jp/en/ads-api/startup-guide/api-call.html)
+
+## API gotchas
+
+- Most services need an `x-z-base-account-id` header with an account ID the Business ID can access directly. `BaseAccountService/get` doesn't need it and returns those IDs. A Business ID often has access to several accounts, so pass the header on each request.
+- Reads such as `get` and `download` also use `POST`.
+- Nango calls the Search Ads API (`https://ads-search.yahooapis.jp`) by default. To call the Display Ads API with the same connection, set the `Base-Url-Override` header to `https://ads-display.yahooapis.jp`.
+- This provider is for the LINE Yahoo Ads Search Ads and Display Ads APIs in Japan. It doesn't cover the separate LINE Ads API at `ads.line.me`.
+
+## 🧩 Pre-built syncs & tools for LINE Yahoo Ads
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/line-yahoo-ads/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -367,6 +367,14 @@ export class NangoError extends NangoInternalError {
                 }
                 break;
 
+            case 'deputy_token_request_error':
+                this.status = 400;
+                this.message = `The Deputy API returned an error when requesting or refreshing the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
             case 'attio_mcp_token_request_error':
                 this.status = 400;
                 this.message = `The Attio MCP API returned an error when trying to request an access token. Please try again later.`;

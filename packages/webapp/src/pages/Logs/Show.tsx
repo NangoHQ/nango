@@ -31,7 +31,7 @@ export const LogsShow: React.FC = () => {
                     <h2 className="text-xl text-center">Logs not configured</h2>
                     <div className="text-sm text-text-muted">
                         Follow{' '}
-                        <Link to="https://nango.dev/docs/guides/platform/self-hosting#logs" className="text-text-link">
+                        <Link to="https://nango.dev/docs/guides/platform/self-hosting/self-managed#logs" className="text-text-link">
                             these instructions
                         </Link>{' '}
                         to configure logs.

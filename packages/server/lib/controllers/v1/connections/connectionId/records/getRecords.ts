@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { Cursor, recordModelName, records as recordsService } from '@nangohq/records';
-import { connectionService } from '@nangohq/shared';
+import { connectionService, isAgentSessionResultModel } from '@nangohq/shared';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, envSchema, providerConfigKeySchema, variantSchema } from '../../../../../helpers/validation.js';
@@ -24,7 +24,11 @@ const queryStringValidation = z
     .object({
         env: envSchema,
         provider_config_key: providerConfigKeySchema,
-        model: z.string().min(1).max(255),
+        model: z
+            .string()
+            .min(1)
+            .max(255)
+            .refine((model) => !isAgentSessionResultModel(model), { message: 'Invalid model' }),
         variant: variantSchema.optional(),
         cursor: z
             .string()

@@ -1,0 +1,39 @@
+---
+title: 'Fuentio - How do I link my account?'
+sidebarTitle: 'Fuentio'
+---
+
+## Overview
+
+To authenticate with Fuentio, you need:
+
+1. **API Key** - a Fuentio API key.
+
+This guide shows you how to get one.
+
+### Prerequisites
+
+- An email address. Fuentio creates a free key from your email, with no card needed. Each person can get one free key.
+
+### Step 1: Get your free API key
+
+1. Open the [Fuentio pricing page](https://fuentio.com/pricing/#get-key), or click **Get a free key** at the top of any Fuentio page. The **Get your free API key** dialog opens.
+2. Enter your **Email**, optionally choose a **Use case**, and tick **I accept the Terms**.
+3. Click **Create my key**.
+
+<img src="/api-integrations/fuentio/get_free_api_key_dialog.png" alt="Fuentio Get your free API key dialog with the Email, Use case and Terms fields and the Create my key button"/>
+
+4. Open the email from Fuentio with the subject **Your Fuentio API key** and copy the key. It starts with `sk_live_`.
+5. Optional: to check the key is active, paste it into the [Fuentio account page](https://fuentio.com/account/) and click **Show my usage**. The page shows your plan and this month's units.
+
+<img src="/api-integrations/fuentio/account_usage_check.png" alt="Fuentio account page showing the plan and units for a pasted API key after clicking Show my usage"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Fuentio.
+2. Enter your **API Key** in the designated field.
+3. Click **Connect**. Nango checks the key with Fuentio and rejects it if it is wrong.
+
+<img src="/api-integrations/fuentio/form.png" alt="Nango Connect UI form for entering the Fuentio API key" style={{maxWidth: "450px" }}/>
+
+You are now connected to Fuentio.

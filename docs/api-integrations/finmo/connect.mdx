@@ -1,0 +1,45 @@
+---
+title: 'Finmo - How do I link my account?'
+sidebarTitle: 'Finmo'
+---
+
+## Overview
+
+To authenticate with Finmo, you need:
+
+1. **Access API Key** — the Access Key of a Finmo API key pair.
+2. **Secret API Key** — the Secret Key issued with it.
+
+This guide will show you how to generate them.
+
+### Prerequisites
+
+- A Finmo account. You can [sign up](https://dashboard.finmo.net/signup) for free.
+
+### Step 1: Generate an API key pair
+
+Finmo issues key pairs for both the sandbox and production environments, and the key pair decides which one your connection uses. Both work with Nango.
+
+1. Log in to the [Finmo dashboard](https://dashboard.finmo.net/).
+2. To get sandbox keys, turn on the **Sandbox** toggle in the top bar. In live mode, **API Keys** stays disabled until Finmo approves your business application.
+3. Click **Settings** in the left sidebar, then under **Developer Settings**, click **API Keys**.
+
+<img src="/api-integrations/finmo/settings_api_keys.png" alt="Finmo Settings page with the Sandbox toggle on and API Keys highlighted under Developer Settings" />
+
+4. Click **Generate API Keys** in the top-right corner.
+5. In the **New API Key** dialog, copy the **Access Key** and the **Secret Key**.
+
+<img src="/api-integrations/finmo/api_key_created.png" alt="Finmo New API Key dialog showing the Access Key and Secret Key fields with copy buttons" />
+
+<Tip>Finmo shows the Secret Key only once. Store it securely before closing the dialog.</Tip>
+
+### Step 2: Enter your API keys in the Connect UI
+
+1. Open the form where you need to authenticate with Finmo.
+2. Enter the **Access Key** (starts with `AK_FINMO_`) in the **Access API Key** field.
+3. Enter the **Secret Key** (starts with `SK_FINMO_`) in the **Secret API Key** field.
+4. Submit the form. Nango checks the keys with Finmo, and you should be successfully authenticated.
+
+<img src="/api-integrations/finmo/form.png" alt="Finmo Connect UI form with the Access API Key and Secret API Key fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Finmo.

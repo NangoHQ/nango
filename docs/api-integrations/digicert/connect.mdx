@@ -1,0 +1,57 @@
+---
+title: 'DigiCert - How do I link my account?'
+sidebarTitle: 'DigiCert'
+---
+
+## Overview
+
+To authenticate with DigiCert, you need:
+
+1. **Region** — the CertCentral instance your account is on.
+2. **API Key** — a CertCentral API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A DigiCert CertCentral account. API keys are generated and managed in your CertCentral account.
+
+### Step 1: Choose your region
+
+Select the host of the CertCentral instance your account is on:
+
+| Region | Value to select |
+|--------|-----------------|
+| US | `www.digicert.com` |
+| Europe | `certcentral.digicert.eu` |
+
+Most accounts use the US instance. If your account is on the Europe instance, your CertCentral console shows **CertCentral Europe** in the top left corner: select `certcentral.digicert.eu`. See [Services API](https://dev.digicert.com/certcentral-apis/services-api.html).
+
+### Step 2: Generate an API key
+
+1. Sign in to [CertCentral](https://www.digicert.com/account/login.php).
+2. In the left menu, go to **Automation** > **API Keys**, then click **Add API Key**.
+
+<img src="/api-integrations/digicert/api_keys_page.png" alt="CertCentral API Keys page with the Add API Key button"/>
+
+3. Enter a **Description** and click **Add**.
+4. Under **User**, select the user to link the key to. The key gets that user's permissions. Only administrators can create service users.
+5. Optionally, under **API key restrictions**, limit what the key can do, for example **View Only**. Then click **Add API Key**.
+
+<img src="/api-integrations/digicert/add_api_key_dialog.png" alt="CertCentral Add API Key dialog with a description, a linked user and the View Only restriction"/>
+
+6. Copy the key from the **New API Keys** window, then click **I understand I will not see this again**. DigiCert shows the key only once.
+
+<img src="/api-integrations/digicert/api_key_created.png" alt="CertCentral New API Keys window showing the new key once"/>
+
+See [Authentication](https://dev.digicert.com/certcentral-apis/authentication.html).
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with DigiCert.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/digicert/form.png" alt="DigiCert connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to DigiCert.

@@ -32,11 +32,9 @@ const DESCRIPTIONS: Record<string, string> = {
     'type-label-xxs': 'finest micro labels — use sparingly',
     'type-code-regular-sm': 'inline code, IDs, slugs',
     'type-code-regular-xs': 'small inline code',
-    'type-code-regular-xxs': 'finest mono',
     'type-code-medium-md': 'emphasized code',
     'type-code-medium-sm': 'emphasized inline code',
-    'type-code-medium-xs': 'emphasized small inline code',
-    'type-code-medium-xxs': 'emphasized finest mono'
+    'type-code-medium-xs': 'emphasized small inline code'
 };
 
 interface TypeEntry {

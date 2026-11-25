@@ -127,6 +127,7 @@ import type {
     PostAgentGettingStartedDismiss,
     PostAgentGettingStartedRestart
 } from './gettingStarted/api.js';
+import type { GetInstallation } from './installation/api.js';
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
@@ -158,7 +159,6 @@ import type {
     GetSpendAlert,
     GetUpcomingInvoice,
     PostPlanChange,
-    PostPlanExtendTrial,
     PutBillingInvoicingDetails,
     PutSpendAlert
 } from './plans/http.api.js';
@@ -289,7 +289,6 @@ export type PrivateApiEndpoints =
     | PostLogout
     | GetTeam
     | PutTeam
-    | PostPlanExtendTrial
     | PostPlanChange
     | PutBillingInvoicingDetails
     | GetOverdueInvoices
@@ -337,6 +336,7 @@ export type PrivateApiEndpoints =
     | GetConnectionRecords
     | GetConnectionSyncs
     | GetInvite
+    | GetInstallation
     | GetMeta
     | GetEmailByExpiredToken
     | GetEmailByUuid

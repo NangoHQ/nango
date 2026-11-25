@@ -24,7 +24,7 @@
     },
     "devDependencies": {
         "@nangohq/database": "file:../database",
-        "vitest": "4.1.11"
+        "vitest": "4.1.12"
     },
     "files": [
         "dist/**/*"

@@ -3,10 +3,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button, InputGroupInput } from '@nangohq/design-system';
+import { Button, InputGroupInput, SecretInput } from '@nangohq/design-system';
 
 import { ScopesInput } from '@/components/patterns/ScopesInput';
-import { SecretInput } from '@/components/patterns/SecretInput';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
@@ -76,7 +75,7 @@ export const McpOAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSub
                                         <FormItem>
                                             <FormLabel>Client Secret</FormLabel>
                                             <FormControl>
-                                                <SecretInput {...field} value={field.value ?? ''} placeholder="Enter your OAuth Client Secret" />
+                                                <SecretInput editable {...field} value={field.value ?? ''} placeholder="Enter your OAuth Client Secret" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -100,7 +99,7 @@ export const McpOAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSub
 
                     <div>
                         <Button type="submit" loading={loading}>
-                            Create
+                            Add integration
                         </Button>
                     </div>
                 </form>

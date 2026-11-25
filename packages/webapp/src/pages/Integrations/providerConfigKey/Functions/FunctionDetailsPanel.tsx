@@ -1,4 +1,4 @@
-import { ExternalLink, Play, Trash2 } from 'lucide-react';
+import { ArrowUpRight, Play, Trash2 } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 
 import { Badge, CopyButton, LinkButton } from '@nangohq/design-system';
@@ -78,7 +78,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                                     }}
                                 >
                                     <Play />
-                                    Test run this function
+                                    Test run
                                 </LinkButton>
                             )}
                             {canOpenPlayground && deletion && <Separator orientation="vertical" />}
@@ -134,15 +134,15 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                             <span className="type-text-medium-xs text-text-default">Customize this function</span>
                             {(source === 'catalog' || source === 'tools-catalog' || source === 'template') && (
                                 <LinkButton asChild size="sm">
-                                    <a href="https://nango.dev/docs/guides/functions/functions-guide#guide" target="_blank" rel="noreferrer">
-                                        Learn about custom functions <ExternalLink />
+                                    <a href="https://nango.dev/docs/guides/platform/functions/functions-guide#guide" target="_blank" rel="noreferrer">
+                                        Learn about custom functions <ArrowUpRight />
                                     </a>
                                 </LinkButton>
                             )}
                         </div>
                         <div className="flex items-center gap-2 rounded-ds-lg bg-surface-panel px-3 py-2.5">
                             <span className="min-w-0 flex-1 type-code-medium-xs text-text-secondary">{pullCommand}</span>
-                            <CopyButton size="2xs" value={pullCommand} />
+                            <CopyButton size="sm" inline value={pullCommand} />
                         </div>
                     </div>
                 </div>

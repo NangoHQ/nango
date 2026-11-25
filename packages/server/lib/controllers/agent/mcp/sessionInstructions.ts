@@ -3,7 +3,7 @@ import type { AgentSession, AgentSessionResolvedConnection } from '@nangohq/type
 const MAX_ACCOUNT_LABEL_LENGTH = 100;
 
 /**
- * Sent once in the initialize result. Only what the session was created with goes in, so it says
+ * Sent in the initialize or server/discover result. Only what the session was created with goes in, so it says
  * nothing about a tool the session does not have.
  */
 export function buildSessionInstructions(session: AgentSession): string {

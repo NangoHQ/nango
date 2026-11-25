@@ -1,24 +1,29 @@
-import type { ApiProviderFunctionCounts, ApiProviderListItem, AuthModeType } from '@nangohq/types';
+import type { ApiProviderFunctionCounts, ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
 export const POPULAR_CATEGORY = 'popular';
 export const PAGE_SIZE = 48;
 
 export type CatalogSort = 'popular' | 'alphabetical';
-export type InstantSetup = 'managed' | 'no-dev-app' | null;
 
-const AUTH_MODES_NEEDING_DEV_APP: AuthModeType[] = ['OAUTH1', 'OAUTH2', 'APP', 'CUSTOM'];
-
-export function getInstantSetup(provider: Pick<ApiProviderListItem, 'preConfigured' | 'authMode' | 'clientRegistration'>): InstantSetup {
-    if (provider.preConfigured) {
-        return 'managed';
+export function getOneClickSetupBody(provider: Pick<ApiProviderListItem, 'name' | 'instantSetup' | 'authMode'>): PostIntegration['Body'] | null {
+    const { instantSetup } = provider;
+    if (instantSetup === 'nango-managed-app') {
+        return { provider: provider.name, useSharedCredentials: true };
     }
-    if (AUTH_MODES_NEEDING_DEV_APP.includes(provider.authMode)) {
+    if (instantSetup !== 'no-dev-app') {
         return null;
     }
-    if (provider.authMode === 'MCP_OAUTH2' && provider.clientRegistration === 'static') {
-        return null;
+    if (provider.authMode === 'MCP_OAUTH2') {
+        return { provider: provider.name, useSharedCredentials: false, auth: { authType: 'MCP_OAUTH2' } };
     }
-    return 'no-dev-app';
+    if (provider.authMode === 'MCP_OAUTH2_GENERIC') {
+        return { provider: provider.name, useSharedCredentials: false, auth: { authType: 'MCP_OAUTH2_GENERIC' } };
+    }
+    return { provider: provider.name, useSharedCredentials: false };
+}
+
+export function hasCustomSetup(provider: Pick<ApiProviderListItem, 'authMode' | 'preConfigured'>): boolean {
+    return provider.preConfigured || provider.authMode === 'MCP_OAUTH2' || provider.authMode === 'MCP_OAUTH2_GENERIC';
 }
 
 export function countIntegrationsByProvider(integrations: { provider: string }[]): Map<string, number> {
@@ -84,12 +89,12 @@ export function sortProviders<T extends Pick<ApiProviderListItem, 'displayName' 
     return [...providers].sort((a, b) => Number(isPopular(b)) - Number(isPopular(a)) || byName(a, b));
 }
 
-export function filterProviders<T extends Pick<ApiProviderListItem, 'categories' | 'preConfigured' | 'authMode' | 'clientRegistration'>>(
+export function filterProviders<T extends Pick<ApiProviderListItem, 'categories' | 'instantSetup'>>(
     providers: T[],
     { category, instantOnly }: { category: string | null; instantOnly: boolean }
 ): T[] {
     return providers.filter(
-        (provider) => (!category || (provider.categories?.includes(category) ?? false)) && (!instantOnly || getInstantSetup(provider) !== null)
+        (provider) => (!category || (provider.categories?.includes(category) ?? false)) && (!instantOnly || provider.instantSetup !== null)
     );
 }
 
@@ -97,8 +102,8 @@ export function isMcp(provider: Pick<ApiProviderListItem, 'categories'>): boolea
     return provider.categories?.includes('mcp') ?? false;
 }
 
-export function formatFunctionCounts({ actions, syncs }: ApiProviderFunctionCounts): string | null {
-    const parts = [actions > 0 && pluralize(actions, 'tool'), syncs > 0 && pluralize(syncs, 'sync')].filter((part) => typeof part === 'string');
+export function formatFunctionCounts({ tools, syncs }: ApiProviderFunctionCounts): string | null {
+    const parts = [tools > 0 && pluralize(tools, 'tool'), syncs > 0 && pluralize(syncs, 'sync')].filter((part) => typeof part === 'string');
     return parts.length > 0 ? parts.join(' · ') : null;
 }
 

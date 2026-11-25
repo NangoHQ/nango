@@ -74,13 +74,14 @@ export function getSimpleOAuth2ClientConfig(
 
     // public clients send no secret. simple-oauth2 always writes one in body mode, so it's written to client_id instead.
     const isPublicClient = authConfig.token_request_auth_method === 'none';
+    const secret = authConfig.token_request_auth_method === 'private_key_jwt' ? '' : providerConfig.oauth_client_secret;
 
     return {
         client: isPublicClient
             ? { id: providerConfig.oauth_client_id, secret: providerConfig.oauth_client_id, secretParamName: 'client_id' }
             : {
                   id: providerConfig.oauth_client_id,
-                  secret: providerConfig.oauth_client_secret
+                  secret
               },
         http: {
             headers,
@@ -115,6 +116,8 @@ export async function getFreshOAuth2Credentials({
             oauth_client_id: credentials.config_override.client_id,
             oauth_client_secret: credentials.config_override.client_secret
         };
+    } else if (credentials.config_override?.client_id && provider.auth_mode === 'OAUTH2' && provider.token_request_auth_method === 'none') {
+        config = { ...config, oauth_client_id: credentials.config_override.client_id };
     }
     const simpleOAuth2ClientConfig = getSimpleOAuth2ClientConfig(config, provider, connection.connection_config);
     if (provider.token_request_auth_method === 'basic') {
@@ -239,6 +242,8 @@ export async function getFreshOAuth2Credentials({
                 client_id: credentials.config_override.client_id,
                 client_secret: credentials.config_override.client_secret
             };
+        } else if (credentials.config_override?.client_id && provider.auth_mode === 'OAUTH2' && provider.token_request_auth_method === 'none') {
+            newCredentials.config_override = { client_id: credentials.config_override.client_id };
         }
 
         return { success: true, error: null, response: newCredentials };

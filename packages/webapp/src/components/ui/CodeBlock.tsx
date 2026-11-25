@@ -162,7 +162,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 
     return (
         <div {...props} className={cn('border border-border-muted rounded', props.className)}>
-            <header className="flex justify-between items-center py-1.5 px-3 bg-surface-panel-inset rounded-t">
+            <header className="flex justify-between items-center py-1.5 px-3 bg-surface-code border-b border-border-muted rounded-t">
                 <span className="text-text-muted text-s">{title}</span>
                 <div className="flex gap-2 items-center">
                     {headerElement}
@@ -188,37 +188,37 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                         </Button>
                     )}
                     {!editing && secret && (
-                        <IconButton variant="ghost" size="2xs" label="Toggle visibility" onClick={toggleSecretVisibility}>
+                        <IconButton variant="ghost" size="sm" label="Toggle visibility" onClick={toggleSecretVisibility}>
                             {isSecretVisible ? <EyeOff /> : <Eye />}
                         </IconButton>
                     )}
                     {showEditControls && !editing && (
                         <PermissionGate asChild condition={canEdit} tooltipSide="bottom">
                             {(allowed) => (
-                                <IconButton variant="ghost" size="2xs" label="Edit" onClick={onEditClicked} disabled={!allowed}>
-                                    <Edit className="size-3.5" />
+                                <IconButton variant="ghost" size="sm" label="Edit" onClick={onEditClicked} disabled={!allowed}>
+                                    <Edit />
                                 </IconButton>
                             )}
                         </PermissionGate>
                     )}
                     {editing && (
                         <>
-                            <IconButton variant="ghost" size="2xs" label="Cancel" onClick={onCancelClicked} disabled={saving}>
-                                <X className="size-3.5" />
+                            <IconButton variant="ghost" size="sm" label="Cancel" onClick={onCancelClicked} disabled={saving}>
+                                <X />
                             </IconButton>
                             <IconButton
                                 variant="ghost"
-                                size="2xs"
+                                size="sm"
                                 label="Save"
                                 onClick={onSaveClicked}
                                 disabled={saving || !!error}
                                 loading={showLoadingOnSave && saving}
                             >
-                                <Check className="size-3.5" />
+                                <Check />
                             </IconButton>
                         </>
                     )}
-                    {!editing && copyable && <CopyButton value={copyText} size="2xs" />}
+                    {!editing && copyable && <CopyButton value={copyText} size="sm" />}
                 </div>
             </header>
             <div className={cn(constrainHeight && 'max-h-128 overflow-auto')}>

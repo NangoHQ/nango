@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import { customerKeyService, functionConfigService, NangoError, Orchestrator, seeders } from '@nangohq/shared';
+import { customerKeyService, functionConfigService, generateCatalogFunctionUuid, NangoError, Orchestrator, seeders } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { runServer, shouldBeProtected } from '../../../../../../../utils/tests.js';
@@ -219,6 +219,40 @@ describe(`GET ${endpoint}`, () => {
         expect(res.res.status).toBe(404);
         expect(res.json).toStrictEqual({ error: { code: 'function_not_found', message: `Function '${functionUuid}' was not found` } });
         expect(spy).not.toHaveBeenCalled();
+    });
+
+    it.skip('polls a catalog function', async () => {
+        const { apiKey, env } = await seedAccount(['environment:functions:invocations']);
+        const integration = await seeders.createConfigSeed(env, 'custom-replicate', 'replicate');
+        const connection = await seeders.createConnectionSeed({ env, provider: integration.unique_key, connectionId: randomUUID() });
+        const functionUuid = generateCatalogFunctionUuid({ provider: 'replicate', name: 'get-model' });
+        vi.spyOn(Orchestrator.prototype, 'getOutput').mockResolvedValue(Ok({ state: 'done', output: { id: 'owner/model', name: 'model', owner: 'owner' } }));
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { connectionId: connection.connection_id, functionUuid, id: randomUUID() }
+        });
+
+        expect(res.res.status).toBe(200);
+        expect(res.json).toEqual({ id: 'owner/model', name: 'model', owner: 'owner' });
+    });
+
+    it('rejects a catalog provider mismatch', async () => {
+        const { apiKey, env } = await seedAccount(['environment:functions:invocations']);
+        const integration = await seeders.createConfigSeed(env, 'slack', 'slack');
+        const connection = await seeders.createConnectionSeed({ env, provider: integration.unique_key, connectionId: randomUUID() });
+        const functionUuid = generateCatalogFunctionUuid({ provider: 'replicate', name: 'get-model' });
+        const output = vi.spyOn(Orchestrator.prototype, 'getOutput').mockResolvedValue(Ok({ state: 'in_progress' }));
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { connectionId: connection.connection_id, functionUuid, id: randomUUID() }
+        });
+
+        expect(res.res.status).toBe(404);
+        expect(output).not.toHaveBeenCalled();
     });
 
     it('should return not found when the invocation does not exist', async () => {

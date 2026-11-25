@@ -1,4 +1,4 @@
-import { ExternalLink, Play, Plus } from 'lucide-react';
+import { ArrowUpRight, Play } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
@@ -6,7 +6,6 @@ import { Link, useParams } from 'react-router-dom';
 import { Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Separator } from '@/components/ui/Separator';
@@ -17,10 +16,10 @@ import { useGetIntegration } from '@/hooks/useIntegration';
 import { usePathNavigation } from '@/hooks/usePathNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
-import { PageHeader } from '@/layout/PageHeader';
+import { TryInPlaygroundButton } from '@/pages/AgentPlayground/components/TryInPlaygroundButton';
+import { CatalogLogo } from '@/pages/Catalog/components/CatalogLogo';
 import { useStore } from '@/store';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
-import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
 
@@ -53,23 +52,17 @@ export const ShowIntegration: React.FC = () => {
 
     if (isLoading) {
         return (
-            <DashboardLayout
-                className="flex flex-col gap-4"
-                pageHeader={
-                    <PageHeader
-                        leading={
-                            <>
-                                <Skeleton className="size-6" />
-                                <Skeleton className="h-6 w-40" />
-                            </>
-                        }
-                        actions={<Skeleton className="h-8 w-44" />}
-                    />
-                }
-            >
+            <DashboardLayout hasPageHeading className="flex flex-col gap-6">
                 <Helmet>
                     <title>Integration - Nango</title>
                 </Helmet>
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <Skeleton className="size-10" />
+                        <Skeleton className="h-6 w-40" />
+                    </div>
+                    <Skeleton className="h-8 w-44" />
+                </div>
                 <Skeleton className="w-full h-10" />
                 <Skeleton className="w-56 h-8" />
             </DashboardLayout>
@@ -79,34 +72,32 @@ export const ShowIntegration: React.FC = () => {
     const displayName = integration.integration.display_name || integration.template.display_name;
 
     return (
-        <DashboardLayout
-            className="flex flex-col gap-4"
-            pageHeader={
-                <PageHeader
-                    title={displayName}
-                    leading={<IntegrationLogo provider={integration.integration.provider} className="size-6 rounded-[10px] p-0.5" />}
-                    actions={
-                        <PermissionGate condition={canCreateTestConnection} asChild>
-                            {(allowed) => (
-                                <ButtonLink
-                                    to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`}
-                                    size="md"
-                                    disabled={!allowed}
-                                >
-                                    <Plus />
-                                    Add test connection
-                                </ButtonLink>
-                            )}
-                        </PermissionGate>
-                    }
-                />
-            }
-        >
+        <DashboardLayout hasPageHeading className="flex flex-col gap-6">
             <Helmet>
                 <title>Integration - Nango</title>
             </Helmet>
 
-            <AutoIdlingBanner />
+            <header className="flex items-center justify-between gap-4">
+                <div className="flex min-w-0 items-center gap-3">
+                    <CatalogLogo provider={integration.integration.provider} displayName={displayName} size="lg" />
+                    <h1 className="truncate type-heading-sm text-text-strong">{displayName}</h1>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                    <Button asChild variant="ghost" size="md">
+                        <a href={integration.template.docs} target="_blank" rel="noreferrer">
+                            Docs <ArrowUpRight />
+                        </a>
+                    </Button>
+                    <TryInPlaygroundButton provider={integration.integration.provider} integrationName={displayName} source="integration" variant="outline" />
+                    <PermissionGate condition={canCreateTestConnection} asChild>
+                        {(allowed) => (
+                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="md" disabled={!allowed}>
+                                Add test connection
+                            </ButtonLink>
+                        )}
+                    </PermissionGate>
+                </div>
+            </header>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
                 <div className="flex items-center justify-between gap-4">
@@ -125,11 +116,6 @@ export const ShowIntegration: React.FC = () => {
                         <Separator orientation="vertical" className="data-[orientation=vertical]:h-4" />
                         <Link to={`/${env}/connections?integrations=${integration.integration.unique_key}`} className={integrationLinkClassName}>
                             Connections
-                        </Link>
-                        <Separator orientation="vertical" className="data-[orientation=vertical]:h-4" />
-                        <Link to={integration.template.docs} target="_blank" rel="noopener noreferrer" className={integrationLinkClassName}>
-                            Docs
-                            <ExternalLink className="size-3.5" />
                         </Link>
                         {canRunFunctions && !functionDrawerOpen && (
                             <div className="ml-3">
