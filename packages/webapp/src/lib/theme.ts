@@ -19,9 +19,9 @@ function readSystemDark(): boolean {
     }
 }
 
-export function resolveTheme(theme: Theme, systemDark = systemDarkQuery().matches): boolean {
+export function resolveTheme(theme: Theme, systemDark?: boolean): boolean {
     if (theme === 'system') {
-        return systemDark;
+        return systemDark ?? readSystemDark();
     }
     return theme === 'dark';
 }
