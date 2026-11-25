@@ -25,7 +25,6 @@ interface DestructiveActionModalProps {
     cancelButtonText?: string;
     trigger?: React.ReactNode;
     onConfirm: () => Promise<unknown>;
-    loading?: boolean;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
@@ -39,7 +38,6 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
     cancelButtonText = 'Cancel',
     trigger,
     onConfirm,
-    loading = false,
     open,
     onOpenChange
 }) => {
@@ -49,7 +47,6 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
     const inputId = useId();
     const formId = useId();
     const isConfirmed = confirmText === confirmationKeyword;
-    const isPending = loading || isSubmitting;
 
     // Controlled `open` changes (e.g. parent setOpen(false) after confirm) do not fire Radix
     // onOpenChange, so reset from the prop as well as from user-driven closes.
@@ -61,7 +58,7 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!isConfirmed || isPending || submittingRef.current) {
+        if (!isConfirmed || isSubmitting || submittingRef.current) {
             return;
         }
 
@@ -78,7 +75,7 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
     };
 
     const handleOpenChange = (nextOpen: boolean) => {
-        if (isPending) {
+        if (isSubmitting) {
             return;
         }
         onOpenChange(nextOpen);
@@ -88,14 +85,13 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
         <Dialog open={open} onOpenChange={handleOpenChange}>
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
             <DialogContent
-                showCloseButton={!isPending}
                 onEscapeKeyDown={(event) => {
-                    if (isPending) {
+                    if (isSubmitting) {
                         event.preventDefault();
                     }
                 }}
                 onInteractOutside={(event) => {
-                    if (isPending) {
+                    if (isSubmitting) {
                         event.preventDefault();
                     }
                 }}
@@ -115,7 +111,7 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
                                 onChange={(event) => setConfirmText(event.target.value)}
                                 placeholder="Enter confirmation text"
                                 autoComplete="off"
-                                disabled={isPending}
+                                disabled={isSubmitting}
                             />
                         </Field>
                     </form>
@@ -123,11 +119,11 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button type="button" variant="outline" size="sm" disabled={isPending}>
+                        <Button type="button" variant="outline" size="sm" disabled={isSubmitting}>
                             {cancelButtonText}
                         </Button>
                     </DialogClose>
-                    <Button type="submit" form={formId} variant="danger" size="sm" loading={isPending} disabled={!isConfirmed}>
+                    <Button type="submit" form={formId} variant="danger" size="sm" loading={isSubmitting} disabled={!isConfirmed}>
                         {confirmButtonText}
                     </Button>
                 </DialogFooter>

@@ -89,10 +89,13 @@ describe('DestructiveActionModal', () => {
         expect(confirmBtn.disabled).toBe(true);
         expect(cancelBtn.disabled).toBe(true);
         expect(input.disabled).toBe(true);
-        expect(document.body.querySelector('[data-slot="dialog-close"]')).toBe(cancelBtn);
+
+        const headerCloseBtn = Array.from(document.body.querySelectorAll<HTMLButtonElement>('[data-slot="dialog-close"]')).find((btn) => btn !== cancelBtn);
+        expect(headerCloseBtn).toBeDefined();
 
         act(() => {
             cancelBtn.click();
+            headerCloseBtn?.click();
             document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
         });
         expect(onOpenChange).not.toHaveBeenCalled();
