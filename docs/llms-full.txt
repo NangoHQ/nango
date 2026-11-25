@@ -16498,6 +16498,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `manatal` | Manatal | API_KEY | [docs](https://nango.dev/docs/integrations/all/manatal.md) | [connect](https://nango.dev/docs/integrations/all/manatal/connect.md) |  | crm, hr, ats |
 | `mandrill` | Mandrill | API_KEY | [docs](https://nango.dev/docs/api-integrations/mandrill.md) | [connect](https://nango.dev/docs/api-integrations/mandrill/connect.md) |  | marketing |
 | `marketo` | Marketo | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/marketo.md) | [connect](https://nango.dev/docs/integrations/all/marketo/connect.md) |  | marketing |
+| `martllm` | MartLLM | API_KEY | [docs](https://nango.dev/docs/api-integrations/martllm.md) | [connect](https://nango.dev/docs/api-integrations/martllm/connect.md) |  | dev-tools |
 | `mattermost` | Mattermost | API_KEY | [docs](https://nango.dev/docs/api-integrations/mattermost.md) | [connect](https://nango.dev/docs/api-integrations/mattermost/connect.md) |  | communication |
 | `maximizer` | Maximizer (Cloud) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/maximizer.md) | [connect](https://nango.dev/docs/api-integrations/maximizer/connect.md) | [setup](https://nango.dev/docs/api-integrations/maximizer/how-to-register-your-own-maximizer-oauth-app.md) | crm |
 | `maximizer-on-premise` | Maximizer (On-Premise) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/maximizer-on-premise.md) | [connect](https://nango.dev/docs/api-integrations/maximizer-on-premise/connect.md) | [setup](https://nango.dev/docs/api-integrations/maximizer-on-premise/how-to-register-your-own-maximizer-on-premise-oauth-app.md) | crm |
@@ -16968,7 +16969,6 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `typefully` | Typefully | API_KEY | [docs](https://nango.dev/docs/integrations/all/typefully.md) |  |  | analytics, communication, social |
 | `typefully-v2` | Typefully (API v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/typefully-v2.md) | [connect](https://nango.dev/docs/api-integrations/typefully-v2/connect.md) |  | analytics, communication, social |
 | `uber` | Uber | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/uber.md) |  |  | other |
-| `uberllm` | UberLLM | API_KEY | [docs](https://nango.dev/docs/api-integrations/uberllm.md) | [connect](https://nango.dev/docs/api-integrations/uberllm/connect.md) |  | dev-tools |
 | `ukg-pro` | UKG Pro | BASIC | [docs](https://nango.dev/docs/integrations/all/ukg-pro.md) | [connect](https://nango.dev/docs/integrations/all/ukg-pro/connect.md) |  | hr, popular |
 | `ukg-pro-cc` | UKG Pro HCM (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/ukg-pro-cc.md) | [connect](https://nango.dev/docs/api-integrations/ukg-pro-cc/connect.md) |  | hr |
 | `ukg-pro-wfm` | UKG Pro (Workforce Management) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ukg-pro-wfm.md) | [connect](https://nango.dev/docs/integrations/all/ukg-pro-wfm/connect.md) |  | hr |
