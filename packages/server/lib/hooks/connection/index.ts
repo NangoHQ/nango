@@ -77,3 +77,4 @@ export { default as eterminCredentialsVerification } from './providers/etermin/c
 export { default as zerobounceCredentialsVerification } from './providers/zerobounce/credentials-verification.js';
 export { default as financialDatasetsCredentialsVerification } from './providers/financial-datasets/credentials-verification.js';
 export { default as clientaryCredentialsVerification } from './providers/clientary/credentials-verification.js';
+export { default as batchdataCredentialsVerification } from './providers/batchdata/credentials-verification.js';

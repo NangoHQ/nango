@@ -77,6 +77,5 @@ import PreBuiltUseCases from "/snippets/generated/batchdata/PreBuiltUseCases.mdx
 ## API gotchas
 
 - BatchData's MCP server is on `https://mcp.batchdata.com` and takes the same API token: send MCP requests through this connection with `baseUrlOverride` set to `https://mcp.batchdata.com`, and Nango keeps the connection's credentials and headers. See [BatchData MCP Server - Developer Integration Guide](https://help.batchdata.io/en/articles/12860581-batchdata-mcp-server-developer-integration-guide).
-- Nango does not check the API token when a connection is created, so a wrong or revoked token still connects and fails on its first call.
 
 ---
