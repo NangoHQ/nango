@@ -16,7 +16,7 @@ export const SecondaryNav: React.FC<SecondaryNavProps> = ({ label, children }) =
 );
 
 export const SecondaryNavGroupLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <span className="px-2 pt-3 pb-1 type-label-xs uppercase text-text-muted first:pt-0">{children}</span>
+    <span className="px-2 pt-5 pb-1 type-label-xs first:pt-3 uppercase text-text-muted">{children}</span>
 );
 
 interface SecondaryNavItemProps {

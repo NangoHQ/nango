@@ -1,162 +1,129 @@
-import { useEffect, useState } from 'react';
+import { ArrowUpRight, Lock } from 'lucide-react';
+import { useState } from 'react';
 
-import { Button, Field, FieldError, FieldLabel } from '@nangohq/design-system';
+import { Badge, Button, Field, FieldError, Input } from '@nangohq/design-system';
 
-import { DocsIconLink } from '@/components/patterns/DocsIconLink';
-import { EditableInput } from '@/components/patterns/EditableInput';
 import { KeyValueInput } from '@/components/patterns/KeyValueInput';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useCurrentPlan } from '@/hooks/usePlan';
+import { validateUrl } from '@/pages/Integrations/utils';
+import { globalEnv } from '@/utils/env';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { APIError } from '../../../utils/api';
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
+import { RowErrors, rowErrorsFromApi } from './components/RowErrors';
+import { SettingsCard, SettingsRow } from './components/SettingsCard';
+import { apiErrorMessage, sameRecord } from './utils';
+
+import type { RowError } from './components/RowErrors';
+
+const SETUP_GUIDE_URL = 'https://nango.dev/docs/guides/platform/observability#opentelemetry-export';
 
 export const Telemetry: React.FC = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { data } = useEnvironment(env);
-    const environmentAndAccount = data?.environmentAndAccount;
-    const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
+    const otlpSettings = data?.environmentAndAccount?.environment.otlp_settings;
+    const { mutateAsync: patchEnvironmentAsync, isPending } = usePatchEnvironment(env);
+
+    const { data: planData } = useCurrentPlan(env);
+    const plan = planData?.plan;
+    const hasOtel = !globalEnv.features.plan || !plan || plan.has_otel;
 
     const { can } = usePermissions();
-    const canEditEnvironment = can('environment:settings:update');
+    const canEdit = can('environment:settings:update') && hasOtel;
 
-    const [loading, setLoading] = useState(false);
-    const [editHeaders, setEditHeaders] = useState(false);
-    const [headers, setHeaders] = useState<Record<string, string>>(() => environmentAndAccount?.environment.otlp_settings?.headers ?? {});
-    const [errors, setErrors] = useState<{ index: number; key: 'name' | 'value'; error: string }[]>([]);
+    const savedEndpoint = otlpSettings?.endpoint ?? '';
+    const savedHeaders = otlpSettings?.headers ?? {};
+    const [endpoint, setEndpoint] = useState(savedEndpoint);
+    const [headers, setHeaders] = useState<Record<string, string>>(savedHeaders);
+    const [resetKey, setResetKey] = useState(0);
+    const [errors, setErrors] = useState<RowError[]>([]);
 
-    useEffect(() => {
-        if (!editHeaders) {
-            setHeaders(environmentAndAccount?.environment.otlp_settings?.headers ?? {});
-        }
-    }, [editHeaders, environmentAndAccount?.environment.otlp_settings?.headers]);
+    const endpointError = validateUrl(endpoint, true);
+    const endpointChanged = endpoint !== savedEndpoint;
+    const headersChanged = !sameRecord(headers, savedHeaders);
 
-    const onSaveHeaders = async () => {
-        setLoading(true);
+    const onSave = async () => {
         try {
-            const otlpHeaders = Object.entries(headers).map(([name, value]) => ({ name, value }));
-            await patchEnvironmentAsync({ otlp_headers: otlpHeaders });
-            setEditHeaders(false);
+            await patchEnvironmentAsync({
+                ...(endpointChanged && { otlp_endpoint: endpoint }),
+                ...(headersChanged && { otlp_headers: Object.entries(headers).map(([name, value]) => ({ name, value })) })
+            });
             setErrors([]);
+            toast({ title: 'OTel export settings saved', variant: 'success' });
         } catch (err) {
-            let message = 'There was an issue updating the OTLP Headers';
-            if (err instanceof APIError) {
-                if (err.json.error.code === 'invalid_body' && err.json.error.errors) {
-                    setErrors(
-                        err.json.error.errors
-                            .map((e: any) => {
-                                if (e.path[0] !== 'otlp_headers') {
-                                    return null as any;
-                                }
-                                return { index: e.path[1], key: e.path[2], error: e.message };
-                            })
-                            .filter(Boolean)
-                    );
-                } else {
-                    message = err.json.error.message ?? message;
-                }
-            }
-            toast({ title: message, variant: 'error' });
-        } finally {
-            setLoading(false);
+            setErrors(rowErrorsFromApi(err, 'otlp_headers'));
+            toast({ title: apiErrorMessage(err, 'Failed to save OTel export settings'), variant: 'error' });
         }
     };
-
-    const onCancelHeaders = () => {
-        setErrors([]);
-        setHeaders(environmentAndAccount?.environment.otlp_settings?.headers ?? {});
-        setEditHeaders(false);
-    };
-
-    if (!environmentAndAccount) {
-        return null;
-    }
 
     return (
-        <SettingsContent title="Telemetry">
-            <SettingsGroup
-                label={
-                    <div className="inline-flex items-center gap-2">
-                        OTel real-time export
-                        <DocsIconLink
-                            href="https://nango.dev/docs/guides/platform/observability#opentelemetry-export"
-                            label="OpenTelemetry export documentation"
-                        />
-                    </div>
-                }
-            >
-                <div className="flex flex-col gap-7">
-                    <div className="flex flex-col gap-2">
-                        <FieldLabel htmlFor="otlp_endpoint">Endpoint</FieldLabel>
-                        <EditableInput
-                            id="otlp_endpoint"
-                            initialValue={environmentAndAccount?.environment.otlp_settings?.endpoint || ''}
-                            onSave={async (value) => {
-                                try {
-                                    await patchEnvironmentAsync({ otlp_endpoint: value });
-                                    toast({ title: 'Successfully updated', variant: 'success' });
-                                } catch (err) {
-                                    toast({ title: 'Failed to update', variant: 'error' });
-                                    throw err;
-                                }
-                            }}
-                            placeholder="https://my.otlp.commector:4318"
-                            canEdit={canEditEnvironment}
-                        />
-                    </div>
-                    <fieldset className="flex flex-col gap-4">
-                        <Field data-invalid={errors.length > 0}>
-                            <FieldLabel htmlFor="otlp_headers">Headers</FieldLabel>
-                            <div className="flex flex-col gap-5">
-                                <KeyValueInput
-                                    initialValues={headers}
-                                    onChange={setHeaders}
-                                    placeholderKey="MY_HEADER"
-                                    placeholderValue="value"
-                                    disabled={!editHeaders || loading}
-                                    isSecret={true}
-                                />
-                                {errors.length > 0 && (
-                                    <FieldError>
-                                        <div className="flex flex-col gap-1">
-                                            {errors.map((err, i) => (
-                                                <span key={i}>
-                                                    Row {err.index + 1}, {err.key}: {err.error}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </FieldError>
-                                )}
-                            </div>
-                        </Field>
-                        <div className="flex justify-start gap-3 mt-1.5">
-                            {!editHeaders && (
-                                <PermissionGate asChild condition={canEditEnvironment}>
-                                    {(allowed) => (
-                                        <Button variant={'outline'} onClick={() => setEditHeaders(true)} disabled={!allowed}>
-                                            Edit
-                                        </Button>
-                                    )}
-                                </PermissionGate>
-                            )}
-                            {editHeaders && (
-                                <>
-                                    <Button variant="outline" onClick={onCancelHeaders}>
-                                        Cancel
-                                    </Button>
-                                    <Button variant="primary" onClick={onSaveHeaders} loading={loading}>
-                                        Save
-                                    </Button>
-                                </>
-                            )}
-                        </div>
-                    </fieldset>
+        <SettingsCard
+            title={
+                <span className="inline-flex items-center gap-2">
+                    OTel export
+                    {savedEndpoint && <Badge variant="success">Exporting</Badge>}
+                </span>
+            }
+            action={
+                <Button variant="ghost" size="sm" asChild>
+                    <a href={SETUP_GUIDE_URL} target="_blank" rel="noopener noreferrer">
+                        Setup guide
+                        <ArrowUpRight />
+                    </a>
+                </Button>
+            }
+            dirty={endpointChanged || headersChanged}
+            invalid={!!endpointError}
+            saving={isPending}
+            canEdit={canEdit}
+            onSave={onSave}
+            onDiscard={() => {
+                setEndpoint(savedEndpoint);
+                setHeaders(savedHeaders);
+                setErrors([]);
+                setResetKey((k) => k + 1);
+            }}
+        >
+            <SettingsRow label="Endpoint" htmlFor="otlp_endpoint">
+                <Field data-invalid={!!endpointError}>
+                    <Input
+                        id="otlp_endpoint"
+                        mono
+                        value={endpoint}
+                        placeholder="https://otel.example.com:4318"
+                        onChange={(e) => setEndpoint(e.target.value)}
+                        disabled={!canEdit}
+                        aria-invalid={!!endpointError}
+                    />
+                    {endpointError && <FieldError>{endpointError}</FieldError>}
+                </Field>
+            </SettingsRow>
+            <SettingsRow label="Headers" description="Optional">
+                <KeyValueInput
+                    key={resetKey}
+                    initialValues={headers}
+                    onChange={setHeaders}
+                    placeholderKey="X-Header-Name"
+                    placeholderValue="value"
+                    disabled={!canEdit}
+                    isSecret
+                />
+                <RowErrors errors={errors} />
+            </SettingsRow>
+            {!hasOtel && (
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-muted pt-5">
+                    <span className="inline-flex items-center gap-2 type-text-regular-sm text-text-secondary">
+                        <Lock className="size-4" />
+                        OTel export needs the Growth add-on.
+                    </span>
+                    <ButtonLink to="/team/billing#plans" variant="outline">
+                        Get the Growth add-on
+                    </ButtonLink>
                 </div>
-            </SettingsGroup>
-        </SettingsContent>
+            )}
+        </SettingsCard>
     );
 };

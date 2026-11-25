@@ -10,12 +10,13 @@ import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
 
 import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangohq/frontend/lib/types';
+import type { Theme } from '@nangohq/types';
 
 export interface ConnectUIPreviewRef {
     sendSettingsChanged: (settings: ConnectUIEventSettingsChanged['payload']) => void;
 }
 
-export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: string }>(({ className }, ref) => {
+export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: string; themeOverride?: Theme }>(({ className, themeOverride }, ref) => {
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
@@ -106,12 +107,20 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
         const iframe = createConnectUIPreviewIFrame({
             baseURL: globalEnv.connectUrl,
             apiURL: globalEnv.apiUrl,
-            sessionToken
+            sessionToken,
+            themeOverride
         });
 
         connectUIIframe.current = iframe;
         connectUIContainer.current.appendChild(iframe);
-    }, [env, environmentAndAccount, trySendSessionToken, sessionToken]);
+    }, [env, environmentAndAccount, trySendSessionToken, sessionToken, themeOverride]);
+
+    // A color-scheme mismatch between the iframe and the dashboard makes Chrome paint the iframe opaque white.
+    useEffect(() => {
+        if (connectUIIframe.current) {
+            connectUIIframe.current.style.colorScheme = themeOverride === 'light' || themeOverride === 'dark' ? themeOverride : 'normal';
+        }
+    }, [themeOverride, environmentAndAccount]);
 
     return <div ref={connectUIContainer} className={cn('rounded-md overflow-hidden h-full w-full', className)} />;
 });

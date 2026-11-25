@@ -67,6 +67,14 @@ const RedirectPreservingLocation = ({ to }: { to: string }) => {
     return <Navigate to={{ pathname: to, search: location.search, hash: location.hash }} replace />;
 };
 
+const RedirectToEnvironmentSettings = () => {
+    const env = useStore((state) => state.env);
+    const location = useLocation();
+    const subPath = useParams()['*'];
+    const pathname = subPath ? `/${env}/environment-settings/${subPath}` : `/${env}/environment-settings`;
+    return <Navigate to={{ pathname, search: location.search, hash: location.hash }} replace />;
+};
+
 const RedirectWithEnv = ({ path }: { path: string }) => {
     const env = useStore((state) => state.env);
     const params = useParams<Record<string, string>>();
@@ -425,13 +433,13 @@ const routes: RouteObject[] = [
                         ]
                     },
                     {
-                        path: 'environment-settings',
+                        path: 'environment-settings/*',
                         element: <EnvironmentSettings />,
                         handle: { breadcrumb: 'Environment settings' } as BreadcrumbHandle
                     },
                     {
                         path: 'project-settings',
-                        element: <Navigate to="/environment-settings" />
+                        element: <RedirectToEnvironmentSettings />
                     },
                     // Backward compat redirects for old env-prefixed URLs
                     {
@@ -453,6 +461,10 @@ const routes: RouteObject[] = [
                 ]
             }
         ]
+    },
+    {
+        path: '/environment-settings/*',
+        element: <RedirectToEnvironmentSettings />
     },
     {
         path: '/account-settings',
