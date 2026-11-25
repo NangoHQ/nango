@@ -80,7 +80,8 @@ describe('POST /logs/messages', () => {
         expect(res.res.status).toBe(200);
         expect(res.json).toStrictEqual<typeof res.json>({
             data: [],
-            pagination: { total: 0, cursorAfter: null, cursorBefore: null }
+            pagination: { total: 0, cursorAfter: null, cursorBefore: null },
+            levelCounts: { debug: 0, info: 0, warn: 0, error: 0 }
         });
     });
 
@@ -113,8 +114,76 @@ describe('POST /logs/messages', () => {
                     type: 'log'
                 }
             ],
-            pagination: { total: 1, cursorBefore: expect.any(String), cursorAfter: expect.any(String) }
+            pagination: { total: 1, cursorBefore: expect.any(String), cursorAfter: expect.any(String) },
+            levelCounts: { debug: 0, info: 1, warn: 0, error: 0 }
         });
+    });
+
+    it('should filter messages by level and still count every level', async () => {
+        const { env, account, apiKey } = await seeders.seedAccountEnvAndUser();
+
+        const logCtx = await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment: env });
+        await logCtx.info('test info');
+        await logCtx.error('test error');
+        await logCtx.success();
+
+        const res = await api.fetch('/api/v1/logs/messages', {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: { operationId: logCtx.id, limit: 10, levels: ['error'] }
+        });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+        expect(res.json.data.map((row) => row.message)).toStrictEqual(['test error']);
+        expect(res.json.pagination.total).toBe(1);
+        expect(res.json.levelCounts).toStrictEqual({ debug: 0, info: 1, warn: 0, error: 1 });
+    });
+
+    it('should not count levels on later pages', async () => {
+        const { env, account, apiKey } = await seeders.seedAccountEnvAndUser();
+
+        const logCtx = await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment: env });
+        await logCtx.info('test info 1');
+        await logCtx.info('test info 2');
+        await logCtx.success();
+
+        const first = await api.fetch('/api/v1/logs/messages', {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: { operationId: logCtx.id, limit: 1 }
+        });
+        isSuccess(first.json);
+        expect(first.json.levelCounts).toStrictEqual({ debug: 0, info: 2, warn: 0, error: 0 });
+
+        const next = await api.fetch('/api/v1/logs/messages', {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: { operationId: logCtx.id, limit: 1, cursorAfter: first.json.pagination.cursorAfter }
+        });
+        isSuccess(next.json);
+        expect(next.json.data).toHaveLength(1);
+        expect(next.json.levelCounts).toBeUndefined();
+    });
+
+    it('should reject an empty level filter', async () => {
+        const { env, account, apiKey } = await seeders.seedAccountEnvAndUser();
+
+        const logCtx = await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment: env });
+        await logCtx.success();
+
+        const res = await api.fetch('/api/v1/logs/messages', {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: { operationId: logCtx.id, levels: [] }
+        });
+
+        expect(res.res.status).toBe(400);
+        expect(res.json).toMatchObject({ error: { code: 'invalid_body', errors: [{ path: ['levels'] }] } });
     });
 
     it('should search messages and not return results from an other account', async () => {

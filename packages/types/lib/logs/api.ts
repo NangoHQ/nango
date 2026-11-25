@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import type { ApiEndpoint } from '../api.js';
 import type { PickFromUnion } from '../utils.js';
-import type { MessageRow, OperationList, OperationRow, OperationState } from './messages.js';
+import type { LogLevel, MessageRow, OperationList, OperationRow, OperationState } from './messages.js';
 
 type Concat<T extends OperationList> = T extends { action: string } ? `${T['type']}:${T['action']}` : never;
 export type ConcatOperationList = Concat<OperationList>;
@@ -61,6 +61,7 @@ export type SearchMessages = ApiEndpoint<{
         operationId: string;
         limit?: number;
         states?: SearchOperationsState[];
+        levels?: LogLevel[] | undefined;
         search?: string | undefined;
         cursorBefore?: string | null | undefined;
         cursorAfter?: string | null | undefined;
@@ -69,6 +70,8 @@ export type SearchMessages = ApiEndpoint<{
     Success: {
         data: MessageRow[];
         pagination: { total: number; cursorBefore: string | null; cursorAfter: string | null };
+        // Ignores `levels` but follows every other filter. Omitted on `cursorAfter` pages.
+        levelCounts?: Record<LogLevel, number> | undefined;
     };
 }>;
 export type SearchMessagesData = SearchMessages['Success']['data'][0];
