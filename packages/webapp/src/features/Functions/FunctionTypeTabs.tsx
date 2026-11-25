@@ -14,7 +14,7 @@ interface FunctionTypeTabsProps<T extends string> {
 
 export function FunctionTypeTabs<T extends string>({ tabs, value, onChange }: FunctionTypeTabsProps<T>) {
     return (
-        <div role="tablist" className="flex items-center gap-1">
+        <div role="group" aria-label="Function type" className="flex items-center gap-1">
             {tabs.map((tab) => {
                 const selected = tab.value === value;
                 const empty = tab.count === 0;
@@ -22,8 +22,7 @@ export function FunctionTypeTabs<T extends string>({ tabs, value, onChange }: Fu
                     <button
                         key={tab.value}
                         type="button"
-                        role="tab"
-                        aria-selected={selected}
+                        aria-pressed={selected}
                         disabled={empty}
                         onClick={() => onChange(tab.value)}
                         className={cn(
