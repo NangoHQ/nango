@@ -40007,6 +40007,10 @@ vanta:
     body_format: json
     proxy:
         base_url: https://api.vanta.com
+    webhook_routing_script: vantaWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    webhook_event_type_in_path: true
     docs: https://nango.dev/docs/api-integrations/vanta
     docs_connect: https://nango.dev/docs/api-integrations/vanta/connect
 

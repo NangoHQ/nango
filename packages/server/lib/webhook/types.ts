@@ -5,6 +5,9 @@ import type { Result } from '@nangohq/utils';
 export type WebhookRequest = HttpRequest & {
     rawHeaders: Record<string, string>;
     rawBody: string;
+    // The event type from the URL's last path segment, for providers with `webhook_event_type_in_path`.
+    // It isn't covered by the signature.
+    eventType?: string | undefined;
 };
 
 export type WebhookHandler<T = any> = (
@@ -12,7 +15,8 @@ export type WebhookHandler<T = any> = (
     headers: Record<string, string>,
     body: T,
     rawBody: string,
-    query?: Record<string, string>
+    query?: Record<string, string>,
+    eventType?: string
 ) => Promise<Result<WebhookResponse>>;
 
 export interface WebhookResponseOnly {
@@ -527,3 +531,9 @@ export interface DocusignWebhookEvent {
         envelopeSummary?: Record<string, unknown>;
     };
 }
+
+/**
+ * Vanta's payloads hold the IDs of what changed, and sometimes its new state, but never the event's type: Vanta
+ * posts each event to `<webhook URL>/<event type>`. https://developer.vanta.com/reference/webhooks/overview
+ */
+export type VantaWebhookPayload = Record<string, unknown>;

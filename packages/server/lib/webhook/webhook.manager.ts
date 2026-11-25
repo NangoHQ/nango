@@ -82,7 +82,7 @@ export async function routeWebhook({
 
     const result: Result<WebhookResponse> = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
         try {
-            const handlerResult = await handler(internalNango, request.rawHeaders, request.body, request.rawBody, request.query);
+            const handlerResult = await handler(internalNango, request.rawHeaders, request.body, request.rawBody, request.query, request.eventType);
             return handlerResult;
         } catch (err) {
             logger.error(`error processing incoming webhook for ${integration.unique_key} - `, err);
@@ -146,6 +146,7 @@ export async function routeWebhook({
             webhookUrlOverrideByConnectionId,
             payload: webhookBodyToForward,
             webhookOriginalHeaders: request.rawHeaders,
+            eventType: request.eventType,
             logContextGetter,
             ...(internalNango.unverified
                 ? { unverified: { reason: internalNango.unverified.reason, message: unverifiedWebhookMessage(integration, internalNango.unverified) } }

@@ -386,6 +386,47 @@ describe('Webhooks: forward notification tests', () => {
         expect(args.extraHeaders).toEqual({ 'X-Nango-Webhook-Unverified': 'true' });
     });
 
+    it('carries an event type sent in the URL in the wrapped body and headers', async () => {
+        await forwardWebhook({
+            connectionIds: ['conn1'],
+            webhookUrlOverrideByConnectionId: new Map(),
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings,
+            logContextGetter,
+            integration,
+            payload: { questionnaire: { id: '123' } },
+            webhookOriginalHeaders: {},
+            eventType: 'v1.questionnaire.created'
+        });
+
+        const args = deliverMock.mock.calls[0]![0];
+        expect(args.body).toMatchObject({ connectionId: 'conn1', eventType: 'v1.questionnaire.created', payload: { questionnaire: { id: '123' } } });
+        expect(args.extraHeaders).toEqual({ 'X-Nango-Webhook-Event-Type': 'v1.questionnaire.created' });
+    });
+
+    it('carries an event type sent in the URL in the headers when forwarding the raw payload, beside the unverified flag', async () => {
+        await forwardWebhook({
+            connectionIds: [],
+            webhookUrlOverrideByConnectionId: new Map(),
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings,
+            logContextGetter,
+            integration,
+            payload: { questionnaire: { id: '123' } },
+            webhookOriginalHeaders: {},
+            eventType: 'v1.questionnaire.created',
+            unverified: { reason: 'vanta_missing_webhook_secret', message: 'This webhook was not verified.' }
+        });
+
+        const args = deliverMock.mock.calls[0]![0];
+        expect(args.body).toEqual({ questionnaire: { id: '123' } });
+        expect(args.extraHeaders).toEqual({ 'X-Nango-Webhook-Event-Type': 'v1.questionnaire.created', 'X-Nango-Webhook-Unverified': 'true' });
+    });
+
     it('does not flag a verified webhook', async () => {
         await forwardWebhook({
             connectionIds: ['conn1'],
@@ -402,6 +443,7 @@ describe('Webhooks: forward notification tests', () => {
 
         const args = deliverMock.mock.calls[0]![0];
         expect(args.body).not.toHaveProperty('unverified');
+        expect(args.body).not.toHaveProperty('eventType');
         expect(args.extraHeaders).toBeUndefined();
     });
 

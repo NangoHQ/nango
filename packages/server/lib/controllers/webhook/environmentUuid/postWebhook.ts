@@ -17,7 +17,11 @@ import type { DBPlan, PostPublicWebhook } from '@nangohq/types';
 const paramValidation = z
     .object({
         environmentUuid: z.string().uuid(),
-        providerConfigKey: providerConfigKeySchema
+        providerConfigKey: providerConfigKeySchema,
+        eventType: z
+            .string()
+            .regex(/^[a-zA-Z0-9._:-]{1,128}$/)
+            .optional()
     })
     .strict();
 
@@ -29,7 +33,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
     }
 
     await tracer.trace('server.sync.receiveWebhook', async (span) => {
-        const { environmentUuid, providerConfigKey }: PostPublicWebhook['Params'] = req.params;
+        const { environmentUuid, providerConfigKey, eventType }: PostPublicWebhook['Params'] = paramValue.data;
 
         try {
             const resEnv = await accountService.getAccountContext({ environmentUuid });
@@ -83,6 +87,12 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 providerConfigKey: integration.unique_key
             });
 
+            // Only providers that post each event to `<webhook URL>/<event type>` accept a path after the integration.
+            if (eventType && !provider?.webhook_event_type_in_path) {
+                res.status(404).send({ error: { code: 'unknown_webhook_path' } });
+                return;
+            }
+
             // Query params are blocked by default — providers may include unverifiable params
             // that can't be covered by webhook signatures. Only params explicitly listed in
             // `webhook_allowed_query_params` (provider config) are forwarded.
@@ -102,7 +112,8 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 body: req.body,
                 // The raw headers and body are included for signature verification.
                 rawHeaders,
-                rawBody: req.rawBody ?? ''
+                rawBody: req.rawBody ?? '',
+                eventType
             };
 
             const response = await routeWebhook({

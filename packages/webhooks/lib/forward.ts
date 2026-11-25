@@ -1,7 +1,7 @@
 import { OtlpSpan } from '@nangohq/logs';
 import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
 
-import { deliver, resolveWebhookSettings, shouldSend, UNVERIFIED_WEBHOOK_HEADER } from './utils.js';
+import { deliver, EVENT_TYPE_WEBHOOK_HEADER, resolveWebhookSettings, shouldSend, UNVERIFIED_WEBHOOK_HEADER } from './utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
 import type { MeteredBytes } from '@nangohq/shared';
@@ -21,6 +21,7 @@ export const forwardWebhook = async ({
     webhookOriginalHeaders,
     logContextGetter,
     unverified,
+    eventType,
     onBytes
 }: {
     integration: IntegrationConfig;
@@ -35,6 +36,8 @@ export const forwardWebhook = async ({
     logContextGetter: LogContextGetter;
     /** Set when the provider signature was not verified, so the forward operation can say so. */
     unverified?: { reason: string; message: string } | undefined;
+    /** The event's type, for providers that send it in the URL instead of the payload. */
+    eventType?: string | undefined;
     onBytes?: (bytes: MeteredBytes, connectionId: string) => void;
 }): Promise<Result<{ results: { connectionId: string; success: boolean }[] }>> => {
     const safeOnBytes = (bytes: MeteredBytes, connectionId: string) => {
@@ -75,10 +78,15 @@ export const forwardWebhook = async ({
         providerConfigKey: integration.unique_key,
         type: 'forward',
         payload: payload,
+        ...(eventType ? { eventType } : {}),
         ...(unverified ? { unverified: true as const } : {})
     };
 
-    const extraHeaders = unverified ? { [UNVERIFIED_WEBHOOK_HEADER]: 'true' } : undefined;
+    const flagHeaders = {
+        ...(eventType ? { [EVENT_TYPE_WEBHOOK_HEADER]: eventType } : {}),
+        ...(unverified ? { [UNVERIFIED_WEBHOOK_HEADER]: 'true' } : {})
+    };
+    const extraHeaders = Object.keys(flagHeaders).length > 0 ? flagHeaders : undefined;
 
     const toWebhooks = (settings: DBExternalWebhook): { url: string; type: string }[] =>
         [

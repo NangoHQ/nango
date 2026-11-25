@@ -67,6 +67,9 @@ function getDefaultWebhookOutbound(): WebhookOutbound {
 /** Set by Nango on forwards whose provider signature was not verified, so a caller must never be able to supply it. */
 export const UNVERIFIED_WEBHOOK_HEADER = 'X-Nango-Webhook-Unverified';
 
+/** Set by Nango on forwards from providers that send the event's type in the URL, so a caller must never be able to supply it. */
+export const EVENT_TYPE_WEBHOOK_HEADER = 'X-Nango-Webhook-Event-Type';
+
 export const NON_FORWARDABLE_HEADERS = [
     'host',
     'authorization',
@@ -84,6 +87,7 @@ export const NON_FORWARDABLE_HEADERS = [
     'www-authenticate',
     'server',
     UNVERIFIED_WEBHOOK_HEADER.toLowerCase(),
+    EVENT_TYPE_WEBHOOK_HEADER.toLowerCase(),
     'x-nango-webhook-secret'
 ];
 

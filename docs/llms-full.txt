@@ -2527,6 +2527,15 @@ The Nango signature on flagged requests only proves the webhook came through Nan
 
 Some providers reject webhooks Nango cannot verify, such as GitHub App, Gmail, Microsoft Teams, Salesforce, Airtable, DocuSign, Affinity, Fillout and ShipStation. For these, **Allow unverified webhooks** in **Integrations > [Integration] > Settings** lets webhooks with a missing or unverifiable signature through, flagged as above. For DocuSign, this only applies when no webhook secret is set on the integration; with a secret, a missing signature is still rejected. It is off by default, and is meant for prototyping or while you set up verification. It never lets through a webhook with an invalid signature.
 
+## Event types sent in the URL
+
+Some providers, such as Vanta, send an event's type as the last segment of the URL they post to instead of in the payload. Nango rejects a delivery from such a provider without that segment, and forwards the type with the webhook:
+
+- The `X-Nango-Webhook-Event-Type` header is set on the forwarded request, including raw payloads.
+- The Nango wrapper includes an `eventType` field.
+
+Nango sets both itself, and never forwards either from the incoming request. The type comes from the URL, which the provider's signature doesn't cover.
+
 ## When to use forwarding
 
 Use forwarding when:

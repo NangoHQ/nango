@@ -134,6 +134,36 @@ describe('deliver request shape', () => {
         expect(Object.keys(headers).map((key) => key.toLowerCase())).not.toContain('x-nango-webhook-unverified');
     });
 
+    it('drops a caller supplied event type header, and keeps the one Nango sets', async () => {
+        await deliver({
+            webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],
+            body: { hello: 'world' },
+            webhookType: 'forward',
+            secret,
+            incomingHeaders: { 'x-nango-webhook-event-type': 'v1.audit.deleted', 'x-provider-event': 'created' },
+            outbound: allowAll
+        });
+
+        const spoofed = postSpy.mock.calls[0]![2]!.headers as Record<string, string>;
+        expect(Object.keys(spoofed).map((key) => key.toLowerCase())).not.toContain('x-nango-webhook-event-type');
+        expect(spoofed).toMatchObject({ 'x-provider-event': 'created' });
+
+        await deliver({
+            webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],
+            body: { hello: 'world' },
+            webhookType: 'forward',
+            secret,
+            incomingHeaders: { 'x-nango-webhook-event-type': 'v1.audit.deleted' },
+            extraHeaders: { 'X-Nango-Webhook-Event-Type': 'v1.questionnaire.created' },
+            outbound: allowAll
+        });
+
+        const headers = postSpy.mock.calls[1]![2]!.headers as Record<string, string>;
+        expect(Object.entries(headers).filter(([key]) => key.toLowerCase() === 'x-nango-webhook-event-type')).toEqual([
+            ['X-Nango-Webhook-Event-Type', 'v1.questionnaire.created']
+        ]);
+    });
+
     it('caps redirects and attaches the outbound agents from the transport', async () => {
         await deliver({
             webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],

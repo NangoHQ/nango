@@ -86,6 +86,10 @@ export interface NangoForwardWebhookBody extends NangoWebhookBase {
     providerConfigKey: string;
     payload: unknown;
     /**
+     * The event's type, only present for providers that send it in the URL instead of the payload, such as Vanta
+     */
+    eventType?: string;
+    /**
      * Only present when Nango could not verify the webhook came from the provider
      */
     unverified?: true;

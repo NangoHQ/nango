@@ -49,4 +49,5 @@ export { default as docusignWebhookRouting } from './docusign-webhook-routing.js
 export { default as layloWebhookRouting } from './laylo-webhook-routing.js';
 export { default as bambooHrWebhookRouting } from './bamboohr-webhook-routing.js';
 export { default as oktaWebhookRouting } from './okta-webhook-routing.js';
+export { default as vantaWebhookRouting } from './vanta-webhook-routing.js';
 export type * from './types.js';

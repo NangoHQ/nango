@@ -94,6 +94,8 @@ export interface BaseProvider {
     webhook_signature_enforced?: boolean;
     webhook_allowed_query_params?: string[];
     webhook_get_verification?: boolean;
+    // The provider posts each event to `<webhook URL>/<event type>`, so the last path segment is the event's type.
+    webhook_event_type_in_path?: boolean;
     post_connection_script?: string;
     pre_connection_deletion_script?: string;
     credentials_verification_script?: string;

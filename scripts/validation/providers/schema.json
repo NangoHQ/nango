@@ -750,6 +750,9 @@
                         "type": "string"
                     }
                 },
+                "webhook_event_type_in_path": {
+                    "type": "boolean"
+                },
                 "connection_config": {
                     "type": "object",
                     "additionalProperties": false,

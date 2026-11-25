@@ -798,6 +798,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Webhook payload is missing nangoConnectionId';
                 break;
 
+            case 'webhook_missing_event_type':
+                this.status = 400;
+                this.message = 'Webhook URL is missing the event type as its last path segment';
+                break;
+
             case 'webhook_no_connection_or_existing_installation_id':
                 this.status = 400;
                 this.message = 'No connection or existing installation_id';

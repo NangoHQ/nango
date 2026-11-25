@@ -1,0 +1,61 @@
+---
+title: 'How to set up webhooks with Vanta on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Vanta events in your app using Nango webhooks'
+---
+
+## How it works
+
+1. Vanta sends a POST request when one of the events you picked happens, to your Nango webhook URL with the event's type added as the last path segment, such as `/v1.questionnaire.created`.
+2. Nango looks up the connection named by the `nangoConnectionId` query param on the webhook URL and verifies the delivery's signature against that connection's own webhook secret. Vanta signs deliveries with [Standard Webhooks](https://www.standardwebhooks.com/), and Nango rejects deliveries signed more than 5 minutes ago.
+3. Nango routes the event to that connection, with the type from the URL as its webhook type. Vanta payloads have no event type field, so the URL is the only place the type appears. Nango rejects a delivery without it.
+
+Vanta payloads don't say which account they come from, so each connection needs its own webhook endpoint in Vanta and its own `webhookSecret` in Nango. Deliveries without a valid signature are rejected.
+
+Most Vanta payloads only carry the IDs of what changed. A few also carry the new state, such as a questionnaire's or evidence's status, an export's result or a vendor decision. Fetch the object from the [Vanta API](https://developer.vanta.com/reference/manage-vanta/overview) when you need more than the payload holds. See Vanta's [webhook event reference](https://developer.vanta.com/reference/webhooks/overview) for each event's payload.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Vanta integration and copy the **Webhook URL**. Append `?nangoConnectionId=<CONNECTION-ID>` for the connection you are registering the webhook for. URL-encode the connection ID if it contains characters like `+`, `/` or spaces.
+
+### 2. Register the webhook in Vanta
+
+1. In Vanta's webhook settings, add an endpoint.
+2. Set the URL to the URL from step 1, and pick the events to receive.
+3. Copy the endpoint's **Signing secret** (it starts with `whsec_`).
+
+### 3. Set the webhook secret in Nango
+
+Store the whole signing secret, including `whsec_`, as `webhookSecret` in the connection's metadata:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<VANTA-SIGNING-SECRET>" }
+  }'
+```
+
+Use a Nango **Environment API key** from **Environment Settings > API Keys** with the `environment:connections:update` scope. See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+<Note>
+The webhook secret on the integration's Settings page is not used for Vanta. Nango only verifies against the connection's `webhookSecret`.
+</Note>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. The event's type is in the wrapper's `eventType` field and the `X-Nango-Webhook-Event-Type` header. See [External webhook forwarding](/guides/triggers/webhook-forwarding#event-types-sent-in-the-url).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook`. Subscribe with Vanta's event types, such as `v1.questionnaire.created`, or with `*` for every event. See [Real-time syncs](/guides/syncs/realtime-syncs).
+
+## Rollback strategy
+
+Delete the endpoint in Vanta, then clear `webhookSecret` from the connection's metadata.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
