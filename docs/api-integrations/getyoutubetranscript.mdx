@@ -76,7 +76,7 @@ import PreBuiltUseCases from "/snippets/generated/getyoutubetranscript/PreBuiltU
 
 ## API gotchas
 
-- Nango sends the key in the `Authorization: Bearer` header on every call. Calls that need it another way, such as the `x-api-key` header, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key in the `Authorization: Bearer` header on every call.
 - GetYouTubeTranscript's MCP server takes the same key: send MCP requests to `/mcp` through this connection.
 
 ---

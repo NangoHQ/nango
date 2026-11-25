@@ -76,6 +76,6 @@ import PreBuiltUseCases from "/snippets/generated/apiko/PreBuiltUseCases.mdx"
 
 ## API gotchas
 
-- Nango sends the key as `Authorization: Bearer <key>` on every call. Calls that need it another way, such as the `x-goog-api-key` header of the Gemini-native text-to-speech endpoint, can read it from the connection's credentials (`credentials.apiKey`) and pass it as the docs show.
+- Nango sends the key as `Authorization: Bearer <key>` on every call. To send it another way, read it from the connection's credentials (`credentials.apiKey`) in your request.
 
 ---
