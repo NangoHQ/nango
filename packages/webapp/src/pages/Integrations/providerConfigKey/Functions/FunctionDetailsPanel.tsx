@@ -1,11 +1,12 @@
-import { ArrowUpRight, Play, Trash2 } from 'lucide-react';
+import { ArrowUpRight, Play, Trash2, X } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 
-import { Badge, CopyButton, LinkButton } from '@nangohq/design-system';
+import { Badge, CopyButton, IconButton, LinkButton } from '@nangohq/design-system';
 
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Separator } from '@/components/ui/Separator';
 import { Spinner } from '@/components/ui/Spinner';
+import { CompactEmptyState, FunctionPanel, FunctionPanelHeader, FunctionSchemaTabs } from '@/features/Functions/FunctionPanel';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteIntegrationFunction } from '@/hooks/useIntegration';
 import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hooks/useIntegrationFunctions';
@@ -14,7 +15,6 @@ import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
 import { toFunctionDetails } from './functionDetails.utils';
-import { CompactEmptyState, FunctionPanel, FunctionPanelHeader, FunctionSchemaTabs } from './FunctionPanel';
 import { FunctionSourceLabel } from './FunctionSourceLabel';
 
 import type { DetailsFunction, FunctionDetails } from './functionDetails.utils';
@@ -23,10 +23,10 @@ import type { ApiIntegration } from '@nangohq/types';
 interface FunctionDetailsPanelProps {
     fn: DetailsFunction;
     integration: ApiIntegration;
-    onDeleted: () => void;
+    onClose: () => void;
 }
 
-export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: rawFunction, integration, onDeleted }) => {
+export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: rawFunction, integration, onClose }) => {
     const env = useStore((state) => state.env);
     const canOpenPlayground = useCanRunFunctions();
     const { toast } = useToast();
@@ -42,7 +42,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
         try {
             await deleteFunction();
             toast({ title: `Function "${fn.name}" has been deleted`, variant: 'success' });
-            onDeleted();
+            onClose();
         } catch (err) {
             const errorCode = err instanceof APIError ? (err.json as { error?: { code?: string } }).error?.code : undefined;
             toast({
@@ -51,7 +51,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                 variant: 'error'
             });
         }
-    }, [deleteFunction, fn.name, onDeleted, toast]);
+    }, [deleteFunction, fn.name, onClose, toast]);
 
     const { source, pullCommand } = fn;
 
@@ -61,60 +61,59 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn: 
                 name={fn.name}
                 description={fn.description}
                 actions={
-                    (canOpenPlayground || deletion) && (
-                        <>
-                            {canOpenPlayground && (
-                                <LinkButton
-                                    size="sm"
-                                    disabled={!fn.runType}
-                                    onClick={() => {
-                                        if (!fn.runType) return;
-                                        openPlaygroundWithContext({
-                                            source: 'function',
-                                            integration: integration.unique_key,
-                                            functionName: fn.name,
-                                            functionType: fn.runType
-                                        });
-                                    }}
-                                >
-                                    <Play />
-                                    Test run
-                                </LinkButton>
-                            )}
-                            {canOpenPlayground && deletion && <Separator orientation="vertical" />}
-                            {deletion && (
-                                <LinkButton
-                                    tone="neutral-danger"
-                                    size="sm"
-                                    loading={isDeleting}
-                                    onClick={() =>
-                                        void confirm({
-                                            title: 'Delete function?',
-                                            description: deletion.description,
-                                            confirmButtonText: 'Delete function',
-                                            confirmVariant: 'danger',
-                                            onConfirm: onDelete
-                                        })
-                                    }
-                                >
-                                    <Trash2 />
-                                    Delete
-                                </LinkButton>
-                            )}
-                        </>
-                    )
+                    <>
+                        {canOpenPlayground && (
+                            <LinkButton
+                                size="sm"
+                                disabled={!fn.runType}
+                                onClick={() => {
+                                    if (!fn.runType) return;
+                                    openPlaygroundWithContext({
+                                        source: 'function',
+                                        integration: integration.unique_key,
+                                        functionName: fn.name,
+                                        functionType: fn.runType
+                                    });
+                                }}
+                            >
+                                <Play />
+                                Test run
+                            </LinkButton>
+                        )}
+                        {canOpenPlayground && deletion && <Separator orientation="vertical" />}
+                        {deletion && (
+                            <LinkButton
+                                tone="neutral-danger"
+                                size="sm"
+                                loading={isDeleting}
+                                onClick={() =>
+                                    void confirm({
+                                        title: 'Delete function?',
+                                        description: deletion.description,
+                                        confirmButtonText: 'Delete function',
+                                        confirmVariant: 'danger',
+                                        onConfirm: onDelete
+                                    })
+                                }
+                            >
+                                <Trash2 />
+                                Delete
+                            </LinkButton>
+                        )}
+                        {(canOpenPlayground || deletion) && <Separator orientation="vertical" />}
+                        <IconButton variant="ghost" size="sm" label="Close" onClick={onClose}>
+                            <X />
+                        </IconButton>
+                    </>
                 }
             />
 
             <div className="pb-6">
                 <div className="grid grid-cols-2 gap-3 border-b border-border-default p-3">
-                    <Metadata label="Type">
-                        <Badge case="capitalize">{fn.typeLabel}</Badge>
-                    </Metadata>
-                    {fn.frequency && <Metadata label="Frequency">{fn.frequency}</Metadata>}
                     <Metadata label="Source">
                         <FunctionSourceLabel source={source} />
                     </Metadata>
+                    {fn.frequency && <Metadata label="Frequency">{fn.frequency}</Metadata>}
                     {fn.scopes && fn.scopes.length > 0 && (
                         <Metadata label={fn.scopesMatch === 'any' ? 'Requires one of these scopes' : 'Required scopes'} className="col-span-2">
                             <div className="flex flex-wrap gap-2">

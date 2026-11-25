@@ -3,8 +3,8 @@ import { useMemo } from 'react';
 
 import { IconButton } from '@nangohq/design-system';
 
-import { toFunctionSchemas } from '../../Integrations/providerConfigKey/Functions/functionDetails.utils';
-import { FunctionPanel, FunctionPanelHeader, FunctionSchemaTabs } from '../../Integrations/providerConfigKey/Functions/FunctionPanel';
+import { FunctionPanel, FunctionPanelHeader, FunctionSchemaTabs } from '@/features/Functions/FunctionPanel';
+import { toFunctionSchemas } from '@/features/Functions/schemas';
 
 import type { ProviderTemplatesSuccess } from '@nangohq/types';
 
@@ -31,7 +31,7 @@ export const CatalogFunctionPanel: React.FC<CatalogFunctionPanelProps> = ({ fn, 
                 <div>{setupButton}</div>
             </FunctionPanelHeader>
             <div className="pb-6">
-                <FunctionSchemaTabs inputSchema={inputSchema} outputSchemas={outputSchemas} showFieldCounts />
+                <FunctionSchemaTabs inputSchema={inputSchema} outputSchemas={outputSchemas} />
             </div>
         </FunctionPanel>
     );
