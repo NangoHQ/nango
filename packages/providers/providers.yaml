@@ -673,6 +673,11 @@ adobe:
     authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
     token_url: https://ims-na1.adobelogin.com/ims/token/v3
     default_scopes:
+        - openid
+        - AdobeID
+        - read_organizations
+        - additional_info.projectedProductContext
+        - additional_info.job_function
         - offline_access
     authorization_params:
         response_type: code
@@ -683,6 +688,33 @@ adobe:
     proxy:
         base_url: https://ims-na1.adobelogin.com/ims
     docs: https://nango.dev/docs/integrations/all/adobe
+
+adobe-analytics:
+    display_name: Adobe Analytics
+    categories:
+        - analytics
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
+    token_url: https://ims-na1.adobelogin.com/ims/token/v3
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://analytics.adobe.io
+        headers:
+            x-api-key: ${clientId}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/adobe-analytics
+    setup_guide_url: https://nango.dev/docs/api-integrations/adobe-analytics/how-to-register-your-own-adobe-analytics-api-oauth-app
+    post_connection_script: adobeAnalyticsPostConnection
 
 adobe-umapi:
     display_name: UMAPI (Adobe User Management API)
@@ -16359,6 +16391,36 @@ facebook-system-user:
             example: EAAM5b*******************TgZDZD
             doc_section: '#step-1-generating-a-system-user-access-token'
 
+facebook-login-for-business:
+    display_name: Facebook (Login for Business)
+    categories:
+        - marketing
+        - social
+    auth_mode: OAUTH2
+    authorization_url: https://www.facebook.com/v22.0/dialog/oauth
+    token_url: https://graph.facebook.com/v22.0/oauth/access_token
+    authorization_params:
+        config_id: ${connectionConfig.configId}
+        override_default_response_type: 'true'
+    authorization_url_skip_encode:
+        - scopes
+    proxy:
+        base_url: https://graph.facebook.com
+    docs: https://nango.dev/docs/api-integrations/facebook-login-for-business
+    setup_guide_url: https://nango.dev/docs/api-integrations/facebook-login-for-business/how-to-register-your-own-facebook-login-for-business-api-oauth-app
+    integration_config:
+        configId:
+            type: string
+            title: Configuration ID
+            description: The ID of your Facebook Login for Business configuration, from your Meta app's dashboard.
+            pattern: '^[0-9]+$'
+    connection_config:
+        configId:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 faktoora:
     display_name: faktoora
     categories:
@@ -22004,6 +22066,12 @@ instagram:
     docs: https://nango.dev/docs/api-integrations/instagram
     setup_guide_url: https://nango.dev/docs/api-integrations/instagram/how-to-register-your-own-instagram-api-oauth-app
 
+instagram-login-for-business:
+    alias: facebook-login-for-business
+    display_name: Instagram (Login for Business)
+    docs: https://nango.dev/docs/api-integrations/instagram-login-for-business
+    setup_guide_url: https://nango.dev/docs/api-integrations/instagram-login-for-business/how-to-register-your-own-instagram-login-for-business-api-oauth-app
+
 icypeas:
     display_name: Icypeas
     categories:
@@ -23942,6 +24010,27 @@ lightspeed-retail:
             title: ''
             description: ''
             automated: true
+
+line-yahoo-ads:
+    display_name: LINE Yahoo Ads
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://biz-oauth.yahoo.co.jp/oauth/v1/authorize
+    token_url: https://biz-oauth.yahoo.co.jp/oauth/v1/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - yahooads
+    disable_pkce: true
+    proxy:
+        base_url: https://ads-search.yahooapis.jp
+    docs: https://nango.dev/docs/api-integrations/line-yahoo-ads
+    setup_guide_url: https://nango.dev/docs/api-integrations/line-yahoo-ads/how-to-register-your-own-line-yahoo-ads-api-oauth-app
 
 linear:
     display_name: Linear
@@ -28138,6 +28227,8 @@ okta:
             type: 'link'
             limit_name_in_request: 'limit'
             link_rel_in_response_header: 'next'
+    webhook_routing_script: oktaWebhookRouting
+    webhook_get_verification: true
     docs: https://nango.dev/docs/integrations/all/okta
     connection_config:
         subdomain:
@@ -28166,6 +28257,8 @@ okta-api-key:
             method: GET
             endpoints:
                 - /api/v1/users/me
+    webhook_routing_script: oktaWebhookRouting
+    webhook_get_verification: true
     docs: https://nango.dev/docs/api-integrations/okta-api-key
     docs_connect: https://nango.dev/docs/api-integrations/okta-api-key/connect
     credentials:
@@ -28206,6 +28299,8 @@ okta-cc:
             type: 'link'
             limit_name_in_request: 'limit'
             link_rel_in_response_header: 'next'
+    webhook_routing_script: oktaWebhookRouting
+    webhook_get_verification: true
     docs: https://nango.dev/docs/api-integrations/okta-cc
     docs_connect: https://nango.dev/docs/api-integrations/okta-cc/connect
     credentials:
@@ -28822,6 +28917,30 @@ oracle-cloud-identity:
             suffix: .identity.oraclecloud.com
             order: 1
             doc_section: '#step-1-finding-your-service-instance'
+
+orb:
+    display_name: Orb
+    categories:
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.withorb.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/ping
+    docs: https://nango.dev/docs/api-integrations/orb
+    docs_connect: https://nango.dev/docs/api-integrations/orb/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Orb API key (live or test mode).
+            pattern: '^[A-Za-z0-9_-]{20,}$'
+            example: 3vq8********************************************************m2x7
+            doc_section: '#step-1-create-an-api-key'
 
 ordinal:
     display_name: Ordinal
@@ -30179,6 +30298,30 @@ publora:
             pattern: '^sk_[a-z0-9]{8}(_[a-z0-9]{8})?\.[a-f0-9]{52}$'
             example: sk_mrmbzomn_1a2b3c4d.964793af****************************************0ab
             doc_section: '#step-1-creating-your-api-key'
+
+returnless:
+    display_name: Returnless
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api-v2.returnless.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /2025-01/account
+    docs: https://nango.dev/docs/api-integrations/returnless
+    docs_connect: https://nango.dev/docs/api-integrations/returnless/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Returnless API key.
+            pattern: '^[A-Za-z0-9]{20,}$'
+            example: Qk7d****************************************m2Xr
+            doc_section: '#step-1-create-an-api-key'
 
 rev-ai:
     display_name: Rev AI

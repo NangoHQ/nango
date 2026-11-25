@@ -22,7 +22,6 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { AuthBadge } from './components/AuthBadge';
-import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
 export const IntegrationsList = () => {
     const navigate = useNavigate();
@@ -143,8 +142,6 @@ export const IntegrationsList = () => {
                     </span>
                 </div>
             )}
-
-            <AutoIdlingBanner />
 
             {isPending && (
                 <div className="flex flex-col gap-1">

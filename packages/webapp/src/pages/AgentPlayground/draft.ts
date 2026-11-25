@@ -3,14 +3,15 @@ import { PROVIDER_STARTER_PROMPTS } from './starterPrompts';
 export interface PlaygroundDraft {
     text: string;
     env: string;
+    starterProvider?: string;
 }
 
 interface PlaygroundDraftState {
     playgroundDraft: PlaygroundDraft;
 }
 
-export function playgroundDraftState(text: string, env: string): PlaygroundDraftState {
-    return { playgroundDraft: { text, env } };
+export function playgroundDraftState(text: string, env: string, starterProvider?: string): PlaygroundDraftState {
+    return { playgroundDraft: { text, env, ...(starterProvider ? { starterProvider } : {}) } };
 }
 
 export function readPlaygroundDraft(state: unknown): PlaygroundDraft | undefined {
@@ -19,7 +20,8 @@ export function readPlaygroundDraft(state: unknown): PlaygroundDraft | undefined
     }
     const draft = state.playgroundDraft;
     if (draft && typeof draft === 'object' && 'text' in draft && 'env' in draft && typeof draft.text === 'string' && typeof draft.env === 'string') {
-        return { text: draft.text, env: draft.env };
+        const starterProvider = 'starterProvider' in draft && typeof draft.starterProvider === 'string' ? draft.starterProvider : undefined;
+        return { text: draft.text, env: draft.env, ...(starterProvider ? { starterProvider } : {}) };
     }
     return undefined;
 }

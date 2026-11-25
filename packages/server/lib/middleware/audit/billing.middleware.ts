@@ -5,7 +5,6 @@ import type {
     DeleteSpendAlert,
     DeleteStripePayment,
     PostPlanChange,
-    PostPlanExtendTrial,
     PostStripeCollectPayment,
     PutBillingInvoicingDetails,
     PutSpendAlert
@@ -18,10 +17,6 @@ export const auditBillingPlanChanged = auditable<PostPlanChange>({
             toPlan: nonEmptyString(req.body.orbId),
             fromPlan: locals.plan?.name || undefined
         })
-});
-
-export const auditBillingTrialExtended = auditable<PostPlanExtendTrial>({
-    policy: Audit.auditable({ resource: 'billing', action: 'trial_extended', scope: 'account' })
 });
 
 export const auditBillingDetailsChanged = auditable<PutBillingInvoicingDetails>({

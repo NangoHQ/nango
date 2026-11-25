@@ -1,0 +1,43 @@
+---
+title: 'Orb - How do I link my account?'
+sidebarTitle: 'Orb'
+---
+
+## Overview
+
+To authenticate with Orb, you need:
+
+1. **API Key** — an API key created in the Orb web app.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- An Orb account. Live mode and test mode have separate API keys: create the key in the mode whose data you want to connect.
+
+### Step 1: Create an API key
+
+1. Log in to the [Orb web app](https://app.withorb.com).
+2. To create a test mode key, turn on the **Test mode** toggle at the bottom of the left sidebar. Leave it off for a live mode key.
+3. Open **Developers** in the sidebar and click **API keys**.
+
+<img src="/api-integrations/orb/developers_api_keys_menu.png" alt="Orb sidebar with the Developers menu open and API keys highlighted"/>
+
+4. Click **Create an API key** (or **New API key** if you already have keys).
+5. Enter a **Key name** and choose an **Access level**: **Full access**, **Read-only**, or **Custom permissions** to set each area (such as Customers & Credits, Subscriptions, Invoices, Plans and Prices) to None, Read or Write. Pick the access your integration needs, then click **Create**.
+
+<img src="/api-integrations/orb/create_api_key_dialog.png" alt="Orb Create a new API key dialog with the key name, Admin key checkbox, Access level and Create button"/>
+
+6. In the **Copy API key** dialog, click **Copy** and store the key securely. Orb shows it only once.
+
+<img src="/api-integrations/orb/copy_api_key.png" alt="Orb Copy API key dialog with the Copy button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Orb.
+2. Paste the key you copied in Step 1 into the **API Key** field.
+3. Submit the form. Nango checks the key with Orb and rejects it if it is not valid.
+
+<img src="/api-integrations/orb/form.png" alt="Orb Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Orb.

@@ -29,6 +29,7 @@ export interface AgentSessionMetaToolsInput {
     nango_execute?: boolean | { enabled: boolean } | undefined;
     nango_proxy?: boolean | { enabled: boolean } | undefined;
     nango_create_connection?: boolean | { enabled: boolean; tags?: Tags | undefined } | undefined;
+    nango_run_code?: boolean | { enabled: boolean } | undefined;
 }
 
 export interface PostAgentSessionsBody {
@@ -56,6 +57,7 @@ export interface AgentSessionMetaToolsSummary {
     nango_execute: boolean;
     nango_proxy: boolean;
     nango_create_connection: AgentSessionCreateConnectionConfig;
+    nango_run_code?: boolean;
 }
 
 export interface AgentSessionUnknownMetaToolsPayload {

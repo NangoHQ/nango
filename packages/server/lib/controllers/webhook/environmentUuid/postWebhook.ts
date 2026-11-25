@@ -66,13 +66,22 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 return;
             }
 
+            const provider = getProvider(integration.provider);
+
+            const allowedMethods = provider?.webhook_get_verification ? ['GET', 'POST'] : ['POST'];
+            if (!allowedMethods.includes(req.method)) {
+                res.status(405)
+                    .set('Allow', allowedMethods.join(', '))
+                    .send({ error: { code: 'method_not_allowed' } });
+                return;
+            }
+            const method = req.method === 'GET' ? 'GET' : 'POST';
+
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED, 1, {
                 accountId: account.id,
                 provider: integration.provider,
                 providerConfigKey: integration.unique_key
             });
-
-            const provider = getProvider(integration.provider);
 
             // Query params are blocked by default — providers may include unverifiable params
             // that can't be covered by webhook signatures. Only params explicitly listed in
@@ -86,14 +95,14 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
             const rawHeaders = getHeaders(req.headers);
             const request: WebhookRequest = {
-                method: 'POST',
+                method,
                 path: req.path,
                 headers: redactHeaders({ headers: rawHeaders, headersToFilter: WEBHOOK_SECRET_HEADERS }),
                 query: queryFiltered,
                 body: req.body,
                 // The raw headers and body are included for signature verification.
                 rawHeaders,
-                rawBody: req.rawBody!
+                rawBody: req.rawBody ?? ''
             };
 
             const response = await routeWebhook({

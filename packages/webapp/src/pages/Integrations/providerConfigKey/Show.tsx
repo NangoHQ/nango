@@ -20,7 +20,6 @@ import { TryInPlaygroundButton } from '@/pages/AgentPlayground/components/TryInP
 import { CatalogLogo } from '@/pages/Catalog/components/CatalogLogo';
 import { useStore } from '@/store';
 import { openPlaygroundWithContext, useCanRunFunctions } from '@/utils/playground';
-import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
 
@@ -31,7 +30,7 @@ const integrationLinkClassName =
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
-    const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
+    const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'settings');
     const [functionOpen, setFunctionOpen] = useState(false);
     const functionDrawerOpen = activeTab === 'functions' && functionOpen;
 
@@ -99,8 +98,6 @@ export const ShowIntegration: React.FC = () => {
                     </PermissionGate>
                 </div>
             </header>
-
-            <AutoIdlingBanner />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
                 <div className="flex items-center justify-between gap-4">

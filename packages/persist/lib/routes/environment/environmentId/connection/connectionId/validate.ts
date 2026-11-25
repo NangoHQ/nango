@@ -1,10 +1,13 @@
 import * as z from 'zod';
 
 import { operationIdRegex } from '@nangohq/logs';
+import { isAgentSessionResultModel } from '@nangohq/shared';
+
+const readableModelSchema = z.string().refine((model) => !isAgentSessionResultModel(model), { message: 'Invalid model' });
 
 const getCursorQuerySchema = z
     .object({
-        model: z.string(),
+        model: readableModelSchema,
         offset: z.union([z.literal('first'), z.literal('last')])
     })
     .strict();
@@ -23,7 +26,7 @@ export const getCursorRequestParser = {
 
 const getRecordsQuerySchema = z
     .object({
-        model: z.string(),
+        model: readableModelSchema,
         cursor: z.string().optional(),
         limit: z.coerce.number().int().positive().default(100),
         activityLogId: operationIdRegex.optional(),

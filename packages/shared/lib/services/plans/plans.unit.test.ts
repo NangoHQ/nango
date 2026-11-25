@@ -175,7 +175,6 @@ describe('mergeFlags', () => {
                     has_otel: true,
                     api_rate_limit_size: '2xl',
                     proxy_max: 99_999_999,
-                    auto_idle: true,
                     can_disable_connect_ui_watermark: false,
                     has_audit_trail_control_plane: false,
                     has_audit_trail_access: true
@@ -194,7 +193,6 @@ describe('mergeFlags', () => {
                 api_rate_limit_size: '2xl', // Keep override
                 has_audit_trail_control_plane: true // New plan grants it, so a paid plan always ends up recording
                 // proxy_max: new plan more generous default (null)
-                // auto_idle: new plan more generous default (false)
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
             expect(newFlags).not.toHaveProperty('has_audit_trail_access');
@@ -358,16 +356,10 @@ function makePlan({
         orb_future_plan: null,
         orb_future_plan_at: null,
         orb_subscribed_at: null,
-        trial_start_at: null,
-        trial_end_at: null,
-        trial_extension_count: 0,
-        trial_end_notified_at: null,
-        trial_expired: null,
         api_rate_limit_size: 'm',
         monthly_actions_max: null,
         monthly_active_records_max: null,
         sync_frequency_secs_min: 3600,
-        auto_idle: false,
         has_otel: false,
         has_webhooks_forward: false,
         has_webhooks_script: false,

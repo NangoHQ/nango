@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { getFlags } from '@nangohq/feature-flags';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { resolveAuditAttribution } from '../../../middleware/audit/auditable.js';
 import { startTurn } from '../../../services/agentPlayground.service.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
@@ -67,7 +68,7 @@ export const postAgentPlaygroundChat = asyncWrapperWithEnvironment<PostAgentPlay
     });
 
     const stream = await startTurn({
-        ctx: { account, environment, plan, user },
+        ctx: { account, environment, plan, user, auditAttribution: resolveAuditAttribution(req, res.locals) },
         sessionId: body.data.sessionId,
         chatId: body.data.chatId,
         messages,

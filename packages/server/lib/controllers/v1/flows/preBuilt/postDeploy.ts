@@ -35,12 +35,11 @@ export const postPreBuiltDeploy = asyncWrapperWithEnvironment<PostPreBuiltDeploy
     }
 
     const body: PostPreBuiltDeploy['Body'] = val.data;
-    const { environment, account, plan } = res.locals;
+    const { environment, account } = res.locals;
 
     const outcome = await deployIntegrationTemplate({
         environment,
         account,
-        plan,
         providerConfigKey: body.providerConfigKey,
         name: body.scriptName,
         type: body.type
@@ -55,9 +54,6 @@ export const postPreBuiltDeploy = asyncWrapperWithEnvironment<PostPreBuiltDeploy
             }
             case 'integration_not_found':
                 res.status(400).send({ error: { code: 'unknown_provider' } });
-                return;
-            case 'plan_limit':
-                res.status(400).send({ error: { code: 'plan_limit', message: "Can't enable more script, upgrade or extend your trial period" } });
                 return;
             case 'template_not_found':
                 res.status(400).send({ error: { code: 'invalid_body', message: 'No template exists for this provider and script name' } });

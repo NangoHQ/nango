@@ -39,7 +39,7 @@ export const Root: React.FC = () => {
                 navigate(`/${randomEnv}`, { replace: true });
                 return;
             }
-            navigate('/dev/catalog');
+            navigate('/dev/getting-started');
             return;
         }
 

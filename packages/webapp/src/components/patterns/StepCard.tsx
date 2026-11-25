@@ -32,8 +32,7 @@ export const StepCard: React.FC<StepCardProps> = ({ state, icon, title, descript
             <div
                 className={cn(
                     'grid grid-cols-[32px_minmax(0,1fr)] gap-4 rounded-ds-md border-ds-hairline p-5 transition-[background-color,border-color,box-shadow] max-sm:grid-cols-1 max-sm:gap-3 max-sm:p-4',
-                    state === 'current' && 'border-border-strong bg-surface-raised shadow-container-panel',
-                    state === 'done' && 'border-border-default bg-surface-panel',
+                    state !== 'upcoming' && 'border-border-default bg-surface-panel',
                     state === 'upcoming' && 'border-border-default bg-transparent'
                 )}
             >

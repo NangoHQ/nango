@@ -71,10 +71,10 @@ describe('checkEnterpriseLicense', () => {
         vi.useRealTimers();
     });
 
-    it('does nothing when NANGO_LICENSE_CHECK is not set', async () => {
+    it('does nothing when NANGO_LICENSE_CHECK is false', async () => {
         state.envs.NANGO_LICENSE_CHECK = false;
         await checkEnterpriseLicense();
-        expect(state.logger.info).toHaveBeenCalledWith('License check disabled: NANGO_LICENSE_CHECK is not set.');
+        expect(state.logger.info).toHaveBeenCalledWith('License check disabled: NANGO_LICENSE_CHECK is false.');
         expect(state.logger.warning).not.toHaveBeenCalled();
     });
 

@@ -8,6 +8,7 @@ import { records } from '@nangohq/records';
 import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
 import {
     accountService,
+    agentSessionResultModel,
     configService,
     connectionService,
     createPlan,
@@ -405,6 +406,15 @@ describe('Persist API', () => {
     });
 
     describe('getCursor', () => {
+        it('should 400 for an agent session result model', async () => {
+            const model = agentSessionResultModel('0b5ff4f1-8d3b-4e0a-9d4c-3f0d6c1b2a10');
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/cursor?model=${model}&offset=last`, {
+                method: 'GET',
+                headers: { Authorization: `Bearer ${mockSecretKey}`, 'Content-Type': 'application/json' }
+            });
+            expect(response.status).toEqual(400);
+        });
+
         it('should return an empty response if no records', async () => {
             const model = 'does-not-exist';
             const cursorUrl = `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/cursor?model=${model}&offset=last`;
@@ -483,6 +493,15 @@ describe('Persist API', () => {
     });
 
     describe('getRecords', () => {
+        it('should 400 for an agent session result model', async () => {
+            const model = agentSessionResultModel('0b5ff4f1-8d3b-4e0a-9d4c-3f0d6c1b2a10');
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/records?model=${model}`, {
+                method: 'GET',
+                headers: { Authorization: `Bearer ${mockSecretKey}`, 'Content-Type': 'application/json' }
+            });
+            expect(response.status).toEqual(400);
+        });
+
         it('should 400 if no model given', async () => {
             const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/records`, {
                 method: 'GET',

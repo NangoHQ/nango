@@ -7,7 +7,6 @@ import {
     getCardMeta,
     getCategoryLabel,
     getInitials,
-    getInstantSetup,
     getOneClickSetupBody,
     listCategories,
     sortProviders
@@ -22,73 +21,34 @@ function provider(overrides: Partial<ApiProviderListItem> & Pick<ApiProviderList
         docs: '',
         preConfigured: false,
         preConfiguredScopes: [],
+        instantSetup: null,
         functionCounts: { tools: 0, syncs: 0 },
         ...overrides
     };
 }
 
-describe('getInstantSetup', () => {
-    it('is managed when Nango has preconfigured credentials, even for OAuth 2', () => {
-        expect(getInstantSetup(provider({ name: 'hubspot', authMode: 'OAUTH2', preConfigured: true }))).toBe('managed');
-    });
-
-    it.each(['OAUTH1', 'OAUTH2', 'APP', 'CUSTOM'] as const)('is not instant for %s without preconfigured credentials', (authMode) => {
-        expect(getInstantSetup(provider({ name: 'x', authMode }))).toBeNull();
-    });
-
-    it.each(['API_KEY', 'BASIC', 'OAUTH2_CC', 'JWT', 'TBA', 'NONE'] as const)('needs no developer app for %s', (authMode) => {
-        expect(getInstantSetup(provider({ name: 'x', authMode }))).toBe('no-dev-app');
-    });
-
-    it('is not instant for MCP OAuth with a static client', () => {
-        expect(getInstantSetup(provider({ name: 'x', authMode: 'MCP_OAUTH2', clientRegistration: 'static' }))).toBeNull();
-        expect(getInstantSetup(provider({ name: 'x', authMode: 'MCP_OAUTH2', clientRegistration: 'dynamic' }))).toBe('no-dev-app');
-    });
-});
-
 describe('getOneClickSetupBody', () => {
-    it('uses Nango’s credentials when the provider is managed', () => {
-        expect(getOneClickSetupBody(provider({ name: 'hubspot', preConfigured: true }))).toEqual({ provider: 'hubspot', useSharedCredentials: true });
+    it('uses Nango’s credentials when Nango manages the app', () => {
+        expect(getOneClickSetupBody(provider({ name: 'hubspot', instantSetup: 'nango-managed-app' }))).toEqual({
+            provider: 'hubspot',
+            useSharedCredentials: true
+        });
     });
 
     it.each(['API_KEY', 'BASIC', 'OAUTH2_CC', 'JWT', 'NONE'] as const)('creates a %s integration without credentials', (authMode) => {
-        expect(getOneClickSetupBody(provider({ name: 'x', authMode }))).toEqual({ provider: 'x', useSharedCredentials: false });
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode, instantSetup: 'no-dev-app' }))).toEqual({ provider: 'x', useSharedCredentials: false });
     });
 
     it.each(['MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'] as const)('creates a %s integration with default auth settings', (authMode) => {
-        expect(getOneClickSetupBody(provider({ name: 'x', authMode }))).toEqual({ provider: 'x', useSharedCredentials: false, auth: { authType: authMode } });
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode, instantSetup: 'no-dev-app' }))).toEqual({
+            provider: 'x',
+            useSharedCredentials: false,
+            auth: { authType: authMode }
+        });
     });
 
-    it('needs the setup form for MCP servers that require your own client', () => {
-        expect(getOneClickSetupBody(provider({ name: 'x', authMode: 'MCP_OAUTH2', clientRegistration: 'static' }))).toBeNull();
-    });
-
-    it.each(['OAUTH2', 'TBA', 'INSTALL_PLUGIN'] as const)('needs the setup form for %s', (authMode) => {
-        expect(getOneClickSetupBody(provider({ name: 'x', authMode }))).toBeNull();
-    });
-
-    it('needs the setup form when a managed provider has integration config', () => {
-        expect(
-            getOneClickSetupBody(
-                provider({
-                    name: 'x',
-                    preConfigured: true,
-                    integration_config: { region: { type: 'string', title: 'Region', description: '', order: 0, automated: false } }
-                })
-            )
-        ).toBeNull();
-    });
-
-    it('needs the setup form when the provider has integration config', () => {
-        expect(
-            getOneClickSetupBody(
-                provider({
-                    name: 'x',
-                    authMode: 'API_KEY',
-                    integration_config: { region: { type: 'string', title: 'Region', description: '', order: 0, automated: false } }
-                })
-            )
-        ).toBeNull();
+    it('needs the setup form when the provider has no instant setup, such as one with required setup fields', () => {
+        expect(getOneClickSetupBody(provider({ name: 'x', authMode: 'TBA', instantSetup: null }))).toBeNull();
     });
 });
 
@@ -121,8 +81,8 @@ describe('sortProviders', () => {
 describe('filterProviders', () => {
     const providers = [
         provider({ name: 'github', authMode: 'OAUTH2', categories: ['dev-tools'] }),
-        provider({ name: 'gitlab', authMode: 'API_KEY', categories: ['dev-tools'] }),
-        provider({ name: 'stripe', authMode: 'API_KEY', categories: ['payment'] })
+        provider({ name: 'gitlab', authMode: 'API_KEY', categories: ['dev-tools'], instantSetup: 'no-dev-app' }),
+        provider({ name: 'stripe', authMode: 'API_KEY', categories: ['payment'], instantSetup: 'no-dev-app' })
     ];
 
     it('combines category and instant filters', () => {

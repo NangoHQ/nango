@@ -8,8 +8,17 @@ export interface AgentPlaygroundUsage {
 
 export interface AgentPlaygroundIntegrationSetup {
     provider: string;
+    displayName?: string;
     integrationId?: string;
-    outcome: 'created' | 'existing' | 'missing_credentials' | 'not_created';
+    outcome: 'created' | 'existing' | 'missing_credentials' | 'needs_developer_app' | 'needs_setup' | 'needs_confirmation' | 'not_created';
+    usesSharedCredentials?: boolean;
+}
+
+export type AgentPlaygroundSetUpToolName = 'set_up_integrations';
+
+export interface AgentPlaygroundSetUpToolOutput {
+    setups: AgentPlaygroundIntegrationSetup[];
+    unknown?: { app: string; suggestions: string[] }[];
 }
 
 export type AgentPlaygroundSessionChange = 'integrations_changed' | 'connections_changed';
@@ -19,12 +28,18 @@ export interface AgentPlaygroundSessionCreated {
     reason?: AgentPlaygroundSessionChange | 'expired';
 }
 
+// A continuation after a setup streams into the same message, so a part keeps each session where it started.
+export type AgentPlaygroundDataParts = {
+    session: AgentPlaygroundSessionCreated;
+};
+
 export interface AgentPlaygroundMessageMetadata {
     sessionId?: string;
     hidden?: boolean;
     connectedIntegrations?: string[];
     starterProvider?: string;
     integrationSetup?: AgentPlaygroundIntegrationSetup;
+    // Only chats saved before sessions became `data-session` parts carry this, and they still load from local storage.
     sessionCreated?: AgentPlaygroundSessionCreated;
     usage?: AgentPlaygroundUsage;
     // Marks a reply that was stopped or failed, so the chat can still show that after a reload.

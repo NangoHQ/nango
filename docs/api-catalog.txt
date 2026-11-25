@@ -5,7 +5,7 @@
 - [OpenAPI spec](https://nango.dev/docs/spec.yaml): Exact HTTP API schemas for code generation or typed clients.
 - [Docs MCP server](https://nango.dev/docs/mcp): Live docs context without authentication. The Management MCP server includes the same docs tools.
 
-Provider count: 1468
+Provider count: 1474
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -35,6 +35,7 @@ URL patterns:
 | `addressfinder` | Addressfinder | API_KEY | [docs](https://nango.dev/docs/api-integrations/addressfinder.md) | [connect](https://nango.dev/docs/api-integrations/addressfinder/connect.md) |  | other |
 | `addresszen` | AddressZen | API_KEY | [docs](https://nango.dev/docs/api-integrations/addresszen.md) | [connect](https://nango.dev/docs/api-integrations/addresszen/connect.md) |  | other |
 | `adobe` | Adobe | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/adobe.md) |  |  | design |
+| `adobe-analytics` | Adobe Analytics | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/adobe-analytics.md) |  | [setup](https://nango.dev/docs/api-integrations/adobe-analytics/how-to-register-your-own-adobe-analytics-api-oauth-app.md) | analytics, marketing |
 | `adobe-commerce` | Adobe Commerce | API_KEY | [docs](https://nango.dev/docs/api-integrations/adobe-commerce.md) | [connect](https://nango.dev/docs/api-integrations/adobe-commerce/connect.md) |  | e-commerce |
 | `adobe-umapi` | UMAPI (Adobe User Management API) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adobe-umapi.md) | [connect](https://nango.dev/docs/integrations/all/adobe-umapi/connect.md) |  | other |
 | `adobe-workfront` | Adobe Workfront | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/adobe-workfront.md) | [connect](https://nango.dev/docs/integrations/all/adobe-workfront/connect.md) |  | productivity |
@@ -564,6 +565,7 @@ URL patterns:
 | `extensiv` | Extensiv | BASIC | [docs](https://nango.dev/docs/api-integrations/extensiv.md) | [connect](https://nango.dev/docs/api-integrations/extensiv/connect.md) |  | e-commerce |
 | `extracta-ai` | Extracta.ai | API_KEY | [docs](https://nango.dev/docs/api-integrations/extracta-ai.md) | [connect](https://nango.dev/docs/api-integrations/extracta-ai/connect.md) |  | other |
 | `facebook` | Facebook | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/facebook.md) |  | [setup](https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-api-oauth-app.md) | marketing, social |
+| `facebook-login-for-business` | Facebook (Login for Business) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/facebook-login-for-business.md) |  | [setup](https://nango.dev/docs/api-integrations/facebook-login-for-business/how-to-register-your-own-facebook-login-for-business-api-oauth-app.md) | marketing, social |
 | `facebook-system-user` | Facebook (System User Token) | API_KEY | [docs](https://nango.dev/docs/api-integrations/facebook-system-user.md) | [connect](https://nango.dev/docs/api-integrations/facebook-system-user/connect.md) |  | marketing, social |
 | `faceup` | FaceUp | API_KEY | [docs](https://nango.dev/docs/api-integrations/faceup.md) | [connect](https://nango.dev/docs/api-integrations/faceup/connect.md) |  | other |
 | `factorial` | Factorial (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/factorial.md) |  |  | hr |
@@ -781,6 +783,7 @@ URL patterns:
 | `ingenious-build-pat` | INGENIOUS.BUILD (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/api-integrations/ingenious-build-pat.md) | [connect](https://nango.dev/docs/api-integrations/ingenious-build-pat/connect.md) |  | erp, accounting |
 | `insightly` | Insightly | BASIC | [docs](https://nango.dev/docs/integrations/all/insightly.md) |  |  | crm |
 | `instagram` | Instagram | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/instagram.md) |  | [setup](https://nango.dev/docs/api-integrations/instagram/how-to-register-your-own-instagram-api-oauth-app.md) | marketing, social |
+| `instagram-login-for-business` | Instagram (Login for Business) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/instagram-login-for-business.md) |  | [setup](https://nango.dev/docs/api-integrations/instagram-login-for-business/how-to-register-your-own-instagram-login-for-business-api-oauth-app.md) | marketing, social |
 | `instantly` | Instantly | API_KEY | [docs](https://nango.dev/docs/integrations/all/instantly.md) | [connect](https://nango.dev/docs/integrations/all/instantly/connect.md) |  | marketing, communication |
 | `inteliquent` | Inteliquent | BASIC | [docs](https://nango.dev/docs/api-integrations/inteliquent.md) | [connect](https://nango.dev/docs/api-integrations/inteliquent/connect.md) |  | communication |
 | `intercom` | Intercom | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/intercom.md) | [connect](https://nango.dev/docs/api-integrations/intercom/connect.md) | [setup](https://nango.dev/docs/api-integrations/intercom/how-to-register-your-own-intercom-api-oauth-app.md) | marketing, popular, support, surveys, ticketing |
@@ -846,6 +849,7 @@ URL patterns:
 | `lever-sandbox` | Lever (OAuth Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/lever-sandbox.md) |  |  | ats |
 | `lightfield` | Lightfield | API_KEY | [docs](https://nango.dev/docs/api-integrations/lightfield.md) | [connect](https://nango.dev/docs/api-integrations/lightfield/connect.md) |  | crm |
 | `lightspeed-retail` | Lightspeed Retail (X-Series) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/lightspeed-retail.md) |  | [setup](https://nango.dev/docs/api-integrations/lightspeed-retail/how-to-register-your-own-lightspeed-retail-api-oauth-app.md) | e-commerce |
+| `line-yahoo-ads` | LINE Yahoo Ads | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/line-yahoo-ads.md) |  | [setup](https://nango.dev/docs/api-integrations/line-yahoo-ads/how-to-register-your-own-line-yahoo-ads-api-oauth-app.md) | marketing |
 | `linear` | Linear | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linear.md) |  | [setup](https://nango.dev/docs/api-integrations/linear/how-to-register-your-own-linear-api-oauth-app.md) | popular, productivity, ticketing |
 | `linear-mcp` | Linear (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linear-mcp.md) |  |  | popular, productivity, ticketing, mcp |
 | `linkedin` | LinkedIn | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linkedin.md) |  | [setup](https://nango.dev/docs/api-integrations/linkedin/how-to-register-your-own-linkedin-api-oauth-app.md) | ats, social |
@@ -1017,6 +1021,7 @@ URL patterns:
 | `oracle-cloud-identity` | Oracle Cloud Identity | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/oracle-cloud-identity.md) | [connect](https://nango.dev/docs/api-integrations/oracle-cloud-identity/connect.md) |  | dev-tools, iam |
 | `oracle-hcm` | Oracle Fusion Cloud (HCM) | BASIC | [docs](https://nango.dev/docs/integrations/all/oracle-hcm.md) | [connect](https://nango.dev/docs/integrations/all/oracle-hcm/connect.md) |  | hr |
 | `orange-logic` | Orange Logic | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/orange-logic.md) | [connect](https://nango.dev/docs/api-integrations/orange-logic/connect.md) |  | storage |
+| `orb` | Orb | API_KEY | [docs](https://nango.dev/docs/api-integrations/orb.md) | [connect](https://nango.dev/docs/api-integrations/orb/connect.md) |  | invoicing |
 | `ordinal` | Ordinal | API_KEY | [docs](https://nango.dev/docs/api-integrations/ordinal.md) | [connect](https://nango.dev/docs/api-integrations/ordinal/connect.md) |  | productivity |
 | `ory` | Ory | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/ory.md) |  |  | iam |
 | `osu` | Osu | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/osu.md) |  |  | gaming |
@@ -1146,6 +1151,7 @@ URL patterns:
 | `resend` | Resend | API_KEY | [docs](https://nango.dev/docs/api-integrations/resend.md) | [connect](https://nango.dev/docs/api-integrations/resend/connect.md) |  | communication |
 | `resova` | Resova | API_KEY | [docs](https://nango.dev/docs/api-integrations/resova.md) | [connect](https://nango.dev/docs/api-integrations/resova/connect.md) |  | other |
 | `retell-ai` | Retell AI | API_KEY | [docs](https://nango.dev/docs/integrations/all/retell-ai.md) | [connect](https://nango.dev/docs/integrations/all/retell-ai/connect.md) |  | dev-tools, productivity |
+| `returnless` | Returnless | API_KEY | [docs](https://nango.dev/docs/api-integrations/returnless.md) | [connect](https://nango.dev/docs/api-integrations/returnless/connect.md) |  | e-commerce |
 | `rev-ai` | Rev AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/rev-ai.md) | [connect](https://nango.dev/docs/api-integrations/rev-ai/connect.md) |  | other |
 | `revivn` | Revivn | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/revivn.md) | [connect](https://nango.dev/docs/api-integrations/revivn/connect.md) |  | other |
 | `revolut-business` | Revolut Business | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/revolut-business.md) | [connect](https://nango.dev/docs/api-integrations/revolut-business/connect.md) | [setup](https://nango.dev/docs/api-integrations/revolut-business/how-to-register-your-own-revolut-business-api-oauth-app.md) | banking |
