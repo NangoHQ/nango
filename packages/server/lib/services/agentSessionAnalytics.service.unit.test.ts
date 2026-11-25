@@ -81,7 +81,8 @@ describe('trackAgentSessionCreated', () => {
             is_tool_search_enabled: true,
             is_execute_enabled: true,
             is_proxy_enabled: false,
-            is_create_connection_enabled: false
+            is_create_connection_enabled: false,
+            is_run_code_enabled: false
         });
     });
 
@@ -152,7 +153,8 @@ describe('trackAgentSessionCreated', () => {
                 meta_tools: {
                     nango_proxy: true,
                     nango_execute: { enabled: false },
-                    nango_create_connection: { enabled: true, tags: { end_user_id: 'user-1' } }
+                    nango_create_connection: { enabled: true, tags: { end_user_id: 'user-1' } },
+                    nango_run_code: true
                 },
                 expires_in: '1h'
             })
@@ -164,7 +166,12 @@ describe('trackAgentSessionCreated', () => {
                 tenant: { connections: { any: [{ tags: ['end_user_id', 'end_user_email'] }], pinned: [{ integration_id: 'notion' }] } },
                 toolset: { notion: { allow: { tools: ['create-page'] } }, slack: { deny: { tools: ['delete-message'] } }, github: '*' },
                 pinned_tools: { notion: ['create-page'] },
-                meta_tools: { nango_proxy: true, nango_execute: { enabled: false }, nango_create_connection: { enabled: true, tags: ['end_user_id'] } },
+                meta_tools: {
+                    nango_proxy: true,
+                    nango_execute: { enabled: false },
+                    nango_create_connection: { enabled: true, tags: ['end_user_id'] },
+                    nango_run_code: true
+                },
                 expires_in: '1h'
             }
         });

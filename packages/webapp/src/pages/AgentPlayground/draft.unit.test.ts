@@ -17,6 +17,14 @@ describe('readPlaygroundDraft', () => {
         expect(readPlaygroundDraft(playgroundDraftState('Hi', 'dev'))).toEqual({ text: 'Hi', env: 'dev' });
     });
 
+    it('keeps the starter provider that sets up the integration', () => {
+        expect(readPlaygroundDraft(playgroundDraftState('Hi', 'dev', 'linear'))).toEqual({ text: 'Hi', env: 'dev', starterProvider: 'linear' });
+    });
+
+    it('drops a starter provider that is not a string', () => {
+        expect(readPlaygroundDraft({ playgroundDraft: { text: 'Hi', env: 'dev', starterProvider: 42 } })).toEqual({ text: 'Hi', env: 'dev' });
+    });
+
     it('ignores any other state', () => {
         expect(readPlaygroundDraft(null)).toBeUndefined();
         expect(readPlaygroundDraft({ playgroundDraft: 'Hi' })).toBeUndefined();

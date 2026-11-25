@@ -1,41 +1,16 @@
-import type { ApiProviderFunctionCounts, ApiProviderListItem, AuthModeType, PostIntegration } from '@nangohq/types';
+import type { ApiProviderFunctionCounts, ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
 export const POPULAR_CATEGORY = 'popular';
 export const PAGE_SIZE = 48;
 
 export type CatalogSort = 'popular' | 'alphabetical';
-export type InstantSetup = 'managed' | 'no-dev-app' | null;
 
-const AUTH_MODES_NEEDING_DEV_APP: AuthModeType[] = ['OAUTH1', 'OAUTH2', 'APP', 'CUSTOM'];
-
-export function getInstantSetup(provider: Pick<ApiProviderListItem, 'preConfigured' | 'authMode' | 'clientRegistration'>): InstantSetup {
-    if (provider.preConfigured) {
-        return 'managed';
-    }
-    if (AUTH_MODES_NEEDING_DEV_APP.includes(provider.authMode)) {
-        return null;
-    }
-    if (provider.authMode === 'MCP_OAUTH2' && provider.clientRegistration === 'static') {
-        return null;
-    }
-    return 'no-dev-app';
-}
-
-// The integration form requires fields in these modes, even when no developer app is needed.
-const AUTH_MODES_WITH_REQUIRED_SETUP_FIELDS: AuthModeType[] = ['TBA', 'INSTALL_PLUGIN'];
-
-export function getOneClickSetupBody(
-    provider: Pick<ApiProviderListItem, 'name' | 'preConfigured' | 'authMode' | 'clientRegistration' | 'integration_config'>
-): PostIntegration['Body'] | null {
-    const instantSetup = getInstantSetup(provider);
-    const hasIntegrationConfig = Object.keys(provider.integration_config ?? {}).length > 0;
-    if (hasIntegrationConfig) {
-        return null;
-    }
-    if (instantSetup === 'managed') {
+export function getOneClickSetupBody(provider: Pick<ApiProviderListItem, 'name' | 'instantSetup' | 'authMode'>): PostIntegration['Body'] | null {
+    const { instantSetup } = provider;
+    if (instantSetup === 'nango-managed-app') {
         return { provider: provider.name, useSharedCredentials: true };
     }
-    if (instantSetup !== 'no-dev-app' || AUTH_MODES_WITH_REQUIRED_SETUP_FIELDS.includes(provider.authMode)) {
+    if (instantSetup !== 'no-dev-app') {
         return null;
     }
     if (provider.authMode === 'MCP_OAUTH2') {
@@ -114,12 +89,12 @@ export function sortProviders<T extends Pick<ApiProviderListItem, 'displayName' 
     return [...providers].sort((a, b) => Number(isPopular(b)) - Number(isPopular(a)) || byName(a, b));
 }
 
-export function filterProviders<T extends Pick<ApiProviderListItem, 'categories' | 'preConfigured' | 'authMode' | 'clientRegistration'>>(
+export function filterProviders<T extends Pick<ApiProviderListItem, 'categories' | 'instantSetup'>>(
     providers: T[],
     { category, instantOnly }: { category: string | null; instantOnly: boolean }
 ): T[] {
     return providers.filter(
-        (provider) => (!category || (provider.categories?.includes(category) ?? false)) && (!instantOnly || getInstantSetup(provider) !== null)
+        (provider) => (!category || (provider.categories?.includes(category) ?? false)) && (!instantOnly || provider.instantSetup !== null)
     );
 }
 

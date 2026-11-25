@@ -23,7 +23,6 @@ import type {
     GetUpcomingInvoice,
     GetUsage,
     PostPlanChange,
-    PostPlanExtendTrial,
     PutBillingInvoicingDetails,
     PutSpendAlert,
     UsageMetric
@@ -88,17 +87,6 @@ export function planHasRbac(plan?: ApiPlan | null): boolean {
         return true;
     }
     return plan.has_rbac;
-}
-
-export async function apiPostPlanExtendTrial(env: string) {
-    const res = await apiFetch(`/api/v1/plans/trial/extension?env=${env}`, {
-        method: 'POST'
-    });
-
-    return {
-        res,
-        json: (await res.json()) as PostPlanExtendTrial['Reply']
-    };
 }
 
 export function useApiGetPlans(env: string, options?: { enabled?: boolean }) {
@@ -554,18 +542,6 @@ export function useApiPrefetchBillingUsageTopDimensionValues(env: string, metric
         },
         [queryClient, env, metric, timeframe]
     );
-}
-
-export function useTrial(plan?: ApiPlan | null): { isTrial: boolean; isTrialOver: boolean; daysRemaining: number } {
-    const res = useMemo<{ isTrial: boolean; isTrialOver: boolean; daysRemaining: number }>(() => {
-        if (!plan || !plan.auto_idle || !plan.trial_end_at) {
-            return { isTrial: false, isTrialOver: false, daysRemaining: 0 };
-        }
-        const days = Math.floor((new Date(plan.trial_end_at).getTime() - new Date().getTime()) / (86400 * 1000));
-        return { isTrial: true, isTrialOver: plan.trial_expired || false, daysRemaining: days };
-    }, [plan]);
-
-    return res;
 }
 
 export function usePutBillingInvoicingDetails(env: string) {

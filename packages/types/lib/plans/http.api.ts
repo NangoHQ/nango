@@ -7,16 +7,6 @@ import type { DBPlan } from './db.js';
 
 export type ApiPlan = ReplaceInObject<DBPlan, Date, string>;
 
-export type PostPlanExtendTrial = ApiEndpoint<{
-    Audit: AuditPolicy<'billing', 'trial_extended', 'account'>;
-    Method: 'POST';
-    Path: '/api/v1/plans/trial/extension';
-    Querystring: { env: string };
-    Success: {
-        data: { success: boolean };
-    };
-}>;
-
 export interface PlanDefinition {
     /**
      * Maps to orb external plan id

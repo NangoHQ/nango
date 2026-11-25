@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { records as recordsService } from '@nangohq/records';
-import { connectionService } from '@nangohq/shared';
+import { connectionService, isAgentSessionResultModel } from '@nangohq/shared';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
@@ -71,6 +71,7 @@ export const getConnectionRecordModels = asyncWrapperWithEnvironment<GetConnecti
     }
 
     const data = Object.values(counts.value)
+        .filter((count) => !isAgentSessionResultModel(count.model))
         .map((count) => {
             const { model, variant } = splitRecordModelName(count.model);
 

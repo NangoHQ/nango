@@ -19,6 +19,7 @@ export { default as docusignPostConnection } from './providers/docusign/post-con
 export { default as gustoPostConnection } from './providers/gusto/post-connection.js';
 export { default as workablePostConnection } from './providers/workable/post-connection.js';
 export { default as adobeUmapiPostConnection } from './providers/adobe-umapi/post-connection.js';
+export { default as adobeAnalyticsPostConnection } from './providers/adobe-analytics/post-connection.js';
 export { default as basecampPostConnection } from './providers/basecamp/post-connection.js';
 export { default as lastpassCredentialsVerification } from './providers/lastpass/credentials-verification.js';
 export { default as expensifyCredentialsVerification } from './providers/expensify/credentials-verification.js';

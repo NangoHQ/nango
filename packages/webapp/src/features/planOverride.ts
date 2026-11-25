@@ -165,7 +165,7 @@ export function applyPlanOverride(
         ? {
               ...realPlan,
               // `flags` is typed against `DBPlan` (pre-serialization), so its never-set Date fields
-              // (trial_start_at, etc.) don't match `ApiPlan`'s stringified dates — safe to assert since
+              // (growth_features_starts_at, etc.) don't match `ApiPlan`'s stringified dates — safe to assert since
               // plan definitions only ever set those fields to `null`, never an actual Date.
               ...(overridePlan.flags as Partial<ApiPlan>),
               name: overridePlan.code,

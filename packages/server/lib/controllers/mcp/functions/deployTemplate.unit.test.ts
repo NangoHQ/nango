@@ -26,7 +26,6 @@ describe('deployTemplateTool', () => {
         expect(deploySpy).toHaveBeenCalledWith({
             account: context.account,
             environment: context.environment,
-            plan: context.plan,
             body: { type: 'template', integration_id: 'airtable', template: 'tables', function_type: 'sync' }
         });
     });

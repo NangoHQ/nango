@@ -59,7 +59,7 @@ The full IAM policy, CloudFormation template or Terraform configuration, and exa
 
 ## What leaves your account
 
-**Only operational telemetry — nothing else.** Nango's team monitors your instance's health via Datadog, so we can catch and respond to issues before you have to file a ticket. That's the only data that leaves your AWS account, GCP project or Azure subscription.
+**Only operational telemetry and usage metrics — nothing else.** Nango's team monitors your instance's health via Datadog, so we can catch and respond to issues before you have to file a ticket. Your instance also reports usage metrics to Nango once a day, such as how many functions run at the same time. They are sent under your installation ID and hold no data from your connections, records or logs. That's the only data that leaves your AWS account, GCP project or Azure subscription.
 
 Nothing else leaves your account.
 
@@ -82,6 +82,7 @@ Nango does not keep a separate copy of any of this anywhere. See [Encryption & c
 | --- | --- | --- |
 | Infrastructure provisioning (VPC, database, cache, cluster) | Provisions it, via Terraform, using the access you grant | Own the underlying cloud bill |
 | Application deployment & updates | Deploys and updates it, via GitOps (FluxCD) | — |
+| License and usage reporting | Installs and renews the license, and sets up the daily report of usage metrics | — |
 | Scaling | Handles it | — |
 | Incident response / on-call | Handles it | — |
 | Granting & maintaining access | — | Create and maintain the IAM role or service account; revoke it whenever you want |

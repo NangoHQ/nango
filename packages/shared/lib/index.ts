@@ -28,6 +28,7 @@ export * as signatureClient from './auth/signature.js';
 export * as awsSigV4Client from './auth/aws-sigv4.js';
 export * from './services/connections/credentials/refresh.js';
 export * from './services/sandbox-api-key.js';
+export * from './services/agentSessionResults.js';
 export * from './services/functions/index.js';
 export * from './services/on-event-scripts.service.js';
 export * from './services/sync/sync.service.js';
