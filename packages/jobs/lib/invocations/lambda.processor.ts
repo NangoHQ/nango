@@ -16,13 +16,22 @@ function lambdaErrorTypeFromMessage(errorMessage: string): 'function_runtime_out
 }
 
 const parsedMessageSchema = z.object({
-    responseContext: z.object({
-        functionError: z.string(),
-        statusCode: z.number()
-    }),
-    responsePayload: z.object({
-        errorMessage: z.string()
-    }),
+    requestContext: z
+        .object({
+            condition: z.string().optional()
+        })
+        .optional(),
+    responseContext: z
+        .object({
+            functionError: z.string().optional(),
+            statusCode: z.number().optional()
+        })
+        .optional(),
+    responsePayload: z
+        .object({
+            errorMessage: z.string()
+        })
+        .nullish(),
     requestPayload: z.object({
         taskId: z.string(),
         nangoProps: nangoPropsSchema
@@ -53,17 +62,41 @@ export class LambdaInvocationsProcessor {
 
     private async processFailureMessage(message: QueueMessage) {
         const parsedMessage = parsedMessageSchema.parse(JSON.parse(message.body));
+        const taskId = parsedMessage.requestPayload.taskId;
+        const nangoProps = parsedMessage.requestPayload.nangoProps as unknown as NangoProps;
 
-        if (parsedMessage.responseContext.functionError === 'Unhandled') {
-            const errorMessage = parsedMessage.responsePayload.errorMessage;
+        // The function never ran, so there is no functionError. Lambda still sends the original payload here.
+        if (parsedMessage.requestContext?.condition === 'EventAgeExceeded') {
+            await handle({
+                taskId,
+                nangoProps,
+                error: {
+                    type: 'function_runtime_event_age_exceeded',
+                    payload: { errorMessage: 'Lambda discarded the invocation because it exceeded the maximum event age' },
+                    status: 500
+                },
+                telemetryBag: {
+                    customLogs: 0,
+                    proxyCalls: 0,
+                    durationMs: 0,
+                    memoryGb: envs.LAMBDA_DEFAULT_MEMORY_MB / 1024
+                },
+                functionRuntime: 'lambda',
+                checkpoints: null
+            });
+            return;
+        }
+
+        const errorMessage = parsedMessage.responsePayload?.errorMessage;
+        if (parsedMessage.responseContext?.functionError === 'Unhandled' && errorMessage !== undefined) {
             const errorType = lambdaErrorTypeFromMessage(errorMessage);
             await handle({
-                taskId: parsedMessage.requestPayload.taskId,
-                nangoProps: parsedMessage.requestPayload.nangoProps as unknown as NangoProps,
+                taskId,
+                nangoProps,
                 error: {
                     type: errorType,
                     payload: { errorMessage },
-                    status: parsedMessage.responseContext.statusCode
+                    status: parsedMessage.responseContext.statusCode ?? 500
                 },
                 telemetryBag: {
                     customLogs: 0,

@@ -194,6 +194,38 @@ describe('LambdaInvocationsProcessor', () => {
         );
     });
 
+    it('fails the task when Lambda discards an invoke that exceeded the maximum event age', async () => {
+        let onMessage: (message: { body: string }) => Promise<void> = undefined!;
+        mockListen.mockImplementation((_queue: string, cb: (m: { body: string }) => Promise<void>) => {
+            onMessage = cb;
+        });
+
+        const processor = new LambdaInvocationsProcessor();
+        await processor.start();
+
+        const nangoProps = minimalNangoProps();
+        await onMessage({
+            body: JSON.stringify({
+                requestContext: { condition: 'EventAgeExceeded', approximateInvokeCount: 1 },
+                requestPayload: { taskId: 'task-aged', nangoProps }
+            })
+        });
+
+        expect(handle).toHaveBeenCalledTimes(1);
+        expect(handle).toHaveBeenCalledWith(
+            expect.objectContaining({
+                taskId: 'task-aged',
+                error: {
+                    type: 'function_runtime_event_age_exceeded',
+                    payload: { errorMessage: 'Lambda discarded the invocation because it exceeded the maximum event age' },
+                    status: 500
+                },
+                telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 0.5 },
+                functionRuntime: 'lambda'
+            })
+        );
+    });
+
     it('should not call handle when functionError is not Unhandled', async () => {
         let onMessage: (message: { body: string }) => Promise<void> = undefined!;
         mockListen.mockImplementation((_queue: string, cb: (m: { body: string }) => Promise<void>) => {
