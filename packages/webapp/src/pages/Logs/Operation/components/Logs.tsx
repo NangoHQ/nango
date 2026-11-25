@@ -32,12 +32,13 @@ const fullPeriod: PeriodPreset = {
     toPeriod: () => null // Null means no period
 };
 
-type LevelFilter = 'all' | Exclude<LogLevel, 'debug'>;
+type LevelFilter = 'all' | LogLevel;
 const levelOptions: { value: LevelFilter; label: string }[] = [
     { value: 'all', label: 'All' },
     { value: 'error', label: 'Error' },
     { value: 'warn', label: 'Warn' },
-    { value: 'info', label: 'Info' }
+    { value: 'info', label: 'Info' },
+    { value: 'debug', label: 'Debug' }
 ];
 
 function levelCount(counts: Record<LogLevel, number>, level: LevelFilter): number {
