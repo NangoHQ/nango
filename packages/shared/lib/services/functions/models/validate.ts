@@ -3,6 +3,8 @@ import addFormats from 'ajv-formats';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { boundedRegExpEngine, PatternBudgetExceededError, resetPatternBudget } from './patterns.js';
+
 import type { CatalogFunctionDefinition } from '../../catalog/reader.js';
 import type { DBFunctionConfigVersion, ValidationError } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -18,7 +20,11 @@ const ajv = new Ajv({
     // making the error reporting less comprehensive for the users
     // but it is a trade-off for performance and security.
     allErrors: false,
-    strict: true
+    strict: true,
+    // In strict mode ajv otherwise tests every patternProperties pattern against the
+    // schema's property names with a native RegExp while compiling.
+    allowMatchingProperties: true,
+    code: { regExp: boundedRegExpEngine }
 });
 // @ts-expect-error ajv-formats CommonJS default export is callable at runtime but mis-typed under NodeNext
 addFormats(ajv);
@@ -62,12 +68,20 @@ export function validateFunctionInput(version: FunctionInputDefinition, input: u
         }
 
         const normalizedInput = input === undefined ? null : input;
+        resetPatternBudget();
         const valid = validate(normalizedInput);
         if (!valid) {
             return Err(new FunctionInputValidationError('invalid_function_input', toValidationErrors(validate.errors || [])));
         }
         return Ok(normalizedInput);
-    } catch (_err) {
+    } catch (err) {
+        if (err instanceof PatternBudgetExceededError) {
+            return Err(
+                new FunctionInputValidationError('invalid_function_input', [
+                    { code: 'pattern', message: 'Input is too large or complex to match against the schema patterns', path: [] }
+                ])
+            );
+        }
         return Err(new FunctionInputValidationError('invalid_function_input_schema'));
     }
 }
