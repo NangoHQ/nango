@@ -44,6 +44,7 @@ export async function putIsmPolicies(client: OpenSearchClient): Promise<void> {
                 `ISM policy "${id}" was rejected with an ism_template for "${indexPattern}" (${err.statusCode}: ${err.message}), putting it without: new indices won't be attached to it`
             );
             await putIsmPolicy(client, id, buildRetentionIsmPolicy(id, null));
+            // As before: another policy may be managing these indices, so don't attach ours
             continue;
         }
         await addIsmPolicyToExistingIndices(client, id, indexPattern);
