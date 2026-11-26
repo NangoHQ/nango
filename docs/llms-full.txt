@@ -16,7 +16,7 @@ Nango is the tool calling layer for AI agents.
 
 It makes your agents powerful with tools, and smart with context, across [1,400+ APIs](/integrations/overview).
 
-Your agent gets a catalog of 10,000+ pre-built tools with built-in auth, Nango-managed OAuth apps, a token-efficient execution engine for fast and secure tool calls, and built-in governance, observability, and audit logs for every call.
+Your agent gets a catalog of 27,000+ pre-built tools with built-in auth, Nango-managed OAuth apps, a token-efficient execution engine for fast and secure tool calls, and built-in governance, observability, and audit logs for every call.
 
 ## Why it matters
 
@@ -72,7 +72,7 @@ Nango runs on Nango Cloud, in your own cloud account (BYOC), or self-hosted.
 
 <CardGroup cols={2}>
   <Card title="Pre-built catalog" icon="boxes-stacked" href="/integrations/overview">
-    10,000+ tools, auth flows, and Nango-managed OAuth apps, updated automatically.
+    27,000+ tools, auth flows, and Nango-managed OAuth apps, updated automatically.
   </Card>
 
   <Card title="Efficient tool runtime" icon="server" href="/guides/agent-sessions">
@@ -405,7 +405,7 @@ Description: Connect your AI agent to 1,400+ APIs.
 
 Agent sessions are an optimized interface for AI agents to use integrations. Connect your agent to Nango once through MCP to access 1,400+ APIs.
 
-- **10,000+ ready-to-use tools.** Nango keeps them up to date and improves them using insights from hundreds of millions of production calls.
+- **27,000+ ready-to-use tools.** Nango keeps them up to date and improves them using insights from hundreds of millions of production calls.
 - **Fewer tokens.** On-demand tool search and concise tool responses keep the agent's context small.
 - **You control access.** Choose whose accounts the agent uses and what it can do. The agent never sees provider API credentials.
 - **Traceable calls.** See what the agent called and why in Nango Logs.
@@ -1165,7 +1165,7 @@ Description: Let users connect external accounts from your AI agent, your app, o
 
 ## Auth from your AI agent
 
-[Agent sessions](/guides/agent-sessions) give your agent one interface to access 10,000+ tools across all of Nango's APIs.
+[Agent sessions](/guides/agent-sessions) give your agent one interface to access 27,000+ tools across all of Nango's APIs.
 
 Follow the [Quickstart](/getting-started/quickstart) to add Agent Sessions to your agent. When your backend creates a session, enable the [`nango_create_connection` meta tool](/guides/agent-sessions/meta-tools#nango_create_connection). If a task needs an account that isn’t connected, the agent calls the tool and shares the Connect link Nango returns. The user opens the link to authorize access, and the agent can then use that integration’s tools in the same session.
 
@@ -2242,7 +2242,7 @@ Description: Read and write data across external APIs from your agent or backend
 
 Tools are functions you call on demand to read or write data in external APIs.
 
-- **10,000+ pre-built tools** — Continuously optimized and maintained by Nango with insights from hundreds of millions of production runs
+- **27,000+ pre-built tools** — Continuously optimized and maintained by Nango with insights from hundreds of millions of production runs
 - **Clear instructions and schemas** — Parameter descriptions, input and output examples, and guidance on API-specific quirks
 - **Tool annotations** — Labels for reads, writes, and destructive operations
 - **Secure, reliable execution** — Retries, rate-limits, resource scaling, and tenant isolation
@@ -14879,7 +14879,7 @@ Nango is the leading provider of **API access for AI agents & apps**. It is desi
 
 <CardGroup cols={1}>
 <Card title="All APIs & integrations" icon="list" href="https://www.nango.dev/api-integrations">
-1,400+ APIs & 10,000+ pre-built tools.
+1,400+ APIs & 27,000+ pre-built tools.
 </Card>
 <Card title="Request or contribute a new API" icon="circle-question" href="/integrations/contribute-or-request-api">
 We deliver them in &lt;48h.
