@@ -210,7 +210,7 @@ export async function finalizeManagedAuthentication({
             account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
         } else if (organizationId) {
             // The organization's WorkOS external ID, set by Nango in the WorkOS dashboard to the account UUID,
-            // decides which account SSO users join. Account names are not unique, so they are not used for this.
+            // decides which account SSO users join.
             const linkedAccount = await getAccountLinkedToOrganization(workos, organizationId);
             if (!linkedAccount) {
                 report(new Error('sso_organization_not_linked'), { organizationId });
