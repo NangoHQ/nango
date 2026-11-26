@@ -441,8 +441,8 @@ export class PersistClient {
     }): Promise<Result<GetAgentSessionResultSuccess>> {
         const res = await this.fetch<GetAgentSessionResultSuccess>({
             method: 'GET',
-            path: `/environment/${environmentId}/connection/${nangoConnectionId}/agent-session-result`,
-            params: { sessionId, recordId }
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/agent-session-result/${sessionId}`,
+            params: { recordId }
         });
         if (res.isErr()) {
             return Err(new Error(`Failed to get agent session result: ${res.error.message}`));

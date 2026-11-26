@@ -448,7 +448,7 @@ function scopeFor(path: string): TaskCapabilityScope {
     if (path.includes('/locks')) {
         return 'persist:locks';
     }
-    if (path.endsWith('/agent-session-result')) {
+    if (path.includes('/agent-session-result')) {
         return 'persist:agent-session-result';
     }
     if (path.includes('/records') || path.includes('/outdated')) {

@@ -14,24 +14,24 @@ type GetAgentSessionResult = Endpoint<{
     Params: {
         environmentId: number;
         nangoConnectionId: number;
+        sessionId: string;
     };
     Querystring: {
-        sessionId: string;
         recordId: string;
     };
     Error: ApiError<'get_agent_session_result_failed'>;
     Success: GetAgentSessionResultSuccess;
 }>;
 
-const path = '/environment/:environmentId/connection/:nangoConnectionId/agent-session-result';
+const path = '/environment/:environmentId/connection/:nangoConnectionId/agent-session-result/:sessionId';
 const method = 'GET';
 
 const validate = validateRequest<GetAgentSessionResult>(getAgentSessionResultRequestParser);
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<GetAgentSessionResult, AuthLocals>) => {
     const {
-        parsedParams: { nangoConnectionId },
-        parsedQuery: { sessionId, recordId },
+        parsedParams: { nangoConnectionId, sessionId },
+        parsedQuery: { recordId },
         plan
     } = res.locals;
 

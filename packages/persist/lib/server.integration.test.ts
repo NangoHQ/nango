@@ -570,11 +570,14 @@ describe('Persist API', () => {
     describe('getAgentSessionResult', () => {
         const sessionId = '0b5ff4f1-8d3b-4e0a-9d4c-3f0d6c1b2a10';
         const recordId = '5c1f7c0e-2f3a-4c59-8f0b-7a6f1d2e3b4c';
-        const getResult = async (query: Record<string, string>, connectionId = seed.connection.id) =>
-            fetch(`${serverUrl}/environment/${seed.env.id}/connection/${connectionId}/agent-session-result?${new URLSearchParams(query).toString()}`, {
-                method: 'GET',
-                headers: { Authorization: `Bearer ${mockSecretKey}`, 'Content-Type': 'application/json' }
-            });
+        const getResult = async ({ sessionId, ...query }: Record<string, string>, connectionId = seed.connection.id) =>
+            fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${connectionId}/agent-session-result/${sessionId}?${new URLSearchParams(query).toString()}`,
+                {
+                    method: 'GET',
+                    headers: { Authorization: `Bearer ${mockSecretKey}`, 'Content-Type': 'application/json' }
+                }
+            );
 
         beforeAll(async () => {
             await insertRecords(seed, agentSessionResultModel(sessionId), [
