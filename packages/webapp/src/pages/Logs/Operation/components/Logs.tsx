@@ -12,7 +12,7 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useStore } from '@/store';
 import { APIError, apiFetch } from '@/utils/api';
 import { findScrollParent } from '@/utils/scroll';
-import { formatQuantity } from '@/utils/utils';
+import { cn, formatQuantity } from '@/utils/utils';
 import { LOG_GRID, LogRow } from './LogRow';
 
 import type { LogLevel, MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
@@ -299,7 +299,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                                 data-index={item.index}
                                 data-log-id={message.id}
                                 ref={rowVirtualizer.measureElement}
-                                className="absolute left-0 top-0 w-full"
+                                className={cn('absolute left-0 top-0 w-full', item.index < messages.length - 1 && 'border-b border-border-muted')}
                                 style={{ transform: `translateY(${item.start - rowVirtualizer.options.scrollMargin}px)` }}
                             >
                                 <LogRow message={message} open={openId === message.id} onToggle={() => onToggle(message.id)} />

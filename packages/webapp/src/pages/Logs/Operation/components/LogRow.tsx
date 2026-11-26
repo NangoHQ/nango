@@ -175,7 +175,7 @@ export const LogRow: React.FC<{
     );
 
     return (
-        <div className="border-b border-border-muted last:border-b-0">
+        <div>
             {expandable ? (
                 // A div, because browsers don't let users select text inside a <button>.
                 <div
