@@ -1,6 +1,6 @@
 import { errors as osErrors } from '@opensearch-project/opensearch';
 
-import { policyMessages, policyOperations, retentionMinAge } from '../es/schema.js';
+import { indexMessages, indexOperations, policyMessages, policyOperations, retentionMinAge } from '../es/schema.js';
 import { logger } from '../utils.js';
 
 import type { Client as OpenSearchClient } from '@opensearch-project/opensearch';
@@ -19,11 +19,42 @@ import type { Client as OpenSearchClient } from '@opensearch-project/opensearch'
  * first: if it exists, the PUT carries its seq_no/primary_term to update it in place (picking up any
  * retention change on redeploy); if it doesn't, a plain create is issued. A 409 on the versioned PUT
  * means another instance updated (or created) it concurrently — its write wins, so we skip.
+ *
+ * ISM only attaches a policy to new indices through the policy's ism_template, the
+ * index.plugins.index_state_management.policy_id index setting is ignored. ism_template doesn't apply to
+ * indices that already exist, so the policy is also added to them explicitly.
  */
 export async function putIsmPolicies(client: OpenSearchClient): Promise<void> {
-    const policies = [buildRetentionIsmPolicy(policyOperations.name), buildRetentionIsmPolicy(policyMessages.name)];
-    for (const { id, body } of policies) {
+    const policies = [
+        buildRetentionIsmPolicy(policyOperations.name, `${indexOperations.index}.*`),
+        buildRetentionIsmPolicy(policyMessages.name, `${indexMessages.index}.*`)
+    ];
+    for (const { id, indexPattern, body } of policies) {
         await putIsmPolicy(client, id, body);
+        await addIsmPolicyToExistingIndices(client, id, indexPattern);
+    }
+}
+
+async function addIsmPolicyToExistingIndices(client: OpenSearchClient, id: string, indexPattern: string): Promise<void> {
+    try {
+        // Indices that already have a policy are reported as failed and left untouched
+        const res = await client.transport.request({
+            method: 'POST',
+            path: `/_plugins/_ism/add/${encodeURIComponent(indexPattern)}`,
+            body: { policy_id: id }
+        });
+        const body = res.body as { updated_indices?: number };
+        if (body.updated_indices) {
+            logger.info(`ISM policy "${id}" added to ${body.updated_indices} existing indices`);
+        }
+    } catch (err: unknown) {
+        if (err instanceof osErrors.ResponseError && err.statusCode === 404) {
+            // no index matches the pattern yet
+            return;
+        }
+        // Not fatal: new indices are still picked up by the ism_template,
+        // only the existing ones stay unmanaged (e.g. missing ISM managedindex permission)
+        logger.warning(`Failed to add ISM policy "${id}" to existing indices "${indexPattern}": ${err instanceof Error ? err.message : String(err)}`);
     }
 }
 
@@ -62,9 +93,10 @@ async function getIsmPolicyVersion(client: OpenSearchClient, id: string): Promis
     }
 }
 
-function buildRetentionIsmPolicy(id: string): { id: string; body: Record<string, unknown> } {
+function buildRetentionIsmPolicy(id: string, indexPattern: string): { id: string; indexPattern: string; body: Record<string, unknown> } {
     return {
         id,
+        indexPattern,
         body: {
             policy: {
                 policy_id: id,
@@ -85,7 +117,8 @@ function buildRetentionIsmPolicy(id: string): { id: string; body: Record<string,
                         name: 'delete',
                         actions: [{ delete: {} }]
                     }
-                ]
+                ],
+                ism_template: [{ index_patterns: [indexPattern], priority: 100 }]
             }
         }
     };

@@ -172,6 +172,64 @@ describe('retention policy', () => {
         }
     });
 
+    it.skipIf(envs.NANGO_LOGS_PROVIDER !== 'opensearch')(
+        'manages existing and new daily indices after upgrading from a policy without ism_template',
+        async () => {
+            const openSearchRaw = raw as OpenSearchClient;
+            // ISM attaches policies asynchronously, so wait for the expected state
+            const explain = async (index: string, expected: number) => {
+                let managed = -1;
+                for (let i = 0; i < 20 && managed !== expected; i++) {
+                    const res = await openSearchRaw.transport.request({ method: 'GET', path: `/_plugins/_ism/explain/${index}` });
+                    managed = (res.body as { total_managed_indices: number }).total_managed_indices;
+                    if (managed !== expected) {
+                        await new Promise((resolve) => setTimeout(resolve, 500));
+                    }
+                }
+                return managed;
+            };
+            const existingIndex = `${indexOperations.index}.2099-01-01`;
+            const newIndex = `${indexOperations.index}.2099-01-02`;
+
+            try {
+                // policy without ism_template, daily index only carrying the policy_id setting
+                await migrateMapping();
+                const current = await getIsmPolicy(openSearchRaw, policyOperations.name);
+                await openSearchRaw.transport.request({
+                    method: 'PUT',
+                    path: `/_plugins/_ism/policies/${policyOperations.name}`,
+                    querystring: { if_seq_no: current._seq_no, if_primary_term: current._primary_term },
+                    body: {
+                        policy: {
+                            policy_id: policyOperations.name,
+                            description: 'policy without ism_template',
+                            default_state: 'hot',
+                            states: [
+                                { name: 'hot', actions: [], transitions: [{ state_name: 'delete', conditions: { min_index_age: retentionMinAge } }] },
+                                { name: 'delete', actions: [{ delete: {} }] }
+                            ]
+                        }
+                    }
+                });
+                await openSearchRaw.indices.create({ index: existingIndex });
+                const settings = await openSearchRaw.indices.getSettings({ index: existingIndex });
+                const indexSettings = settings.body[existingIndex]?.settings?.index as
+                    | { plugins?: { index_state_management?: { policy_id?: string } } }
+                    | undefined;
+                expect(indexSettings?.plugins?.index_state_management?.policy_id).toBe(policyOperations.name);
+                expect(await explain(existingIndex, 0)).toBe(0);
+
+                await migrateMapping();
+                expect(await explain(existingIndex, 1)).toBe(1);
+
+                await openSearchRaw.indices.create({ index: newIndex });
+                expect(await explain(newIndex, 1)).toBe(1);
+            } finally {
+                await openSearchRaw.indices.delete({ index: `${existingIndex},${newIndex}`, ignore_unavailable: true });
+            }
+        }
+    );
+
     it.skipIf(envs.NANGO_LOGS_PROVIDER !== 'ec-serverless')('sets data stream data_retention to NANGO_LOGS_ES_RETENTION_DAYS after migration', async () => {
         await migrateMapping();
 
