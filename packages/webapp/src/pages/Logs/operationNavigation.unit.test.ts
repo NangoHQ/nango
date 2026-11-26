@@ -56,5 +56,11 @@ describe('navigationDirection', () => {
         const option = document.createElement('div');
         listbox.appendChild(option);
         expect(navigationDirection(event('ArrowDown', option))).toBeNull();
+
+        const logList = document.createElement('div');
+        logList.setAttribute('data-owns-arrow-keys', '');
+        const row = document.createElement('button');
+        logList.appendChild(row);
+        expect(navigationDirection(event('ArrowDown', row))).toBeNull();
     });
 });

@@ -15,8 +15,9 @@ const KEYS: Record<string, NavigationDirection> = {
     j: 'next'
 };
 
-// Menus, listboxes and dialogs use the arrow keys for their own items.
-const KEY_OWNERS = 'input, textarea, select, [contenteditable="true"], [role="menu"], [role="listbox"], [role="dialog"], [role="combobox"]';
+// Menus, listboxes, dialogs and the log list use the arrow keys for their own items.
+const KEY_OWNERS =
+    'input, textarea, select, [contenteditable="true"], [role="menu"], [role="listbox"], [role="dialog"], [role="combobox"], [data-owns-arrow-keys]';
 
 export function navigationDirection(
     event: Pick<KeyboardEvent, 'key' | 'target' | 'defaultPrevented' | 'metaKey' | 'ctrlKey' | 'altKey' | 'shiftKey'>
