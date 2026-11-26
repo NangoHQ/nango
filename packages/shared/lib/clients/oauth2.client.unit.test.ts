@@ -281,6 +281,58 @@ describe('OAuth2 token generation and refresh', () => {
         );
     });
 
+    // stripe-link sends the Stripe publishable key as a bearer header on both token requests, with client_secret in the body.
+    it('sends interpolated token_headers on the code exchange and on refresh', async () => {
+        const received: { grantType: string | null; authorization: string | undefined; clientSecret: string | null }[] = [];
+        await withServer(
+            (req, res) => {
+                let body = '';
+                req.on('data', (chunk) => (body += chunk));
+                req.on('end', () => {
+                    const params = new URLSearchParams(body);
+                    received.push({
+                        grantType: params.get('grant_type'),
+                        authorization: req.headers.authorization,
+                        clientSecret: params.get('client_secret')
+                    });
+                    res.writeHead(200, { 'content-type': 'application/json' });
+                    res.end(JSON.stringify({ access_token: 'access', token_type: 'Bearer', expires_in: 3600, refresh_token: 'rotated' }));
+                });
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({
+                    token_url: `${baseUrl}/token`,
+                    authorization_url: `${baseUrl}/authorize`,
+                    token_headers: { authorization: 'Bearer ${connectionConfig.publishableKey}' }
+                });
+                const connectionConfig = { publishableKey: 'pk_test_123' };
+
+                // Same call shape as the OAuth callback in oauth.controller.ts.
+                const client = new AuthorizationCode(getSimpleOAuth2ClientConfig(makeConfig(), provider, connectionConfig));
+                await client.getToken({ code: 'auth-code', redirect_uri: 'https://app.example.com/callback' }, { headers: {} });
+
+                const connection = {
+                    id: 1,
+                    environment_id: 1,
+                    connection_config: connectionConfig,
+                    credentials: { type: 'OAUTH2', access_token: 'stale', refresh_token: 'the-refresh-token', expires_at: new Date(Date.now() - 60_000) }
+                } as unknown as DBConnectionDecrypted;
+                const result = await getFreshOAuth2Credentials({
+                    connection,
+                    config: makeConfig(),
+                    provider,
+                    logCtx: logContextGetter.getBuffer({ accountId: 1 })
+                });
+                expect(result.success).toBe(true);
+            }
+        );
+
+        expect(received).toEqual([
+            { grantType: 'authorization_code', authorization: 'Bearer pk_test_123', clientSecret: 'client-secret' },
+            { grantType: 'refresh_token', authorization: 'Bearer pk_test_123', clientSecret: 'client-secret' }
+        ]);
+    });
+
     it('getFreshOAuth2Credentials fails without issuing the refresh when the token URL is blocked by policy', async () => {
         vi.mocked(assertSafeOAuthUrl).mockRejectedValueOnce(new Error('URL resolves to a blocked address'));
         let serverHit = false;

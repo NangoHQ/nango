@@ -57,9 +57,17 @@ export function getSimpleOAuth2ClientConfig(
         tokenUrl.host = tokenHostOverride;
     }
 
-    const headers = { 'User-Agent': 'Nango' };
-
     const authConfig = provider as ProviderOAuth2;
+
+    // token_headers apply to both the code exchange and refresh, since both go through this client.
+    const headers: Record<string, string> = { 'User-Agent': 'Nango' };
+    if (authConfig.token_headers) {
+        for (const [key, value] of Object.entries(interpolateObjectValues(authConfig.token_headers, connectionConfig))) {
+            if (value) {
+                headers[key] = value;
+            }
+        }
+    }
 
     const authSection: any = {
         tokenHost: tokenUrl.origin,
