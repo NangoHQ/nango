@@ -5,7 +5,7 @@
 - [OpenAPI spec](https://nango.dev/docs/spec.yaml): Exact HTTP API schemas for code generation or typed clients.
 - [Docs MCP server](https://nango.dev/docs/mcp): Live docs context without authentication. The Management MCP server includes the same docs tools.
 
-Provider count: 1502
+Provider count: 1504
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -586,6 +586,8 @@ URL patterns:
 | `fairing` | Fairing | API_KEY | [docs](https://nango.dev/docs/integrations/all/fairing.md) | [connect](https://nango.dev/docs/integrations/all/fairing/connect.md) |  | marketing, analytics |
 | `faktoora` | faktoora | API_KEY | [docs](https://nango.dev/docs/api-integrations/faktoora.md) | [connect](https://nango.dev/docs/api-integrations/faktoora/connect.md) |  | invoicing |
 | `falai` | fal.ai | API_KEY | [docs](https://nango.dev/docs/integrations/all/falai.md) |  |  | productivity, dev-tools |
+| `famulor` | Famulor | API_KEY | [docs](https://nango.dev/docs/api-integrations/famulor.md) | [connect](https://nango.dev/docs/api-integrations/famulor/connect.md) |  | communication, productivity |
+| `famulor-mcp` | Famulor (MCP) | MCP_OAUTH2_GENERIC | [docs](https://nango.dev/docs/api-integrations/famulor-mcp.md) |  |  | communication, mcp |
 | `fanvue` | Fanvue | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/fanvue.md) |  | [setup](https://nango.dev/docs/api-integrations/fanvue/how-to-register-your-own-fanvue-oauth-app.md) | other |
 | `fashn` | FASHN | API_KEY | [docs](https://nango.dev/docs/api-integrations/fashn.md) | [connect](https://nango.dev/docs/api-integrations/fashn/connect.md) |  | design |
 | `fathom` | Fathom | API_KEY | [docs](https://nango.dev/docs/api-integrations/fathom.md) | [connect](https://nango.dev/docs/api-integrations/fathom/connect.md) |  | communication, video |

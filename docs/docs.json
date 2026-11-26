@@ -1160,6 +1160,8 @@
               "integrations/all/fairing",
               "api-integrations/faktoora",
               "integrations/all/falai",
+              "api-integrations/famulor",
+              "api-integrations/famulor-mcp",
               "api-integrations/fanvue",
               "api-integrations/fashn",
               "api-integrations/fathom",
