@@ -12,6 +12,9 @@
             "path": "../internal-auth"
         },
         {
+            "path": "../internal-clients"
+        },
+        {
             "path": "../kvstore"
         },
         {

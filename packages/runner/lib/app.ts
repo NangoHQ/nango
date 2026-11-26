@@ -1,22 +1,27 @@
 import './tracer.js';
 
-import { monitorProviders } from '@nangohq/shared';
+import { JobsClient } from '@nangohq/internal-clients/jobs';
+import { getJobsUrl, monitorProviders } from '@nangohq/shared';
 import { stringifyError } from '@nangohq/utils';
 
 import { envs } from './env.js';
 import { logger } from './logger.js';
+import { RunnerMonitor } from './monitor.js';
 import { register } from './register.js';
-import { server } from './server.js';
+import { getServer } from './server.js';
 
 const providersMonitorCleanup = await monitorProviders();
 
 try {
+    const jobsClient = new JobsClient({ baseUrl: getJobsUrl(), nodeToken: envs.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN });
+    const usage = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID, jobsClient });
+    const server = getServer({ jobsClient, usage });
     const port = parseInt(process.argv[2] || '') || 3006;
     const id = process.argv[3] || envs.RUNNER_NODE_ID;
     const srv = server.listen(port, async () => {
         logger.info(`🏃‍♀️ '${id}' ready at http://localhost:${port}`);
 
-        const res = await register();
+        const res = await register(jobsClient);
         if (res.isErr()) {
             logger.error(`${id} Unable to register`, res.error);
         }

@@ -1,7 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { JobsClient } from '@nangohq/internal-clients/jobs';
+
 import { getRunnerClient } from './client.js';
-import { server } from './server.js';
+import { envs } from './env.js';
+import { RunnerMonitor } from './monitor.js';
+import { getServer } from './server.js';
 
 import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 import type { Server } from 'node:http';
@@ -46,7 +50,9 @@ describe('Runner client', () => {
 
     beforeAll(() => {
         client = getRunnerClient(serverUrl, httpOpts);
-        srv = server.listen(port);
+        const jobsClient = new JobsClient({ baseUrl: 'http://jobs.example.com' });
+        const usage = new RunnerMonitor({ runnerId: envs.RUNNER_NODE_ID, jobsClient });
+        srv = getServer({ jobsClient, usage }).listen(port);
         srv.on('connection', () => {
             connectionCount++;
         });

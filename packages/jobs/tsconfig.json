@@ -24,6 +24,9 @@
             "path": "../internal-auth"
         },
         {
+            "path": "../internal-clients"
+        },
+        {
             "path": "../kms"
         },
         {
