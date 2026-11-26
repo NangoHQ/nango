@@ -1,0 +1,2058 @@
+{
+    "providerConfigKey": "momentum-io",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make external, non-cancelled meetings with recorded calls available as records, including available transcripts, participants and Salesforce associations. This does not represent all scheduled meetings.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-meetings",
+            "output": [
+                "Meetings"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Meetings"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Meetings": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Momentum meeting ID."
+                            },
+                            "host": {
+                                "description": "Host details, if supplied.",
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Host display name, if supplied.",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "Host email, if supplied.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "title": {
+                                "description": "Meeting title, if supplied.",
+                                "type": "string"
+                            },
+                            "endTime": {
+                                "description": "End instant in UTC Z, if supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "attendees": {
+                                "description": "Attendees in provider order; omission and empty remain distinct.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Attendee ID, if supplied.",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Attendee display name."
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                            "description": "Attendee email."
+                                        },
+                                        "isInternal": {
+                                            "type": "boolean",
+                                            "description": "Whether attendee is internal."
+                                        },
+                                        "salesforceCaseId": {
+                                            "description": "Associated Salesforce case ID, if supplied.",
+                                            "type": "string"
+                                        },
+                                        "salesforceLeadId": {
+                                            "description": "Associated Salesforce lead ID, if supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "email",
+                                        "isInternal"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A meeting attendee in provider order."
+                                }
+                            },
+                            "startTime": {
+                                "description": "Start instant in UTC Z, if supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "transcript": {
+                                "description": "Available transcript; omitted if unavailable.",
+                                "type": "object",
+                                "properties": {
+                                    "segments": {
+                                        "description": "Transcript entries in source order; empty remains empty.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "text": {
+                                                    "type": "string",
+                                                    "description": "Spoken Unicode text."
+                                                },
+                                                "speaker": {
+                                                    "description": "Speaker details, if supplied.",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string",
+                                                            "description": "Speaker display name."
+                                                        },
+                                                        "attendeeId": {
+                                                            "description": "Referenced attendee ID, if supplied.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "name"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                "timestampLabel": {
+                                                    "description": "Original opaque provider timestamp label; omitted if unavailable.",
+                                                    "type": "string"
+                                                },
+                                                "timestampSeconds": {
+                                                    "description": "Position in seconds, provisionally recording-relative; omitted if unavailable.",
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "text"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "A transcript entry in source order."
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "salesforceCaseId": {
+                                "description": "Associated Salesforce case ID, if supplied.",
+                                "type": "string"
+                            },
+                            "salesforceLeadId": {
+                                "description": "Associated Salesforce lead ID, if supplied.",
+                                "type": "string"
+                            },
+                            "salesforceAccountId": {
+                                "description": "Associated Salesforce account ID, if supplied.",
+                                "type": "string"
+                            },
+                            "salesforceOpportunityId": {
+                                "description": "Associated Salesforce opportunity ID, if supplied.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An external, non-cancelled Momentum meeting with a recorded call; not all scheduled meetings."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make configured AI signal definitions available as records with name, context source, enabled state and creation instant.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-signal-definitions",
+            "output": [
+                "SignalDefinitions"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "SignalDefinitions"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SignalDefinitions": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "pattern": "^-?(0|[1-9][0-9]*)$",
+                                "description": "Opaque decimal-string definition ID."
+                            },
+                            "enabled": {
+                                "type": "boolean",
+                                "description": "Whether the definition is enabled."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant normalized to UTC Z."
+                            },
+                            "signalName": {
+                                "type": "string",
+                                "description": "Definition display name."
+                            },
+                            "contextSource": {
+                                "type": "string",
+                                "description": "Opaque provider context type."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "enabled",
+                            "createdAt",
+                            "signalName",
+                            "contextSource"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Configured AI signal definition with its name, context source, enabled state and creation instant."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make configured AI signal prompts available as records with name, context source, enabled status and creation instant.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-signal-prompts",
+            "output": [
+                "SignalPrompts"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "SignalPrompts"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SignalPrompts": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "pattern": "^-?(0|[1-9][0-9]*)$",
+                                "description": "Opaque decimal-string prompt ID."
+                            },
+                            "signalName": {
+                                "type": "string",
+                                "description": "Prompt display name."
+                            },
+                            "contextSource": {
+                                "type": "string",
+                                "description": "Opaque provider triggering context type."
+                            },
+                            "enabled": {
+                                "type": "boolean",
+                                "description": "Whether the prompt is enabled."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant normalized to UTC Z."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "signalName",
+                            "contextSource",
+                            "enabled",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Configured AI signal prompt with its display name, triggering context, enabled status and creation instant."
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "import-meeting",
+            "integrationId": "momentum-io",
+            "description": "Import an existing meeting from an external source, optionally including a transcript and requesting processing.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_momentum_io_importmeeting",
+            "output_schema_ref": "#/definitions/FunctionOutput_momentum_io_importmeeting",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_momentum_io_importmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "host": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Host display name."
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                        "description": "Host email address."
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "email"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Host of the imported meeting."
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Meeting title as ordinary Unicode text."
+                            },
+                            "callUrl": {
+                                "description": "Optional meeting join URL.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "endTime": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "End instant with explicit UTC marker or offset; must not precede startTime."
+                            },
+                            "attendees": {
+                                "description": "Optional attendees; omission leaves attendance unspecified and an empty array supplies no attendees.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Attendee display name, if known.",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Attendee email, if known.",
+                                            "type": "string",
+                                            "format": "email",
+                                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                        },
+                                        "isInternal": {
+                                            "description": "Whether the attendee belongs to the organization, if known.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An attendee of the imported meeting."
+                                }
+                            },
+                            "startTime": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Start instant with an explicit UTC marker or offset."
+                            },
+                            "transcript": {
+                                "description": "Optional transcript; omitted when not supplied.",
+                                "type": "object",
+                                "properties": {
+                                    "segments": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "text": {
+                                                    "type": "string",
+                                                    "description": "Spoken Unicode text, including empty source text."
+                                                },
+                                                "speaker": {
+                                                    "description": "Optional speaker details.",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "description": "Speaker display name, if known.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "timestampSeconds": {
+                                                    "type": "number",
+                                                    "minimum": 0,
+                                                    "description": "Segment position in seconds, provisionally relative to recording start; fractional precision is subject to validation."
+                                                }
+                                            },
+                                            "required": [
+                                                "text",
+                                                "timestampSeconds"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "A transcript segment in source order."
+                                        },
+                                        "description": "Transcript segments in source order; an empty array remains empty."
+                                    }
+                                },
+                                "required": [
+                                    "segments"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "recordingUrl": {
+                                "description": "Optional URL of the existing recording.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "externalMeetingId": {
+                                "description": "Optional source-system meeting ID; not a documented deduplication key.",
+                                "type": "string"
+                            },
+                            "salesforceAccountId": {
+                                "description": "Optional Salesforce account association.",
+                                "type": "string"
+                            },
+                            "processImportedMeeting": {
+                                "type": "boolean",
+                                "description": "Explicitly choose whether Momentum should process the imported meeting."
+                            },
+                            "salesforceOpportunityId": {
+                                "description": "Optional Salesforce opportunity association.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "host",
+                            "title",
+                            "endTime",
+                            "startTime",
+                            "processImportedMeeting"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An existing meeting to import, with optional recording, attendance, transcript and Salesforce associations."
+                    },
+                    "FunctionOutput_momentum_io_importmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "received": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Momentum returned success for receipt of this import; not proof of completed processing or deduplication."
+                            }
+                        },
+                        "required": [
+                            "received"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Immediate acknowledgement of the meeting import, without waiting for processing."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to bring an existing meeting into Momentum; use `remap-meeting` to change existing Salesforce associations. Provide the host, title and times and explicitly choose whether to process the meeting. Success confirms receipt, not completed processing. The serialized request must fit within 5 MB. Do not blindly retry an uncertain result: deduplication is not documented. Meetings without recordings may not appear in `list-meetings`."
+            },
+            "filePath": "./momentum-io/tools/import-meeting.ts",
+            "version": "72d22ea09dda132fc28e0e0c110257eb071fe5c60b708abd958f36aafb06d713",
+            "location": {
+                "js": "templates-zero/momentum-io/tools/import-meeting/72d22ea09dda132fc28e0e0c110257eb071fe5c60b708abd958f36aafb06d713.cjs",
+                "ts": "templates-zero/momentum-io/tools/import-meeting/72d22ea09dda132fc28e0e0c110257eb071fe5c60b708abd958f36aafb06d713.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-meetings",
+            "integrationId": "momentum-io",
+            "description": "List one page of external, non-cancelled meetings with recorded calls in a time window, including available transcripts and optional temporary download links.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_momentum_io_listmeetings",
+            "output_schema_ref": "#/definitions/FunctionOutput_momentum_io_listmeetings",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_momentum_io_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "to": {
+                                "description": "Inclusive upper window bound; defaults to initial-call current time and must not precede from. Applies to endTime for contained, startTime for start.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "from": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Inclusive lower bound on startTime, with explicit UTC marker or offset."
+                            },
+                            "limit": {
+                                "description": "Maximum meetings in one page; keep unchanged on continuation.",
+                                "default": 10,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the same filters and limit; omitted initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "sourceTypes": {
+                                "description": "Source systems to include; omission includes all types.",
+                                "uniqueItems": true,
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "AIRCALL",
+                                        "ATTENTION",
+                                        "CHORUS",
+                                        "CLOUDTALK",
+                                        "DIALPAD",
+                                        "GONG",
+                                        "MINDTICKLE",
+                                        "MOMENTUM",
+                                        "MS_TEAMS",
+                                        "ORUM",
+                                        "OUTREACH",
+                                        "RINGCENTRAL",
+                                        "SALESLOFT",
+                                        "SALESLOFT_CI",
+                                        "USER_PROVIDED",
+                                        "VONAGE",
+                                        "WEBEX",
+                                        "WINGMAN",
+                                        "WISER",
+                                        "ZOOM",
+                                        "ZOOM_PHONE"
+                                    ],
+                                    "description": "Recorded-call source system."
+                                }
+                            },
+                            "windowMatch": {
+                                "description": "contained requires startTime >= from and endTime <= to; start requires from <= startTime <= to.",
+                                "default": "contained",
+                                "type": "string",
+                                "enum": [
+                                    "contained",
+                                    "start"
+                                ]
+                            },
+                            "attendeeEmails": {
+                                "description": "Require all listed attendees; omitted or empty applies no attendee filter.",
+                                "maxItems": 20,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                    "description": "Attendee email address required in each matching meeting."
+                                }
+                            },
+                            "includeDownloadUrl": {
+                                "description": "Request available recording URLs valid for two hours; defaults to false.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "salesforceAccountId": {
+                                "description": "Associated Salesforce account filter; cannot combine with opportunity filter.",
+                                "type": "string",
+                                "minLength": 18,
+                                "maxLength": 18
+                            },
+                            "salesforceOpportunityId": {
+                                "description": "Associated Salesforce opportunity filter; cannot combine with account filter.",
+                                "type": "string",
+                                "minLength": 18,
+                                "maxLength": 18
+                            }
+                        },
+                        "required": [
+                            "from"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recorded-meeting window, filters, and one-page continuation settings.",
+                        "not": {
+                            "required": [
+                                "salesforceAccountId",
+                                "salesforceOpportunityId"
+                            ],
+                            "properties": {
+                                "salesforceAccountId": true,
+                                "salesforceOpportunityId": true
+                            }
+                        }
+                    },
+                    "FunctionOutput_momentum_io_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Opaque Momentum meeting ID, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "host": {
+                                            "description": "Host details, when supplied.",
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Host display name, if supplied.",
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "description": "Host email, if supplied.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "title": {
+                                            "description": "Meeting title, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "endTime": {
+                                            "description": "End instant in UTC Z, when supplied.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "attendees": {
+                                            "description": "Attendees; omission and an empty array remain distinct.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "description": "Attendee ID, if supplied.",
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Attendee display name."
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "format": "email",
+                                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                        "description": "Attendee email."
+                                                    },
+                                                    "isInternal": {
+                                                        "type": "boolean",
+                                                        "description": "Whether attendee is internal."
+                                                    },
+                                                    "salesforceCaseId": {
+                                                        "description": "Associated Salesforce case ID, if supplied.",
+                                                        "type": "string"
+                                                    },
+                                                    "salesforceLeadId": {
+                                                        "description": "Associated Salesforce lead ID, if supplied.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name",
+                                                    "email",
+                                                    "isInternal"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "Meeting attendee details."
+                                            }
+                                        },
+                                        "startTime": {
+                                            "description": "Start instant in UTC Z, when supplied.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "transcript": {
+                                            "description": "Available processed transcript; omitted when not supplied.",
+                                            "type": "object",
+                                            "properties": {
+                                                "segments": {
+                                                    "description": "Transcript entries in provider order; empty remains empty.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "text": {
+                                                                "type": "string",
+                                                                "description": "Spoken content as ordinary Unicode text."
+                                                            },
+                                                            "speaker": {
+                                                                "description": "Speaker details, if supplied.",
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "description": "Speaker display name."
+                                                                    },
+                                                                    "attendeeId": {
+                                                                        "description": "Referenced attendee ID, if supplied.",
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "name"
+                                                                ],
+                                                                "additionalProperties": false
+                                                            },
+                                                            "timestampLabel": {
+                                                                "description": "Original opaque provider timestamp label, not interpreted as an instant; omitted if unavailable.",
+                                                                "type": "string"
+                                                            },
+                                                            "timestampSeconds": {
+                                                                "description": "Position in seconds, provisionally recording-relative; omitted if unavailable.",
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "text"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "One transcript entry in provider order."
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "downloadUrl": {
+                                            "description": "Requested temporary recording URL, if generated; valid for two hours.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "salesforceCaseId": {
+                                            "description": "Associated Salesforce case ID, if supplied.",
+                                            "type": "string"
+                                        },
+                                        "salesforceLeadId": {
+                                            "description": "Associated Salesforce lead ID, if supplied.",
+                                            "type": "string"
+                                        },
+                                        "salesforceAccountId": {
+                                            "description": "Associated Salesforce account ID, if supplied.",
+                                            "type": "string"
+                                        },
+                                        "downloadUrlExpiresAt": {
+                                            "description": "Recording URL expiration instant in UTC Z, if generated.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "salesforceOpportunityId": {
+                                            "description": "Associated Salesforce opportunity ID, if supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An external, non-cancelled meeting with a recorded call."
+                                },
+                                "description": "One page ordered by startTime then ID ascending."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation for the same query; omitted when upstream continuation is null or absent.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One recorded-meeting page with available transcripts and optional recording references."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for recorded-meeting lookup, not all scheduled or cancelled meetings. Results are ordered by startTime then ID ascending. Pass nextCursor back as cursor with unchanged filters and limit; omit cursor for a new query. limit is 1–50, default 10. Transcripts may be unavailable before processing. Requested recording links expire after two hours; request fresh ones when needed. Use `remap-meeting` to change Salesforce associations."
+            },
+            "filePath": "./momentum-io/tools/list-meetings.ts",
+            "version": "14ecaab546db0f331e7cd4daee134aee37ac181c41478978002238276f0796e5",
+            "location": {
+                "js": "templates-zero/momentum-io/tools/list-meetings/14ecaab546db0f331e7cd4daee134aee37ac181c41478978002238276f0796e5.cjs",
+                "ts": "templates-zero/momentum-io/tools/list-meetings/14ecaab546db0f331e7cd4daee134aee37ac181c41478978002238276f0796e5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-signal-definition-executions",
+            "integrationId": "momentum-io",
+            "description": "List one page of meeting-triggered signal definition executions in a time window, optionally including follow-up prompt outputs.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_momentum_io_listsignaldefinitionexecutions",
+            "output_schema_ref": "#/definitions/FunctionOutput_momentum_io_listsignaldefinitionexecutions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_momentum_io_listsignaldefinitionexecutions": {
+                        "type": "object",
+                        "properties": {
+                            "to": {
+                                "description": "Upper bound; defaults to initial-call current time and must not precede from.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "from": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Lower execution-time bound with explicit UTC marker or offset."
+                            },
+                            "limit": {
+                                "description": "Maximum executions in one page; unchanged on continuation.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this definition, window, inclusion option and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "definitionId": {
+                                "type": "string",
+                                "pattern": "^-?(0|[1-9][0-9]*)$",
+                                "description": "Definition ID from list-signal-definitions as an opaque decimal string."
+                            },
+                            "includeFollowUpPrompts": {
+                                "description": "Include available follow-up outputs; defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "from",
+                            "definitionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Definition execution window and optional continuation settings."
+                    },
+                    "FunctionOutput_momentum_io_listsignaldefinitionexecutions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "prompt": {
+                                            "description": "Prompt text used, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "reason": {
+                                            "description": "AI explanation, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "sourceId": {
+                                            "type": "string",
+                                            "description": "Opaque decimal-string source meeting ID."
+                                        },
+                                        "hostEmail": {
+                                            "description": "Meeting host email, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "signalName": {
+                                            "type": "string",
+                                            "description": "Signal display name at execution."
+                                        },
+                                        "sourceType": {
+                                            "type": "string",
+                                            "const": "meeting",
+                                            "description": "Source kind; these executions are meeting-triggered."
+                                        },
+                                        "sourceTitle": {
+                                            "description": "Meeting title, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "triggeredAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Trigger instant in UTC Z."
+                                        },
+                                        "definitionId": {
+                                            "type": "string",
+                                            "description": "Definition identifier, not a unique execution ID."
+                                        },
+                                        "attendeeEmails": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                "description": "Meeting attendee email address."
+                                            },
+                                            "description": "Meeting attendees; empty arrays retained."
+                                        },
+                                        "followUpPrompts": {
+                                            "description": "Requested outputs; omission, null and empty arrays remain distinct.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "title": {
+                                                                "type": "string",
+                                                                "description": "Follow-up map title; repeated titles remain separate entries."
+                                                            },
+                                                            "generatedText": {
+                                                                "type": "string",
+                                                                "description": "Generated Unicode text, including empty text if returned."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "title",
+                                                            "generatedText"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "One follow-up title and its generated text."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "salesforceLeadId": {
+                                            "description": "Associated Salesforce lead ID, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "salesforceLeadName": {
+                                            "description": "Associated Salesforce lead name, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "salesforceAccountId": {
+                                            "description": "Associated Salesforce account ID, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "salesforceAccountName": {
+                                            "description": "Associated Salesforce account name, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "salesforceOpportunityId": {
+                                            "description": "Associated Salesforce opportunity ID, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "salesforceOpportunityName": {
+                                            "description": "Associated Salesforce opportunity name, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "prompt",
+                                        "reason",
+                                        "sourceId",
+                                        "hostEmail",
+                                        "signalName",
+                                        "sourceType",
+                                        "sourceTitle",
+                                        "triggeredAt",
+                                        "definitionId",
+                                        "attendeeEmails",
+                                        "salesforceLeadId",
+                                        "salesforceLeadName",
+                                        "salesforceAccountId",
+                                        "salesforceAccountName",
+                                        "salesforceOpportunityId",
+                                        "salesforceOpportunityName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One meeting-triggered definition execution, without an invented execution identifier."
+                                },
+                                "description": "One execution page in provider-defined order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation omitted when pageCount indicates no next page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of existing signal definition execution results."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain definitionId from `list-signal-definitions`. For the separate prompt system use `list-signal-prompt-executions`. Supply an execution window. limit is 1–50, default 10. Pass nextCursor as cursor with unchanged definition, window, inclusion option and limit. Follow-up outputs default to excluded. This reads existing results and does not run AI or establish delivery of generated text."
+            },
+            "filePath": "./momentum-io/tools/list-signal-definition-executions.ts",
+            "version": "847854fee02e4b7dcf5d0e1b1fa4dae6c6a014f5d1049903820344d4e925bc1e",
+            "location": {
+                "js": "templates-zero/momentum-io/tools/list-signal-definition-executions/847854fee02e4b7dcf5d0e1b1fa4dae6c6a014f5d1049903820344d4e925bc1e.cjs",
+                "ts": "templates-zero/momentum-io/tools/list-signal-definition-executions/847854fee02e4b7dcf5d0e1b1fa4dae6c6a014f5d1049903820344d4e925bc1e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-signal-definitions",
+            "integrationId": "momentum-io",
+            "description": "List configured AI signal definitions with enabled state, context source and creation instant.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_momentum_io_listsignaldefinitions",
+            "output_schema_ref": "#/definitions/FunctionOutput_momentum_io_listsignaldefinitions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_momentum_io_listsignaldefinitions": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input parameters are needed to list configured signal definitions."
+                    },
+                    "FunctionOutput_momentum_io_listsignaldefinitions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "pattern": "^-?(0|[1-9][0-9]*)$",
+                                            "description": "Opaque decimal-string definition ID for execution lookups."
+                                        },
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "description": "Whether the definition is enabled."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Definition creation instant in UTC Z."
+                                        },
+                                        "signalName": {
+                                            "type": "string",
+                                            "description": "Definition display name."
+                                        },
+                                        "contextSource": {
+                                            "type": "string",
+                                            "description": "Opaque provider context type associated with call transcripts."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "enabled",
+                                        "createdAt",
+                                        "signalName",
+                                        "contextSource"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A configured AI signal definition."
+                                },
+                                "description": "All configured definitions in provider order; empty if none exist."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete configured signal definition collection."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to obtain IDs for `list-signal-definition-executions`. For the distinct prompt-based system use `list-signal-prompts`. This returns the complete unpaginated definition collection in one page. It cannot edit definitions or retrieve their prompt body text."
+            },
+            "filePath": "./momentum-io/tools/list-signal-definitions.ts",
+            "version": "039b201f8294b0c6d7699077855284a31ebcff5da0faf3d0849929488d7d1939",
+            "location": {
+                "js": "templates-zero/momentum-io/tools/list-signal-definitions/039b201f8294b0c6d7699077855284a31ebcff5da0faf3d0849929488d7d1939.cjs",
+                "ts": "templates-zero/momentum-io/tools/list-signal-definitions/039b201f8294b0c6d7699077855284a31ebcff5da0faf3d0849929488d7d1939.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-signal-prompt-executions",
+            "integrationId": "momentum-io",
+            "description": "List one page of prompt executions in a time window, preserving meeting/email context and optional custom-instruction outputs.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_momentum_io_listsignalpromptexecutions",
+            "output_schema_ref": "#/definitions/FunctionOutput_momentum_io_listsignalpromptexecutions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_momentum_io_listsignalpromptexecutions": {
+                        "type": "object",
+                        "properties": {
+                            "to": {
+                                "description": "Upper execution-time bound; defaults to initial-call current time and must not precede from.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "from": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Lower execution-time bound with explicit UTC marker or offset."
+                            },
+                            "limit": {
+                                "description": "Maximum executions per page; unchanged during continuation.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50,
+                                "default": 10
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the same prompt, window, inclusion option and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "promptId": {
+                                "type": "string",
+                                "pattern": "^-?(0|[1-9][0-9]*)$",
+                                "description": "Prompt ID from list-signal-prompts as an opaque decimal string."
+                            },
+                            "includeCustomInstructions": {
+                                "description": "Include available custom-instruction follow-up outputs; defaults to false.",
+                                "type": "boolean",
+                                "default": false
+                            }
+                        },
+                        "required": [
+                            "from",
+                            "promptId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Prompt executions to browse, with an execution window and optional continuation."
+                    },
+                    "FunctionOutput_momentum_io_listsignalpromptexecutions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "prompt": {
+                                            "type": "string",
+                                            "description": "Prompt text used for the execution."
+                                        },
+                                        "reason": {
+                                            "description": "AI explanation, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "emailCc": {
+                                            "description": "CC recipients; omitted for meeting executions.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                            }
+                                        },
+                                        "emailTo": {
+                                            "description": "Email recipients; omitted for meeting executions.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                            }
+                                        },
+                                        "emailBcc": {
+                                            "description": "BCC recipients; omitted for meeting executions.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                            }
+                                        },
+                                        "promptId": {
+                                            "type": "string",
+                                            "description": "Prompt identifier, not a unique execution ID."
+                                        },
+                                        "sourceId": {
+                                            "type": "string",
+                                            "description": "Opaque meeting or email-message ID."
+                                        },
+                                        "emailFrom": {
+                                            "description": "Email sender or null; omitted for meeting executions.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "hostEmail": {
+                                            "description": "Meeting host email or null; omitted for email executions.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "signalName": {
+                                            "type": "string",
+                                            "description": "Signal display name at execution."
+                                        },
+                                        "sourceType": {
+                                            "type": "string",
+                                            "description": "Provider source type indicating meeting/call or email; original spelling retained."
+                                        },
+                                        "sourceTitle": {
+                                            "description": "Meeting title or email subject, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "triggeredAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Trigger instant normalized to UTC Z."
+                                        },
+                                        "emailThreadId": {
+                                            "description": "Opaque decimal-string thread ID or null; omitted for meeting executions.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "attendeeEmails": {
+                                            "description": "Meeting attendee emails; omitted for email executions.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                            }
+                                        },
+                                        "salesforceLeadId": {
+                                            "description": "Associated Salesforce lead ID, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customInstructions": {
+                                            "description": "Available requested outputs; omission, null and empty arrays remain distinct.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "label": {
+                                                                "type": "string",
+                                                                "description": "Instruction map label; repeated labels remain separate entries."
+                                                            },
+                                                            "prompt": {
+                                                                "description": "Follow-up prompt text; absence and null remain distinct.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "reason": {
+                                                                "description": "Follow-up reason; absence and null remain distinct.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "generatedText": {
+                                                                "description": "Generated text; absence, null and empty text remain distinct.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "label"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "One labeled custom-instruction output."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "salesforceLeadName": {
+                                            "description": "Associated Salesforce lead name, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "salesforceAccountId": {
+                                            "description": "Associated Salesforce account ID, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "salesforceAccountName": {
+                                            "description": "Associated Salesforce account name, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "salesforceOpportunityId": {
+                                            "description": "Associated Salesforce opportunity ID, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "salesforceOpportunityName": {
+                                            "description": "Associated Salesforce opportunity name, or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "prompt",
+                                        "reason",
+                                        "promptId",
+                                        "sourceId",
+                                        "signalName",
+                                        "sourceType",
+                                        "sourceTitle",
+                                        "triggeredAt",
+                                        "salesforceLeadId",
+                                        "salesforceLeadName",
+                                        "salesforceAccountId",
+                                        "salesforceAccountName",
+                                        "salesforceOpportunityId",
+                                        "salesforceOpportunityName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A triggered prompt execution with its original source context."
+                                },
+                                "description": "One execution page in provider-defined order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation, omitted when pageCount indicates no next page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of existing prompt executions and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain promptId from `list-signal-prompts`. Use this for prompt executions and `list-signal-definition-executions` for the separate definition system. Supply an execution window; limit is 1–50, default 10. Pass nextCursor as cursor with unchanged prompt, window, inclusion option and limit. Custom outputs default to excluded. This reads existing triggered signals rather than running AI."
+            },
+            "filePath": "./momentum-io/tools/list-signal-prompt-executions.ts",
+            "version": "6a74279d277fee06a88e69df90e11505a6b02a893cb9acb5f1958cc960197bf2",
+            "location": {
+                "js": "templates-zero/momentum-io/tools/list-signal-prompt-executions/6a74279d277fee06a88e69df90e11505a6b02a893cb9acb5f1958cc960197bf2.cjs",
+                "ts": "templates-zero/momentum-io/tools/list-signal-prompt-executions/6a74279d277fee06a88e69df90e11505a6b02a893cb9acb5f1958cc960197bf2.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-signal-prompts",
+            "integrationId": "momentum-io",
+            "description": "List configured AI signal prompts with enabled state, context source and creation instant.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_momentum_io_listsignalprompts",
+            "output_schema_ref": "#/definitions/FunctionOutput_momentum_io_listsignalprompts",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_momentum_io_listsignalprompts": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input parameters are needed to list configured signal prompts."
+                    },
+                    "FunctionOutput_momentum_io_listsignalprompts": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "pattern": "^-?(0|[1-9][0-9]*)$",
+                                            "description": "Opaque decimal-string prompt ID for execution lookups."
+                                        },
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "description": "Whether the prompt is enabled."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Prompt creation instant in UTC Z."
+                                        },
+                                        "signalName": {
+                                            "type": "string",
+                                            "description": "Prompt display name."
+                                        },
+                                        "contextSource": {
+                                            "type": "string",
+                                            "description": "Opaque triggering context type, associated with call transcripts or email bodies."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "enabled",
+                                        "createdAt",
+                                        "signalName",
+                                        "contextSource"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Configured AI signal prompt metadata."
+                                },
+                                "description": "All configured prompts in provider order; empty if none exist."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete configured signal prompt collection."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover prompt IDs for `list-signal-prompt-executions`. For the distinct definition-based system use `list-signal-definitions`. The provider returns this entire unpaginated collection in one page. This does not include prompt body text or modify configuration."
+            },
+            "filePath": "./momentum-io/tools/list-signal-prompts.ts",
+            "version": "06d615d0d04ff20a9f1054b25660d4b08af7fe9c58df445b49d9c91dcb6dd74c",
+            "location": {
+                "js": "templates-zero/momentum-io/tools/list-signal-prompts/06d615d0d04ff20a9f1054b25660d4b08af7fe9c58df445b49d9c91dcb6dd74c.cjs",
+                "ts": "templates-zero/momentum-io/tools/list-signal-prompts/06d615d0d04ff20a9f1054b25660d4b08af7fe9c58df445b49d9c91dcb6dd74c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-users",
+            "integrationId": "momentum-io",
+            "description": "List one page of organization users with profile, role, AI license and Salesforce/Google Calendar authentication status.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_momentum_io_listusers",
+            "output_schema_ref": "#/definitions/FunctionOutput_momentum_io_listusers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_momentum_io_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "role": {
+                                "description": "Organization role to include; omitted includes all roles.",
+                                "type": "string",
+                                "enum": [
+                                    "viewer",
+                                    "editor",
+                                    "organization-admin",
+                                    "user-admin",
+                                    "user"
+                                ]
+                            },
+                            "limit": {
+                                "description": "Maximum users in this page; unchanged on continuation.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the same filters and limit; omitted initially.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "licenseAdded": {
+                                "description": "Filter active AI license status; false selects unlicensed users, omission includes both.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters and continuation settings for one page of organization users."
+                    },
+                    "FunctionOutput_momentum_io_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Full display name."
+                                        },
+                                        "role": {
+                                            "type": "string",
+                                            "enum": [
+                                                "viewer",
+                                                "editor",
+                                                "organization-admin",
+                                                "user-admin",
+                                                "user"
+                                            ],
+                                            "description": "Stored organization role."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Opaque provider user type."
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                            "description": "Organization user email."
+                                        },
+                                        "title": {
+                                            "description": "Slack job title; null and omission are distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "slackUserId": {
+                                            "description": "Connected Slack ID; null and omission are distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "licenseAdded": {
+                                            "type": "boolean",
+                                            "description": "Whether the user has an active AI license."
+                                        },
+                                        "gcalAuthStatus": {
+                                            "type": "string",
+                                            "enum": [
+                                                "AUTHENTICATED",
+                                                "NOT_AUTHENTICATED"
+                                            ],
+                                            "description": "Google Calendar authentication state."
+                                        },
+                                        "licenseAssignedAt": {
+                                            "description": "License assignment instant in UTC Z; null and omission are distinct.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "salesforceUserRole": {
+                                            "description": "Salesforce role name; null and omission are distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "salesforceAuthStatus": {
+                                            "type": "string",
+                                            "enum": [
+                                                "AUTHENTICATED",
+                                                "NOT_AUTHENTICATED"
+                                            ],
+                                            "description": "Salesforce authentication state, not a guarantee of access to every record."
+                                        },
+                                        "salesforceDepartment": {
+                                            "description": "Salesforce department; null and omission are distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "role",
+                                        "type",
+                                        "email",
+                                        "licenseAdded",
+                                        "gcalAuthStatus",
+                                        "salesforceAuthStatus"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Organization user profile, role, license, and integration authentication states."
+                                },
+                                "description": "One page of matching users in provider-defined order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation, omitted when reported pageCount indicates no next page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of organization users and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for user and license lookup. Optionally filter by role or licensed status. limit is 1–50, default 10. Pass nextCursor as cursor with the same filters and limit for another page; omit it for a new query. This does not assign licenses or change roles."
+            },
+            "filePath": "./momentum-io/tools/list-users.ts",
+            "version": "4e6f4d4d9e842521453aa6588d77fed5bfccd4046797e1d56877de51549e3412",
+            "location": {
+                "js": "templates-zero/momentum-io/tools/list-users/4e6f4d4d9e842521453aa6588d77fed5bfccd4046797e1d56877de51549e3412.cjs",
+                "ts": "templates-zero/momentum-io/tools/list-users/4e6f4d4d9e842521453aa6588d77fed5bfccd4046797e1d56877de51549e3412.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remap-meeting",
+            "integrationId": "momentum-io",
+            "description": "Associate an existing meeting with new Salesforce records and optionally request a call summary and AI signals. Returns request acceptance rather than completed remapping.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_momentum_io_remapmeeting",
+            "output_schema_ref": "#/definitions/FunctionOutput_momentum_io_remapmeeting",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_momentum_io_remapmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "source": {
+                                "description": "External meeting identity instead of internal ID or explicit details.",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Meeting ID in the selected external system."
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "GOOGLE_CALENDAR",
+                                            "ZOOM",
+                                            "RECALL",
+                                            "GONG",
+                                            "CHORUS",
+                                            "WINGMAN",
+                                            "WISER",
+                                            "SALESLOFT"
+                                        ],
+                                        "description": "System whose external meeting ID is supplied."
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "meetingId": {
+                                "description": "Internal Momentum meeting ID as an opaque decimal string; use alone rather than source or meetingDetails.",
+                                "type": "string",
+                                "pattern": "^-?(0|[1-9][0-9]*)$"
+                            },
+                            "meetingDetails": {
+                                "description": "Exact meeting details instead of an internal or external ID.",
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "description": "Title used for meeting identification."
+                                    },
+                                    "hostEmail": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                        "description": "Host email used for identification."
+                                    },
+                                    "startTime": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                        "description": "Meeting start instant with explicit UTC marker or offset."
+                                    }
+                                },
+                                "required": [
+                                    "title",
+                                    "hostEmail",
+                                    "startTime"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "triggerSummary": {
+                                "description": "Request a call summary after remapping; defaults to false.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "triggerAiSignals": {
+                                "description": "Request AI signals after remapping; defaults to false.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "salesforceRecords": {
+                                "type": "object",
+                                "properties": {
+                                    "leadId": {
+                                        "description": "Salesforce lead to associate.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "accountId": {
+                                        "description": "Salesforce account to associate.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "opportunityId": {
+                                        "description": "Salesforce opportunity to associate.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "New associations; at least one ID is required. Omitted association types have provider-defined remapping semantics, not an implicit preservation or clearing guarantee.",
+                                "minProperties": 1
+                            }
+                        },
+                        "required": [
+                            "salesforceRecords"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify an existing meeting and supply new Salesforce associations and optional generation requests.",
+                        "oneOf": [
+                            {
+                                "required": [
+                                    "meetingId"
+                                ],
+                                "properties": {
+                                    "meetingId": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "source"
+                                ],
+                                "properties": {
+                                    "source": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "meetingDetails"
+                                ],
+                                "properties": {
+                                    "meetingDetails": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_momentum_io_remapmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "accepted": {
+                                "type": "boolean",
+                                "description": "Whether the provider accepted this request, not whether remapping or generation finished."
+                            },
+                            "requestId": {
+                                "type": "string",
+                                "description": "Provider request identifier for tracking the submission."
+                            }
+                        },
+                        "required": [
+                            "accepted",
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Immediate provider acceptance and the request identifier, not remapping completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this to correct Salesforce associations, not to import a meeting. Identify the meeting by exactly one of internal ID, external source, or title/start/host details. `list-meetings` provides IDs and details. Supply at least one Salesforce record. Existing associations may be replaced and no undo is documented. Optional summary and signal generation have additional effects; do not blindly replay. Keep requestId for tracking; accepted does not establish completion."
+            },
+            "filePath": "./momentum-io/tools/remap-meeting.ts",
+            "version": "96fef4e454e3ea14b5038ff1e809ae34ab9e397356855fc60ac6b5b0c422d7e5",
+            "location": {
+                "js": "templates-zero/momentum-io/tools/remap-meeting/96fef4e454e3ea14b5038ff1e809ae34ab9e397356855fc60ac6b5b0c422d7e5.cjs",
+                "ts": "templates-zero/momentum-io/tools/remap-meeting/96fef4e454e3ea14b5038ff1e809ae34ab9e397356855fc60ac6b5b0c422d7e5.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

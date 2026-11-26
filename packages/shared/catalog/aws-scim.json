@@ -1,0 +1,3380 @@
+{
+    "providerConfigKey": "aws-scim",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make directory group identities and metadata available as a replicated dataset. Records intentionally do not claim to contain membership lists.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-groups",
+            "output": [
+                "Group"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Group"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Group": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque group ID in the connected directory."
+                            },
+                            "createdAt": {
+                                "description": "Creation instant normalized to UTC Z, preserving supplied precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "updatedAt": {
+                                "description": "Modification instant normalized to UTC Z, preserving supplied precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "externalId": {
+                                "description": "External provisioning-system identifier, if returned.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Group display name."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Directory group identity and metadata, without membership data."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make IAM Identity Center user identity and profile records available as a replicated dataset. Group membership is not inferred from absent profile fields.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-users",
+            "output": [
+                "User"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque user ID in the connected directory."
+                            },
+                            "name": {
+                                "description": "Personal-name components when available.",
+                                "type": "object",
+                                "properties": {
+                                    "formatted": {
+                                        "description": "Formatted full name.",
+                                        "type": "string"
+                                    },
+                                    "givenName": {
+                                        "description": "Given name.",
+                                        "type": "string"
+                                    },
+                                    "familyName": {
+                                        "description": "Family name.",
+                                        "type": "string"
+                                    },
+                                    "middleName": {
+                                        "description": "Middle names.",
+                                        "type": "string"
+                                    },
+                                    "honorificPrefix": {
+                                        "description": "Honorific prefix.",
+                                        "type": "string"
+                                    },
+                                    "honorificSuffix": {
+                                        "description": "Honorific suffix.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "roles": {
+                                "description": "Returned organizational role entries.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Entry label.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Email, phone, or role value as text.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether the entry is primary, when returned.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A returned email, phone, or organizational role entry."
+                                }
+                            },
+                            "title": {
+                                "description": "Job title.",
+                                "type": "string"
+                            },
+                            "active": {
+                                "description": "Administrative active status; omitted means unknown.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "Returned email entries; empty and absent remain distinct.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Entry label.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Email, phone, or role value as text.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether the entry is primary, when returned.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A returned email, phone, or organizational role entry."
+                                }
+                            },
+                            "locale": {
+                                "description": "Locale preference.",
+                                "type": "string"
+                            },
+                            "nickName": {
+                                "description": "Casual name.",
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "description": "Named timezone, not a UTC instant.",
+                                "type": "string"
+                            },
+                            "userName": {
+                                "description": "Login name when available.",
+                                "type": "string"
+                            },
+                            "userType": {
+                                "description": "Relationship to the organization.",
+                                "type": "string"
+                            },
+                            "addresses": {
+                                "description": "Returned postal addresses.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Address label.",
+                                            "type": "string"
+                                        },
+                                        "region": {
+                                            "description": "State, province, or region.",
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "description": "Country value.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this address is primary.",
+                                            "type": "boolean"
+                                        },
+                                        "locality": {
+                                            "description": "City or locality.",
+                                            "type": "string"
+                                        },
+                                        "formatted": {
+                                            "description": "Formatted address.",
+                                            "type": "string"
+                                        },
+                                        "postalCode": {
+                                            "description": "Postal code preserving leading zeros.",
+                                            "type": "string"
+                                        },
+                                        "streetAddress": {
+                                            "description": "Street address preserving line breaks.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A returned postal address."
+                                }
+                            },
+                            "createdAt": {
+                                "description": "Creation instant normalized to UTC Z with supplied precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "updatedAt": {
+                                "description": "Modification instant normalized to UTC Z with supplied precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "enterprise": {
+                                "description": "Enterprise profile when available.",
+                                "type": "object",
+                                "properties": {
+                                    "division": {
+                                        "description": "Division name.",
+                                        "type": "string"
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost center.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Department name.",
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "description": "Organization name.",
+                                        "type": "string"
+                                    },
+                                    "managerUserId": {
+                                        "description": "Opaque ID of the manager user.",
+                                        "type": "string"
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Employee identifier.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "externalId": {
+                                "description": "External provisioning-system identifier when available.",
+                                "type": "string"
+                            },
+                            "profileUrl": {
+                                "description": "External profile URL if returned.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "User display name when available.",
+                                "type": "string"
+                            },
+                            "phoneNumbers": {
+                                "description": "Returned phone entries.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Entry label.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Email, phone, or role value as text.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether the entry is primary, when returned.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A returned email, phone, or organizational role entry."
+                                }
+                            },
+                            "preferredLanguage": {
+                                "description": "Preferred language value.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "IAM Identity Center user identity and profile record; group membership is not inferred."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "add-member-to-group",
+            "integrationId": "aws-scim",
+            "description": "Add one existing user to an existing directory group without replacing other memberships.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_addmembertogroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_addmembertogroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_addmembertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the existing user to add."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the existing target group."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The existing user and group for one additive membership change."
+                    },
+                    "FunctionOutput_aws_scim_addmembertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "User ID supplied for the accepted membership addition."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "description": "Target group's opaque ID."
+                            },
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "AWS accepted the add operation; not a post-write membership verification."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "groupId",
+                            "accepted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acceptance receipt for the requested membership addition, not a verification of membership."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Get groupId from `list-groups` and userId from `list-users`. This adds an association; it does not create either resource. Use `batch-add-members-to-group` for 2–100 users. Use `list-groups` with memberUserId and groupId to check the association; group detail reads do not expose member lists."
+            },
+            "filePath": "./aws-scim/tools/add-member-to-group.ts",
+            "version": "5859e6a4ad1956ac56685b4c6ea1b4773a1f80da4b906e818a8456c04e6fddfa",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/add-member-to-group/5859e6a4ad1956ac56685b4c6ea1b4773a1f80da4b906e818a8456c04e6fddfa.cjs",
+                "ts": "templates-zero/aws-scim/tools/add-member-to-group/5859e6a4ad1956ac56685b4c6ea1b4773a1f80da4b906e818a8456c04e6fddfa.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-add-members-to-group",
+            "integrationId": "aws-scim",
+            "description": "Add up to 100 existing users to one directory group using the provider's native multiple-member operation.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_batchaddmemberstogroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_batchaddmemberstogroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_batchaddmemberstogroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the one existing group receiving members."
+                            },
+                            "userIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque ID of an existing user to add."
+                                },
+                                "uniqueItems": true,
+                                "description": "Opaque IDs of 1–100 existing users to add; duplicates are rejected locally."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "userIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One existing directory group and the distinct existing users to add."
+                    },
+                    "FunctionOutput_aws_scim_batchaddmemberstogroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "description": "Opaque ID of the group targeted by the request."
+                            },
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "AWS accepted the aggregate patch; no per-item success or verified addition count is implied."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "accepted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate acceptance of the membership request, without individual user outcomes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Get IDs from `list-groups` and `list-users`. Supply 1–100 distinct user IDs for one group. Use `add-member-to-group` for an individual action. This is an aggregate operation: the result does not report per-user outcomes or guarantee atomic processing. Check associations with `list-groups` when a write outcome is uncertain."
+            },
+            "filePath": "./aws-scim/tools/batch-add-members-to-group.ts",
+            "version": "5390ef3d1acdf3438bb6caf60f972179dcf348feb98d634d8b69737241f0f878",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/batch-add-members-to-group/5390ef3d1acdf3438bb6caf60f972179dcf348feb98d634d8b69737241f0f878.cjs",
+                "ts": "templates-zero/aws-scim/tools/batch-add-members-to-group/5390ef3d1acdf3438bb6caf60f972179dcf348feb98d634d8b69737241f0f878.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-remove-members-from-group",
+            "integrationId": "aws-scim",
+            "description": "Remove up to 100 explicitly identified user memberships from one directory group using a native aggregate operation.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_batchremovemembersfromgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_batchremovemembersfromgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_batchremovemembersfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the group whose specified memberships will be removed."
+                            },
+                            "userIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque ID of an explicitly targeted user."
+                                },
+                                "uniqueItems": true,
+                                "description": "Opaque IDs of 1–100 explicitly targeted users; an empty remove-all request is not allowed."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "userIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One directory group and the explicit user memberships to remove."
+                    },
+                    "FunctionOutput_aws_scim_batchremovemembersfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "description": "Opaque ID of the group targeted by the aggregate removal."
+                            },
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "AWS accepted the aggregate patch; not a per-user success report or verified removal count."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "accepted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate acceptance of the explicitly targeted membership removals."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Supply one group ID and 1–100 distinct user IDs, obtainable from `list-groups` and `list-users`. Use `remove-member-from-group` for one user. This does not delete users or the group and has no remove-all mode. The result is aggregate acceptance, not per-user outcomes or an atomicity guarantee. Inspect associations if the outcome is uncertain."
+            },
+            "filePath": "./aws-scim/tools/batch-remove-members-from-group.ts",
+            "version": "72207cb0ba4edbd987a2cd5d05d5299c0da05a4ab3c1dd06d16ec145d70a4d2d",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/batch-remove-members-from-group/72207cb0ba4edbd987a2cd5d05d5299c0da05a4ab3c1dd06d16ec145d70a4d2d.cjs",
+                "ts": "templates-zero/aws-scim/tools/batch-remove-members-from-group/72207cb0ba4edbd987a2cd5d05d5299c0da05a4ab3c1dd06d16ec145d70a4d2d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-group",
+            "integrationId": "aws-scim",
+            "description": "Create a directory group, optionally assigning an external identifier and up to 100 initial user members.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_creategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_creategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "externalId": {
+                                "description": "Optional identifier from your external provisioning system.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Display name for the new group."
+                            },
+                            "memberUserIds": {
+                                "description": "Opaque IDs of up to 100 existing users to add initially; omitted or [] creates without initial members.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque ID of an existing user."
+                                },
+                                "uniqueItems": true
+                            }
+                        },
+                        "required": [
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "New directory group with an optional external identifier and initial users."
+                    },
+                    "FunctionOutput_aws_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID assigned to the new group."
+                            },
+                            "createdAt": {
+                                "description": "Creation instant normalized to UTC Z, if returned.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "updatedAt": {
+                                "description": "Modification instant normalized to UTC Z, if returned.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "externalId": {
+                                "description": "External provisioning identifier, if returned.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Group display name returned by AWS."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Group record accepted by AWS, without an inferred member list or per-member outcomes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this for a new group; use `list-groups` first if it may already exist. Obtain initial member IDs from `list-users`. At most 100 initial members can be supplied. Use `batch-add-members-to-group` for later additions. Group read results do not expose the actual member list."
+            },
+            "filePath": "./aws-scim/tools/create-group.ts",
+            "version": "04b630b01d96577826183e5062966979c6741bcae5c18e996828099551b65d9d",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/create-group/04b630b01d96577826183e5062966979c6741bcae5c18e996828099551b65d9d.cjs",
+                "ts": "templates-zero/aws-scim/tools/create-group/04b630b01d96577826183e5062966979c6741bcae5c18e996828099551b65d9d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-user",
+            "integrationId": "aws-scim",
+            "description": "Create an IAM Identity Center user with identity, contact, and organizational attributes. Group membership is managed separately.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_createuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_createuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "object",
+                                "properties": {
+                                    "formatted": {
+                                        "description": "Full formatted personal name.",
+                                        "type": "string"
+                                    },
+                                    "givenName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Given or first name."
+                                    },
+                                    "familyName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Family or last name."
+                                    },
+                                    "middleName": {
+                                        "description": "Middle name or names.",
+                                        "type": "string"
+                                    },
+                                    "honorificPrefix": {
+                                        "description": "Honorific prefix.",
+                                        "type": "string"
+                                    },
+                                    "honorificSuffix": {
+                                        "description": "Honorific suffix.",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "givenName",
+                                    "familyName"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Personal name; givenName and familyName are required."
+                            },
+                            "roles": {
+                                "description": "At most one organizational role; not an AWS permission assignment.",
+                                "maxItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Role label.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Organizational role value."
+                                        },
+                                        "primary": {
+                                            "description": "Whether this is the primary role.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An organizational role."
+                                }
+                            },
+                            "title": {
+                                "description": "Job title.",
+                                "type": "string"
+                            },
+                            "active": {
+                                "description": "Administrative active status; omission leaves the provider's creation default in effect.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "At most one email address; the implementation marks it primary.",
+                                "maxItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Email label, such as work.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Email address text."
+                                        }
+                                    },
+                                    "required": [
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An email address to mark primary."
+                                }
+                            },
+                            "locale": {
+                                "description": "Locale preference, preserved as supplied.",
+                                "type": "string"
+                            },
+                            "nickName": {
+                                "description": "Casual name for the user.",
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "description": "Named user timezone, such as America/Los_Angeles; not an instant.",
+                                "type": "string"
+                            },
+                            "userName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Unique login name for the new user; sent as ordinary text."
+                            },
+                            "userType": {
+                                "description": "Relationship to the organization, such as Employee or Contractor.",
+                                "type": "string"
+                            },
+                            "addresses": {
+                                "description": "At most one postal address.",
+                                "maxItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Address label, such as work.",
+                                            "type": "string"
+                                        },
+                                        "region": {
+                                            "description": "State, province, or region.",
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "description": "Country value accepted by the provider.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this is the primary postal address.",
+                                            "type": "boolean"
+                                        },
+                                        "locality": {
+                                            "description": "City or locality.",
+                                            "type": "string"
+                                        },
+                                        "formatted": {
+                                            "description": "Full formatted postal address.",
+                                            "type": "string"
+                                        },
+                                        "postalCode": {
+                                            "description": "Postal code; leading zeros are preserved.",
+                                            "type": "string"
+                                        },
+                                        "streetAddress": {
+                                            "description": "Street address, including any line breaks.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "minProperties": 1,
+                                    "description": "A postal address with at least one supplied attribute."
+                                }
+                            },
+                            "enterprise": {
+                                "description": "Enterprise organizational attributes.",
+                                "type": "object",
+                                "properties": {
+                                    "division": {
+                                        "description": "Division name.",
+                                        "type": "string"
+                                    },
+                                    "costCenter": {
+                                        "description": "Organizational cost center.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Department name.",
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "description": "Organization name.",
+                                        "type": "string"
+                                    },
+                                    "managerUserId": {
+                                        "description": "Opaque SCIM user ID of the manager, obtainable from list-users.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Employee identifier assigned by the organization.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1
+                            },
+                            "externalId": {
+                                "description": "Identifier assigned by your external provisioning system; omitted if not supplied.",
+                                "type": "string"
+                            },
+                            "profileUrl": {
+                                "description": "URL of the user's external profile.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name shown for the user."
+                            },
+                            "phoneNumbers": {
+                                "description": "At most one phone number.",
+                                "maxItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Phone label, such as work.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Phone number text; no numeric conversion is performed."
+                                        },
+                                        "primary": {
+                                            "description": "Whether this is the primary phone number.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A phone number preserved as text."
+                                }
+                            },
+                            "preferredLanguage": {
+                                "description": "Preferred language tag, preserved as supplied.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "userName",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identity, contact, and organizational attributes for a new IAM Identity Center user."
+                    },
+                    "FunctionOutput_aws_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the newly created user in this connection's directory."
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "Login name returned by the provider."
+                            },
+                            "createdAt": {
+                                "description": "Creation instant normalized to UTC; omitted if unavailable.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "updatedAt": {
+                                "description": "Last modification instant normalized to UTC; omitted if unavailable.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Display name returned by the provider."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "userName",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identity receipt and available write timestamps; not a sign-in or notification guarantee."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to provision a new user. Use `list-users` first if the user might already exist, and `update-user` for an existing user. Required profile fields must be supplied. Contact and role arrays accept at most one entry each. Use `add-member-to-group` after creation to assign group membership. Creation does not establish that the user can sign in or that any notification was delivered."
+            },
+            "filePath": "./aws-scim/tools/create-user.ts",
+            "version": "f51a1e45accae9a460341c8465ea7572cdb349cbed326d7afd2652011ddb3b06",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/create-user/f51a1e45accae9a460341c8465ea7572cdb349cbed326d7afd2652011ddb3b06.cjs",
+                "ts": "templates-zero/aws-scim/tools/create-user/f51a1e45accae9a460341c8465ea7572cdb349cbed326d7afd2652011ddb3b06.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-group",
+            "integrationId": "aws-scim",
+            "description": "Delete an existing directory group by ID. No restoration capability is provided by this contract.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_deletegroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_deletegroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the group to delete."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the directory group to delete."
+                    },
+                    "FunctionOutput_aws_scim_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID targeted by the accepted group deletion."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "AWS accepted deletion of the group; not a report about downstream application cleanup."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acceptance receipt for the targeted group deletion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain groupId from `list-groups` and verify it with `get-group` when necessary. This deletes the group, not its user records. To remove only a membership, use `remove-member-from-group` instead. Do not assume a recreated group retains the old identity or access assignments."
+            },
+            "filePath": "./aws-scim/tools/delete-group.ts",
+            "version": "8ae679eaa7ec76b42a1525618fe2757213a55399359bf71ac186da36d6969ecc",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/delete-group/8ae679eaa7ec76b42a1525618fe2757213a55399359bf71ac186da36d6969ecc.cjs",
+                "ts": "templates-zero/aws-scim/tools/delete-group/8ae679eaa7ec76b42a1525618fe2757213a55399359bf71ac186da36d6969ecc.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-user",
+            "integrationId": "aws-scim",
+            "description": "Delete an existing IAM Identity Center user by ID. This is deletion, not administrative deactivation; no restore is offered by this contract.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_deleteuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_deleteuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the user to delete from the connected directory."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the IAM Identity Center user to delete."
+                    },
+                    "FunctionOutput_aws_scim_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID targeted by the successful deletion."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "AWS accepted the deletion; not a claim about external applications or session revocation."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Receipt returned only after AWS accepts the user deletion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain userId from `list-users` and verify the identity with `get-user` if needed. This removes the user resource. Use `update-user` with active:false to deactivate without deleting instead. No undo or restoration is provided; do not assume recreating a user preserves its old ID or assignments."
+            },
+            "filePath": "./aws-scim/tools/delete-user.ts",
+            "version": "891e84269c116d5eb6cf3f5aecd97b8ec78cf08b313968e1e7f1e2ef262d6d76",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/delete-user/891e84269c116d5eb6cf3f5aecd97b8ec78cf08b313968e1e7f1e2ef262d6d76.cjs",
+                "ts": "templates-zero/aws-scim/tools/delete-user/891e84269c116d5eb6cf3f5aecd97b8ec78cf08b313968e1e7f1e2ef262d6d76.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-group",
+            "integrationId": "aws-scim",
+            "description": "Retrieve a directory group's identity and metadata by ID. AWS does not return its actual member list through this read.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_getgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_getgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque group ID in the connected directory."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the directory group to retrieve."
+                    },
+                    "FunctionOutput_aws_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque directory group ID."
+                            },
+                            "createdAt": {
+                                "description": "Creation instant normalized to UTC Z, if returned.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "updatedAt": {
+                                "description": "Modification instant normalized to UTC Z, if returned.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "externalId": {
+                                "description": "External provisioning identifier, if returned.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Group display name."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Directory group identity and metadata, without a membership list."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get groupId from `list-groups` or `create-group`. This returns group details, not membership. Use `list-users` with filter.groupId to enumerate members, or `list-groups` with a member filter to find a user's groups."
+            },
+            "filePath": "./aws-scim/tools/get-group.ts",
+            "version": "a143b3df7f8dd670d6da677e45f811d5a2bd8ca64104f0effa5a342544e35d4a",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/get-group/a143b3df7f8dd670d6da677e45f811d5a2bd8ca64104f0effa5a342544e35d4a.cjs",
+                "ts": "templates-zero/aws-scim/tools/get-group/a143b3df7f8dd670d6da677e45f811d5a2bd8ca64104f0effa5a342544e35d4a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-service-provider-config",
+            "integrationId": "aws-scim",
+            "description": "Retrieve read-only SCIM implementation capabilities and advertised authentication schemes for the connected directory.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_getserviceproviderconfig",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_getserviceproviderconfig",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is required; reads the connected directory service configuration."
+                    },
+                    "FunctionOutput_aws_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {
+                            "bulk": {
+                                "description": "Advertised SCIM bulk capability and limits, not the membership batch-tool contract.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether SCIM bulk operations are advertised as supported.",
+                                        "type": "boolean"
+                                    },
+                                    "maxOperations": {
+                                        "description": "Advertised maximum operations in one SCIM bulk request.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "maxPayloadSizeBytes": {
+                                        "description": "Advertised maximum bulk payload size, provisionally interpreted in bytes.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "filter": {
+                                "description": "Advertised filtering capability and result limit.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether filtering is advertised as supported.",
+                                        "type": "boolean"
+                                    },
+                                    "maxResults": {
+                                        "description": "Advertised filter result maximum; reported as-is, not substituted for operation-specific page limits.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "etagSupported": {
+                                "description": "Whether ETags are advertised as supported.",
+                                "type": "boolean"
+                            },
+                            "sortSupported": {
+                                "description": "Whether sorting is advertised as supported.",
+                                "type": "boolean"
+                            },
+                            "patchSupported": {
+                                "description": "Whether PATCH is advertised as supported.",
+                                "type": "boolean"
+                            },
+                            "documentationUrl": {
+                                "description": "Provider documentation URL when advertised.",
+                                "type": "string"
+                            },
+                            "authenticationSchemes": {
+                                "description": "Advertised authentication schemes; no credentials are returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Human-readable scheme name.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "Authentication scheme type, such as oauthbearertoken.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this is the primary advertised scheme.",
+                                            "type": "boolean"
+                                        },
+                                        "specUrl": {
+                                            "description": "Authentication specification URL.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Authentication scheme explanation.",
+                                            "type": "string"
+                                        },
+                                        "documentationUrl": {
+                                            "description": "Scheme documentation URL.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One advertised authentication scheme, without credentials."
+                                }
+                            },
+                            "changePasswordSupported": {
+                                "description": "Whether password changes are advertised as supported.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Provider-advertised SCIM capabilities, limits, and authentication schemes for the connected directory."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to inspect advertised protocol capabilities, not to change settings or list users. Use `list-resource-types` and `list-schemas` for resource and attribute discovery. Advertised limits can differ from operation-specific documentation; this tool reports them without rewriting them. No input is required."
+            },
+            "filePath": "./aws-scim/tools/get-service-provider-config.ts",
+            "version": "35b0a1262e4d34a23c2d9d8a05501a658ef2b5e96d5949da18d908e390d9921b",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/get-service-provider-config/35b0a1262e4d34a23c2d9d8a05501a658ef2b5e96d5949da18d908e390d9921b.cjs",
+                "ts": "templates-zero/aws-scim/tools/get-service-provider-config/35b0a1262e4d34a23c2d9d8a05501a658ef2b5e96d5949da18d908e390d9921b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-user",
+            "integrationId": "aws-scim",
+            "description": "Retrieve one IAM Identity Center user's current identity, contact, and enterprise profile by ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_getuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_getuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque SCIM user ID in the connected directory."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the IAM Identity Center user to retrieve."
+                    },
+                    "FunctionOutput_aws_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque user ID in the connected directory."
+                            },
+                            "name": {
+                                "description": "Personal-name components returned by the provider.",
+                                "type": "object",
+                                "properties": {
+                                    "formatted": {
+                                        "description": "Full formatted name.",
+                                        "type": "string"
+                                    },
+                                    "givenName": {
+                                        "description": "Given name.",
+                                        "type": "string"
+                                    },
+                                    "familyName": {
+                                        "description": "Family name.",
+                                        "type": "string"
+                                    },
+                                    "middleName": {
+                                        "description": "Middle names.",
+                                        "type": "string"
+                                    },
+                                    "honorificPrefix": {
+                                        "description": "Honorific prefix.",
+                                        "type": "string"
+                                    },
+                                    "honorificSuffix": {
+                                        "description": "Honorific suffix.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "roles": {
+                                "description": "Returned organizational roles, not permission assignments.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider-returned label, such as work.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Email, phone, or role value as ordinary text.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this entry is primary, when returned.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A returned email, phone, or organizational role entry."
+                                }
+                            },
+                            "title": {
+                                "description": "Job title.",
+                                "type": "string"
+                            },
+                            "active": {
+                                "description": "Administrative active status; omission means unknown, not false.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "Returned email addresses; an empty array is distinct from omission.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider-returned label, such as work.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Email, phone, or role value as ordinary text.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this entry is primary, when returned.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A returned email, phone, or organizational role entry."
+                                }
+                            },
+                            "locale": {
+                                "description": "Locale preference.",
+                                "type": "string"
+                            },
+                            "nickName": {
+                                "description": "Casual name.",
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "description": "Named user timezone; not converted to UTC.",
+                                "type": "string"
+                            },
+                            "userName": {
+                                "description": "User login name, when returned.",
+                                "type": "string"
+                            },
+                            "userType": {
+                                "description": "Organizational relationship, such as Employee.",
+                                "type": "string"
+                            },
+                            "addresses": {
+                                "description": "Returned postal addresses.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Address label.",
+                                            "type": "string"
+                                        },
+                                        "region": {
+                                            "description": "State, province, or region.",
+                                            "type": "string"
+                                        },
+                                        "country": {
+                                            "description": "Country value.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this address is primary.",
+                                            "type": "boolean"
+                                        },
+                                        "locality": {
+                                            "description": "City or locality.",
+                                            "type": "string"
+                                        },
+                                        "formatted": {
+                                            "description": "Formatted full address.",
+                                            "type": "string"
+                                        },
+                                        "postalCode": {
+                                            "description": "Postal code preserving leading zeros.",
+                                            "type": "string"
+                                        },
+                                        "streetAddress": {
+                                            "description": "Street address preserving line breaks.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A returned postal address."
+                                }
+                            },
+                            "createdAt": {
+                                "description": "Creation instant in UTC Z, preserving supplied precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "updatedAt": {
+                                "description": "Last modification instant in UTC Z, preserving supplied precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "enterprise": {
+                                "description": "Enterprise-extension profile, when returned.",
+                                "type": "object",
+                                "properties": {
+                                    "division": {
+                                        "description": "Division name.",
+                                        "type": "string"
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost center.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Department name.",
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "description": "Organization name.",
+                                        "type": "string"
+                                    },
+                                    "managerUserId": {
+                                        "description": "Opaque SCIM user ID of the manager.",
+                                        "type": "string"
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Organizational employee identifier.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "externalId": {
+                                "description": "External provisioning-system identifier, when returned.",
+                                "type": "string"
+                            },
+                            "profileUrl": {
+                                "description": "External profile URL, if returned.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "User display name, when returned.",
+                                "type": "string"
+                            },
+                            "phoneNumbers": {
+                                "description": "Returned phone numbers.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider-returned label, such as work.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Email, phone, or role value as ordinary text.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this entry is primary, when returned.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A returned email, phone, or organizational role entry."
+                                }
+                            },
+                            "preferredLanguage": {
+                                "description": "Preferred language value.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The current user identity, contact details, and enterprise profile without SCIM envelopes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this when you already have a user ID from `list-users` or `create-user`. Use `list-users` to look up a login name, external ID, or members of a group. Group memberships are not inferred from this profile."
+            },
+            "filePath": "./aws-scim/tools/get-user.ts",
+            "version": "6124c3b46b3a21619a5dcb0e09d097370f1812c6b57071cc216b8a96178f50a5",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/get-user/6124c3b46b3a21619a5dcb0e09d097370f1812c6b57071cc216b8a96178f50a5.cjs",
+                "ts": "templates-zero/aws-scim/tools/get-user/6124c3b46b3a21619a5dcb0e09d097370f1812c6b57071cc216b8a96178f50a5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-groups",
+            "integrationId": "aws-scim",
+            "description": "Return one page of directory groups, optionally matched by display name, external ID, user membership, or a particular group-user association.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_listgroups",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_listgroups",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum groups on this page; defaults to 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque nextCursor from this directory and unchanged filter; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "filter": {
+                                "description": "Optional exact-match filter; select one supported shape.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "displayName": {
+                                                "type": "string",
+                                                "description": "Group display name to match with provider equality semantics."
+                                            }
+                                        },
+                                        "required": [
+                                            "displayName"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "externalId": {
+                                                "type": "string",
+                                                "description": "External provisioning identifier to match."
+                                            }
+                                        },
+                                        "required": [
+                                            "externalId"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "groupId": {
+                                                "description": "Optional specific group ID to check together with memberUserId.",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "memberUserId": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "Opaque user ID whose group associations are requested."
+                                            }
+                                        },
+                                        "required": [
+                                            "memberUserId"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Request one page of directory groups with an optional exact-match filter."
+                    },
+                    "FunctionOutput_aws_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque group ID."
+                                        },
+                                        "createdAt": {
+                                            "description": "Creation instant normalized to UTC Z.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "updatedAt": {
+                                            "description": "Modification instant normalized to UTC Z.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "externalId": {
+                                            "description": "External provisioning identifier if returned.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string",
+                                            "description": "Group display name."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "displayName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Directory group without membership data."
+                                },
+                                "description": "One provider page of groups in provider order, without member lists."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque next-page token; omitted when AWS indicates no further page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of directory groups and an optional continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to browse groups or obtain group IDs. filter.memberUserId finds a user's groups; include filter.groupId in that same filter to test a specific association. Names use equality, not substring search. Return nextCursor as cursor with the same filter and limit for another page. A short page can have a next page. Group items never provide actual member lists; use `list-users` with filter.groupId for that."
+            },
+            "filePath": "./aws-scim/tools/list-groups.ts",
+            "version": "80b6817f402059a7f79e213f4bd0f33d2f6d4c3b2a220d1e7cf582a376a6d713",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/list-groups/80b6817f402059a7f79e213f4bd0f33d2f6d4c3b2a220d1e7cf582a376a6d713.cjs",
+                "ts": "templates-zero/aws-scim/tools/list-groups/80b6817f402059a7f79e213f4bd0f33d2f6d4c3b2a220d1e7cf582a376a6d713.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-resource-types",
+            "integrationId": "aws-scim",
+            "description": "List the SCIM resource types supported by the connected IAM Identity Center directory, including endpoints and schema extensions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_listresourcetypes",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_listresourcetypes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_listresourcetypes": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is required for resource-type discovery."
+                    },
+                    "FunctionOutput_aws_scim_listresourcetypes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque resource-type identifier, such as User."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Provider resource-type name."
+                                        },
+                                        "schema": {
+                                            "type": "string",
+                                            "description": "Core schema URN for the resource type."
+                                        },
+                                        "endpoint": {
+                                            "type": "string",
+                                            "description": "SCIM relative collection endpoint for this resource type, such as /Users."
+                                        },
+                                        "description": {
+                                            "description": "Human-readable resource-type explanation, if returned.",
+                                            "type": "string"
+                                        },
+                                        "schemaExtensions": {
+                                            "description": "Schema extensions advertised for the resource type; omitted if absent.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "schema": {
+                                                        "type": "string",
+                                                        "description": "Extension schema URN."
+                                                    },
+                                                    "required": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the provider advertises the extension as required."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "schema",
+                                                    "required"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "An advertised resource-type schema extension."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "schema",
+                                        "endpoint"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A supported SCIM resource type."
+                                },
+                                "description": "Resource types returned in this discovery response."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The supported SCIM resource-type discovery collection."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for provisioning capability discovery and schema planning, not to list directory users or groups. Use `list-users` or `list-groups` for business records and `list-schemas` for attribute definitions. No input preparation is required; the response is one unpaginated discovery collection."
+            },
+            "filePath": "./aws-scim/tools/list-resource-types.ts",
+            "version": "d3ef05465374dc50022332e699c8b1bf3968c7b8ed89514787279f297bf4cfad",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/list-resource-types/d3ef05465374dc50022332e699c8b1bf3968c7b8ed89514787279f297bf4cfad.cjs",
+                "ts": "templates-zero/aws-scim/tools/list-resource-types/d3ef05465374dc50022332e699c8b1bf3968c7b8ed89514787279f297bf4cfad.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-schemas",
+            "integrationId": "aws-scim",
+            "description": "List supported SCIM schema definitions, including nested attribute types, mutability, requiredness, and canonical values.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_listschemas",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_listschemas",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_listschemas": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is required for schema discovery."
+                    },
+                    "FunctionOutput_aws_scim_listschemas": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Schema identifier URN."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Provider schema name."
+                                        },
+                                        "location": {
+                                            "description": "Schema resource location when returned by metadata.",
+                                            "type": "string"
+                                        },
+                                        "attributes": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/__schema0"
+                                            },
+                                            "description": "Advertised attribute definitions, preserving nested subattributes."
+                                        },
+                                        "description": {
+                                            "description": "Human-readable schema explanation, if returned.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "attributes"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A supported SCIM schema definition."
+                                },
+                                "description": "Schema definitions returned in one discovery response."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Supported SCIM schema definitions with recursively typed attributes.",
+                        "definitions": {
+                            "__schema0": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Attribute or subattribute name."
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "description": "Provider-advertised SCIM type, such as string, boolean, or complex."
+                                    },
+                                    "required": {
+                                        "description": "Advertised required flag; operation-specific requirements may be stricter.",
+                                        "type": "boolean"
+                                    },
+                                    "returned": {
+                                        "description": "Provider's return-policy value, such as default or always.",
+                                        "type": "string"
+                                    },
+                                    "caseExact": {
+                                        "description": "Whether matching is advertised as case-sensitive.",
+                                        "type": "boolean"
+                                    },
+                                    "mutability": {
+                                        "description": "Provider's mutability value, preserved without assuming an exhaustive enum.",
+                                        "type": "string"
+                                    },
+                                    "uniqueness": {
+                                        "description": "Provider's uniqueness value, such as server or none.",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "Provider's explanatory text, preserved verbatim.",
+                                        "type": "string"
+                                    },
+                                    "multiValued": {
+                                        "description": "Whether the schema permits multiple values; actual operation limits may still permit only one.",
+                                        "type": "boolean"
+                                    },
+                                    "subAttributes": {
+                                        "description": "Nested attribute definitions for complex fields, when present.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    },
+                                    "referenceTypes": {
+                                        "description": "Advertised allowable reference resource types, when present.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "canonicalValues": {
+                                        "description": "Advertised canonical values, when present.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "type"
+                                ],
+                                "additionalProperties": false,
+                                "description": "An advertised SCIM attribute or nested subattribute definition."
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to inspect provider-advertised attribute definitions. Use `list-resource-types` to relate schemas to resource endpoints. Creation and update tools enforce operation-specific constraints that can be stricter than this schema discovery response; for example, user creation still requires displayName. No input is required."
+            },
+            "filePath": "./aws-scim/tools/list-schemas.ts",
+            "version": "0d3a6cdc7a78566686236eabcea127cc5140059c4f8a6ddd108ba89bd6a48667",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/list-schemas/0d3a6cdc7a78566686236eabcea127cc5140059c4f8a6ddd108ba89bd6a48667.cjs",
+                "ts": "templates-zero/aws-scim/tools/list-schemas/0d3a6cdc7a78566686236eabcea127cc5140059c4f8a6ddd108ba89bd6a48667.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-users",
+            "integrationId": "aws-scim",
+            "description": "Return one page of users, optionally matched by login name, external ID, group membership, or a specific user-manager relationship.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_listusers",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_listusers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum users on this page; defaults to 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque nextCursor from this directory and unchanged filter; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "filter": {
+                                "description": "Optional exact-match filter; choose exactly one supported shape.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "userName": {
+                                                "type": "string",
+                                                "description": "Login name to match with provider equality semantics."
+                                            }
+                                        },
+                                        "required": [
+                                            "userName"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "externalId": {
+                                                "type": "string",
+                                                "description": "External provisioning identifier to match exactly."
+                                            }
+                                        },
+                                        "required": [
+                                            "externalId"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "groupId": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "Opaque group ID whose member users are requested."
+                                            }
+                                        },
+                                        "required": [
+                                            "groupId"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "userId": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "Specific user's opaque ID for a manager relationship check."
+                                            },
+                                            "managerUserId": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "Manager's opaque user ID to match together with userId."
+                                            }
+                                        },
+                                        "required": [
+                                            "userId",
+                                            "managerUserId"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Request one page of users with an optional exact-match filter and continuation cursor."
+                    },
+                    "FunctionOutput_aws_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque user ID in this directory."
+                                        },
+                                        "active": {
+                                            "description": "Administrative active status; omission is unknown.",
+                                            "type": "boolean"
+                                        },
+                                        "userName": {
+                                            "description": "Login name, when returned.",
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "description": "Creation instant normalized to UTC Z.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "givenName": {
+                                            "description": "Given name from the personal-name object, when returned.",
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "description": "Last modification instant normalized to UTC Z.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "externalId": {
+                                            "description": "External provisioning identifier, when returned.",
+                                            "type": "string"
+                                        },
+                                        "familyName": {
+                                            "description": "Family name from the personal-name object, when returned.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "User display name, when returned.",
+                                            "type": "string"
+                                        },
+                                        "managerUserId": {
+                                            "description": "Manager's opaque user ID, when returned.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An identity summary containing only the fields returned by AWS."
+                                },
+                                "description": "One provider page of user summaries in provider order; use get-user for the full profile."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token; omitted when AWS indicates no next page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of user summaries and an optional unchanged AWS continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to browse users or find IDs for `get-user`, `update-user`, and membership tools. Set filter.groupId to list a group's members. Filters are exact equality, not substring search. Each call returns one page, up to 100 users. Pass nextCursor back as cursor with the same filter and limit; a short page may still have a next page. Use `get-user` for a full individual profile."
+            },
+            "filePath": "./aws-scim/tools/list-users.ts",
+            "version": "e004a83dd7c61b0d3cff065f8e893332e6fd8390e64fcc9be00fe1c616c5b9d3",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/list-users/e004a83dd7c61b0d3cff065f8e893332e6fd8390e64fcc9be00fe1c616c5b9d3.cjs",
+                "ts": "templates-zero/aws-scim/tools/list-users/e004a83dd7c61b0d3cff065f8e893332e6fd8390e64fcc9be00fe1c616c5b9d3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-member-from-group",
+            "integrationId": "aws-scim",
+            "description": "Remove one specified user-group association without deleting either resource or requesting removal of unspecified members.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_removememberfromgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_removememberfromgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_removememberfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the user whose membership is to be removed."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the existing group."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The explicit user-group association to remove."
+                    },
+                    "FunctionOutput_aws_scim_removememberfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "User ID specified in the accepted removal request."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "description": "Target group's opaque ID."
+                            },
+                            "accepted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "AWS accepted the removal operation; not a post-write membership verification."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "groupId",
+                            "accepted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment that AWS accepted the specified association removal."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get groupId and userId from `list-groups` and `list-users`. This removes only their association, not the user or group. Use `batch-remove-members-from-group` for up to 100 explicit users. There is no remove-all mode; use `list-users` with filter.groupId to find member IDs. Group reads do not return actual member lists."
+            },
+            "filePath": "./aws-scim/tools/remove-member-from-group.ts",
+            "version": "7bc14eb7e1a81af41fed7116f3b7d758ab345de8acd17379640e6abfb181eef7",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/remove-member-from-group/7bc14eb7e1a81af41fed7116f3b7d758ab345de8acd17379640e6abfb181eef7.cjs",
+                "ts": "templates-zero/aws-scim/tools/remove-member-from-group/7bc14eb7e1a81af41fed7116f3b7d758ab345de8acd17379640e6abfb181eef7.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-group",
+            "integrationId": "aws-scim",
+            "description": "Partially modify a group's display name or external provisioning identifier without changing its members.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_updategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_updategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "externalId": {
+                                        "description": "New external provisioning identifier, or null to remove it; empty string is a literal value subject to provider validation.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "displayName": {
+                                        "description": "New group display name; cannot be null or empty.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Partial attribute changes; omitted fields remain unchanged.",
+                                "minProperties": 1
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the group to update."
+                            }
+                        },
+                        "required": [
+                            "changes",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify a group and supply at least one identity attribute change without modifying membership."
+                    },
+                    "FunctionOutput_aws_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the group targeted by the accepted update."
+                            },
+                            "updated": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "AWS accepted the attribute update; no post-write reread is implied."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "updated"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acceptance receipt for the group attribute update, not a returned group object."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain groupId from `list-groups`. Omitted fields remain unchanged. This edits group attributes only; use `add-member-to-group`, `remove-member-from-group`, or their batch variants for membership. The group keeps its existing ID."
+            },
+            "filePath": "./aws-scim/tools/update-group.ts",
+            "version": "51d34cb4b3ce2d41c5cb01f3b7941c1bb9fb5b698d37af20f6bd6c37f13ed4f2",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/update-group/51d34cb4b3ce2d41c5cb01f3b7941c1bb9fb5b698d37af20f6bd6c37f13ed4f2.cjs",
+                "ts": "templates-zero/aws-scim/tools/update-group/51d34cb4b3ce2d41c5cb01f3b7941c1bb9fb5b698d37af20f6bd6c37f13ed4f2.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-user",
+            "integrationId": "aws-scim",
+            "description": "Partially modify a user's identity, administrative active status, contact details, or enterprise attributes without replacing the entire profile.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_updateuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_updateuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the existing user."
+                            },
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Partial name changes; omitted name components are retained.",
+                                        "type": "object",
+                                        "properties": {
+                                            "formatted": {
+                                                "description": "Formatted full name, or null to remove it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "givenName": {
+                                                "description": "New given name.",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "familyName": {
+                                                "description": "New family name.",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "middleName": {
+                                                "description": "Middle names, or null to remove them.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "honorificPrefix": {
+                                                "description": "Honorific prefix, or null to remove it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "honorificSuffix": {
+                                                "description": "Honorific suffix, or null to remove it.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "title": {
+                                        "description": "Job title, or null to remove it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "active": {
+                                        "description": "Administrative active status; false deactivates and true reactivates without deleting the user.",
+                                        "type": "boolean"
+                                    },
+                                    "emails": {
+                                        "description": "Replacement email collection; null or [] removes the collection.",
+                                        "anyOf": [
+                                            {
+                                                "maxItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "description": "Email label, such as work.",
+                                                            "type": "string"
+                                                        },
+                                                        "value": {
+                                                            "type": "string",
+                                                            "minLength": 1,
+                                                            "description": "Email address; implementation marks it primary."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "value"
+                                                    ],
+                                                    "additionalProperties": false,
+                                                    "description": "One replacement email address."
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "locale": {
+                                        "description": "Locale preference, or null to remove it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "nickName": {
+                                        "description": "Casual name, or null to remove it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "timezone": {
+                                        "description": "Named timezone value, or null to remove it; never converted to an instant.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "userName": {
+                                        "description": "New unique login name; cannot be removed.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "userType": {
+                                        "description": "Organizational relationship, or null to remove it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "addresses": {
+                                        "description": "Replacement postal-address collection; null or [] removes it.",
+                                        "anyOf": [
+                                            {
+                                                "maxItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "description": "Address label.",
+                                                            "type": "string"
+                                                        },
+                                                        "region": {
+                                                            "description": "State, province, or region.",
+                                                            "type": "string"
+                                                        },
+                                                        "country": {
+                                                            "description": "Country value.",
+                                                            "type": "string"
+                                                        },
+                                                        "primary": {
+                                                            "description": "Whether the address is primary.",
+                                                            "type": "boolean"
+                                                        },
+                                                        "locality": {
+                                                            "description": "City or locality.",
+                                                            "type": "string"
+                                                        },
+                                                        "formatted": {
+                                                            "description": "Formatted address.",
+                                                            "type": "string"
+                                                        },
+                                                        "postalCode": {
+                                                            "description": "Postal code preserving leading zeros.",
+                                                            "type": "string"
+                                                        },
+                                                        "streetAddress": {
+                                                            "description": "Street address.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "minProperties": 1,
+                                                    "description": "One replacement postal address."
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "enterprise": {
+                                        "description": "Partial enterprise changes, or null to remove the optional extension.",
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "division": {
+                                                        "description": "Division name, or null to remove it.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "costCenter": {
+                                                        "description": "Cost center, or null to remove it.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "department": {
+                                                        "description": "Department name, or null to remove it.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "organization": {
+                                                        "description": "Organization name, or null to remove it.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "managerUserId": {
+                                                        "description": "Manager's opaque user ID, or null to remove the manager relationship.",
+                                                        "anyOf": [
+                                                            {
+                                                                "type": "string",
+                                                                "minLength": 1
+                                                            },
+                                                            {
+                                                                "type": "null"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "employeeNumber": {
+                                                        "description": "Employee identifier, or null to remove it.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "minProperties": 1
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "externalId": {
+                                        "description": "New external provisioning identifier, or null to remove it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "profileUrl": {
+                                        "description": "External profile URL, or null to remove it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "displayName": {
+                                        "description": "New display name; this contract does not allow clearing required identity data.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "phoneNumbers": {
+                                        "description": "Replacement phone collection; null or [] removes the collection.",
+                                        "anyOf": [
+                                            {
+                                                "maxItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "description": "Phone label.",
+                                                            "type": "string"
+                                                        },
+                                                        "value": {
+                                                            "type": "string",
+                                                            "minLength": 1,
+                                                            "description": "Phone number text."
+                                                        },
+                                                        "primary": {
+                                                            "description": "Whether the phone number is primary.",
+                                                            "type": "boolean"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "value"
+                                                    ],
+                                                    "additionalProperties": false,
+                                                    "description": "One replacement phone number."
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "preferredLanguage": {
+                                        "description": "Preferred language value, or null to remove it.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "description": "Partial profile changes; omitted fields remain unchanged, null clears optional fields, and nested objects are patched by supplied subfield."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "changes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target user and the profile attributes to partially modify."
+                    },
+                    "FunctionOutput_aws_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the user whose update AWS accepted."
+                            },
+                            "active": {
+                                "description": "Administrative active status returned by AWS, if available.",
+                                "type": "boolean"
+                            },
+                            "userName": {
+                                "description": "Login name returned by the update response, if available.",
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "description": "Last modification instant from AWS, normalized to UTC Z; omitted if unavailable.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "displayName": {
+                                "description": "Display name returned by the update response, if available.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Receipt for the user update accepted by AWS."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get userId from `list-users`. Use this for targeted changes, including active:false to deactivate or active:true to reactivate a user. Omitted fields remain unchanged; null removes an optional attribute. Supplied nested name and enterprise fields are partial changes. Contact arrays replace that one contact collection and accept at most one entry. Use `update-user-by-replacement` only when you intend a full profile overwrite. Use group membership tools instead of editing memberships here."
+            },
+            "filePath": "./aws-scim/tools/update-user.ts",
+            "version": "d693cb377ae431f2453f58eca44094bbba634bc0ee7dbebbd49cc3ff1cf03bc9",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/update-user/d693cb377ae431f2453f58eca44094bbba634bc0ee7dbebbd49cc3ff1cf03bc9.cjs",
+                "ts": "templates-zero/aws-scim/tools/update-user/d693cb377ae431f2453f58eca44094bbba634bc0ee7dbebbd49cc3ff1cf03bc9.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-user-by-replacement",
+            "integrationId": "aws-scim",
+            "description": "Overwrite an existing user's writable profile with a supplied replacement. Unlike a partial update, omitted optional attributes are not requested to be preserved.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_aws_scim_updateuserbyreplacement",
+            "output_schema_ref": "#/definitions/FunctionOutput_aws_scim_updateuserbyreplacement",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_aws_scim_updateuserbyreplacement": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the existing user to overwrite."
+                            },
+                            "profile": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "object",
+                                        "properties": {
+                                            "formatted": {
+                                                "description": "Formatted full name.",
+                                                "type": "string"
+                                            },
+                                            "givenName": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "Given name."
+                                            },
+                                            "familyName": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "Family name."
+                                            },
+                                            "middleName": {
+                                                "description": "Middle names.",
+                                                "type": "string"
+                                            },
+                                            "honorificPrefix": {
+                                                "description": "Honorific prefix.",
+                                                "type": "string"
+                                            },
+                                            "honorificSuffix": {
+                                                "description": "Honorific suffix.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "givenName",
+                                            "familyName"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Replacement personal-name object."
+                                    },
+                                    "title": {
+                                        "description": "Replacement job title.",
+                                        "type": "string"
+                                    },
+                                    "active": {
+                                        "description": "Desired administrative active status; omission leaves provider replacement/reset behavior in effect.",
+                                        "type": "boolean"
+                                    },
+                                    "emails": {
+                                        "description": "Replacement email collection; at most one, marked primary internally.",
+                                        "maxItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Email label.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "Email address text."
+                                                }
+                                            },
+                                            "required": [
+                                                "value"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Replacement email entry."
+                                        }
+                                    },
+                                    "locale": {
+                                        "description": "Replacement locale value.",
+                                        "type": "string"
+                                    },
+                                    "nickName": {
+                                        "description": "Replacement casual name.",
+                                        "type": "string"
+                                    },
+                                    "timezone": {
+                                        "description": "Replacement named timezone, not a timestamp.",
+                                        "type": "string"
+                                    },
+                                    "userName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Replacement unique login name."
+                                    },
+                                    "userType": {
+                                        "description": "Replacement organizational relationship.",
+                                        "type": "string"
+                                    },
+                                    "addresses": {
+                                        "description": "Replacement postal-address collection; at most one.",
+                                        "maxItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Address label.",
+                                                    "type": "string"
+                                                },
+                                                "region": {
+                                                    "description": "State, province, or region.",
+                                                    "type": "string"
+                                                },
+                                                "country": {
+                                                    "description": "Country value.",
+                                                    "type": "string"
+                                                },
+                                                "primary": {
+                                                    "description": "Whether the address is primary.",
+                                                    "type": "boolean"
+                                                },
+                                                "locality": {
+                                                    "description": "City or locality.",
+                                                    "type": "string"
+                                                },
+                                                "formatted": {
+                                                    "description": "Full formatted address.",
+                                                    "type": "string"
+                                                },
+                                                "postalCode": {
+                                                    "description": "Postal code preserving leading zeros.",
+                                                    "type": "string"
+                                                },
+                                                "streetAddress": {
+                                                    "description": "Street address.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Replacement postal-address entry."
+                                        }
+                                    },
+                                    "enterprise": {
+                                        "description": "Replacement enterprise profile; omitted subfields are not preserved.",
+                                        "type": "object",
+                                        "properties": {
+                                            "division": {
+                                                "description": "Division name.",
+                                                "type": "string"
+                                            },
+                                            "costCenter": {
+                                                "description": "Cost center.",
+                                                "type": "string"
+                                            },
+                                            "department": {
+                                                "description": "Department name.",
+                                                "type": "string"
+                                            },
+                                            "organization": {
+                                                "description": "Organization name.",
+                                                "type": "string"
+                                            },
+                                            "managerUserId": {
+                                                "description": "Manager's opaque SCIM user ID.",
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            "employeeNumber": {
+                                                "description": "Employee identifier.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "externalId": {
+                                        "description": "Replacement external provisioning identifier.",
+                                        "type": "string"
+                                    },
+                                    "profileUrl": {
+                                        "description": "Replacement external profile URL.",
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Replacement display name."
+                                    },
+                                    "phoneNumbers": {
+                                        "description": "Replacement phone collection; at most one.",
+                                        "maxItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Phone label.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "Phone number text."
+                                                },
+                                                "primary": {
+                                                    "description": "Whether the phone is primary.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "value"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Replacement phone entry."
+                                        }
+                                    },
+                                    "preferredLanguage": {
+                                        "description": "Replacement preferred language value.",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "userName",
+                                    "displayName"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Complete desired writable profile; omitted optional attributes are not preserved by this contract."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "profile"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Existing user ID and complete writable profile for a deliberate replacement."
+                    },
+                    "FunctionOutput_aws_scim_updateuserbyreplacement": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the overwritten user; identity is retained."
+                            },
+                            "active": {
+                                "description": "Administrative active status returned by AWS, when available.",
+                                "type": "boolean"
+                            },
+                            "userName": {
+                                "type": "string",
+                                "description": "Login name returned by AWS."
+                            },
+                            "updatedAt": {
+                                "description": "Last modification instant normalized to UTC Z, when available.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Display name returned by AWS."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "userName",
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Compact receipt for the overwritten user; use get-user for the full resulting profile."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use only when a full profile overwrite is intended. Obtain userId from `list-users`; use `get-user` to inspect data you may overwrite. All four required identity fields must be supplied. Omitted optional profile attributes may be cleared or reset under replacement semantics. Use `update-user` for normal partial edits. Memberships and passwords cannot be supplied here."
+            },
+            "filePath": "./aws-scim/tools/update-user-by-replacement.ts",
+            "version": "b206eabb0ab4d7245cb5e600f27c3e507c51e2a796b7ff14b74295fe0a361a01",
+            "location": {
+                "js": "templates-zero/aws-scim/tools/update-user-by-replacement/b206eabb0ab4d7245cb5e600f27c3e507c51e2a796b7ff14b74295fe0a361a01.cjs",
+                "ts": "templates-zero/aws-scim/tools/update-user-by-replacement/b206eabb0ab4d7245cb5e600f27c3e507c51e2a796b7ff14b74295fe0a361a01.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

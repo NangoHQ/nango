@@ -1,0 +1,2668 @@
+{
+    "providerConfigKey": "bettercontact",
+    "actions": [],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-enrich-leads",
+            "integrationId": "bettercontact",
+            "description": "Submit 1–100 leads in a single background enrichment request with shared email, phone, profile, and workflow options.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_bettercontact_batchenrichleads",
+            "output_schema_ref": "#/definitions/FunctionOutput_bettercontact_batchenrichleads",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_bettercontact_batchenrichleads": {
+                        "type": "object",
+                        "properties": {
+                            "leads": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "lastName": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Person's last name as ordinary text."
+                                        },
+                                        "firstName": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Person's first name as ordinary text."
+                                        },
+                                        "companyName": {
+                                            "description": "Employer name; supply this or companyDomain.",
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "linkedinUrl": {
+                                            "description": "Public person LinkedIn URL; required for every row when enrichProfile=true.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "customFields": {
+                                            "description": "String-valued metadata echoed by name for correlation; empty object is permitted and omission sends none.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "string",
+                                                "description": "Metadata value preserved unchanged for correlation."
+                                            }
+                                        },
+                                        "companyDomain": {
+                                            "description": "Employer domain, preferred over companyName.",
+                                            "type": "string",
+                                            "minLength": 1
+                                        }
+                                    },
+                                    "required": [
+                                        "lastName",
+                                        "firstName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "anyOf": [
+                                        {
+                                            "required": [
+                                                "companyName"
+                                            ],
+                                            "properties": {
+                                                "companyName": true
+                                            }
+                                        },
+                                        {
+                                            "required": [
+                                                "companyDomain"
+                                            ],
+                                            "properties": {
+                                                "companyDomain": true
+                                            }
+                                        }
+                                    ],
+                                    "description": "A known person identified by name and employer."
+                                },
+                                "description": "People to enrich in one native batch; maximum 100."
+                            },
+                            "options": {
+                                "description": "Choices applied to every lead; omission requests email only.",
+                                "type": "object",
+                                "properties": {
+                                    "enrichEmail": {
+                                        "default": true,
+                                        "description": "Find and verify work emails; defaults to true independently of other choices.",
+                                        "type": "boolean"
+                                    },
+                                    "enrichPhone": {
+                                        "default": false,
+                                        "description": "Find mobile numbers; requires the phone add-on.",
+                                        "type": "boolean"
+                                    },
+                                    "enrichProfile": {
+                                        "default": false,
+                                        "description": "Retrieve LinkedIn profiles; every lead must have linkedinUrl.",
+                                        "type": "boolean"
+                                    },
+                                    "processFlowId": {
+                                        "description": "Existing process-flow identifier provided by the account owner; requires its add-on. Omission uses the normal provider flow.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "timeoutSeconds": {
+                                        "description": "Maximum background waterfall duration in seconds; omission uses the account timeout, not this tool's call budget.",
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "verifyCatchAll": {
+                                        "default": false,
+                                        "description": "Run extra catch-all verification; requires the catch-all add-on.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "leads"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Submit known people for background enrichment with shared options."
+                    },
+                    "FunctionOutput_bettercontact_batchenrichleads": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque enrichment request ID covering the submitted batch."
+                            },
+                            "message": {
+                                "description": "Provider acknowledgement text; omitted if absent.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate acknowledgement of an accepted enrichment batch, not per-lead results."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–100 known people; use `enrich-lead` for a single person. Include customFields such as a CRM ID for correlation rather than relying on result order. Save the returned ID and call `get-lead-enrichment` later. Submission confirms only that a batch was accepted, not success for each lead. Requested enrichment can consume credits and add-ons are required for phone, catch-all, and custom process flows."
+            },
+            "filePath": "./bettercontact/tools/batch-enrich-leads.ts",
+            "version": "073b59d2e6d87a0cfad26385cfe9f6f401ecf1a794c76a8b3bb2ed26fe201dd3",
+            "location": {
+                "js": "templates-zero/bettercontact/tools/batch-enrich-leads/073b59d2e6d87a0cfad26385cfe9f6f401ecf1a794c76a8b3bb2ed26fe201dd3.cjs",
+                "ts": "templates-zero/bettercontact/tools/batch-enrich-leads/073b59d2e6d87a0cfad26385cfe9f6f401ecf1a794c76a8b3bb2ed26fe201dd3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-company-search",
+            "integrationId": "bettercontact",
+            "description": "Start a background Company Finder search for one page of companies using firmographic, funding, technology, and hiring criteria.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_bettercontact_createcompanysearch",
+            "output_schema_ref": "#/definitions/FunctionOutput_bettercontact_createcompanysearch",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_bettercontact_createcompanysearch": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 100,
+                                "description": "Companies requested per page; default 100 on initial search, fixed throughout continuation.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from get-company-search, scoped to the connection and original criteria; use alone.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "filters": {
+                                "description": "Initial search criteria; omit when continuing with cursor.",
+                                "type": "object",
+                                "properties": {
+                                    "isB2b": {
+                                        "description": "True restricts to business sellers; omit to avoid filtering. False is passed unchanged without assuming inverse semantics.",
+                                        "type": "boolean"
+                                    },
+                                    "isB2c": {
+                                        "description": "True restricts to consumer sellers; omit for no filter. False is passed unchanged without assuming inverse semantics.",
+                                        "type": "boolean"
+                                    },
+                                    "domains": {
+                                        "description": "Company domains or websites to match; implementation extracts lowercase hostnames.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    },
+                                    "isPublic": {
+                                        "description": "True restricts to publicly listed companies; omit for no filter. False is passed unchanged without assuming inverse semantics.",
+                                        "type": "boolean"
+                                    },
+                                    "keywords": {
+                                        "description": "Free-text phrases matched against the company profile.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    },
+                                    "industries": {
+                                        "description": "Exact BetterContact industry taxonomy labels, for example Software Development.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    },
+                                    "employeesMax": {
+                                        "description": "Inclusive requested maximum headcount; uses overlapping size buckets.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "employeesMin": {
+                                        "description": "Inclusive requested minimum headcount; provider keeps all overlapping size buckets, not exact counts.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "linkedinUrls": {
+                                        "description": "Company LinkedIn page URLs to include.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    },
+                                    "technologies": {
+                                        "description": "Exact technology taxonomy labels, for example Salesforce.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    },
+                                    "revenueRanges": {
+                                        "description": "Exact revenue-bracket taxonomy labels, for example $20M-$100M.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    },
+                                    "hiringCountries": {
+                                        "description": "Countries in which the company currently has job postings.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    },
+                                    "hiringJobTitles": {
+                                        "description": "Titles appearing in active company job postings.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    },
+                                    "hiringLocations": {
+                                        "description": "Cities or regions in current company job postings.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    },
+                                    "lastFundingDates": {
+                                        "description": "Inclusive calendar-date range of the latest funding round.",
+                                        "type": "object",
+                                        "properties": {
+                                            "from": {
+                                                "description": "Inclusive earliest funding date, YYYY-MM-DD, without timezone conversion.",
+                                                "type": "string",
+                                                "format": "date",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                            },
+                                            "through": {
+                                                "description": "Inclusive latest funding date, YYYY-MM-DD, without timezone conversion.",
+                                                "type": "string",
+                                                "format": "date",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "descriptionPhrases": {
+                                        "description": "Profile description phrases; matched the same way as keywords.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    },
+                                    "lastAmountRaisedUsd": {
+                                        "description": "Inclusive whole-USD amount raised in the last round.",
+                                        "type": "object",
+                                        "properties": {
+                                            "max": {
+                                                "description": "Inclusive maximum in whole USD.",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "min": {
+                                                "description": "Inclusive minimum in whole USD.",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "maximum": 9007199254740991
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "totalAmountRaisedUsd": {
+                                        "description": "Inclusive whole-USD total raised.",
+                                        "type": "object",
+                                        "properties": {
+                                            "max": {
+                                                "description": "Inclusive maximum in whole USD.",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "min": {
+                                                "description": "Inclusive minimum in whole USD.",
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "maximum": 9007199254740991
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "headquartersLocations": {
+                                        "description": "Cities, states or countries matched against full headquarters addresses.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    },
+                                    "lastFundingRoundNames": {
+                                        "description": "Exact latest funding-round taxonomy labels, for example Series B.",
+                                        "minItems": 1,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "A filter value, preserving ordinary text and taxonomy case."
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "oneOf": [
+                            {
+                                "not": {
+                                    "required": [
+                                        "cursor"
+                                    ],
+                                    "properties": {
+                                        "cursor": true
+                                    }
+                                },
+                                "required": [
+                                    "filters"
+                                ],
+                                "properties": {
+                                    "filters": true
+                                }
+                            },
+                            {
+                                "not": {
+                                    "anyOf": [
+                                        {
+                                            "required": [
+                                                "filters"
+                                            ],
+                                            "properties": {
+                                                "filters": true
+                                            }
+                                        },
+                                        {
+                                            "required": [
+                                                "limit"
+                                            ],
+                                            "properties": {
+                                                "limit": true
+                                            }
+                                        }
+                                    ]
+                                },
+                                "required": [
+                                    "cursor"
+                                ],
+                                "properties": {
+                                    "cursor": true
+                                }
+                            }
+                        ],
+                        "description": "Create one asynchronous company-search page using initial criteria or an opaque continuation alone."
+                    },
+                    "FunctionOutput_bettercontact_createcompanysearch": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque company-search request ID for get-company-search."
+                            },
+                            "message": {
+                                "description": "Submission acknowledgement, omitted if absent.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement identifying the submitted background company-search request."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use to discover companies, not to look up one known company (`enrich-company-profile`). Start with filters and optionally limit (1–200, default 100), then call `get-company-search` with the returned ID. To request another page, pass its nextCursor here with no new criteria. Each invocation creates one asynchronous page request and may spend credits or quota; it does not wait for completion."
+            },
+            "filePath": "./bettercontact/tools/create-company-search.ts",
+            "version": "8c2f789361cd67b3ff2cb9d5bdb1a5fc964c157ebe50aad5d7a89eac2fda5827",
+            "location": {
+                "js": "templates-zero/bettercontact/tools/create-company-search/8c2f789361cd67b3ff2cb9d5bdb1a5fc964c157ebe50aad5d7a89eac2fda5827.cjs",
+                "ts": "templates-zero/bettercontact/tools/create-company-search/8c2f789361cd67b3ff2cb9d5bdb1a5fc964c157ebe50aad5d7a89eac2fda5827.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "enrich-company-profile",
+            "integrationId": "bettercontact",
+            "description": "Look up a company profile by domain, company LinkedIn URL, or both. This synchronous lookup does not consume credits.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_bettercontact_enrichcompanyprofile",
+            "output_schema_ref": "#/definitions/FunctionOutput_bettercontact_enrichcompanyprofile",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_bettercontact_enrichcompanyprofile": {
+                        "type": "object",
+                        "properties": {
+                            "companyDomain": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Company website or domain, such as microsoft.com."
+                            },
+                            "companyLinkedinUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Company LinkedIn page URL; may be supplied with or instead of the domain."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "anyOf": [
+                            {
+                                "properties": {
+                                    "companyDomain": {
+                                        "description": "Company website or domain, such as microsoft.com."
+                                    }
+                                },
+                                "required": [
+                                    "companyDomain"
+                                ]
+                            },
+                            {
+                                "properties": {
+                                    "companyLinkedinUrl": {
+                                        "description": "Company LinkedIn page URL; may be supplied with or instead of the domain."
+                                    }
+                                },
+                                "required": [
+                                    "companyLinkedinUrl"
+                                ]
+                            }
+                        ],
+                        "description": "Identify one company by domain, company LinkedIn URL, or both."
+                    },
+                    "FunctionOutput_bettercontact_enrichcompanyprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Opaque company identifier represented losslessly as text.",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "Company name.",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Provider company type, such as privately_held; not rewritten into another vocabulary.",
+                                "type": "string"
+                            },
+                            "domain": {
+                                "description": "Company domain.",
+                                "type": "string"
+                            },
+                            "website": {
+                                "description": "Provider's website value, which is a domain rather than necessarily a URL.",
+                                "type": "string"
+                            },
+                            "industry": {
+                                "description": "Company industry label.",
+                                "type": "string"
+                            },
+                            "keywords": {
+                                "description": "Company profile keywords.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A company profile keyword."
+                                }
+                            },
+                            "addressCity": {
+                                "description": "City component of the provider's address fields, preserved separately from headquartersCity.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Ordinary-text company description.",
+                                "type": "string"
+                            },
+                            "foundedYear": {
+                                "description": "Calendar year the company was founded.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "linkedinUrl": {
+                                "description": "Company LinkedIn page URL.",
+                                "type": "string"
+                            },
+                            "addressState": {
+                                "description": "State or region address component; may be empty.",
+                                "type": "string"
+                            },
+                            "employeesMax": {
+                                "description": "Upper bound of the company headcount range; null for an open-ended range.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "employeesMin": {
+                                "description": "Lower bound of the company headcount range.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "addressCountry": {
+                                "description": "Country address component.",
+                                "type": "string"
+                            },
+                            "employeesCount": {
+                                "description": "Provider employee count.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "headquartersCity": {
+                                "description": "Headquarters city; empty string is preserved when no city is available.",
+                                "type": "string"
+                            },
+                            "addressPostalCode": {
+                                "description": "Postal code address component; may be empty.",
+                                "type": "string"
+                            },
+                            "headquartersAddress": {
+                                "description": "Full headquarters address as supplied by the provider.",
+                                "type": "string"
+                            },
+                            "headquartersCountry": {
+                                "description": "Headquarters country from the provider's headquarters fields.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "The company profile, without the provider response envelope or always-null compatibility fields."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for one known company and receive its profile directly. Use `create-company-search` to discover companies from criteria. Supply a domain or company LinkedIn URL; a BetterContact company ID is not a supported lookup key. This lookup does not consume credits."
+            },
+            "filePath": "./bettercontact/tools/enrich-company-profile.ts",
+            "version": "87c37e12d2d876eca1282f90d0cca7e4cb8dd28c866a9de6d2a3e86c70475d60",
+            "location": {
+                "js": "templates-zero/bettercontact/tools/enrich-company-profile/87c37e12d2d876eca1282f90d0cca7e4cb8dd28c866a9de6d2a3e86c70475d60.cjs",
+                "ts": "templates-zero/bettercontact/tools/enrich-company-profile/87c37e12d2d876eca1282f90d0cca7e4cb8dd28c866a9de6d2a3e86c70475d60.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "enrich-lead",
+            "integrationId": "bettercontact",
+            "description": "Submit one lead for background work-email, mobile-phone, or profile enrichment and return its enrichment request ID. Results are retrieved separately.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_bettercontact_enrichlead",
+            "output_schema_ref": "#/definitions/FunctionOutput_bettercontact_enrichlead",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_bettercontact_enrichlead": {
+                        "type": "object",
+                        "properties": {
+                            "lead": {
+                                "type": "object",
+                                "properties": {
+                                    "firstName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Person's first name as ordinary text."
+                                    },
+                                    "lastName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Person's last name as ordinary text."
+                                    },
+                                    "companyName": {
+                                        "description": "Employer name; provide this or companyDomain, with domain preferred.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "companyDomain": {
+                                        "description": "Employer's domain, such as tesla.com.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "linkedinUrl": {
+                                        "description": "Public LinkedIn person URL; required when profile enrichment is selected.",
+                                        "type": "string",
+                                        "format": "uri"
+                                    },
+                                    "customFields": {
+                                        "description": "String-valued correlation metadata echoed in results; omission sends no metadata and an empty object is allowed.",
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string",
+                                            "description": "Correlation metadata key."
+                                        },
+                                        "additionalProperties": {
+                                            "type": "string",
+                                            "description": "Correlation metadata value echoed unchanged in results."
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "firstName",
+                                    "lastName"
+                                ],
+                                "additionalProperties": false,
+                                "anyOf": [
+                                    {
+                                        "properties": {
+                                            "companyDomain": {
+                                                "description": "Employer's domain, such as tesla.com."
+                                            }
+                                        },
+                                        "required": [
+                                            "companyDomain"
+                                        ]
+                                    },
+                                    {
+                                        "properties": {
+                                            "companyName": {
+                                                "description": "Employer name; provide this or companyDomain, with domain preferred."
+                                            }
+                                        },
+                                        "required": [
+                                            "companyName"
+                                        ]
+                                    }
+                                ],
+                                "description": "Person to enrich, with names and a company identifier."
+                            },
+                            "options": {
+                                "description": "Enrichment choices; omission requests email only.",
+                                "type": "object",
+                                "properties": {
+                                    "enrichEmail": {
+                                        "default": true,
+                                        "description": "Find and verify the work email; defaults to true independently of other options.",
+                                        "type": "boolean"
+                                    },
+                                    "enrichPhone": {
+                                        "default": false,
+                                        "description": "Find the mobile number; requires the phone add-on.",
+                                        "type": "boolean"
+                                    },
+                                    "enrichProfile": {
+                                        "default": false,
+                                        "description": "Retrieve the LinkedIn profile; requires the lead's linkedinUrl.",
+                                        "type": "boolean"
+                                    },
+                                    "processFlowId": {
+                                        "description": "Existing process-flow identifier supplied by the account owner; requires the process-flow add-on. Omission uses the provider's normal flow.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "timeoutSeconds": {
+                                        "description": "Background waterfall time budget in seconds, not the duration of this tool call. Omission uses the account's configured timeout.",
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "verifyCatchAll": {
+                                        "default": false,
+                                        "description": "Run additional catch-all verification; requires the catch-all add-on.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "lead"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Submit one known person for background enrichment with explicit enrichment choices."
+                    },
+                    "FunctionOutput_bettercontact_enrichlead": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque enrichment request identifier to pass as enrichmentRequestId to get-lead-enrichment."
+                            },
+                            "message": {
+                                "description": "Provider's submission acknowledgement, omitted if absent.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Background enrichment submission acknowledgement, not enrichment results."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for one known person's email or phone enrichment. Use `enrich-lead-profile` for a synchronous profile-only lookup, or `batch-enrich-leads` for up to 100 people. Save the returned ID and call `get-lead-enrichment` later; submission does not establish that contact details were found. Phone and catch-all options require paid add-ons and the work may consume credits."
+            },
+            "filePath": "./bettercontact/tools/enrich-lead.ts",
+            "version": "8eb027492a6fc05f8ebdf4472645e12f0ed00e1902b9e200e81b3d189958e850",
+            "location": {
+                "js": "templates-zero/bettercontact/tools/enrich-lead/8eb027492a6fc05f8ebdf4472645e12f0ed00e1902b9e200e81b3d189958e850.cjs",
+                "ts": "templates-zero/bettercontact/tools/enrich-lead/8eb027492a6fc05f8ebdf4472645e12f0ed00e1902b9e200e81b3d189958e850.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "enrich-lead-profile",
+            "integrationId": "bettercontact",
+            "description": "Get a person's profile and current-company attributes synchronously by LinkedIn URL or name plus company domain. A found profile costs 0.1 credit; this does not return email or phone details.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_bettercontact_enrichleadprofile",
+            "output_schema_ref": "#/definitions/FunctionOutput_bettercontact_enrichleadprofile",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_bettercontact_enrichleadprofile": {
+                        "type": "object",
+                        "properties": {
+                            "lastName": {
+                                "description": "Last name; required without linkedinUrl.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "firstName": {
+                                "description": "First name; required without linkedinUrl.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "companyName": {
+                                "description": "Optional employer name complementing companyDomain; cannot replace it and is ignored with linkedinUrl.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "linkedinUrl": {
+                                "description": "Public person LinkedIn URL; sufficient on its own and takes precedence over other identity fields.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "companyDomain": {
+                                "description": "Current employer domain; required without linkedinUrl.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Identify one person by LinkedIn URL or by first name, last name and company domain.",
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "linkedinUrl"
+                                ],
+                                "properties": {
+                                    "linkedinUrl": {
+                                        "description": "Public person LinkedIn URL; sufficient on its own and takes precedence over other identity fields."
+                                    }
+                                }
+                            },
+                            {
+                                "required": [
+                                    "firstName",
+                                    "lastName",
+                                    "companyDomain"
+                                ],
+                                "properties": {
+                                    "firstName": {
+                                        "description": "First name; required without linkedinUrl."
+                                    },
+                                    "lastName": {
+                                        "description": "Last name; required without linkedinUrl."
+                                    },
+                                    "companyDomain": {
+                                        "description": "Current employer domain; required without linkedinUrl."
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_bettercontact_enrichleadprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Opaque contact identifier represented as text, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "city": {
+                                "description": "Contact city, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "state": {
+                                "description": "Contact state or region, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "country": {
+                                "description": "Contact country label, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "fullName": {
+                                "description": "Provider full name, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "headline": {
+                                "description": "LinkedIn headline; empty text and null are distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "industry": {
+                                "description": "Contact industry, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "jobTitle": {
+                                "description": "Current job title, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "lastName": {
+                                "description": "Last name, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "continent": {
+                                "description": "Contact continent label, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "firstName": {
+                                "description": "First name, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "seniority": {
+                                "description": "Provider seniority label, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyName": {
+                                "description": "Current employer name, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyType": {
+                                "description": "Provider company type label, preserved without recasing.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "linkedinUrl": {
+                                "description": "Public person LinkedIn URL, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyDomain": {
+                                "description": "Current employer domain, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyIndustry": {
+                                "description": "Company industry label, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyKeywords": {
+                                "description": "Company keywords, preserving an empty list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "One provider company keyword."
+                                }
+                            },
+                            "companyDescription": {
+                                "description": "Company description, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyFoundedYear": {
+                                "description": "Company founding calendar year, or null if unknown.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "companyLinkedinUrl": {
+                                "description": "Company LinkedIn page URL, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyEmployeesMax": {
+                                "description": "Upper bound of headcount range; null may mean open-ended or unknown.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "companyEmployeesMin": {
+                                "description": "Lower bound of company headcount range, or null if unknown.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "companyHeadquartersCity": {
+                                "description": "Provider headquarters city text, which may contain a full street address; not geocoded or parsed.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyHeadquartersCountry": {
+                                "description": "Company headquarters country, or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "The unwrapped person profile and current-company attributes, without email or phone details."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for profile data only. Use `enrich-lead` for work email or mobile enrichment. A LinkedIn URL is sufficient and takes precedence over all other identifying fields. Without one, provide first name, last name and company domain; a company name alone is insufficient. A found profile costs 0.1 credit; no match is not charged."
+            },
+            "filePath": "./bettercontact/tools/enrich-lead-profile.ts",
+            "version": "4db5766aeb2089595744a7b34c9fa1370baf9067d75d889a6f708690f995ab6e",
+            "location": {
+                "js": "templates-zero/bettercontact/tools/enrich-lead-profile/4db5766aeb2089595744a7b34c9fa1370baf9067d75d889a6f708690f995ab6e.cjs",
+                "ts": "templates-zero/bettercontact/tools/enrich-lead-profile/4db5766aeb2089595744a7b34c9fa1370baf9067d75d889a6f708690f995ab6e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-account",
+            "integrationId": "bettercontact",
+            "description": "Get the connected account's email and organisation-wide remaining credit balance.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_bettercontact_getaccount",
+            "output_schema_ref": "#/definitions/FunctionOutput_bettercontact_getaccount",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_bettercontact_getaccount": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is needed; the connection identifies the account."
+                    },
+                    "FunctionOutput_bettercontact_getaccount": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email of the account associated with this connection."
+                            },
+                            "creditsLeft": {
+                                "type": "string",
+                                "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+                                "description": "Organisation-wide remaining credits as an exact decimal string."
+                            }
+                        },
+                        "required": [
+                            "email",
+                            "creditsLeft"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected account email and organisation-wide remaining credit balance."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this before paid enrichment or discovery to check the available credits. The balance belongs to the organisation, not just the API user."
+            },
+            "filePath": "./bettercontact/tools/get-account.ts",
+            "version": "f3259d240363d792ec63dcc31ab19f1618922c5fb3f958604d9e36524ddfe1cb",
+            "location": {
+                "js": "templates-zero/bettercontact/tools/get-account/f3259d240363d792ec63dcc31ab19f1618922c5fb3f958604d9e36524ddfe1cb.cjs",
+                "ts": "templates-zero/bettercontact/tools/get-account/f3259d240363d792ec63dcc31ab19f1618922c5fb3f958604d9e36524ddfe1cb.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-company-search",
+            "integrationId": "bettercontact",
+            "description": "Get the current state and, when complete, one Company Finder page with exact match total and continuation for tool-created searches.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_bettercontact_getcompanysearch",
+            "output_schema_ref": "#/definitions/FunctionOutput_bettercontact_getcompanysearch",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_bettercontact_getcompanysearch",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_bettercontact_getcompanysearch": {
+                        "type": "object",
+                        "properties": {
+                            "companySearchId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Company Finder request ID belonging to this account."
+                            }
+                        },
+                        "required": [
+                            "companySearchId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Read the current state and one result page of a Company Finder request."
+                    },
+                    "FunctionOutput_bettercontact_getcompanysearch": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque company-search request ID."
+                            },
+                            "items": {
+                                "description": "One completed company page, at most 200 records; omitted while pending, empty when nothing matched.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Opaque company identifier represented as text; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "name": {
+                                            "description": "Company name; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "type": {
+                                            "description": "Provider company type label, preserved as returned.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "domain": {
+                                            "description": "Company domain; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "logoUrl": {
+                                            "description": "Company logo URL; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "website": {
+                                            "description": "Provider website value, often a bare domain; not forced into a URL.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "industry": {
+                                            "description": "Company industry label; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "keywords": {
+                                            "description": "Profile keywords; null if unknown, distinct from empty list.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "A profile keyword."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "sizeRange": {
+                                            "description": "Provider's company size-range label; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "description": {
+                                            "description": "Ordinary-text company description; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "foundedYear": {
+                                            "description": "Founding calendar year; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "linkedinUrl": {
+                                            "description": "Company LinkedIn page URL; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "employeesMax": {
+                                            "description": "Upper headcount range bound; null if unknown or open-ended.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "employeesMin": {
+                                            "description": "Lower headcount range bound; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "revenueRange": {
+                                            "description": "Provider revenue-bracket label; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "technologies": {
+                                            "description": "Known technologies used; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "A known technology."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "crunchbaseUrl": {
+                                            "description": "Company Crunchbase URL; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "employeesCount": {
+                                            "description": "Exact employee count when known; null otherwise.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "locationsCount": {
+                                            "description": "Number of company locations; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "lastFundingDate": {
+                                            "description": "Most recent funding calendar date, YYYY-MM-DD; null if unknown, no UTC conversion.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "headquartersCity": {
+                                            "description": "Headquarters city; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "headquartersState": {
+                                            "description": "Headquarters state or region; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "headquartersAddress": {
+                                            "description": "Headquarters address text; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "headquartersCountry": {
+                                            "description": "Headquarters country; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "lastAmountRaisedUsd": {
+                                            "description": "Most recent funding amount in whole USD; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "lastFundingRoundName": {
+                                            "description": "Most recent funding round label; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "totalAmountRaisedUsd": {
+                                            "description": "Total funding amount in whole USD; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "employeesByDepartment": {
+                                            "description": "Department-name to employee-count map; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "integer",
+                                                        "minimum": -9007199254740991,
+                                                        "maximum": 9007199254740991,
+                                                        "description": "Employee count for this department."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "activeJobPostingsCount": {
+                                            "description": "Number of active job postings; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One company returned by the search."
+                                }
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "not_started",
+                                    "processing",
+                                    "on_hold",
+                                    "terminated"
+                                ],
+                                "description": "Provider lifecycle status; only terminated has a completed page."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation for create-company-search when more matches exist and original search context is available; omitted when exhausted or unavailable.",
+                                "type": "string"
+                            },
+                            "creditsLeft": {
+                                "description": "Remaining credits as exact decimal text; omitted if absent.",
+                                "type": "string"
+                            },
+                            "totalMatches": {
+                                "description": "Total companies matching the search criteria independent of this page; omitted until provided.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "creditsConsumed": {
+                                "description": "Credits spent by this search as exact decimal text; omitted if absent.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Company Finder lifecycle state, completed page, exact total, and available continuation."
+                    },
+                    "FunctionMetadata_bettercontact_getcompanysearch": {
+                        "type": "object",
+                        "properties": {
+                            "companySearches": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Pass the ID from `create-company-search`. If not terminated, check again later; missing items means pending, not zero matches. For another page, pass nextCursor to `create-company-search`. Results from a request created elsewhere can be read, but continuation is available only when this integration has the original criteria. Use `enrich-company-profile` for a direct known-company lookup."
+            },
+            "filePath": "./bettercontact/tools/get-company-search.ts",
+            "version": "0f7a7f630d1bbd2b4bf72592e78a291f2e98799105f91e17164835b862930fda",
+            "location": {
+                "js": "templates-zero/bettercontact/tools/get-company-search/0f7a7f630d1bbd2b4bf72592e78a291f2e98799105f91e17164835b862930fda.cjs",
+                "ts": "templates-zero/bettercontact/tools/get-company-search/0f7a7f630d1bbd2b4bf72592e78a291f2e98799105f91e17164835b862930fda.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-lead-enrichment",
+            "integrationId": "bettercontact",
+            "description": "Get one enrichment request's current status, credit usage, and completed lead results without waiting for background completion.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_bettercontact_getleadenrichment",
+            "output_schema_ref": "#/definitions/FunctionOutput_bettercontact_getleadenrichment",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_bettercontact_getleadenrichment": {
+                        "type": "object",
+                        "properties": {
+                            "enrichmentRequestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque request ID from an enrichment submission on this account."
+                            }
+                        },
+                        "required": [
+                            "enrichmentRequestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the enrichment request whose current state should be read."
+                    },
+                    "FunctionOutput_bettercontact_getleadenrichment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque enrichment request ID."
+                            },
+                            "items": {
+                                "description": "Completed batch rows; omitted until terminated, not replaced by an empty array while processing.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Opaque contact identifier, losslessly represented as text; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "city": {
+                                            "description": "Contact city; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "email": {
+                                            "description": "Work email; null when not requested or not found.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "state": {
+                                            "description": "Contact state or region; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "country": {
+                                            "description": "Contact country label; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "enriched": {
+                                            "description": "True only when successfully enriched and not opted out; check before using the row.",
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "fullName": {
+                                            "description": "Provider's full name; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "headline": {
+                                            "description": "LinkedIn headline; empty text and null remain distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "industry": {
+                                            "description": "Contact industry; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "jobTitle": {
+                                            "description": "Current job title; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "lastName": {
+                                            "description": "Last name; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "continent": {
+                                            "description": "Contact continent label; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "firstName": {
+                                            "description": "First name; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "seniority": {
+                                            "description": "Provider seniority label; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyName": {
+                                            "description": "Current company name; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyType": {
+                                            "description": "Company type label, preserved as returned.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "emailStatus": {
+                                            "description": "Verification verdict without collapsing catch-all safety states; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "deliverable",
+                                                        "catch_all",
+                                                        "catch_all_safe",
+                                                        "catch_all_not_safe",
+                                                        "undeliverable",
+                                                        "not_found"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "linkedinUrl": {
+                                            "description": "Public person LinkedIn URL; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "phoneNumber": {
+                                            "description": "E.164 mobile number; null when not requested or not found.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customFields": {
+                                            "description": "Echoed correlation metadata keyed by original name; null preserves an unknown provider value.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string",
+                                                        "description": "Original correlation field name."
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "string",
+                                                        "description": "Echoed correlation field value."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "companyDomain": {
+                                            "description": "Current company domain; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyIndustry": {
+                                            "description": "Company industry; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyKeywords": {
+                                            "description": "Company keywords; an empty list is distinct from unknown null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "Company keyword as returned."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "companyDescription": {
+                                            "description": "Company description; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyFoundedYear": {
+                                            "description": "Company founding calendar year; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "companyLinkedinUrl": {
+                                            "description": "Company LinkedIn page URL; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyEmployeesMax": {
+                                            "description": "Upper bound of headcount range; null may mean open-ended or unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "companyEmployeesMin": {
+                                            "description": "Lower bound of the provider headcount range; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "emailMailboxProvider": {
+                                            "description": "Email hosting provider such as google; not the waterfall vendor.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyHeadquartersCity": {
+                                            "description": "Provider headquarters city text; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "emailEnrichmentProvider": {
+                                            "description": "Waterfall vendor finding the email; may be Secret Provider, unlike the mailbox host.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "phoneEnrichmentProvider": {
+                                            "description": "Waterfall vendor finding the phone; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyHeadquartersCountry": {
+                                            "description": "Headquarters country label; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One completed lead row, including provider eligibility and verification verdicts."
+                                }
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "processing",
+                                    "on_hold",
+                                    "terminated"
+                                ],
+                                "description": "Provider lifecycle state; terminated means results are available, not that every lead succeeded."
+                            },
+                            "message": {
+                                "description": "Provider progress hint, omitted when absent.",
+                                "type": "string"
+                            },
+                            "summary": {
+                                "description": "Provider aggregate counts; omitted until terminated, with unavailable counts omitted.",
+                                "type": "object",
+                                "properties": {
+                                    "total": {
+                                        "description": "Number of leads submitted.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "valid": {
+                                        "description": "Emails verified deliverable.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "catchAll": {
+                                        "description": "Catch-all email count, when returned.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "notFound": {
+                                        "description": "Leads with no email found.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "phonesFound": {
+                                        "description": "Phones found; omitted when not requested.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "catchAllSafe": {
+                                        "description": "Catch-all emails judged safe, when returned.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "undeliverable": {
+                                        "description": "Undeliverable emails.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "catchAllNotSafe": {
+                                        "description": "Catch-all emails judged unsafe, when returned.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "emailEnrichment": {
+                                        "description": "Email enrichment counts, when requested and returned.",
+                                        "type": "object",
+                                        "properties": {
+                                            "enriched": {
+                                                "description": "Provider count enriched for the specified enrichment type.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "notEnriched": {
+                                                "description": "Provider count not enriched for that type.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "phoneEnrichment": {
+                                        "description": "Phone enrichment counts, when requested and returned.",
+                                        "type": "object",
+                                        "properties": {
+                                            "enriched": {
+                                                "description": "Provider count enriched for the specified enrichment type.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "notEnriched": {
+                                                "description": "Provider count not enriched for that type.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "profileEnrichment": {
+                                        "description": "Profile enrichment counts, when requested and returned.",
+                                        "type": "object",
+                                        "properties": {
+                                            "enriched": {
+                                                "description": "Provider count enriched for the specified enrichment type.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            "notEnriched": {
+                                                "description": "Provider count not enriched for that type.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "creditsLeft": {
+                                "description": "Remaining account credits as an exact decimal string; omitted if absent.",
+                                "type": "string"
+                            },
+                            "creditsConsumed": {
+                                "description": "Credits spent by this request so far as an exact decimal string; omitted if absent.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current enrichment request state, credit usage, and results when completed."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Pass the ID from `enrich-lead` or `batch-enrich-leads`. If status is processing or on_hold, inspect the message and check again later. Only terminated results have items and summary. Check each row's enriched flag before using it; a returned row is not automatically safe to use. Use customFields for correlation, not result order."
+            },
+            "filePath": "./bettercontact/tools/get-lead-enrichment.ts",
+            "version": "0ab789f50d36fcbe8420c17490f3b8f84c71278a480c4cc6732889478aa584e6",
+            "location": {
+                "js": "templates-zero/bettercontact/tools/get-lead-enrichment/0ab789f50d36fcbe8420c17490f3b8f84c71278a480c4cc6732889478aa584e6.cjs",
+                "ts": "templates-zero/bettercontact/tools/get-lead-enrichment/0ab789f50d36fcbe8420c17490f3b8f84c71278a480c4cc6732889478aa584e6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-lead-search",
+            "integrationId": "bettercontact",
+            "description": "Get a Lead Finder request's current status and, when terminated, its single page of leads, enrichment verdicts, credit usage and available continuation.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_bettercontact_getleadsearch",
+            "output_schema_ref": "#/definitions/FunctionOutput_bettercontact_getleadsearch",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_bettercontact_getleadsearch",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_bettercontact_getleadsearch": {
+                        "type": "object",
+                        "properties": {
+                            "leadSearchId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Lead Finder request ID on the connected account."
+                            }
+                        },
+                        "required": [
+                            "leadSearchId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify a Lead Finder request to read without waiting for completion."
+                    },
+                    "FunctionOutput_bettercontact_getleadsearch": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque lead-search request identifier."
+                            },
+                            "items": {
+                                "description": "One completed discovery page, at most 200 leads; omitted while pending and [] retained for a completed empty page.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Opaque contact ID serialized losslessly as text; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "city": {
+                                            "description": "Contact city; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "email": {
+                                            "description": "Work email, filled only when email enrichment was selected and found.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "state": {
+                                            "description": "Contact state or region; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "country": {
+                                            "description": "Contact country label; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "fullName": {
+                                            "description": "Provider full name; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "headline": {
+                                            "description": "LinkedIn headline; null and empty text remain distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "industry": {
+                                            "description": "Contact industry; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "jobTitle": {
+                                            "description": "Current job title; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "lastName": {
+                                            "description": "Last name; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "continent": {
+                                            "description": "Contact continent label; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "firstName": {
+                                            "description": "First name; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "seniority": {
+                                            "description": "Provider seniority label; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyName": {
+                                            "description": "Current company name; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyType": {
+                                            "description": "Provider company type label; preserved as returned.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "emailStatus": {
+                                            "description": "Email verification verdict, preserving all catch-all safety states; null if unavailable.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "deliverable",
+                                                        "catch_all",
+                                                        "catch_all_safe",
+                                                        "catch_all_not_safe",
+                                                        "undeliverable",
+                                                        "not_found"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "linkedinUrl": {
+                                            "description": "Public person LinkedIn URL; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "phoneNumber": {
+                                            "description": "E.164 mobile number, filled only when phone enrichment was selected and found.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyDomain": {
+                                            "description": "Current company domain; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "inferredGender": {
+                                            "description": "Provider-inferred gender label, not a verified personal attribute; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyIndustry": {
+                                            "description": "Company industry; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyKeywords": {
+                                            "description": "Company keywords; empty list remains distinct from unknown null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "One company keyword."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "companyDescription": {
+                                            "description": "Company profile description; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyFoundedYear": {
+                                            "description": "Company founding calendar year; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "companyLinkedinUrl": {
+                                            "description": "Company LinkedIn URL, commonly null in the current data source.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyEmployeesMax": {
+                                            "description": "Company headcount upper bound; null if unknown or open-ended.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "companyEmployeesMin": {
+                                            "description": "Company headcount lower bound; null if unknown.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "companyHeadquartersCity": {
+                                            "description": "Provider headquarters city text; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "emailEnrichmentProvider": {
+                                            "description": "Waterfall email vendor, possibly Secret Provider; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "companyHeadquartersCountry": {
+                                            "description": "Headquarters country; null if unknown.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One discovered lead with available profile and enrichment fields."
+                                }
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "not_started",
+                                    "processing",
+                                    "on_hold",
+                                    "terminated"
+                                ],
+                                "description": "Provider lifecycle status; only terminated has completed result data."
+                            },
+                            "message": {
+                                "description": "Provider progress hint; omitted if absent.",
+                                "type": "string"
+                            },
+                            "summary": {
+                                "description": "Provider enrichment counters; omitted while pending or when absent, with unavailable counters omitted.",
+                                "type": "object",
+                                "properties": {
+                                    "total": {
+                                        "description": "Number of leads enriched, when enrichment was requested; not a search match total.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "valid": {
+                                        "description": "Emails verified deliverable.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "catchAll": {
+                                        "description": "Emails on catch-all domains.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "notFound": {
+                                        "description": "Leads with no email found.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "phonesFound": {
+                                        "description": "Phone numbers found, when requested.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "undeliverable": {
+                                        "description": "Emails verified undeliverable.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "catchAllNotSafe": {
+                                        "description": "Catch-all emails judged unsafe.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "nextCursor": {
+                                "description": "Opaque next-page request token for create-lead-search; absent when known exhausted or original context unavailable. With paginationState=unknown this offers another probe, not a guarantee of more matches.",
+                                "type": "string"
+                            },
+                            "creditsLeft": {
+                                "description": "Remaining credits as exact decimal text; omitted if absent.",
+                                "type": "string"
+                            },
+                            "totalMatches": {
+                                "description": "Provider total matches independent of page size; omitted if unavailable, including enriched searches.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "creditsConsumed": {
+                                "description": "Credits spent by this search as exact decimal text; omitted if absent.",
+                                "type": "string"
+                            },
+                            "paginationState": {
+                                "description": "Completed-page continuation knowledge: more/exhausted from a documented total, unknown when total is absent, unavailable without original criteria; omitted while pending.",
+                                "type": "string",
+                                "enum": [
+                                    "more",
+                                    "exhausted",
+                                    "unknown",
+                                    "unavailable"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current search status and, when terminated, one lead page with available credit usage and continuation."
+                    },
+                    "FunctionMetadata_bettercontact_getleadsearch": {
+                        "type": "object",
+                        "properties": {
+                            "leadSearches": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Pass an ID from `create-lead-search`. Pending results omit items; check again later instead of creating the same search again. For more results, pass nextCursor to `create-lead-search`. totalMatches is unavailable when enrichment was requested. paginationState=unknown means continuation may yield an empty page and does not promise more matches. Use `get-lead-enrichment` for results from known-lead enrichment, not discovery."
+            },
+            "filePath": "./bettercontact/tools/get-lead-search.ts",
+            "version": "c77181502bb2b58c2a6a97dd8043532193c92b5b4e04c9f1400c7b22b84499ab",
+            "location": {
+                "js": "templates-zero/bettercontact/tools/get-lead-search/c77181502bb2b58c2a6a97dd8043532193c92b5b4e04c9f1400c7b22b84499ab.cjs",
+                "ts": "templates-zero/bettercontact/tools/get-lead-search/c77181502bb2b58c2a6a97dd8043532193c92b5b4e04c9f1400c7b22b84499ab.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

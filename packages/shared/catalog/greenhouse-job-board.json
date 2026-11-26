@@ -1,0 +1,2764 @@
+{
+    "providerConfigKey": "greenhouse-job-board",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the connected board's education degree reference choices available as records for application forms.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-degrees",
+            "output": [
+                "Degrees"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Degrees"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Degrees": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque degree reference ID for application education history."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Degree display name, preserving Unicode and punctuation."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Education degree reference choices for the connected board application forms."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected board's departments available as records with hierarchy relationships and published post summaries.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-departments",
+            "output": [
+                "Departments"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Departments"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Departments": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque department identifier."
+                            },
+                            "jobs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque job-post identifier."
+                                        },
+                                        "url": {
+                                            "description": "Published absolute application URL.",
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Published post title."
+                                        },
+                                        "language": {
+                                            "description": "Published language code.",
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "description": "Published location.name text.",
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "description": "Last update instant in UTC Z without fractional precision loss.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Published post summary directly grouped under this department."
+                                },
+                                "description": "Published posts directly grouped under the department, preserving provider order and []."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Department display name."
+                            },
+                            "childIds": {
+                                "description": "Immediate child department IDs when supplied, including [] for a leaf.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque immediate child department identifier."
+                                }
+                            },
+                            "parentId": {
+                                "description": "Immediate parent department ID, null for a root; omitted if absent upstream.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "jobs",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Connected board department with hierarchy relationships and published post summaries."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected board's education discipline reference choices available as records for application forms.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-disciplines",
+            "output": [
+                "Disciplines"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Disciplines"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Disciplines": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque discipline reference ID for application education history."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Discipline display name, preserving Unicode and punctuation."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An education discipline reference choice for application forms."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected board's published job and prospect posts available as records, including descriptions, custom fields and department/office associations.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-job-posts",
+            "output": [
+                "JobPosts"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "JobPosts"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "JobPosts": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque job-post ID, distinct from internalJobId."
+                            },
+                            "url": {
+                                "description": "Published absolute application URL.",
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Published post title."
+                            },
+                            "offices": {
+                                "description": "Associated offices in provider order.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque department or office identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Associated resource display name."
+                                        },
+                                        "childIds": {
+                                            "description": "Immediate child resource IDs when supplied.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Immediate child resource identifier."
+                                            }
+                                        },
+                                        "location": {
+                                            "description": "Office location text; omitted for departments or when unavailable.",
+                                            "type": "string"
+                                        },
+                                        "parentId": {
+                                            "description": "Parent resource ID or null for a root; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Department or office associated with the published post."
+                                }
+                            },
+                            "language": {
+                                "description": "Post language code.",
+                                "type": "string"
+                            },
+                            "location": {
+                                "description": "Published location.name display text.",
+                                "type": "string"
+                            },
+                            "metadata": {
+                                "description": "Exposed custom fields; null and [] are preserved.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "description": "Opaque custom-field identifier.",
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "description": "Field display name.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Custom-field value preserving original JSON type and explicit null."
+                                                },
+                                                "valueType": {
+                                                    "description": "Provider field-type label.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Exposed job custom field and its original JSON value."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "updatedAt": {
+                                "description": "Last update instant in UTC Z, retaining supplied fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "contentHtml": {
+                                "description": "Description HTML with provider entity transport wrapping removed; includes configured board introduction and conclusion. Untrusted markup.",
+                                "type": "string"
+                            },
+                            "departments": {
+                                "description": "Associated departments in provider order.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque department or office identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Associated resource display name."
+                                        },
+                                        "childIds": {
+                                            "description": "Immediate child resource IDs when supplied.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "Immediate child resource identifier."
+                                            }
+                                        },
+                                        "location": {
+                                            "description": "Office location text; omitted for departments or when unavailable.",
+                                            "type": "string"
+                                        },
+                                        "parentId": {
+                                            "description": "Parent resource ID or null for a root; omitted if absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Department or office associated with the published post."
+                                }
+                            },
+                            "internalJobId": {
+                                "description": "Opaque underlying job ID; null identifies a prospect post, omitted only if absent upstream.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "requisitionId": {
+                                "description": "Organization requisition reference, preserving null and omission.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Published job or prospect post on the connected Greenhouse board."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected board's offices available as records with hierarchy relationships and department/job groupings.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-offices",
+            "output": [
+                "Offices"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Offices"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Offices": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque office identifier."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Office display name."
+                            },
+                            "childIds": {
+                                "description": "Immediate child office IDs, including [] for a leaf when supplied.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "parentId": {
+                                "description": "Parent office ID, null for a root; omitted if not supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "departments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque department identifier."
+                                        },
+                                        "jobs": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Opaque job-post identifier."
+                                                    },
+                                                    "url": {
+                                                        "description": "Published absolute application URL.",
+                                                        "type": "string"
+                                                    },
+                                                    "title": {
+                                                        "type": "string",
+                                                        "description": "Published post title."
+                                                    },
+                                                    "language": {
+                                                        "description": "Published language code.",
+                                                        "type": "string"
+                                                    },
+                                                    "location": {
+                                                        "description": "Published location.name display text.",
+                                                        "type": "string"
+                                                    },
+                                                    "updatedAt": {
+                                                        "description": "Last update instant in UTC Z retaining supplied fractional precision.",
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "title"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "Published post summary within an office-specific department grouping."
+                                            },
+                                            "description": "Published post summaries supplied for this office/department grouping."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Department display name."
+                                        },
+                                        "childIds": {
+                                            "description": "Immediate child department IDs when supplied.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "parentId": {
+                                            "description": "Parent department ID or null when supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "jobs",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Department and its published posts grouped specifically under this office."
+                                },
+                                "description": "Department/job groupings specific to this office in provider order."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "departments"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Office with hierarchy relationships and office-specific department/job groupings."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make prospect post sections available as records with their assigned prospect-post summaries. Section membership is not the complete board-wide prospect collection.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-prospect-post-sections",
+            "output": [
+                "ProspectPostSections"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ProspectPostSections"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ProspectPostSections": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque prospect post section identifier."
+                            },
+                            "jobs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque post identifier usable with get-job-post."
+                                        },
+                                        "url": {
+                                            "description": "Published absolute application URL.",
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Prospect post title."
+                                        },
+                                        "language": {
+                                            "description": "Published language code.",
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "description": "Published location.name display text.",
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "description": "Last update instant in UTC Z without fractional precision loss.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A prospect-post summary assigned to this section."
+                                },
+                                "description": "Prospect posts assigned to this section in provider order; [] when empty."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Section display heading."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "jobs",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A prospect post section with its assigned prospect-post summaries, not the complete board-wide prospect collection."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected board's education school reference choices available as records for application forms.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-schools",
+            "output": [
+                "Schools"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Schools"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Schools": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque school reference ID for application education history."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "School display name, preserving Unicode and punctuation."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Education school reference choices for the connected job board."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "get-job-board",
+            "integrationId": "greenhouse-job-board",
+            "description": "Get the organization's name and introductory job-board content.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_greenhouse_job_board_getjobboard",
+            "output_schema_ref": "#/definitions/FunctionOutput_greenhouse_job_board_getjobboard",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_greenhouse_job_board_getjobboard",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_greenhouse_job_board_getjobboard": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is needed; the connection selects the job board."
+                    },
+                    "FunctionOutput_greenhouse_job_board_getjobboard": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Organization name displayed on the board."
+                            },
+                            "contentHtml": {
+                                "type": "string",
+                                "description": "Board content as HTML, including an empty string when no content is configured; treat as untrusted markup."
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "contentHtml"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected job board organization name and introductory HTML content."
+                    },
+                    "FunctionMetadata_greenhouse_job_board_getjobboard": {
+                        "type": "object",
+                        "properties": {
+                            "board_token": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Job Board URL token identifying the board selected by this connection."
+                            }
+                        },
+                        "required": [
+                            "board_token"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for board branding and introductory content. Use `list-job-posts` to browse openings. No identifier is needed: the connection selects the board."
+            },
+            "filePath": "./greenhouse-job-board/tools/get-job-board.ts",
+            "version": "cf82ea2942c3df0cbac6e96cac4fc74ca9879b6fffea6caa703dde4bed3c9e25",
+            "location": {
+                "js": "templates-zero/greenhouse-job-board/tools/get-job-board/cf82ea2942c3df0cbac6e96cac4fc74ca9879b6fffea6caa703dde4bed3c9e25.cjs",
+                "ts": "templates-zero/greenhouse-job-board/tools/get-job-board/cf82ea2942c3df0cbac6e96cac4fc74ca9879b6fffea6caa703dde4bed3c9e25.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-job-post",
+            "integrationId": "greenhouse-job-board",
+            "description": "Get a published job post, including its application form, compliance requirements, AI disclosures and pay transparency ranges.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_greenhouse_job_board_getjobpost",
+            "output_schema_ref": "#/definitions/FunctionOutput_greenhouse_job_board_getjobpost",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_greenhouse_job_board_getjobpost": {
+                        "type": "object",
+                        "properties": {
+                            "jobPostId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque post ID on the connected board, not an internal job ID."
+                            }
+                        },
+                        "required": [
+                            "jobPostId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify a published post on the connected job board."
+                    },
+                    "FunctionOutput_greenhouse_job_board_getjobpost": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque job-post identifier."
+                            },
+                            "url": {
+                                "description": "Published application-page absolute URL.",
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Published title."
+                            },
+                            "language": {
+                                "description": "Published language code.",
+                                "type": "string"
+                            },
+                            "location": {
+                                "description": "Published location.name display text.",
+                                "type": "string"
+                            },
+                            "metadata": {
+                                "description": "Exposed custom fields, preserving null and empty arrays.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "description": "Opaque custom-field identifier.",
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "description": "Custom-field display name.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "description": "Value in its original JSON type, including structured and null values."
+                                                },
+                                                "valueType": {
+                                                    "description": "Provider custom-field type.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "payRanges": {
+                                "description": "Published pay ranges, including [] when none are configured.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "blurb": {
+                                            "description": "Accompanying pay-transparency text, preserved without stripping markup.",
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "description": "Range display title.",
+                                            "type": "string"
+                                        },
+                                        "currency": {
+                                            "description": "Provider currency_type value.",
+                                            "type": "string"
+                                        },
+                                        "maxCents": {
+                                            "description": "Provider upper bound in the documented cents unit.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "minCents": {
+                                            "description": "Provider lower bound in the documented cents unit; not converted using an assumed currency exponent.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "questions": {
+                                "description": "Application question groups; a required group needs at least one valid member field.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "label": {
+                                            "description": "Question-group display text.",
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "description": "Alternative or related answer fields for this question group.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Opaque answer field name to pass to submit-application for dynamic or compliance answers."
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "Provider control type, preserving unknown future values."
+                                                    },
+                                                    "options": {
+                                                        "description": "Selectable values; omitted if absent and [] if explicitly empty.",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "string",
+                                                                    "description": "Opaque selection value, including numeric zero represented as string \"0\"."
+                                                                },
+                                                                "label": {
+                                                                    "type": "string",
+                                                                    "description": "Choice display text."
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "id",
+                                                                "label"
+                                                            ],
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name",
+                                                    "type"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": {
+                                            "description": "Whether at least one field in this question group must have a valid answer.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A group of alternative or related application answer fields."
+                                }
+                            },
+                            "updatedAt": {
+                                "description": "Last-update instant in UTC Z, retaining supplied fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "companyName": {
+                                "description": "Company name supplied for this post.",
+                                "type": "string"
+                            },
+                            "contentHtml": {
+                                "description": "Decoded description HTML, including board introduction and conclusion when configured; untrusted markup.",
+                                "type": "string"
+                            },
+                            "internalJobId": {
+                                "description": "Underlying job ID; null for a prospect post, omitted if unavailable.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "requisitionId": {
+                                "description": "Organization's requisition reference; omission and null are preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "dataCompliance": {
+                                "description": "Data-processing rules and consent requirements; absence does not imply consent.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider rule type, such as gdpr.",
+                                            "type": "string"
+                                        },
+                                        "requiresConsent": {
+                                            "description": "Legacy combined-consent requirement; retained separately from purpose-specific flags.",
+                                            "type": "boolean"
+                                        },
+                                        "retentionPeriodDays": {
+                                            "description": "Configured data-retention duration in days, without conversion into an instant.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "requiresRetentionConsent": {
+                                            "description": "Whether explicit retention consent is required.",
+                                            "type": "boolean"
+                                        },
+                                        "requiresProcessingConsent": {
+                                            "description": "Whether explicit processing consent is required.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "aiDisclaimerHtml": {
+                                "description": "AI disclosure HTML supplied by the provider; untrusted markup.",
+                                "type": "string"
+                            },
+                            "firstPublishedAt": {
+                                "description": "First-publication instant in UTC Z, retaining supplied fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "locationQuestions": {
+                                "description": "Location question groups, including hidden coordinate fields when configured.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "label": {
+                                            "description": "Question-group display text.",
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "description": "Alternative or related answer fields for this question group.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Opaque answer field name to pass to submit-application for dynamic or compliance answers."
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "Provider control type, preserving unknown future values."
+                                                    },
+                                                    "options": {
+                                                        "description": "Selectable values; omitted if absent and [] if explicitly empty.",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "string",
+                                                                    "description": "Opaque selection value, including numeric zero represented as string \"0\"."
+                                                                },
+                                                                "label": {
+                                                                    "type": "string",
+                                                                    "description": "Choice display text."
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "id",
+                                                                "label"
+                                                            ],
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name",
+                                                    "type"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": {
+                                            "description": "Whether at least one field in this question group must have a valid answer.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A group of alternative or related application answer fields."
+                                }
+                            },
+                            "aiOptOutRequestUrl": {
+                                "description": "Provider URL for an applicant's AI opt-out request.",
+                                "type": "string"
+                            },
+                            "applicationDeadline": {
+                                "description": "Application closing instant in UTC Z; omitted when no deadline is supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "complianceQuestions": {
+                                "description": "EEOC question groups when enabled; omitted when not returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "label": {
+                                            "description": "Question-group display text.",
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "description": "Alternative or related answer fields for this question group.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Opaque answer field name to pass to submit-application for dynamic or compliance answers."
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "Provider control type, preserving unknown future values."
+                                                    },
+                                                    "options": {
+                                                        "description": "Selectable values; omitted if absent and [] if explicitly empty.",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "string",
+                                                                    "description": "Opaque selection value, including numeric zero represented as string \"0\"."
+                                                                },
+                                                                "label": {
+                                                                    "type": "string",
+                                                                    "description": "Choice display text."
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "id",
+                                                                "label"
+                                                            ],
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name",
+                                                    "type"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": {
+                                            "description": "Whether at least one field in this question group must have a valid answer.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A group of alternative or related application answer fields."
+                                }
+                            },
+                            "includeAiDisclaimer": {
+                                "description": "Whether the provider requests inclusion of its AI disclaimer.",
+                                "type": "boolean"
+                            },
+                            "demographicQuestions": {
+                                "description": "Demographic survey definition when Inclusion and this post enable it.",
+                                "type": "object",
+                                "properties": {
+                                    "header": {
+                                        "description": "Survey heading.",
+                                        "type": "string"
+                                    },
+                                    "questions": {
+                                        "description": "Survey questions with stable opaque identifiers.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Opaque demographic question identifier."
+                                                },
+                                                "type": {
+                                                    "description": "Selection control type returned by the provider.",
+                                                    "type": "string"
+                                                },
+                                                "label": {
+                                                    "description": "Question text.",
+                                                    "type": "string"
+                                                },
+                                                "required": {
+                                                    "description": "Required flag returned by this post, retained despite conflicting submission prose.",
+                                                    "type": "boolean"
+                                                },
+                                                "answerOptions": {
+                                                    "description": "Selectable demographic answer options.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "description": "Opaque option identifier scoped to the demographic question."
+                                                            },
+                                                            "label": {
+                                                                "description": "Option display text.",
+                                                                "type": "string"
+                                                            },
+                                                            "freeForm": {
+                                                                "description": "Whether the option supports applicant-entered text.",
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "descriptionHtml": {
+                                        "description": "Survey introduction HTML, preserved as untrusted markup.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A published job post with the application form and supplied compliance, disclosure and pay information."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get a post ID from `list-job-posts`, `get-department`, `get-office`, or `get-prospect-post-section`. Use this before `submit-application` to obtain field names, choices, required groups and consent requirements. Missing optional form sections mean they were not supplied, not that consent was granted."
+            },
+            "filePath": "./greenhouse-job-board/tools/get-job-post.ts",
+            "version": "316bf730551b5ea63791fc740074f28859f87a986ce445473ab137ad9ceae4e1",
+            "location": {
+                "js": "templates-zero/greenhouse-job-board/tools/get-job-post/316bf730551b5ea63791fc740074f28859f87a986ce445473ab137ad9ceae4e1.cjs",
+                "ts": "templates-zero/greenhouse-job-board/tools/get-job-post/316bf730551b5ea63791fc740074f28859f87a986ce445473ab137ad9ceae4e1.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-prospect-post-section",
+            "integrationId": "greenhouse-job-board",
+            "description": "Get a prospect post section and the prospect posts assigned to it.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_greenhouse_job_board_getprospectpostsection",
+            "output_schema_ref": "#/definitions/FunctionOutput_greenhouse_job_board_getprospectpostsection",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_greenhouse_job_board_getprospectpostsection": {
+                        "type": "object",
+                        "properties": {
+                            "sectionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque prospect post section ID on the connected board."
+                            }
+                        },
+                        "required": [
+                            "sectionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one prospect post section on the connected board."
+                    },
+                    "FunctionOutput_greenhouse_job_board_getprospectpostsection": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque section identifier."
+                            },
+                            "jobs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque job-post identifier."
+                                        },
+                                        "url": {
+                                            "description": "Published absolute application URL.",
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Prospect post title."
+                                        },
+                                        "language": {
+                                            "description": "Published language code.",
+                                            "type": "string"
+                                        },
+                                        "location": {
+                                            "description": "Published location.name text.",
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "description": "Last update instant normalized to UTC Z without fractional precision loss.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A prospect post assigned to the section."
+                                },
+                                "description": "Prospect posts assigned to this section, preserving provider order and []."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Section display heading."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "jobs",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The requested prospect post section and its assigned prospect posts."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get sectionId from `list-prospect-post-sections`. Use this to retrieve one section; use `get-job-post` on a returned post ID to review its form before `submit-application`. A section's jobs are not the full board-wide prospect collection."
+            },
+            "filePath": "./greenhouse-job-board/tools/get-prospect-post-section.ts",
+            "version": "4c6606a8f040360648f34a4002796bbd46834484e01046a369383200233fd861",
+            "location": {
+                "js": "templates-zero/greenhouse-job-board/tools/get-prospect-post-section/4c6606a8f040360648f34a4002796bbd46834484e01046a369383200233fd861.cjs",
+                "ts": "templates-zero/greenhouse-job-board/tools/get-prospect-post-section/4c6606a8f040360648f34a4002796bbd46834484e01046a369383200233fd861.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-degrees",
+            "integrationId": "greenhouse-job-board",
+            "description": "List one page of education degrees, optionally restricting names by a substring, for use in applications.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_greenhouse_job_board_listdegrees",
+            "output_schema_ref": "#/definitions/FunctionOutput_greenhouse_job_board_listdegrees",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_greenhouse_job_board_listdegrees": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation token from the previous result, scoped to this board, degree collection and unchanged filter. Omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "nameContains": {
+                                "description": "Substring that must occur in a degree name; provider case and locale matching rules apply. Omit to browse all degrees.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for one page of education degrees."
+                    },
+                    "FunctionOutput_greenhouse_job_board_listdegrees": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque degree ID for application education history."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Degree display name from the provider's text field."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An education degree choice."
+                                },
+                                "description": "One provider page of degree choices in provider order, at most 100 entries."
+                            },
+                            "total": {
+                                "description": "Provider meta.total_count for the matching collection, when returned; not the current page length.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "nextCursor": {
+                                "description": "Opaque token for the next page with the same filter; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of degree choices and its continuation information."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to obtain degree IDs for `submit-application`. Pass nextCursor back as cursor with the same nameContains filter to continue. Each provider page holds up to 100 entries; the page size is fixed. Do not interpret the cursor or substitute a degree label for its ID."
+            },
+            "filePath": "./greenhouse-job-board/tools/list-degrees.ts",
+            "version": "e1a98266678b95d7aba7bb1cbdde751ceca2babffa8f21ad73d7c970c0dec41a",
+            "location": {
+                "js": "templates-zero/greenhouse-job-board/tools/list-degrees/e1a98266678b95d7aba7bb1cbdde751ceca2babffa8f21ad73d7c970c0dec41a.cjs",
+                "ts": "templates-zero/greenhouse-job-board/tools/list-degrees/e1a98266678b95d7aba7bb1cbdde751ceca2babffa8f21ad73d7c970c0dec41a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-departments",
+            "integrationId": "greenhouse-job-board",
+            "description": "List departments and their published job posts, as a flat hierarchy or nested trees.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_greenhouse_job_board_listdepartments",
+            "output_schema_ref": "#/definitions/FunctionOutput_greenhouse_job_board_listdepartments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_greenhouse_job_board_listdepartments": {
+                        "type": "object",
+                        "properties": {
+                            "representation": {
+                                "description": "Flat department objects with hierarchy IDs, or root trees with nested children.",
+                                "type": "string",
+                                "enum": [
+                                    "list",
+                                    "tree"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Choose a department representation; defaults to list when omitted."
+                    },
+                    "FunctionOutput_greenhouse_job_board_listdepartments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/__schema0"
+                                },
+                                "description": "All department objects, or root trees when representation is tree; provider order is preserved."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete unpaginated collection of departments and their published job posts.",
+                        "definitions": {
+                            "__schema0": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Opaque department ID."
+                                    },
+                                    "jobs": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Opaque job-post ID for get-job-post."
+                                                },
+                                                "url": {
+                                                    "description": "Published application-page absolute URL.",
+                                                    "type": "string"
+                                                },
+                                                "title": {
+                                                    "type": "string",
+                                                    "description": "Published post title."
+                                                },
+                                                "language": {
+                                                    "description": "Published language code.",
+                                                    "type": "string"
+                                                },
+                                                "location": {
+                                                    "description": "Published location.name text, omitted when absent.",
+                                                    "type": "string"
+                                                },
+                                                "updatedAt": {
+                                                    "description": "Last update instant in UTC Z without fractional precision loss.",
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "title"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "A published job-post summary directly supplied for a department."
+                                        },
+                                        "description": "Published post summaries directly supplied for this department, including [] when empty."
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Department display name."
+                                    },
+                                    "childIds": {
+                                        "description": "Opaque immediate child department IDs; omitted when not supplied.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "children": {
+                                        "description": "Nested child departments in tree representation; [] for a leaf, omitted in flat responses.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    },
+                                    "parentId": {
+                                        "description": "Opaque parent department ID; null for a root, omitted when not supplied.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "jobs",
+                                    "name"
+                                ],
+                                "additionalProperties": false,
+                                "description": "A department with directly grouped job posts and provider-supplied hierarchy."
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover department IDs and browse jobs by department. Use `get-department` for a known department or `get-job-post` for a post's full application form. Choose tree for nested children; the default flat list preserves hierarchy IDs. The provider returns one unpaginated collection."
+            },
+            "filePath": "./greenhouse-job-board/tools/list-departments.ts",
+            "version": "65e6fb7218677b6bda56c5ede492daa11099c3eda3bf42d818977a348b18948e",
+            "location": {
+                "js": "templates-zero/greenhouse-job-board/tools/list-departments/65e6fb7218677b6bda56c5ede492daa11099c3eda3bf42d818977a348b18948e.cjs",
+                "ts": "templates-zero/greenhouse-job-board/tools/list-departments/65e6fb7218677b6bda56c5ede492daa11099c3eda3bf42d818977a348b18948e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-offices",
+            "integrationId": "greenhouse-job-board",
+            "description": "List offices with their departments and published job posts, as a flat hierarchy or nested trees.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_greenhouse_job_board_listoffices",
+            "output_schema_ref": "#/definitions/FunctionOutput_greenhouse_job_board_listoffices",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_greenhouse_job_board_listoffices",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_greenhouse_job_board_listoffices": {
+                        "type": "object",
+                        "properties": {
+                            "representation": {
+                                "description": "Flat office objects with hierarchy IDs, or root trees containing nested children.",
+                                "type": "string",
+                                "enum": [
+                                    "list",
+                                    "tree"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Choose the office hierarchy representation; defaults to list when omitted."
+                    },
+                    "FunctionOutput_greenhouse_job_board_listoffices": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/__schema0"
+                                },
+                                "description": "All offices or root office trees in provider order, including [] when empty."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Complete office collection in the requested hierarchy representation.",
+                        "definitions": {
+                            "__schema0": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Opaque office identifier."
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Office display name."
+                                    },
+                                    "childIds": {
+                                        "description": "Immediate child office IDs in flat mode, when supplied.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "children": {
+                                        "description": "Nested child offices in tree mode; [] for a leaf and omitted if absent.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    },
+                                    "parentId": {
+                                        "description": "Opaque parent office ID, null for a root; omitted if absent.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "departments": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema1"
+                                        },
+                                        "description": "Departments and their jobs grouped under this office; [] is preserved."
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "departments"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Office with its own departments and optional hierarchy members."
+                            },
+                            "__schema1": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "Opaque department identifier."
+                                    },
+                                    "jobs": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Opaque job-post identifier."
+                                                },
+                                                "url": {
+                                                    "description": "Published absolute application URL.",
+                                                    "type": "string"
+                                                },
+                                                "title": {
+                                                    "type": "string",
+                                                    "description": "Published title."
+                                                },
+                                                "language": {
+                                                    "description": "Published language code.",
+                                                    "type": "string"
+                                                },
+                                                "location": {
+                                                    "description": "Published location.name text.",
+                                                    "type": "string"
+                                                },
+                                                "updatedAt": {
+                                                    "description": "Last update instant in UTC Z retaining supplied fractional precision.",
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "title"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Published job-post summary within its office and department grouping."
+                                        },
+                                        "description": "Post summaries grouped under this office and department."
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Department display name."
+                                    },
+                                    "childIds": {
+                                        "description": "Immediate child department IDs, when supplied.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "children": {
+                                        "description": "Child departments when supplied in tree mode.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema1"
+                                        }
+                                    },
+                                    "parentId": {
+                                        "description": "Department's parent ID or null, when supplied.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "jobs",
+                                    "name"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Department hierarchy and jobs grouped under an office."
+                            }
+                        }
+                    },
+                    "FunctionMetadata_greenhouse_job_board_listoffices": {
+                        "type": "object",
+                        "properties": {
+                            "board_token": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Job Board URL token configured for this connection."
+                            }
+                        },
+                        "required": [
+                            "board_token"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to browse opportunities by office or discover office IDs for `get-office`. Use `list-departments` for organization-wide department browsing and `get-job-post` for a post's application form. The default is a flat hierarchy; tree returns nested offices. One call returns the provider's unpaginated collection."
+            },
+            "filePath": "./greenhouse-job-board/tools/list-offices.ts",
+            "version": "6c73d0a2fa55998d4669a1da0849d42f3293da0e1a82dd7bfeefb2ea2f46e572",
+            "location": {
+                "js": "templates-zero/greenhouse-job-board/tools/list-offices/6c73d0a2fa55998d4669a1da0849d42f3293da0e1a82dd7bfeefb2ea2f46e572.cjs",
+                "ts": "templates-zero/greenhouse-job-board/tools/list-offices/6c73d0a2fa55998d4669a1da0849d42f3293da0e1a82dd7bfeefb2ea2f46e572.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-prospect-post-sections",
+            "integrationId": "greenhouse-job-board",
+            "description": "List the board's prospect post sections and the prospect posts grouped in each section.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_greenhouse_job_board_listprospectpostsections",
+            "output_schema_ref": "#/definitions/FunctionOutput_greenhouse_job_board_listprospectpostsections",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_greenhouse_job_board_listprospectpostsections": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "List prospect post sections for the connected board; no input is required."
+                    },
+                    "FunctionOutput_greenhouse_job_board_listprospectpostsections": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque section identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Section display heading."
+                                        },
+                                        "jobs": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Opaque post ID usable with get-job-post."
+                                                    },
+                                                    "title": {
+                                                        "type": "string",
+                                                        "description": "Prospect post title."
+                                                    },
+                                                    "url": {
+                                                        "description": "Published absolute application URL.",
+                                                        "type": "string"
+                                                    },
+                                                    "language": {
+                                                        "description": "Published language code.",
+                                                        "type": "string"
+                                                    },
+                                                    "location": {
+                                                        "description": "Published location.name text.",
+                                                        "type": "string"
+                                                    },
+                                                    "updatedAt": {
+                                                        "description": "Last update instant normalized to UTC Z retaining supplied fractional precision.",
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "title"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A prospect post summary assigned to the section."
+                                            },
+                                            "description": "Prospect posts assigned to this section, not all prospect posts on the board."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "jobs"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A prospect post section and its assigned posts."
+                                },
+                                "description": "Prospect post sections in provider order; [] when none are configured."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete collection of prospect post sections and their grouped post summaries."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover section IDs and build general-interest application pages. Use `get-prospect-post-section` for a known section and `get-job-post` for a prospect post's application form. Sections are not an exhaustive list of all prospect posts: use `list-job-posts` and inspect null internalJobId for that. One call returns the unpaginated section collection."
+            },
+            "filePath": "./greenhouse-job-board/tools/list-prospect-post-sections.ts",
+            "version": "e1ed6602a993318612b57ccc1b5c88ef50c198f038192447bdbd682c913bc58e",
+            "location": {
+                "js": "templates-zero/greenhouse-job-board/tools/list-prospect-post-sections/e1ed6602a993318612b57ccc1b5c88ef50c198f038192447bdbd682c913bc58e.cjs",
+                "ts": "templates-zero/greenhouse-job-board/tools/list-prospect-post-sections/e1ed6602a993318612b57ccc1b5c88ef50c198f038192447bdbd682c913bc58e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-schools",
+            "integrationId": "greenhouse-job-board",
+            "description": "List one page of education schools, optionally matching a school-name substring.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_greenhouse_job_board_listschools",
+            "output_schema_ref": "#/definitions/FunctionOutput_greenhouse_job_board_listschools",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_greenhouse_job_board_listschools": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation for this board's school collection and unchanged filter; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "nameContains": {
+                                "description": "Substring required in school names under provider matching rules; omit for all schools.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Browse one page of schools, optionally continuing an unchanged school-name filter."
+                    },
+                    "FunctionOutput_greenhouse_job_board_listschools": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque school ID for application education history."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "School display name from the provider text field."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A school choice for application education history."
+                                },
+                                "description": "One provider page of school choices in provider order, at most 100 entries."
+                            },
+                            "total": {
+                                "description": "Provider-reported matching school count from meta.total_count when available.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token for the same filter; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of school choices with available provider count and continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to obtain school IDs for `submit-application`. Continue with nextCursor as cursor and the same nameContains filter. The provider fixes pages at 100 entries. Use `list-degrees` and `list-disciplines` for the other education reference IDs."
+            },
+            "filePath": "./greenhouse-job-board/tools/list-schools.ts",
+            "version": "bc0a6a4d8caafe36c943e2eaab4c22bbdd9ced6047adf6532ad682c185ae206c",
+            "location": {
+                "js": "templates-zero/greenhouse-job-board/tools/list-schools/bc0a6a4d8caafe36c943e2eaab4c22bbdd9ced6047adf6532ad682c185ae206c.cjs",
+                "ts": "templates-zero/greenhouse-job-board/tools/list-schools/bc0a6a4d8caafe36c943e2eaab4c22bbdd9ced6047adf6532ad682c185ae206c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "submit-application",
+            "integrationId": "greenhouse-job-board",
+            "description": "Submit a new application to a published job or prospect post, including dynamic answers, attachments, education, employment and explicitly supplied consents. Requires a connection with a Job Board API key.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_greenhouse_job_board_submitapplication",
+            "output_schema_ref": "#/definitions/FunctionOutput_greenhouse_job_board_submitapplication",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_greenhouse_job_board_submitapplication": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 255,
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Applicant's valid email address."
+                            },
+                            "phone": {
+                                "description": "Applicant's phone text, with no URL; omit if not supplied.",
+                                "type": "string"
+                            },
+                            "resume": {
+                                "description": "Applicant's resume as ordinary text, an external file URL or exact binary bytes encoded in base64; omitted if not supplied.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "text": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "Ordinary Unicode plaintext attachment content, not base64."
+                                            }
+                                        },
+                                        "required": [
+                                            "text"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "url": {
+                                                        "type": "string",
+                                                        "pattern": "^https?:\\/\\/",
+                                                        "format": "uri",
+                                                        "description": "HTTP(S) URL from which Greenhouse can retrieve the exact file."
+                                                    },
+                                                    "filename": {
+                                                        "type": "string",
+                                                        "pattern": "\\.(pdf|doc|docx|txt|rtf|PDF|DOC|DOCX|TXT|RTF)$",
+                                                        "description": "File name including a supported pdf, doc, docx, txt or rtf extension."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "url",
+                                                    "filename"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "filename": {
+                                                        "type": "string",
+                                                        "pattern": "\\.(pdf|doc|docx|txt|rtf|PDF|DOC|DOCX|TXT|RTF)$",
+                                                        "description": "File name including a supported attachment extension."
+                                                    },
+                                                    "contentBase64": {
+                                                        "type": "string",
+                                                        "minLength": 4,
+                                                        "contentEncoding": "base64",
+                                                        "description": "Standard base64 of nonempty exact binary file bytes; not used for ordinary text answers."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "filename",
+                                                    "contentBase64"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        ],
+                                        "description": "An external file URL or exact binary file bytes encoded in base64."
+                                    }
+                                ]
+                            },
+                            "answers": {
+                                "description": "Dynamic custom and EEOC field answers using names from get-job-post. Do not duplicate dedicated applicant, attachment or location fields here.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "fieldName": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Exact opaque name from the returned question field, including compliance names where applicable."
+                                        },
+                                        "value": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "Opaque option ID from the current question field."
+                                                    }
+                                                }
+                                            ],
+                                            "description": "Ordinary text for text controls, an opaque option ID for single-select, or option-ID array for multi-select; use [] for an explicitly unanswered multi-select."
+                                        },
+                                        "attachment": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "url": {
+                                                            "type": "string",
+                                                            "pattern": "^https?:\\/\\/",
+                                                            "format": "uri",
+                                                            "description": "HTTP(S) URL from which Greenhouse can retrieve the exact file."
+                                                        },
+                                                        "filename": {
+                                                            "type": "string",
+                                                            "pattern": "\\.(pdf|doc|docx|txt|rtf|PDF|DOC|DOCX|TXT|RTF)$",
+                                                            "description": "File name including a supported pdf, doc, docx, txt or rtf extension."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "url",
+                                                        "filename"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "filename": {
+                                                            "type": "string",
+                                                            "pattern": "\\.(pdf|doc|docx|txt|rtf|PDF|DOC|DOCX|TXT|RTF)$",
+                                                            "description": "File name including a supported attachment extension."
+                                                        },
+                                                        "contentBase64": {
+                                                            "type": "string",
+                                                            "minLength": 4,
+                                                            "contentEncoding": "base64",
+                                                            "description": "Standard base64 of nonempty exact binary file bytes; not used for ordinary text answers."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "filename",
+                                                        "contentBase64"
+                                                    ],
+                                                    "additionalProperties": false
+                                                }
+                                            ],
+                                            "description": "Custom-question file attachment; mutually exclusive with value."
+                                        }
+                                    },
+                                    "required": [
+                                        "fieldName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "anyOf": [
+                                        {
+                                            "not": {
+                                                "properties": {
+                                                    "attachment": {}
+                                                },
+                                                "required": [
+                                                    "attachment"
+                                                ]
+                                            },
+                                            "properties": {
+                                                "value": {
+                                                    "description": "Ordinary text for text controls, an opaque option ID for single-select, or option-ID array for multi-select; use [] for an explicitly unanswered multi-select."
+                                                }
+                                            },
+                                            "required": [
+                                                "value"
+                                            ]
+                                        },
+                                        {
+                                            "not": {
+                                                "properties": {
+                                                    "value": {}
+                                                },
+                                                "required": [
+                                                    "value"
+                                                ]
+                                            },
+                                            "properties": {
+                                                "attachment": {
+                                                    "description": "Custom-question file attachment; mutually exclusive with value."
+                                                }
+                                            },
+                                            "required": [
+                                                "attachment"
+                                            ]
+                                        }
+                                    ],
+                                    "description": "A dynamic field answer with exactly one value or file attachment."
+                                }
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 255,
+                                "description": "Applicant's last name, with no URL."
+                            },
+                            "location": {
+                                "description": "Applicant-selected location with coordinates; omission sends no location. Coordinates should come from the application's location selection, not a question shown to the applicant.",
+                                "type": "object",
+                                "properties": {
+                                    "address": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Applicant's street address or selected location display text."
+                                    },
+                                    "latitude": {
+                                        "type": "number",
+                                        "minimum": -90,
+                                        "maximum": 90,
+                                        "description": "Latitude in decimal degrees."
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "minimum": -180,
+                                        "maximum": 180,
+                                        "description": "Longitude in decimal degrees."
+                                    },
+                                    "countryCode": {
+                                        "description": "Country short name such as US or FR, strongly recommended for fraud checks; omit if unavailable.",
+                                        "type": "string",
+                                        "pattern": "^[A-Z]{2}$"
+                                    }
+                                },
+                                "required": [
+                                    "address",
+                                    "latitude",
+                                    "longitude"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 255,
+                                "description": "Applicant's first name, with no URL."
+                            },
+                            "jobPostId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque job-post ID, not the internal job ID; must belong to the connected board."
+                            },
+                            "educations": {
+                                "description": "Education history; omitted sends no history and [] explicitly supplies an empty history.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "endDate": {
+                                            "type": "object",
+                                            "properties": {
+                                                "year": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 9999,
+                                                    "description": "Four-digit-range calendar year; no timezone conversion."
+                                                },
+                                                "month": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 12,
+                                                    "description": "Calendar month, 1 through 12."
+                                                }
+                                            },
+                                            "required": [
+                                                "year",
+                                                "month"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Education end month and year; must follow startDate."
+                                        },
+                                        "degreeId": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Opaque degree ID from list-degrees."
+                                        },
+                                        "schoolId": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Opaque school ID from list-schools."
+                                        },
+                                        "startDate": {
+                                            "type": "object",
+                                            "properties": {
+                                                "year": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 9999,
+                                                    "description": "Four-digit-range calendar year; no timezone conversion."
+                                                },
+                                                "month": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 12,
+                                                    "description": "Calendar month, 1 through 12."
+                                                }
+                                            },
+                                            "required": [
+                                                "year",
+                                                "month"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Education start month and year, not a timezone-dependent instant."
+                                        },
+                                        "disciplineId": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Opaque discipline ID from list-disciplines."
+                                        }
+                                    },
+                                    "required": [
+                                        "endDate",
+                                        "degreeId",
+                                        "schoolId",
+                                        "startDate",
+                                        "disciplineId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One education record with reference-data IDs and calendar dates."
+                                }
+                            },
+                            "applicantIp": {
+                                "description": "Applicant's actual IPv4 or IPv6 address, if collected; never substitute the integration server's address.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "coverLetter": {
+                                "description": "Applicant's cover letter in one supported representation; omitted if not supplied.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "text": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "Ordinary Unicode plaintext attachment content, not base64."
+                                            }
+                                        },
+                                        "required": [
+                                            "text"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "url": {
+                                                        "type": "string",
+                                                        "pattern": "^https?:\\/\\/",
+                                                        "format": "uri",
+                                                        "description": "HTTP(S) URL from which Greenhouse can retrieve the exact file."
+                                                    },
+                                                    "filename": {
+                                                        "type": "string",
+                                                        "pattern": "\\.(pdf|doc|docx|txt|rtf|PDF|DOC|DOCX|TXT|RTF)$",
+                                                        "description": "File name including a supported pdf, doc, docx, txt or rtf extension."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "url",
+                                                    "filename"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "filename": {
+                                                        "type": "string",
+                                                        "pattern": "\\.(pdf|doc|docx|txt|rtf|PDF|DOC|DOCX|TXT|RTF)$",
+                                                        "description": "File name including a supported attachment extension."
+                                                    },
+                                                    "contentBase64": {
+                                                        "type": "string",
+                                                        "minLength": 4,
+                                                        "contentEncoding": "base64",
+                                                        "description": "Standard base64 of nonempty exact binary file bytes; not used for ordinary text answers."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "filename",
+                                                    "contentBase64"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        ],
+                                        "description": "An external file URL or exact binary file bytes encoded in base64."
+                                    }
+                                ]
+                            },
+                            "employments": {
+                                "description": "Employment history, preserving omission versus an explicitly empty array.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Applicant's role title."
+                                        },
+                                        "current": {
+                                            "type": "boolean",
+                                            "description": "True if still employed in this role."
+                                        },
+                                        "endDate": {
+                                            "description": "End month and year; required when current is false and must follow startDate.",
+                                            "type": "object",
+                                            "properties": {
+                                                "year": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 9999,
+                                                    "description": "Four-digit-range calendar year; no timezone conversion."
+                                                },
+                                                "month": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 12,
+                                                    "description": "Calendar month, 1 through 12."
+                                                }
+                                            },
+                                            "required": [
+                                                "year",
+                                                "month"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "startDate": {
+                                            "type": "object",
+                                            "properties": {
+                                                "year": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 9999,
+                                                    "description": "Four-digit-range calendar year; no timezone conversion."
+                                                },
+                                                "month": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 12,
+                                                    "description": "Calendar month, 1 through 12."
+                                                }
+                                            },
+                                            "required": [
+                                                "year",
+                                                "month"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Employment start month and year."
+                                        },
+                                        "companyName": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Employer name."
+                                        }
+                                    },
+                                    "required": [
+                                        "title",
+                                        "current",
+                                        "startDate",
+                                        "companyName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "if": {
+                                        "required": [
+                                            "current"
+                                        ],
+                                        "properties": {
+                                            "current": {
+                                                "const": false
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "required": [
+                                            "endDate"
+                                        ],
+                                        "properties": {
+                                            "endDate": true
+                                        }
+                                    },
+                                    "description": "One employment record; a completed role requires an end date."
+                                }
+                            },
+                            "referralToken": {
+                                "description": "Original gh_src referral-source token when present; omit when unknown.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "dataCompliance": {
+                                "description": "Applicant's actual consent decisions. Omitted properties are not defaulted to true or false.",
+                                "type": "object",
+                                "properties": {
+                                    "consentGiven": {
+                                        "description": "Legacy combined GDPR consent, used only without single-purpose consent configuration.",
+                                        "type": "boolean"
+                                    },
+                                    "retentionConsentGiven": {
+                                        "description": "Explicit GDPR retention-consent answer.",
+                                        "type": "boolean"
+                                    },
+                                    "processingConsentGiven": {
+                                        "description": "Explicit GDPR processing-consent answer.",
+                                        "type": "boolean"
+                                    },
+                                    "demographicDataConsentGiven": {
+                                        "description": "Explicit consent to process demographic survey data.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "demographicAnswers": {
+                                "description": "Explicitly volunteered demographic answers. Omit the survey when no answers were supplied.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "questionId": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Opaque demographic question ID from get-job-post."
+                                        },
+                                        "answerOptions": {
+                                            "description": "Selected options; omission, null and [] each mean no selections and are preserved in transport.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "text": {
+                                                                "description": "Applicant-entered free-form response for an option supporting it.",
+                                                                "type": "string"
+                                                            },
+                                                            "answerOptionId": {
+                                                                "type": "string",
+                                                                "minLength": 1,
+                                                                "description": "Opaque option ID belonging to this question."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "answerOptionId"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "A selected demographic option and any applicant-entered text."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "questionId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An explicitly volunteered demographic answer."
+                                }
+                            }
+                        },
+                        "required": [
+                            "email",
+                            "lastName",
+                            "firstName",
+                            "jobPostId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Applicant-supplied application details, answers, attachments, history and explicit consent decisions."
+                    },
+                    "FunctionOutput_greenhouse_job_board_submitapplication": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "const": "accepted",
+                                "description": "The provider acknowledged the submission; does not establish recipient delivery, candidate identity or recruiting progress."
+                            },
+                            "jobPostId": {
+                                "type": "string",
+                                "description": "Post ID to which this application was submitted."
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "jobPostId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of API acceptance, not delivery or recruiting progress."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use `get-job-post` first to review the form, required groups, consent requirements and disclosures; get post IDs from `list-job-posts`. Obtain actual applicant answers and consent—never infer them. Use `list-schools`, `list-degrees` and `list-disciplines` for education IDs. Submission creates an application and may trigger recruiting workflows. The result confirms API acceptance only, not delivery or hiring progress. Do not blindly repeat a submission with an uncertain outcome; this API has no documented replay protection."
+            },
+            "filePath": "./greenhouse-job-board/tools/submit-application.ts",
+            "version": "48a24ca500c851e4c086e9a2da6a1241ef6dcf489fcd088720da55afc89597b0",
+            "location": {
+                "js": "templates-zero/greenhouse-job-board/tools/submit-application/48a24ca500c851e4c086e9a2da6a1241ef6dcf489fcd088720da55afc89597b0.cjs",
+                "ts": "templates-zero/greenhouse-job-board/tools/submit-application/48a24ca500c851e4c086e9a2da6a1241ef6dcf489fcd088720da55afc89597b0.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

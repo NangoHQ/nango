@@ -1,0 +1,3034 @@
+{
+    "providerConfigKey": "whoop",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the connected user's body measurements available as a connection-scoped singleton record.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-body-measurements",
+            "output": [
+                "BodyMeasurement"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "read:body_measurement"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "BodyMeasurement"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "BodyMeasurement": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "const": "body-measurements",
+                                "description": "Fixed connection-scoped singleton record key, not a WHOOP resource ID."
+                            },
+                            "heightMeters": {
+                                "type": "number",
+                                "description": "User height in meters."
+                            },
+                            "weightKilograms": {
+                                "type": "number",
+                                "description": "User weight in kilograms."
+                            },
+                            "maxHeartRate": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Maximum heart rate WHOOP calculated for this user."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "heightMeters",
+                            "weightKilograms",
+                            "maxHeartRate"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected user's current body measurements as a connection-scoped singleton record."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected user's physiological cycles, evaluation state, strain, energy, heart rate and steps available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-cycles",
+            "output": [
+                "Cycle"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "read:cycles"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Cycle"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Cycle": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Physiological cycle identifier."
+                            },
+                            "end": {
+                                "description": "Cycle end in UTC; absent for the current cycle.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "score": {
+                                "description": "WHOOP evaluation, absent unless scored.",
+                                "type": "object",
+                                "properties": {
+                                    "strain": {
+                                        "type": "number",
+                                        "description": "Cardiovascular strain on the WHOOP 0–21 scale."
+                                    },
+                                    "maxHeartRate": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Maximum heart rate in the cycle."
+                                    },
+                                    "averageHeartRate": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Average heart rate in the cycle."
+                                    },
+                                    "energyKilojoules": {
+                                        "type": "number",
+                                        "description": "Energy expenditure in kilojoules."
+                                    }
+                                },
+                                "required": [
+                                    "strain",
+                                    "maxHeartRate",
+                                    "averageHeartRate",
+                                    "energyKilojoules"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "start": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Cycle start instant in UTC."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "WHOOP user identifier."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Time recorded in WHOOP, in UTC."
+                            },
+                            "stepCount": {
+                                "description": "Cycle steps; null means no data, distinct from zero and absence.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last WHOOP update instant in UTC."
+                            },
+                            "scoreState": {
+                                "type": "string",
+                                "enum": [
+                                    "SCORED",
+                                    "PENDING_SCORE",
+                                    "UNSCORABLE"
+                                ],
+                                "description": "Whether evaluation is available, pending or impossible."
+                            },
+                            "timezoneOffset": {
+                                "type": "string",
+                                "description": "Recorded user UTC offset, not an IANA timezone."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "start",
+                            "userId",
+                            "createdAt",
+                            "updatedAt",
+                            "scoreState",
+                            "timezoneOffset"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected user's physiological cycle, evaluation state, strain, energy, heart rate and steps."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected user's cycle recoveries available with readiness, calibration state and available health measurements.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-recoveries",
+            "output": [
+                "Recovery"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "read:recovery"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Recovery"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Recovery": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Recovery record key equal to cycleId; not a separate provider ID."
+                            },
+                            "score": {
+                                "description": "Recovery evaluation, absent unless scored.",
+                                "type": "object",
+                                "properties": {
+                                    "spo2Percentage": {
+                                        "description": "Blood oxygen percentage when available.",
+                                        "type": "number"
+                                    },
+                                    "userCalibrating": {
+                                        "type": "boolean",
+                                        "description": "True while calibration data is insufficient."
+                                    },
+                                    "restingHeartRate": {
+                                        "type": "number",
+                                        "description": "Resting heart rate reported by WHOOP."
+                                    },
+                                    "recoveryPercentage": {
+                                        "type": "number",
+                                        "description": "Readiness percentage on a 0–100 scale."
+                                    },
+                                    "hrvRmssdMilliseconds": {
+                                        "type": "number",
+                                        "description": "RMSSD heart-rate variability in milliseconds."
+                                    },
+                                    "skinTemperatureCelsius": {
+                                        "description": "Skin temperature in degrees Celsius when available.",
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "userCalibrating",
+                                    "restingHeartRate",
+                                    "recoveryPercentage",
+                                    "hrvRmssdMilliseconds"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "WHOOP user identifier."
+                            },
+                            "cycleId": {
+                                "type": "string",
+                                "description": "Physiological cycle described by this recovery."
+                            },
+                            "sleepId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "Associated sleep UUID."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Time recorded in WHOOP, in UTC."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last WHOOP update instant in UTC."
+                            },
+                            "scoreState": {
+                                "type": "string",
+                                "enum": [
+                                    "SCORED",
+                                    "PENDING_SCORE",
+                                    "UNSCORABLE"
+                                ],
+                                "description": "Availability of WHOOP evaluation."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "userId",
+                            "cycleId",
+                            "sleepId",
+                            "createdAt",
+                            "updatedAt",
+                            "scoreState"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected user's cycle recovery, readiness, calibration state and available health measurements."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected user's sleep activities and naps available with stage durations, sleep need and available evaluations.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-sleeps",
+            "output": [
+                "Sleep"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "read:sleep"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Sleep"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Sleep": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "Sleep activity UUID."
+                            },
+                            "cycleId": {
+                                "type": "string",
+                                "description": "Associated physiological cycle ID."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "WHOOP user identifier."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Time recorded in WHOOP, normalized to UTC."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last WHOOP update instant in UTC."
+                            },
+                            "start": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Sleep start instant in UTC."
+                            },
+                            "end": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Sleep end instant in UTC."
+                            },
+                            "timezoneOffset": {
+                                "type": "string",
+                                "description": "User offset when recorded, preserved separately from UTC instants."
+                            },
+                            "nap": {
+                                "type": "boolean",
+                                "description": "True if the activity was a nap."
+                            },
+                            "scoreState": {
+                                "type": "string",
+                                "enum": [
+                                    "SCORED",
+                                    "PENDING_SCORE",
+                                    "UNSCORABLE"
+                                ],
+                                "description": "Availability of WHOOP evaluation."
+                            },
+                            "legacyActivityId": {
+                                "description": "Previous-generation activity ID, only if supplied.",
+                                "type": "string"
+                            },
+                            "score": {
+                                "description": "Evaluation, absent unless scored.",
+                                "type": "object",
+                                "properties": {
+                                    "sleepNeeded": {
+                                        "type": "object",
+                                        "properties": {
+                                            "baselineMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Historical baseline sleep need in milliseconds."
+                                            },
+                                            "recentNapMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Recent nap reduction in milliseconds, negative or zero."
+                                            },
+                                            "recentStrainMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Additional need from strain in milliseconds."
+                                            },
+                                            "sleepDebtMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Sleep-debt component in milliseconds."
+                                            }
+                                        },
+                                        "required": [
+                                            "baselineMilliseconds",
+                                            "recentNapMilliseconds",
+                                            "recentStrainMilliseconds",
+                                            "sleepDebtMilliseconds"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Signed components in milliseconds, summing to total sleep need."
+                                    },
+                                    "stageSummary": {
+                                        "type": "object",
+                                        "properties": {
+                                            "inBedMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Time in bed in milliseconds."
+                                            },
+                                            "awakeMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Awake time in milliseconds."
+                                            },
+                                            "noDataMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Time without data in milliseconds."
+                                            },
+                                            "lightSleepMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Light sleep time in milliseconds."
+                                            },
+                                            "slowWaveSleepMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Slow-wave sleep time in milliseconds."
+                                            },
+                                            "remSleepMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "REM sleep time in milliseconds."
+                                            },
+                                            "sleepCycleCount": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Number of sleep cycles."
+                                            },
+                                            "disturbanceCount": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Number of disturbances."
+                                            }
+                                        },
+                                        "required": [
+                                            "inBedMilliseconds",
+                                            "awakeMilliseconds",
+                                            "noDataMilliseconds",
+                                            "lightSleepMilliseconds",
+                                            "slowWaveSleepMilliseconds",
+                                            "remSleepMilliseconds",
+                                            "sleepCycleCount",
+                                            "disturbanceCount"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Sleep stage durations and event counts."
+                                    },
+                                    "respiratoryRate": {
+                                        "description": "Respiratory rate in WHOOP's reported rate unit.",
+                                        "type": "number"
+                                    },
+                                    "sleepEfficiencyPercentage": {
+                                        "description": "In-bed time spent asleep as a percentage, 0–100 scale.",
+                                        "type": "number"
+                                    },
+                                    "sleepConsistencyPercentage": {
+                                        "description": "Timing consistency percentage, omitted when unavailable.",
+                                        "type": "number"
+                                    },
+                                    "sleepPerformancePercentage": {
+                                        "description": "Time asleep relative to need as a percentage, omitted when unavailable.",
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "sleepNeeded",
+                                    "stageSummary"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "cycleId",
+                            "userId",
+                            "createdAt",
+                            "updatedAt",
+                            "start",
+                            "end",
+                            "timezoneOffset",
+                            "nap",
+                            "scoreState"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected user's sleep activity or nap, with stage durations, sleep need and available evaluations."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected user's basic profile available as a singleton record keyed by WHOOP user ID.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-user-profile",
+            "output": [
+                "UserProfile"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "read:profile"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "UserProfile"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "UserProfile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "WHOOP user identifier."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "User email as reported by WHOOP."
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "description": "User first name, preserving Unicode and empty strings."
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "description": "User last name, preserving Unicode and empty strings."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected user's basic WHOOP profile, keyed by WHOOP user ID."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make the connected user's workouts available with sport, strain, energy, heart rate, zone durations and available distance and altitude measurements.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-workouts",
+            "output": [
+                "Workout"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "read:workout"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Workout"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Workout": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "Workout UUID."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "WHOOP user identifier."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Time recorded in WHOOP, in UTC."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last WHOOP update instant in UTC."
+                            },
+                            "start": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Workout start instant in UTC."
+                            },
+                            "end": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Workout end instant in UTC."
+                            },
+                            "timezoneOffset": {
+                                "type": "string",
+                                "description": "Recorded user UTC offset, not an IANA timezone."
+                            },
+                            "sportName": {
+                                "type": "string",
+                                "description": "Sport name reported by WHOOP."
+                            },
+                            "scoreState": {
+                                "type": "string",
+                                "enum": [
+                                    "SCORED",
+                                    "PENDING_SCORE",
+                                    "UNSCORABLE"
+                                ],
+                                "description": "Availability of evaluation."
+                            },
+                            "legacyActivityId": {
+                                "description": "Previous-generation activity ID when supplied.",
+                                "type": "string"
+                            },
+                            "legacySportId": {
+                                "description": "Previous-generation sport ID when supplied.",
+                                "type": "string"
+                            },
+                            "score": {
+                                "description": "Workout evaluation, absent unless scored.",
+                                "type": "object",
+                                "properties": {
+                                    "strain": {
+                                        "type": "number",
+                                        "description": "WHOOP cardiovascular strain, 0–21 scale."
+                                    },
+                                    "averageHeartRate": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Average heart rate in beats per minute."
+                                    },
+                                    "maxHeartRate": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Maximum heart rate in beats per minute."
+                                    },
+                                    "energyKilojoules": {
+                                        "type": "number",
+                                        "description": "Energy expended in kilojoules."
+                                    },
+                                    "recordedPercentage": {
+                                        "type": "number",
+                                        "description": "Heart-rate data received as a percentage, 0–100 scale."
+                                    },
+                                    "zoneDurations": {
+                                        "type": "object",
+                                        "properties": {
+                                            "zoneZeroMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 0, very light activity."
+                                            },
+                                            "zoneOneMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 1, light activity."
+                                            },
+                                            "zoneTwoMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 2, moderate activity."
+                                            },
+                                            "zoneThreeMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 3, hard activity."
+                                            },
+                                            "zoneFourMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 4, very hard activity."
+                                            },
+                                            "zoneFiveMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 5, maximum effort."
+                                            }
+                                        },
+                                        "required": [
+                                            "zoneZeroMilliseconds",
+                                            "zoneOneMilliseconds",
+                                            "zoneTwoMilliseconds",
+                                            "zoneThreeMilliseconds",
+                                            "zoneFourMilliseconds",
+                                            "zoneFiveMilliseconds"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Time in each heart-rate zone in milliseconds."
+                                    },
+                                    "distanceMeters": {
+                                        "description": "Distance travelled in meters, omitted when unavailable.",
+                                        "type": "number"
+                                    },
+                                    "altitudeGainMeters": {
+                                        "description": "Upward-only altitude gain in meters, omitted when unavailable.",
+                                        "type": "number"
+                                    },
+                                    "altitudeChangeMeters": {
+                                        "description": "Signed net altitude change in meters, omitted when unavailable.",
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "strain",
+                                    "averageHeartRate",
+                                    "maxHeartRate",
+                                    "energyKilojoules",
+                                    "recordedPercentage",
+                                    "zoneDurations"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "userId",
+                            "createdAt",
+                            "updatedAt",
+                            "start",
+                            "end",
+                            "timezoneOffset",
+                            "sportName",
+                            "scoreState"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Workout with sport, scoring, heart-rate zones, and available distance and altitude measurements."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "get-activity-id-mapping",
+            "integrationId": "whoop",
+            "description": "Look up the current activity UUID corresponding to a legacy WHOOP activity ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_getactivityidmapping",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_getactivityidmapping",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_getactivityidmapping": {
+                        "type": "object",
+                        "properties": {
+                            "legacyActivityId": {
+                                "type": "string",
+                                "maxLength": 19,
+                                "pattern": "^[0-9]+$",
+                                "description": "Legacy activity ID as opaque decimal digits, not a timestamp."
+                            }
+                        },
+                        "required": [
+                            "legacyActivityId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Legacy WHOOP activity identifier to look up."
+                    },
+                    "FunctionOutput_whoop_getactivityidmapping": {
+                        "type": "object",
+                        "properties": {
+                            "activityId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "Current activity UUID; activity type is not supplied by this lookup."
+                            }
+                        },
+                        "required": [
+                            "activityId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current WHOOP activity identifier corresponding to the legacy ID."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this when migrating a stored legacy activity ID. Use the returned UUID with `get-sleep` or `get-workout` when you already know the activity's type; the mapping does not identify that type."
+            },
+            "filePath": "./whoop/tools/get-activity-id-mapping.ts",
+            "version": "771e3439288fda42f3138020a208b56c472ab28dc8cca9d75436260f47791f2a",
+            "location": {
+                "js": "templates-zero/whoop/tools/get-activity-id-mapping/771e3439288fda42f3138020a208b56c472ab28dc8cca9d75436260f47791f2a.cjs",
+                "ts": "templates-zero/whoop/tools/get-activity-id-mapping/771e3439288fda42f3138020a208b56c472ab28dc8cca9d75436260f47791f2a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-body-measurements",
+            "integrationId": "whoop",
+            "description": "Get the connected user's height, weight and WHOOP-calculated maximum heart rate.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_getbodymeasurements",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_getbodymeasurements",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_getbodymeasurements": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No parameters are needed for the connected user."
+                    },
+                    "FunctionOutput_whoop_getbodymeasurements": {
+                        "type": "object",
+                        "properties": {
+                            "heightMeters": {
+                                "type": "number",
+                                "description": "User height in meters."
+                            },
+                            "weightKilograms": {
+                                "type": "number",
+                                "description": "User weight in kilograms."
+                            },
+                            "maxHeartRate": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Maximum heart rate calculated by WHOOP for the user."
+                            }
+                        },
+                        "required": [
+                            "heightMeters",
+                            "weightKilograms",
+                            "maxHeartRate"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected user's body measurements in SI units and WHOOP-calculated maximum heart rate."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for the current connected user's body measurements; no user ID is needed. Use `get-user-profile` for name and email. Maximum heart rate here is a user measurement, not a workout's observed maximum.",
+                "required_scopes": {
+                    "all": [
+                        "read:body_measurement"
+                    ]
+                }
+            },
+            "filePath": "./whoop/tools/get-body-measurements.ts",
+            "version": "cc6e8e81ff0044379a863d8bbf4d731e9ee1274902c94a23ab4263206aa175f9",
+            "location": {
+                "js": "templates-zero/whoop/tools/get-body-measurements/cc6e8e81ff0044379a863d8bbf4d731e9ee1274902c94a23ab4263206aa175f9.cjs",
+                "ts": "templates-zero/whoop/tools/get-body-measurements/cc6e8e81ff0044379a863d8bbf4d731e9ee1274902c94a23ab4263206aa175f9.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-cycle",
+            "integrationId": "whoop",
+            "description": "Get a physiological cycle and its available strain, energy and heart-rate measurements.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_getcycle",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_getcycle",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_getcycle": {
+                        "type": "object",
+                        "properties": {
+                            "cycleId": {
+                                "type": "string",
+                                "maxLength": 19,
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque cycle ID returned by list-cycles; decimal digits are preserved exactly."
+                            }
+                        },
+                        "required": [
+                            "cycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The physiological cycle to retrieve."
+                    },
+                    "FunctionOutput_whoop_getcycle": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Physiological cycle identifier."
+                            },
+                            "end": {
+                                "description": "Cycle end in UTC; absent for the current cycle.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "score": {
+                                "description": "Evaluation present only when scored.",
+                                "type": "object",
+                                "properties": {
+                                    "strain": {
+                                        "type": "number",
+                                        "description": "WHOOP cardiovascular strain, 0–21."
+                                    },
+                                    "maxHeartRate": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Maximum heart rate during the cycle."
+                                    },
+                                    "averageHeartRate": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Average heart rate during the cycle."
+                                    },
+                                    "energyKilojoules": {
+                                        "type": "number",
+                                        "description": "Energy expenditure in kilojoules."
+                                    }
+                                },
+                                "required": [
+                                    "strain",
+                                    "maxHeartRate",
+                                    "averageHeartRate",
+                                    "energyKilojoules"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "start": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Cycle start instant in UTC."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "WHOOP user identifier."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Time recorded in WHOOP, in UTC."
+                            },
+                            "stepCount": {
+                                "description": "Steps; null means no data, distinct from zero or absence.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last WHOOP update instant in UTC."
+                            },
+                            "scoreState": {
+                                "type": "string",
+                                "enum": [
+                                    "SCORED",
+                                    "PENDING_SCORE",
+                                    "UNSCORABLE"
+                                ],
+                                "description": "Measurement evaluation state."
+                            },
+                            "timezoneOffset": {
+                                "type": "string",
+                                "description": "User offset when recorded, preserved separately from UTC instants."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "start",
+                            "userId",
+                            "createdAt",
+                            "updatedAt",
+                            "scoreState",
+                            "timezoneOffset"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A physiological cycle and its available strain, energy and heart-rate measurements."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a cycle ID from `list-cycles`. Use `get-recovery` or `get-sleep` for the cycle's recovery or sleep instead. An unfinished cycle can lack end and an unscored cycle lacks measurements.",
+                "required_scopes": {
+                    "all": [
+                        "read:cycles"
+                    ]
+                }
+            },
+            "filePath": "./whoop/tools/get-cycle.ts",
+            "version": "22ddfe162c0e25455770d351445e0c97efedef367cb1b00b1b3240947e63d3c5",
+            "location": {
+                "js": "templates-zero/whoop/tools/get-cycle/22ddfe162c0e25455770d351445e0c97efedef367cb1b00b1b3240947e63d3c5.cjs",
+                "ts": "templates-zero/whoop/tools/get-cycle/22ddfe162c0e25455770d351445e0c97efedef367cb1b00b1b3240947e63d3c5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-recovery",
+            "integrationId": "whoop",
+            "description": "Get the recovery associated with a physiological cycle and its available readiness and health measurements.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_getrecovery",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_getrecovery",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_getrecovery": {
+                        "type": "object",
+                        "properties": {
+                            "cycleId": {
+                                "type": "string",
+                                "maxLength": 19,
+                                "pattern": "^[0-9]+$",
+                                "description": "Physiological cycle ID whose recovery should be returned."
+                            }
+                        },
+                        "required": [
+                            "cycleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Physiological cycle whose recovery should be retrieved."
+                    },
+                    "FunctionOutput_whoop_getrecovery": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Recovery record key, equal to its cycle ID; not a separate provider recovery ID."
+                            },
+                            "score": {
+                                "description": "Recovery evaluation, absent unless scored.",
+                                "type": "object",
+                                "properties": {
+                                    "spo2Percentage": {
+                                        "description": "Blood oxygen percentage, omitted when unavailable.",
+                                        "type": "number"
+                                    },
+                                    "userCalibrating": {
+                                        "type": "boolean",
+                                        "description": "True while WHOOP lacks enough calibration data for accurate recovery."
+                                    },
+                                    "restingHeartRate": {
+                                        "type": "number",
+                                        "description": "Resting heart rate reported by WHOOP."
+                                    },
+                                    "recoveryPercentage": {
+                                        "type": "number",
+                                        "description": "Readiness to take on strain as a percentage, 0–100 scale."
+                                    },
+                                    "hrvRmssdMilliseconds": {
+                                        "type": "number",
+                                        "description": "RMSSD heart-rate variability in milliseconds."
+                                    },
+                                    "skinTemperatureCelsius": {
+                                        "description": "Skin temperature in degrees Celsius, omitted when unavailable.",
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "userCalibrating",
+                                    "restingHeartRate",
+                                    "recoveryPercentage",
+                                    "hrvRmssdMilliseconds"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "WHOOP user identifier."
+                            },
+                            "cycleId": {
+                                "type": "string",
+                                "description": "Cycle this recovery describes."
+                            },
+                            "sleepId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "Sleep associated with this recovery."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Time recorded in WHOOP, in UTC."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last WHOOP update in UTC."
+                            },
+                            "scoreState": {
+                                "type": "string",
+                                "enum": [
+                                    "SCORED",
+                                    "PENDING_SCORE",
+                                    "UNSCORABLE"
+                                ],
+                                "description": "Availability of WHOOP evaluation."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "userId",
+                            "cycleId",
+                            "sleepId",
+                            "createdAt",
+                            "updatedAt",
+                            "scoreState"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Cycle-based recovery record and its available readiness and health measurements."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a cycle ID from `list-cycles` or `list-recoveries`. Recovery is addressed by cycle, not by a separate recovery UUID. Use `list-recoveries` to browse. Pending or unscorable records have no score.",
+                "required_scopes": {
+                    "all": [
+                        "read:recovery"
+                    ]
+                }
+            },
+            "filePath": "./whoop/tools/get-recovery.ts",
+            "version": "1c488c236e4fa7fb1aac84d31b2a4d0fb805d7447c13b542a2a6708a5c16ab7c",
+            "location": {
+                "js": "templates-zero/whoop/tools/get-recovery/1c488c236e4fa7fb1aac84d31b2a4d0fb805d7447c13b542a2a6708a5c16ab7c.cjs",
+                "ts": "templates-zero/whoop/tools/get-recovery/1c488c236e4fa7fb1aac84d31b2a4d0fb805d7447c13b542a2a6708a5c16ab7c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-sleep",
+            "integrationId": "whoop",
+            "description": "Get a sleep activity by its sleep ID, or retrieve the sleep associated with a known physiological cycle.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_getsleep",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_getsleep",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_getsleep": {
+                        "anyOf": [
+                            {
+                                "not": {
+                                    "properties": {
+                                        "cycleId": {}
+                                    },
+                                    "required": [
+                                        "cycleId"
+                                    ]
+                                },
+                                "properties": {
+                                    "sleepId": {
+                                        "description": "Sleep activity UUID; use instead of cycleId when known."
+                                    }
+                                },
+                                "required": [
+                                    "sleepId"
+                                ]
+                            },
+                            {
+                                "not": {
+                                    "properties": {
+                                        "sleepId": {}
+                                    },
+                                    "required": [
+                                        "sleepId"
+                                    ]
+                                },
+                                "properties": {
+                                    "cycleId": {
+                                        "description": "Physiological cycle ID whose associated sleep should be retrieved; use instead of sleepId."
+                                    }
+                                },
+                                "required": [
+                                    "cycleId"
+                                ]
+                            }
+                        ],
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "cycleId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "maxLength": 19,
+                                "description": "Physiological cycle ID whose associated sleep should be retrieved; use instead of sleepId."
+                            },
+                            "sleepId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "description": "Sleep activity UUID; use instead of cycleId when known."
+                            }
+                        },
+                        "description": "Exactly one sleep activity UUID or physiological cycle ID to look up."
+                    },
+                    "FunctionOutput_whoop_getsleep": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "Sleep activity identifier."
+                            },
+                            "cycleId": {
+                                "type": "string",
+                                "description": "Cycle this sleep belongs to."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "WHOOP user who performed the sleep."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Time recorded in WHOOP, in UTC."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last WHOOP update in UTC."
+                            },
+                            "start": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Sleep start instant in UTC."
+                            },
+                            "end": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Sleep end instant in UTC."
+                            },
+                            "timezoneOffset": {
+                                "type": "string",
+                                "description": "Recorded user offset, preserved separately from UTC instants."
+                            },
+                            "nap": {
+                                "type": "boolean",
+                                "description": "True if the activity was a nap."
+                            },
+                            "scoreState": {
+                                "type": "string",
+                                "enum": [
+                                    "SCORED",
+                                    "PENDING_SCORE",
+                                    "UNSCORABLE"
+                                ],
+                                "description": "Availability state of WHOOP's evaluation."
+                            },
+                            "legacyActivityId": {
+                                "description": "Previous-generation activity ID, only when WHOOP still supplies it.",
+                                "type": "string"
+                            },
+                            "score": {
+                                "description": "Sleep evaluation; absent unless scored.",
+                                "type": "object",
+                                "properties": {
+                                    "sleepNeeded": {
+                                        "type": "object",
+                                        "properties": {
+                                            "baselineMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Baseline sleep need in milliseconds."
+                                            },
+                                            "recentNapMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Reduction from recent naps in milliseconds; negative or zero."
+                                            },
+                                            "sleepDebtMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Sleep-debt component in milliseconds."
+                                            },
+                                            "recentStrainMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Additional need from recent strain in milliseconds."
+                                            }
+                                        },
+                                        "required": [
+                                            "baselineMilliseconds",
+                                            "recentNapMilliseconds",
+                                            "sleepDebtMilliseconds",
+                                            "recentStrainMilliseconds"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Signed sleep-need components in milliseconds; sum gives total sleep need."
+                                    },
+                                    "stageSummary": {
+                                        "type": "object",
+                                        "properties": {
+                                            "sleepCycleCount": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Number of sleep cycles."
+                                            },
+                                            "disturbanceCount": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Number of disturbances."
+                                            },
+                                            "awakeMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Awake duration in milliseconds."
+                                            },
+                                            "inBedMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Total time in bed in milliseconds."
+                                            },
+                                            "noDataMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Duration with no WHOOP data in milliseconds."
+                                            },
+                                            "remSleepMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "REM sleep duration in milliseconds."
+                                            },
+                                            "lightSleepMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Light sleep duration in milliseconds."
+                                            },
+                                            "slowWaveSleepMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Slow-wave sleep duration in milliseconds."
+                                            }
+                                        },
+                                        "required": [
+                                            "sleepCycleCount",
+                                            "disturbanceCount",
+                                            "awakeMilliseconds",
+                                            "inBedMilliseconds",
+                                            "noDataMilliseconds",
+                                            "remSleepMilliseconds",
+                                            "lightSleepMilliseconds",
+                                            "slowWaveSleepMilliseconds"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Sleep stage durations and event counts."
+                                    },
+                                    "respiratoryRate": {
+                                        "description": "WHOOP respiratory rate during sleep, in the provider's reported rate unit.",
+                                        "type": "number"
+                                    },
+                                    "sleepEfficiencyPercentage": {
+                                        "description": "Percentage of time in bed spent asleep, on a 0–100 scale.",
+                                        "type": "number"
+                                    },
+                                    "sleepConsistencyPercentage": {
+                                        "description": "Sleep timing consistency percentage, omitted when unavailable.",
+                                        "type": "number"
+                                    },
+                                    "sleepPerformancePercentage": {
+                                        "description": "Time asleep relative to sleep need as a percentage, omitted when unavailable.",
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "sleepNeeded",
+                                    "stageSummary"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "cycleId",
+                            "userId",
+                            "createdAt",
+                            "updatedAt",
+                            "start",
+                            "end",
+                            "timezoneOffset",
+                            "nap",
+                            "scoreState"
+                        ],
+                        "additionalProperties": false,
+                        "description": "WHOOP sleep activity with UTC instants, exact identifiers, and available sleep evaluation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a sleep ID from `list-sleeps`, or a cycle ID from `list-cycles`; provide exactly one. Use `list-sleeps` to browse activities including naps. A pending or unscorable sleep has no score.",
+                "required_scopes": {
+                    "all": [
+                        "read:sleep"
+                    ]
+                }
+            },
+            "filePath": "./whoop/tools/get-sleep.ts",
+            "version": "f74ee5718ef4288abb5d34c8bea963ab7a4465d0843fe14b4532b71685074a4f",
+            "location": {
+                "js": "templates-zero/whoop/tools/get-sleep/f74ee5718ef4288abb5d34c8bea963ab7a4465d0843fe14b4532b71685074a4f.cjs",
+                "ts": "templates-zero/whoop/tools/get-sleep/f74ee5718ef4288abb5d34c8bea963ab7a4465d0843fe14b4532b71685074a4f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-user-profile",
+            "integrationId": "whoop",
+            "description": "Get the connected user's basic WHOOP profile, including name and email.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_getuserprofile",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_getuserprofile",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_getuserprofile": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is needed; the connection selects the authenticated WHOOP user."
+                    },
+                    "FunctionOutput_whoop_getuserprofile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "WHOOP user identifier."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "User email address as reported by WHOOP."
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "description": "User's first name, preserving Unicode and empty text if supplied."
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "description": "User's last name, preserving Unicode and empty text if supplied."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected user's basic WHOOP profile."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to identify the connected user; no user ID is needed. Use `get-body-measurements` for height, weight and calculated maximum heart rate.",
+                "required_scopes": {
+                    "all": [
+                        "read:profile"
+                    ]
+                }
+            },
+            "filePath": "./whoop/tools/get-user-profile.ts",
+            "version": "1ee39209a3ded363f6a484ae7a729d19a5c933a63f8b160db9b256a5cf3bb3ac",
+            "location": {
+                "js": "templates-zero/whoop/tools/get-user-profile/1ee39209a3ded363f6a484ae7a729d19a5c933a63f8b160db9b256a5cf3bb3ac.cjs",
+                "ts": "templates-zero/whoop/tools/get-user-profile/1ee39209a3ded363f6a484ae7a729d19a5c933a63f8b160db9b256a5cf3bb3ac.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-workout",
+            "integrationId": "whoop",
+            "description": "Get a workout with its sport, interval and available strain, energy, distance, altitude and heart-rate-zone measurements.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_getworkout",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_getworkout",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_getworkout": {
+                        "type": "object",
+                        "properties": {
+                            "workoutId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "UUID of the workout to retrieve."
+                            }
+                        },
+                        "required": [
+                            "workoutId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the workout to retrieve."
+                    },
+                    "FunctionOutput_whoop_getworkout": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "description": "Workout activity UUID."
+                            },
+                            "userId": {
+                                "type": "string",
+                                "description": "WHOOP user who performed the workout."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Time recorded in WHOOP, in UTC."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last WHOOP update instant in UTC."
+                            },
+                            "start": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Workout start in UTC."
+                            },
+                            "end": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Workout end in UTC."
+                            },
+                            "timezoneOffset": {
+                                "type": "string",
+                                "description": "Recorded user offset, preserved separately from UTC instants."
+                            },
+                            "sportName": {
+                                "type": "string",
+                                "description": "WHOOP sport name, preserved as reported."
+                            },
+                            "scoreState": {
+                                "type": "string",
+                                "enum": [
+                                    "SCORED",
+                                    "PENDING_SCORE",
+                                    "UNSCORABLE"
+                                ],
+                                "description": "Availability of WHOOP evaluation."
+                            },
+                            "legacySportId": {
+                                "description": "Previous-generation sport ID when supplied.",
+                                "type": "string"
+                            },
+                            "legacyActivityId": {
+                                "description": "Previous-generation activity ID when supplied.",
+                                "type": "string"
+                            },
+                            "score": {
+                                "description": "Workout evaluation, absent unless scored.",
+                                "type": "object",
+                                "properties": {
+                                    "strain": {
+                                        "type": "number",
+                                        "description": "WHOOP cardiovascular strain on a 0–21 scale."
+                                    },
+                                    "averageHeartRate": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Average heart rate in beats per minute."
+                                    },
+                                    "maxHeartRate": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991,
+                                        "description": "Maximum heart rate in beats per minute."
+                                    },
+                                    "energyKilojoules": {
+                                        "type": "number",
+                                        "description": "Energy expenditure in kilojoules."
+                                    },
+                                    "recordedPercentage": {
+                                        "type": "number",
+                                        "description": "Heart-rate data received by WHOOP, percentage on a 0–100 scale."
+                                    },
+                                    "distanceMeters": {
+                                        "description": "Distance travelled in meters, omitted when unavailable.",
+                                        "type": "number"
+                                    },
+                                    "altitudeGainMeters": {
+                                        "description": "Total upward travel in meters, excluding descents; omitted when unavailable.",
+                                        "type": "number"
+                                    },
+                                    "altitudeChangeMeters": {
+                                        "description": "Signed end-minus-start altitude difference in meters, omitted when unavailable.",
+                                        "type": "number"
+                                    },
+                                    "zoneDurations": {
+                                        "type": "object",
+                                        "properties": {
+                                            "zoneZeroMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 0, very light activity."
+                                            },
+                                            "zoneOneMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 1, light activity."
+                                            },
+                                            "zoneTwoMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 2, moderate activity."
+                                            },
+                                            "zoneThreeMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 3, hard activity."
+                                            },
+                                            "zoneFourMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 4, very hard activity."
+                                            },
+                                            "zoneFiveMilliseconds": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991,
+                                                "description": "Milliseconds in zone 5, maximum effort."
+                                            }
+                                        },
+                                        "required": [
+                                            "zoneZeroMilliseconds",
+                                            "zoneOneMilliseconds",
+                                            "zoneTwoMilliseconds",
+                                            "zoneThreeMilliseconds",
+                                            "zoneFourMilliseconds",
+                                            "zoneFiveMilliseconds"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Milliseconds spent in each heart-rate zone."
+                                    }
+                                },
+                                "required": [
+                                    "strain",
+                                    "averageHeartRate",
+                                    "maxHeartRate",
+                                    "energyKilojoules",
+                                    "recordedPercentage",
+                                    "zoneDurations"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "userId",
+                            "createdAt",
+                            "updatedAt",
+                            "start",
+                            "end",
+                            "timezoneOffset",
+                            "sportName",
+                            "scoreState"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A workout with its sport, UTC interval, identifiers and available measurements."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a workout UUID from `list-workouts`. Use `list-workouts` to browse instead. Unscored workouts have no score; distance and altitude may be absent even for scored workouts.",
+                "required_scopes": {
+                    "all": [
+                        "read:workout"
+                    ]
+                }
+            },
+            "filePath": "./whoop/tools/get-workout.ts",
+            "version": "45f3b1e86081c3ca57d3aa34193ff554b6f622c3a5b2af686aa7a5fe1eb9c961",
+            "location": {
+                "js": "templates-zero/whoop/tools/get-workout/45f3b1e86081c3ca57d3aa34193ff554b6f622c3a5b2af686aa7a5fe1eb9c961.cjs",
+                "ts": "templates-zero/whoop/tools/get-workout/45f3b1e86081c3ca57d3aa34193ff554b6f622c3a5b2af686aa7a5fe1eb9c961.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-cycles",
+            "integrationId": "whoop",
+            "description": "List one page of the connected user's physiological cycles, newest start first, optionally restricted by time.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_listcycles",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_listcycles",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_listcycles": {
+                        "type": "object",
+                        "properties": {
+                            "end": {
+                                "description": "Exclusive upper time bound using WHOOP's intersecting-or-ended-before semantics; omitted means now on the first page.",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum cycles in this page; defaults to 10.",
+                                "default": 10,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 25
+                            },
+                            "start": {
+                                "description": "Inclusive minimum occurrence time with explicit UTC marker or offset; omitted means no minimum.",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this tool for the same connection, filters and limit; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Time filters and continuation for one page of physiological cycles."
+                    },
+                    "FunctionOutput_whoop_listcycles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque physiological cycle identifier."
+                                        },
+                                        "end": {
+                                            "description": "Cycle end instant in UTC; absent for the current unfinished cycle.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "score": {
+                                            "description": "WHOOP evaluation, present only when scored.",
+                                            "type": "object",
+                                            "properties": {
+                                                "strain": {
+                                                    "type": "number",
+                                                    "description": "Cardiovascular strain on WHOOP's 0–21 scale."
+                                                },
+                                                "maxHeartRate": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991,
+                                                    "description": "Maximum heart rate during the cycle."
+                                                },
+                                                "averageHeartRate": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991,
+                                                    "description": "Average heart rate during the cycle."
+                                                },
+                                                "energyKilojoules": {
+                                                    "type": "number",
+                                                    "description": "Energy expended in kilojoules."
+                                                }
+                                            },
+                                            "required": [
+                                                "strain",
+                                                "maxHeartRate",
+                                                "averageHeartRate",
+                                                "energyKilojoules"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "start": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Cycle start instant in UTC."
+                                        },
+                                        "userId": {
+                                            "type": "string",
+                                            "description": "WHOOP user identifier."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Time recorded in WHOOP, normalized to UTC without precision loss."
+                                        },
+                                        "stepCount": {
+                                            "description": "Steps during the cycle; null means no step data, distinct from zero and absence.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Last WHOOP update instant in UTC."
+                                        },
+                                        "scoreState": {
+                                            "type": "string",
+                                            "enum": [
+                                                "SCORED",
+                                                "PENDING_SCORE",
+                                                "UNSCORABLE"
+                                            ],
+                                            "description": "Whether measurements are available, pending, or cannot be scored."
+                                        },
+                                        "timezoneOffset": {
+                                            "type": "string",
+                                            "description": "Recorded user offset, preserved as Z or signed hh:mm; not an IANA timezone."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "start",
+                                        "userId",
+                                        "createdAt",
+                                        "updatedAt",
+                                        "scoreState",
+                                        "timezoneOffset"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A physiological cycle and its available measurements."
+                                },
+                                "description": "Cycles in this page in descending start-time order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; absent when WHOOP supplies no next token.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of physiological cycles and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover cycle IDs and browse cycles. Use `get-cycle` for a known ID. Pass nextCursor back as cursor with the same filters and limit to continue. Each call returns one page; limit is 1–25, default 10.",
+                "required_scopes": {
+                    "all": [
+                        "read:cycles"
+                    ]
+                }
+            },
+            "filePath": "./whoop/tools/list-cycles.ts",
+            "version": "f37201d0eebab070dc787dd388600cf0c777ed23cbb3e83c44744fba789e3ffe",
+            "location": {
+                "js": "templates-zero/whoop/tools/list-cycles/f37201d0eebab070dc787dd388600cf0c777ed23cbb3e83c44744fba789e3ffe.cjs",
+                "ts": "templates-zero/whoop/tools/list-cycles/f37201d0eebab070dc787dd388600cf0c777ed23cbb3e83c44744fba789e3ffe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-recoveries",
+            "integrationId": "whoop",
+            "description": "List one page of the connected user's recoveries, newest related sleep first, with optional time bounds.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_listrecoveries",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_listrecoveries",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_listrecoveries": {
+                        "type": "object",
+                        "properties": {
+                            "end": {
+                                "description": "Exclusive upper instant using WHOOP's intersecting-or-ended-before semantics; defaults to now on first page.",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum recoveries in this page, default 10.",
+                                "default": 10,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 25
+                            },
+                            "start": {
+                                "description": "Inclusive minimum occurrence instant; omitted means no minimum.",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the same connection, filters and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Optional time bounds, page size and continuation for browsing recoveries."
+                    },
+                    "FunctionOutput_whoop_listrecoveries": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Recovery record key equal to cycleId, not a distinct provider ID."
+                                        },
+                                        "score": {
+                                            "description": "Available evaluation; absent unless scored.",
+                                            "type": "object",
+                                            "properties": {
+                                                "spo2Percentage": {
+                                                    "description": "Blood oxygen percentage when available.",
+                                                    "type": "number"
+                                                },
+                                                "userCalibrating": {
+                                                    "type": "boolean",
+                                                    "description": "True while calibration data is insufficient."
+                                                },
+                                                "restingHeartRate": {
+                                                    "type": "number",
+                                                    "description": "Resting heart rate reported by WHOOP."
+                                                },
+                                                "recoveryPercentage": {
+                                                    "type": "number",
+                                                    "description": "Readiness percentage on a 0–100 scale."
+                                                },
+                                                "hrvRmssdMilliseconds": {
+                                                    "type": "number",
+                                                    "description": "RMSSD heart-rate variability in milliseconds."
+                                                },
+                                                "skinTemperatureCelsius": {
+                                                    "description": "Skin temperature in degrees Celsius when available.",
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "userCalibrating",
+                                                "restingHeartRate",
+                                                "recoveryPercentage",
+                                                "hrvRmssdMilliseconds"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "userId": {
+                                            "type": "string",
+                                            "description": "WHOOP user identifier."
+                                        },
+                                        "cycleId": {
+                                            "type": "string",
+                                            "description": "Cycle described by this recovery."
+                                        },
+                                        "sleepId": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                            "description": "Associated sleep UUID."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Time recorded in WHOOP, in UTC."
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Last WHOOP update in UTC."
+                                        },
+                                        "scoreState": {
+                                            "type": "string",
+                                            "enum": [
+                                                "SCORED",
+                                                "PENDING_SCORE",
+                                                "UNSCORABLE"
+                                            ],
+                                            "description": "Evaluation state."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "userId",
+                                        "cycleId",
+                                        "sleepId",
+                                        "createdAt",
+                                        "updatedAt",
+                                        "scoreState"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A recovery and its available WHOOP evaluation."
+                                },
+                                "description": "Recoveries ordered by related sleep start descending."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation; absent when WHOOP has no next token.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of recoveries and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to browse recoveries and obtain cycle IDs for `get-recovery`. Pass nextCursor as cursor with unchanged filters and limit to continue. Limit is 1–25, default 10. Each call returns one page.",
+                "required_scopes": {
+                    "all": [
+                        "read:recovery"
+                    ]
+                }
+            },
+            "filePath": "./whoop/tools/list-recoveries.ts",
+            "version": "97879ae5be2a8b5ee13f90e2a60ebe1249e3d99224a73c21c1a90ac03a0c555f",
+            "location": {
+                "js": "templates-zero/whoop/tools/list-recoveries/97879ae5be2a8b5ee13f90e2a60ebe1249e3d99224a73c21c1a90ac03a0c555f.cjs",
+                "ts": "templates-zero/whoop/tools/list-recoveries/97879ae5be2a8b5ee13f90e2a60ebe1249e3d99224a73c21c1a90ac03a0c555f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-sleeps",
+            "integrationId": "whoop",
+            "description": "List one page of the connected user's sleep activities, including naps, with available sleep evaluations.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_listsleeps",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_listsleeps",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_listsleeps": {
+                        "type": "object",
+                        "properties": {
+                            "end": {
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Exclusive upper instant with WHOOP's intersecting-or-ended-before semantics; defaults to now on first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "default": 10,
+                                "description": "Maximum sleeps in this page; defaults to 10.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 25
+                            },
+                            "start": {
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Inclusive minimum occurrence instant; omit for no minimum.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the same connection, filters and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters and continuation for one page of sleep activities."
+                    },
+                    "FunctionOutput_whoop_listsleeps": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                            "description": "Sleep activity UUID."
+                                        },
+                                        "end": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Sleep end instant in UTC."
+                                        },
+                                        "nap": {
+                                            "type": "boolean",
+                                            "description": "True if this was a nap."
+                                        },
+                                        "score": {
+                                            "description": "WHOOP sleep evaluation, absent unless scored.",
+                                            "type": "object",
+                                            "properties": {
+                                                "sleepNeeded": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "baselineMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Historical baseline sleep need in milliseconds."
+                                                        },
+                                                        "recentNapMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Recent nap reduction in milliseconds, negative or zero."
+                                                        },
+                                                        "sleepDebtMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Sleep-debt contribution in milliseconds."
+                                                        },
+                                                        "recentStrainMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Additional need from strain in milliseconds."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "baselineMilliseconds",
+                                                        "recentNapMilliseconds",
+                                                        "sleepDebtMilliseconds",
+                                                        "recentStrainMilliseconds"
+                                                    ],
+                                                    "additionalProperties": false,
+                                                    "description": "Signed millisecond components whose sum gives sleep need."
+                                                },
+                                                "stageSummary": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "sleepCycleCount": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Number of sleep cycles."
+                                                        },
+                                                        "disturbanceCount": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Number of disturbances."
+                                                        },
+                                                        "awakeMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Awake time in milliseconds."
+                                                        },
+                                                        "inBedMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Time in bed in milliseconds."
+                                                        },
+                                                        "noDataMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Time without data in milliseconds."
+                                                        },
+                                                        "remSleepMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "REM sleep time in milliseconds."
+                                                        },
+                                                        "lightSleepMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Light sleep time in milliseconds."
+                                                        },
+                                                        "slowWaveSleepMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Slow-wave sleep time in milliseconds."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "sleepCycleCount",
+                                                        "disturbanceCount",
+                                                        "awakeMilliseconds",
+                                                        "inBedMilliseconds",
+                                                        "noDataMilliseconds",
+                                                        "remSleepMilliseconds",
+                                                        "lightSleepMilliseconds",
+                                                        "slowWaveSleepMilliseconds"
+                                                    ],
+                                                    "additionalProperties": false,
+                                                    "description": "Sleep durations and event counts."
+                                                },
+                                                "respiratoryRate": {
+                                                    "description": "Respiratory rate in WHOOP's reported rate unit.",
+                                                    "type": "number"
+                                                },
+                                                "sleepEfficiencyPercentage": {
+                                                    "description": "Percentage of in-bed time spent asleep, 0–100 scale.",
+                                                    "type": "number"
+                                                },
+                                                "sleepConsistencyPercentage": {
+                                                    "description": "Timing consistency percentage; omitted when unavailable.",
+                                                    "type": "number"
+                                                },
+                                                "sleepPerformancePercentage": {
+                                                    "description": "Time asleep versus need percentage; omitted when unavailable.",
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "sleepNeeded",
+                                                "stageSummary"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "start": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Sleep start instant in UTC."
+                                        },
+                                        "userId": {
+                                            "type": "string",
+                                            "description": "WHOOP user identifier."
+                                        },
+                                        "cycleId": {
+                                            "type": "string",
+                                            "description": "Associated physiological cycle ID."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Time recorded in WHOOP, in UTC."
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Last WHOOP update in UTC."
+                                        },
+                                        "scoreState": {
+                                            "type": "string",
+                                            "enum": [
+                                                "SCORED",
+                                                "PENDING_SCORE",
+                                                "UNSCORABLE"
+                                            ],
+                                            "description": "Measurement evaluation state."
+                                        },
+                                        "timezoneOffset": {
+                                            "type": "string",
+                                            "description": "User offset when recorded, preserved verbatim."
+                                        },
+                                        "legacyActivityId": {
+                                            "description": "Previous-generation activity ID when supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "end",
+                                        "nap",
+                                        "start",
+                                        "userId",
+                                        "cycleId",
+                                        "createdAt",
+                                        "updatedAt",
+                                        "scoreState",
+                                        "timezoneOffset"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A sleep activity, including naps and available evaluations."
+                                },
+                                "description": "Sleep activities in descending start-time order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation, absent when WHOOP has no next token.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of sleep activities and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover sleep IDs. Use `get-sleep` for a known sleep or cycle. Pass nextCursor as cursor with unchanged filters and limit to continue. Each call returns one page, limit 1–25, default 10.",
+                "required_scopes": {
+                    "all": [
+                        "read:sleep"
+                    ]
+                }
+            },
+            "filePath": "./whoop/tools/list-sleeps.ts",
+            "version": "107582f6310304bfb3a66bb504f28e0574b7c860f6e0dd966182d9712cfb440f",
+            "location": {
+                "js": "templates-zero/whoop/tools/list-sleeps/107582f6310304bfb3a66bb504f28e0574b7c860f6e0dd966182d9712cfb440f.cjs",
+                "ts": "templates-zero/whoop/tools/list-sleeps/107582f6310304bfb3a66bb504f28e0574b7c860f6e0dd966182d9712cfb440f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-workouts",
+            "integrationId": "whoop",
+            "description": "List one page of the connected user's workouts, newest start first, with optional time bounds and available evaluations.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_listworkouts",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_listworkouts",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_listworkouts": {
+                        "type": "object",
+                        "properties": {
+                            "end": {
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Exclusive upper instant with WHOOP's intersecting-or-ended-before semantics; defaults to now on first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "default": 10,
+                                "description": "Maximum workouts in the page; defaults to 10.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 25
+                            },
+                            "start": {
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "description": "Inclusive minimum occurrence instant; omit for no minimum.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this connection and unchanged query.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Time bounds, page size, and optional continuation for listing workouts."
+                    },
+                    "FunctionOutput_whoop_listworkouts": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                            "description": "Workout activity UUID."
+                                        },
+                                        "end": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Workout end instant in UTC."
+                                        },
+                                        "score": {
+                                            "description": "WHOOP evaluation, absent unless scored.",
+                                            "type": "object",
+                                            "properties": {
+                                                "strain": {
+                                                    "type": "number",
+                                                    "description": "WHOOP cardiovascular strain on a 0–21 scale."
+                                                },
+                                                "maxHeartRate": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991,
+                                                    "description": "Maximum heart rate in beats per minute."
+                                                },
+                                                "zoneDurations": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "zoneOneMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Milliseconds in zone 1, light activity."
+                                                        },
+                                                        "zoneTwoMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Milliseconds in zone 2, moderate activity."
+                                                        },
+                                                        "zoneFiveMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Milliseconds in zone 5, maximum effort."
+                                                        },
+                                                        "zoneFourMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Milliseconds in zone 4, very hard activity."
+                                                        },
+                                                        "zoneZeroMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Milliseconds in zone 0, very light activity."
+                                                        },
+                                                        "zoneThreeMilliseconds": {
+                                                            "type": "integer",
+                                                            "minimum": -9007199254740991,
+                                                            "maximum": 9007199254740991,
+                                                            "description": "Milliseconds in zone 3, hard activity."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "zoneOneMilliseconds",
+                                                        "zoneTwoMilliseconds",
+                                                        "zoneFiveMilliseconds",
+                                                        "zoneFourMilliseconds",
+                                                        "zoneZeroMilliseconds",
+                                                        "zoneThreeMilliseconds"
+                                                    ],
+                                                    "additionalProperties": false,
+                                                    "description": "Durations in each heart-rate zone, in milliseconds."
+                                                },
+                                                "distanceMeters": {
+                                                    "description": "Distance travelled in meters; omitted when unavailable.",
+                                                    "type": "number"
+                                                },
+                                                "averageHeartRate": {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991,
+                                                    "description": "Average heart rate in beats per minute."
+                                                },
+                                                "energyKilojoules": {
+                                                    "type": "number",
+                                                    "description": "Energy expended in kilojoules."
+                                                },
+                                                "altitudeGainMeters": {
+                                                    "description": "Upward-only altitude gain in meters; omitted when unavailable.",
+                                                    "type": "number"
+                                                },
+                                                "recordedPercentage": {
+                                                    "type": "number",
+                                                    "description": "Heart-rate data received as a percentage on a 0–100 scale."
+                                                },
+                                                "altitudeChangeMeters": {
+                                                    "description": "Signed net altitude change in meters; omitted when unavailable.",
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "strain",
+                                                "maxHeartRate",
+                                                "zoneDurations",
+                                                "averageHeartRate",
+                                                "energyKilojoules",
+                                                "recordedPercentage"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "start": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Workout start instant in UTC."
+                                        },
+                                        "userId": {
+                                            "type": "string",
+                                            "description": "WHOOP user identifier."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Time recorded in WHOOP, in UTC."
+                                        },
+                                        "sportName": {
+                                            "type": "string",
+                                            "description": "Sport name reported by WHOOP."
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Last WHOOP update in UTC."
+                                        },
+                                        "scoreState": {
+                                            "type": "string",
+                                            "enum": [
+                                                "SCORED",
+                                                "PENDING_SCORE",
+                                                "UNSCORABLE"
+                                            ],
+                                            "description": "Evaluation state."
+                                        },
+                                        "legacySportId": {
+                                            "description": "Previous-generation sport ID when supplied.",
+                                            "type": "string"
+                                        },
+                                        "timezoneOffset": {
+                                            "type": "string",
+                                            "description": "Recorded user offset, preserved separately from UTC instants."
+                                        },
+                                        "legacyActivityId": {
+                                            "description": "Previous-generation activity ID when supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "end",
+                                        "start",
+                                        "userId",
+                                        "createdAt",
+                                        "sportName",
+                                        "updatedAt",
+                                        "scoreState",
+                                        "timezoneOffset"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A workout with available WHOOP measurements and evaluation."
+                                },
+                                "description": "Workouts in descending start-time order."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation, absent when WHOOP has no next token.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of workouts and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover workout IDs; use `get-workout` for a known UUID. Continue by passing nextCursor as cursor with unchanged filters and limit. Limit is 1–25, default 10; each call returns one page.",
+                "required_scopes": {
+                    "all": [
+                        "read:workout"
+                    ]
+                }
+            },
+            "filePath": "./whoop/tools/list-workouts.ts",
+            "version": "265aa5b5d00df148f0264bfe6fc4bfeb2a6575c0dcecb828189cd7ba1a515926",
+            "location": {
+                "js": "templates-zero/whoop/tools/list-workouts/265aa5b5d00df148f0264bfe6fc4bfeb2a6575c0dcecb828189cd7ba1a515926.cjs",
+                "ts": "templates-zero/whoop/tools/list-workouts/265aa5b5d00df148f0264bfe6fc4bfeb2a6575c0dcecb828189cd7ba1a515926.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "revoke-user-access",
+            "integrationId": "whoop",
+            "description": "Revoke the connected user's WHOOP access token and stop this OAuth client's configured webhooks for that user.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_whoop_revokeuseraccess",
+            "output_schema_ref": "#/definitions/FunctionOutput_whoop_revokeuseraccess",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_whoop_revokeuseraccess": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "Revoke access for the connected WHOOP user without additional parameters."
+                    },
+                    "FunctionOutput_whoop_revokeuseraccess": {
+                        "type": "object",
+                        "properties": {
+                            "revoked": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "WHOOP accepted access revocation; not a claim that health records were deleted."
+                            }
+                        },
+                        "required": [
+                            "revoked"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement that WHOOP accepted access revocation for the connected user."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use only to disconnect the user's WHOOP access. This invalidates access used by the connection and stops this client's webhooks for the user; it does not delete WHOOP health records. No confirmation field is needed. The user must authorize again to regain access."
+            },
+            "filePath": "./whoop/tools/revoke-user-access.ts",
+            "version": "5d57f402448fe488db4c39d19beceb74eb7b7739e05b5a8f620515dbf616d547",
+            "location": {
+                "js": "templates-zero/whoop/tools/revoke-user-access/5d57f402448fe488db4c39d19beceb74eb7b7739e05b5a8f620515dbf616d547.cjs",
+                "ts": "templates-zero/whoop/tools/revoke-user-access/5d57f402448fe488db4c39d19beceb74eb7b7739e05b5a8f620515dbf616d547.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

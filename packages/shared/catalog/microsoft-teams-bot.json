@@ -1,0 +1,2876 @@
+{
+    "providerConfigKey": "microsoft-teams-bot",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make the bot-visible channel metadata of explicitly selected teams available, retaining each channel's team provenance.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_microsoft_teams_bot_syncchannels",
+            "name": "sync-channels",
+            "output": [
+                "Channels"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Channels",
+                "SyncMetadata_microsoft_teams_bot_syncchannels"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Channels": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Teams channel identifier returned by the service."
+                            },
+                            "name": {
+                                "description": "Channel display name when supplied.",
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string",
+                                "description": "Selected team whose channel list supplied this record."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "teamId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Bot-visible channel metadata with its selected source team."
+                    },
+                    "SyncMetadata_microsoft_teams_bot_syncchannels": {
+                        "type": "object",
+                        "properties": {
+                            "teamIds": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Teams team ID selected for channel metadata synchronization."
+                                },
+                                "uniqueItems": true,
+                                "description": "Teams team IDs whose bot-visible channel metadata belongs in the dataset."
+                            }
+                        },
+                        "required": [
+                            "teamIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Explicit team selection for the bot-visible channel dataset."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make the channel account memberships of explicitly selected bot conversations available as records, retaining conversation provenance and directory references.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_microsoft_teams_bot_syncconversationmembers",
+            "name": "sync-conversation-members",
+            "output": [
+                "ConversationMembers"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ConversationMembers",
+                "SyncMetadata_microsoft_teams_bot_syncconversationmembers"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ConversationMembers": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable membership record key derived without collisions from conversationId and memberId."
+                            },
+                            "name": {
+                                "description": "Account display name when supplied.",
+                                "type": "string"
+                            },
+                            "role": {
+                                "description": "Account role such as user or bot when supplied.",
+                                "type": "string"
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "description": "User or bot channel account ID within this conversation context."
+                            },
+                            "aadObjectId": {
+                                "description": "Microsoft Entra account object ID when supplied; distinct from memberId.",
+                                "type": "string"
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "description": "Conversation to which this membership belongs."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "memberId",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Channel account membership in a selected bot conversation, retaining conversation provenance and directory references."
+                    },
+                    "SyncMetadata_microsoft_teams_bot_syncconversationmembers": {
+                        "type": "object",
+                        "properties": {
+                            "conversationIds": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque source conversation ID from saved bot activity or installation context."
+                                },
+                                "uniqueItems": true,
+                                "description": "Explicit conversation dataset selection from saved bot activity or installation context; no Teams-wide conversation enumeration is available."
+                            }
+                        },
+                        "required": [
+                            "conversationIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select the bot conversations whose channel account memberships will be synced."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make details of explicitly selected Teams teams available, including display names and their Microsoft Entra group references.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_microsoft_teams_bot_syncteams",
+            "name": "sync-teams",
+            "output": [
+                "Teams"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Teams",
+                "SyncMetadata_microsoft_teams_bot_syncteams"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Teams": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Teams team identifier returned by the bot service."
+                            },
+                            "name": {
+                                "description": "Team display name when supplied.",
+                                "type": "string"
+                            },
+                            "aadGroupId": {
+                                "description": "Microsoft Entra group ID backing the team when supplied.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Details of an explicitly selected Teams team."
+                    },
+                    "SyncMetadata_microsoft_teams_bot_syncteams": {
+                        "type": "object",
+                        "properties": {
+                            "teamIds": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque Teams team ID from bot installation or incoming activity context."
+                                },
+                                "uniqueItems": true,
+                                "description": "Teams team IDs selected from bot installation or incoming activity context; this is not tenant-wide discovery."
+                            }
+                        },
+                        "required": [
+                            "teamIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Explicit Teams team selection for this sync."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-import-conversation-activities",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Upload a bounded transcript of past activities for a client to render in an existing conversation. The provider returns an aggregate resource reference, not per-activity outcomes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_batchimportconversationactivities",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_batchimportconversationactivities",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_microsoft_teams_bot_batchimportconversationactivities",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_batchimportconversationactivities": {
+                        "type": "object",
+                        "properties": {
+                            "conversationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Existing conversation receiving the historical transcript."
+                            },
+                            "activities": {
+                                "minItems": 1,
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Stable historical activity ID used by clients to recognize duplicate activities."
+                                        },
+                                        "name": {
+                                            "description": "Original event or invocation name, when relevant.",
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "description": "Original Unicode text, including empty text when appropriate.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "message",
+                                                "event",
+                                                "invoke",
+                                                "typing",
+                                                "endOfConversation",
+                                                "contactRelationUpdate",
+                                                "conversationUpdate",
+                                                "deleteUserData",
+                                                "messageUpdate",
+                                                "messageDelete",
+                                                "installationUpdate",
+                                                "messageReaction",
+                                                "suggestion",
+                                                "trace",
+                                                "handoff"
+                                            ],
+                                            "description": "Historical activity kind; channel support varies."
+                                        },
+                                        "value": {
+                                            "description": "Original structured event data, with dynamic event-specific properties.",
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        },
+                                        "sentAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                            "description": "Original sent instant with explicit offset; preserve fractional-second precision without rounding when converting to UTC."
+                                        },
+                                        "senderId": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Original sender's channel account ID, not an instruction to send a new live message as that user."
+                                        },
+                                        "senderName": {
+                                            "description": "Optional original sender display name.",
+                                            "type": "string"
+                                        },
+                                        "textFormat": {
+                                            "description": "Original rendering format; omission uses the provider's default.",
+                                            "type": "string",
+                                            "enum": [
+                                                "plain",
+                                                "markdown",
+                                                "xml"
+                                            ]
+                                        },
+                                        "replyToActivityId": {
+                                            "description": "Historical source activity ID to which this item replied.",
+                                            "type": "string",
+                                            "minLength": 1
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "sentAt",
+                                        "senderId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One historical activity with its original sender, stable ID, sent instant, and optional content."
+                                },
+                                "description": "At most 50 historic activities in this one import; IDs must be unique within the submitted transcript and appropriate to the destination history."
+                            }
+                        },
+                        "required": [
+                            "conversationId",
+                            "activities"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An existing conversation and a bounded transcript of historical activities to import."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_batchimportconversationactivities": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Aggregate resource ID returned for the transcript request; not a per-item receipt."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "description": "Conversation addressed by the import."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The aggregate transcript resource reference, without individual activity outcomes."
+                    },
+                    "FunctionMetadata_microsoft_teams_bot_batchimportconversationactivities": {
+                        "type": "object",
+                        "properties": {
+                            "serviceUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Trusted serviceUrl saved from incoming bot context for the destination conversation."
+                            }
+                        },
+                        "required": [
+                            "serviceUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Saved Connector routing established by the application from trusted bot context."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this to import historical activities, not to send new live messages. Obtain the conversation ID from bot context or `create-conversation`. Supply at most 50 historic activities with unique IDs and their actual sent times. Client duplicate handling is not an atomic import or safe-replay guarantee. Unsupported channels can reject history upload."
+            },
+            "filePath": "./microsoft-teams-bot/tools/batch-import-conversation-activities.ts",
+            "version": "66e5e4a5991449150a58e25d10515f2d0ddbad1585979216f9d966d25aae8140",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/batch-import-conversation-activities/66e5e4a5991449150a58e25d10515f2d0ddbad1585979216f9d966d25aae8140.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/batch-import-conversation-activities/66e5e4a5991449150a58e25d10515f2d0ddbad1585979216f9d966d25aae8140.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-activity",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Remove an existing activity, including a message, from its conversation where the channel permits deletion. No restore operation is available through this integration.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_deleteactivity",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_deleteactivity",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_deleteactivity": {
+                        "type": "object",
+                        "properties": {
+                            "activityId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Activity to remove; opaque and scoped to its conversation."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Conversation containing the target activity."
+                            }
+                        },
+                        "required": [
+                            "activityId",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the conversation and existing activity to delete."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_deleteactivity": {
+                        "type": "object",
+                        "properties": {
+                            "deleted": {
+                                "const": true,
+                                "description": "The provider reported successful deletion; not an assertion about retention copies."
+                            },
+                            "activityId": {
+                                "type": "string",
+                                "description": "Activity identified by the successful deletion request."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "description": "Conversation from which deletion was requested."
+                            }
+                        },
+                        "required": [
+                            "deleted",
+                            "activityId",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of successful deletion of the identified activity."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain conversation and activity IDs from incoming bot context or a send result. This removes the activity, not the conversation or its members. Recovery and retention are channel-dependent; do not assume it can be restored. Use `update-activity` to replace content instead."
+            },
+            "filePath": "./microsoft-teams-bot/tools/delete-activity.ts",
+            "version": "eff76acc125141eafe54f082cf21a02e1a469dc9be5069d25707a77bb5851813",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/delete-activity/eff76acc125141eafe54f082cf21a02e1a469dc9be5069d25707a77bb5851813.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/delete-activity/eff76acc125141eafe54f082cf21a02e1a469dc9be5069d25707a77bb5851813.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "download-attachment",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Download the exact bytes of one attachment view, returned as base64. This bounded tool supports views up to 5 MiB.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_downloadattachment",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_downloadattachment",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_downloadattachment": {
+                        "type": "object",
+                        "properties": {
+                            "viewId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "View identifier returned by get-attachment, not an arbitrary URL."
+                            },
+                            "attachmentId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Attachment whose view to download."
+                            }
+                        },
+                        "required": [
+                            "viewId",
+                            "attachmentId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The attachment and named view to download."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_downloadattachment": {
+                        "type": "object",
+                        "properties": {
+                            "viewId": {
+                                "type": "string",
+                                "description": "Downloaded view identifier."
+                            },
+                            "sizeBytes": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5242880,
+                                "description": "Actual decoded content length in bytes, at most 5 MiB."
+                            },
+                            "attachmentId": {
+                                "type": "string",
+                                "description": "Attachment that supplied these bytes."
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "contentEncoding": "base64",
+                                "description": "Standard padded base64 encoding of the exact binary response bytes."
+                            }
+                        },
+                        "required": [
+                            "viewId",
+                            "sizeBytes",
+                            "attachmentId",
+                            "contentBase64"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Exact attachment view bytes encoded as base64, with their binary byte count."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "First use `get-attachment` to choose a view ID. Use a thumbnail if the original exceeds 5 MiB. The result is base64 because it preserves arbitrary binary bytes, not ordinary message text. This does not follow arbitrary caller-provided URLs."
+            },
+            "filePath": "./microsoft-teams-bot/tools/download-attachment.ts",
+            "version": "da9a406a876c56a555a8dee1e77e17d302e5cc678425eb5032e84925d4caaf4c",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/download-attachment/da9a406a876c56a555a8dee1e77e17d302e5cc678425eb5032e84925d4caaf4c.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/download-attachment/da9a406a876c56a555a8dee1e77e17d302e5cc678425eb5032e84925d4caaf4c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-attachment",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Get attachment metadata and the available original or thumbnail views, without downloading file content.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_getattachment",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_getattachment",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_microsoft_teams_bot_getattachment",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_getattachment": {
+                        "type": "object",
+                        "properties": {
+                            "attachmentId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Attachment identifier returned by upload or available in bot context."
+                            }
+                        },
+                        "required": [
+                            "attachmentId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Attachment reference for a metadata-only lookup."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_getattachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Attachment ID used for this metadata lookup."
+                            },
+                            "name": {
+                                "description": "Attachment filename when supplied.",
+                                "type": "string"
+                            },
+                            "views": {
+                                "description": "Available downloadable views when supplied by the service.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque view ID to pass to download-attachment, such as original or thumbnail."
+                                        },
+                                        "sizeBytes": {
+                                            "description": "View size in bytes when supplied; byte units are provisional pending validation.",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A downloadable attachment view and its reported size."
+                                }
+                            },
+                            "contentType": {
+                                "description": "MIME/content type reported for the attachment.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Attachment metadata and available views, without file content."
+                    },
+                    "FunctionMetadata_microsoft_teams_bot_getattachment": {
+                        "type": "object",
+                        "properties": {
+                            "attachmentServiceUrls": {
+                                "description": "Attachment IDs mapped to trusted service URLs retained by the application from upload or authenticated bot context.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use the attachment ID from `upload-attachment` or incoming bot attachment context. Use `download-attachment` with one of the returned view IDs to retrieve exact bytes. Attachment IDs and their service route must belong to this connection."
+            },
+            "filePath": "./microsoft-teams-bot/tools/get-attachment.ts",
+            "version": "f1ef697d8a1621205729d5829e00bafad30e689f3e4a22cee78154cc0556675f",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/get-attachment/f1ef697d8a1621205729d5829e00bafad30e689f3e4a22cee78154cc0556675f.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/get-attachment/f1ef697d8a1621205729d5829e00bafad30e689f3e4a22cee78154cc0556675f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-conversation-member",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Get a specific user's or bot's channel account details within a conversation.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_getconversationmember",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_getconversationmember",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_getconversationmember": {
+                        "type": "object",
+                        "properties": {
+                            "memberId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "User or bot channel account ID, not necessarily a Microsoft Entra object ID."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Conversation in which to look up the member."
+                            }
+                        },
+                        "required": [
+                            "memberId",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Conversation and channel account identifiers for an individual member lookup."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_getconversationmember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque channel account ID for this user or bot."
+                            },
+                            "name": {
+                                "description": "Display-friendly name, omitted when not supplied.",
+                                "type": "string"
+                            },
+                            "role": {
+                                "description": "Account role such as user or bot, omitted when not supplied.",
+                                "type": "string"
+                            },
+                            "aadObjectId": {
+                                "description": "Microsoft Entra account object ID when available; distinct from the channel account ID.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Channel account details for the requested conversation member, without inferring missing fields."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use when both conversation and member IDs are known. Obtain member IDs from `list-conversation-members` or incoming context. Use `list-conversation-members` to browse membership instead. Channel support for individual member lookup can vary.",
+                "required_scopes": {
+                    "all": [
+                        "https://api.botframework.com/.default"
+                    ]
+                }
+            },
+            "filePath": "./microsoft-teams-bot/tools/get-conversation-member.ts",
+            "version": "e9661399b83de511a1df4dc2308a65def6df6e5d58b2931ba4635fa1012c9250",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/get-conversation-member/e9661399b83de511a1df4dc2308a65def6df6e5d58b2931ba4635fa1012c9250.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/get-conversation-member/e9661399b83de511a1df4dc2308a65def6df6e5d58b2931ba4635fa1012c9250.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-openid-metadata",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Get authentication-discovery metadata for the Bot Connector or the Microsoft account authority used by the Bot Framework Emulator.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_getopenidmetadata",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_getopenidmetadata",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_getopenidmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "authority": {
+                                "type": "string",
+                                "enum": [
+                                    "connector",
+                                    "emulator"
+                                ],
+                                "description": "Authentication authority: Bot Connector or Microsoft account metadata used for Emulator authentication."
+                            }
+                        },
+                        "required": [
+                            "authority"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select the authentication authority whose discovery metadata to retrieve."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_getopenidmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "issuer": {
+                                "description": "Expected issuer reported in metadata when present; do not infer it from another authority.",
+                                "type": "string"
+                            },
+                            "authority": {
+                                "type": "string",
+                                "enum": [
+                                    "connector",
+                                    "emulator"
+                                ],
+                                "description": "Authority whose metadata was retrieved."
+                            },
+                            "tokenEndpoint": {
+                                "description": "Reported token endpoint when present; not an access token or instruction to change connection credentials.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "signingKeysUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Discovered jwks_uri for current public signing keys."
+                            },
+                            "signingAlgorithms": {
+                                "description": "Reported ID-token signing algorithms when present.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An ID-token signing algorithm reported by the authority."
+                                }
+                            },
+                            "authorizationEndpoint": {
+                                "description": "Reported authorization endpoint when present; may intentionally be nonfunctional for Connector metadata.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "tokenAuthenticationMethods": {
+                                "description": "Reported token-endpoint authentication methods when present.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A token-endpoint authentication method reported by the authority."
+                                }
+                            }
+                        },
+                        "required": [
+                            "authority",
+                            "signingKeysUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Discovery metadata reported by the selected authority, without inferred issuer or algorithm values."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for authentication-library configuration or diagnostics, not to obtain an access token. Select connector for incoming Connector requests and emulator for the Emulator verification path. Use `list-signing-keys` to obtain the authority's current public keys without manually following discovery URLs. Metadata alone does not validate a JWT."
+            },
+            "filePath": "./microsoft-teams-bot/tools/get-openid-metadata.ts",
+            "version": "a9705c595be2cfd465a4b8c12cc63b8084f81903726b834060cc2bab53b19f20",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/get-openid-metadata/a9705c595be2cfd465a4b8c12cc63b8084f81903726b834060cc2bab53b19f20.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/get-openid-metadata/a9705c595be2cfd465a4b8c12cc63b8084f81903726b834060cc2bab53b19f20.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-team",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Get a known Teams team's name and Microsoft Entra group reference through the bot's team context.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_getteam",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_getteam",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_microsoft_teams_bot_getteam",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Teams team ID from bot context, not necessarily the Entra group ID."
+                            }
+                        },
+                        "required": [
+                            "teamId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The known team to retrieve from Teams bot context."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Teams team identifier returned by the provider."
+                            },
+                            "name": {
+                                "description": "Team display name when supplied.",
+                                "type": "string"
+                            },
+                            "aadGroupId": {
+                                "description": "Microsoft Entra group ID backing the team when supplied; distinct from id.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Team details supplied by the Teams bot service."
+                    },
+                    "FunctionMetadata_microsoft_teams_bot_getteam": {
+                        "type": "object",
+                        "properties": {
+                            "serviceUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Trusted serviceUrl saved by the application from authenticated Teams bot installation or activity context."
+                            }
+                        },
+                        "required": [
+                            "serviceUrl"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain the team ID from incoming Teams bot context or your application's saved installation context. This integration cannot enumerate all teams in the tenant. Use `list-channels` to browse channels in that team."
+            },
+            "filePath": "./microsoft-teams-bot/tools/get-team.ts",
+            "version": "29a2e4528604d1aa5971a9cc5fc3915f869a625be40f392da00f6a7951b5880b",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/get-team/29a2e4528604d1aa5971a9cc5fc3915f869a625be40f392da00f6a7951b5880b.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/get-team/29a2e4528604d1aa5971a9cc5fc3915f869a625be40f392da00f6a7951b5880b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-activity-members",
+            "integrationId": "microsoft-teams-bot",
+            "description": "List the user and bot accounts associated with a particular activity, rather than the full conversation roster.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_listactivitymembers",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_listactivitymembers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_listactivitymembers": {
+                        "type": "object",
+                        "properties": {
+                            "activityId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Activity whose associated accounts to list."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Conversation containing the activity."
+                            }
+                        },
+                        "required": [
+                            "activityId",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Source activity and conversation references from bot context or a send result."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_listactivitymembers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque user or bot channel account ID."
+                                        },
+                                        "name": {
+                                            "description": "Optional display name.",
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "description": "Optional account role such as user or bot.",
+                                            "type": "string"
+                                        },
+                                        "aadObjectId": {
+                                            "description": "Microsoft Entra account object ID when available.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A user or bot channel account associated with the activity."
+                                },
+                                "description": "Activity-associated channel accounts in provider order; empty when none are returned."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete collection of accounts associated with the activity."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an activity ID and its conversation ID from incoming bot context or a send result. Use `list-conversation-members` for the conversation roster. This endpoint returns one unpaginated response and does not describe message delivery or read receipts."
+            },
+            "filePath": "./microsoft-teams-bot/tools/list-activity-members.ts",
+            "version": "3c270057f499706bac6f1567b60270d761f9405f9c81817c5105aa70cdc553e9",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/list-activity-members/3c270057f499706bac6f1567b60270d761f9405f9c81817c5105aa70cdc553e9.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/list-activity-members/3c270057f499706bac6f1567b60270d761f9405f9c81817c5105aa70cdc553e9.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-channels",
+            "integrationId": "microsoft-teams-bot",
+            "description": "List the channels returned by the bot service for a known team.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_listchannels",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_listchannels",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_listchannels": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Teams team identifier from bot context whose channels to enumerate."
+                            }
+                        },
+                        "required": [
+                            "teamId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Team from Teams bot context whose channels to list."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_listchannels": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Teams channel identifier usable as a channel target."
+                                        },
+                                        "name": {
+                                            "description": "Channel display name when supplied.",
+                                            "type": "string"
+                                        },
+                                        "teamId": {
+                                            "type": "string",
+                                            "description": "Team whose channel list supplied this record."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "teamId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A channel returned by the bot service with its originating team."
+                                },
+                                "description": "Channels returned for this team in provider order; no tenant-wide completeness claim."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Channels visible through the bot service for the requested team."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get the team ID from Teams bot installation or activity context. This returns the endpoint's single unpaginated response; there is no cursor. Use `get-team` for team details and `create-conversation` to start a thread in a returned channel. Do not assume this includes every channel type in the tenant."
+            },
+            "filePath": "./microsoft-teams-bot/tools/list-channels.ts",
+            "version": "677d34ac1cb842b88adb99d94dd6d7f11867449fe95407ccc9601a94626e5b85",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/list-channels/677d34ac1cb842b88adb99d94dd6d7f11867449fe95407ccc9601a94626e5b85.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/list-channels/677d34ac1cb842b88adb99d94dd6d7f11867449fe95407ccc9601a94626e5b85.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-conversation-members",
+            "integrationId": "microsoft-teams-bot",
+            "description": "List one page of a conversation's user and bot accounts. A compatibility mode uses the channel's unpaginated membership endpoint.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_listconversationmembers",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_listconversationmembers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_microsoft_teams_bot_listconversationmembers",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_listconversationmembers": {
+                        "type": "object",
+                        "properties": {
+                            "mode": {
+                                "description": "Paged browsing by default; unpaged returns the one complete response of the compatibility endpoint.",
+                                "default": "paged",
+                                "type": "string",
+                                "enum": [
+                                    "paged",
+                                    "unpaged"
+                                ]
+                            },
+                            "limit": {
+                                "description": "Suggested paged response size, default 100; the channel may return a different count. Not available in unpaged mode.",
+                                "default": 100,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque nextCursor from the same conversation in paged mode; omit to start.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Conversation whose membership to browse."
+                            }
+                        },
+                        "required": [
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Conversation membership browsing options for one paged or unpaged response.",
+                        "allOf": [
+                            {
+                                "if": {
+                                    "required": [
+                                        "mode"
+                                    ],
+                                    "properties": {
+                                        "mode": {
+                                            "const": "unpaged"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "not": {
+                                        "anyOf": [
+                                            {
+                                                "required": [
+                                                    "cursor"
+                                                ],
+                                                "properties": {
+                                                    "cursor": true
+                                                }
+                                            },
+                                            {
+                                                "required": [
+                                                    "limit"
+                                                ],
+                                                "properties": {
+                                                    "limit": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_microsoft_teams_bot_listconversationmembers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque user or bot channel account ID."
+                                        },
+                                        "name": {
+                                            "description": "Display name when supplied, retaining empty strings.",
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "description": "Account role such as user or bot when supplied.",
+                                            "type": "string"
+                                        },
+                                        "aadObjectId": {
+                                            "description": "Microsoft Entra account object ID when supplied; not the channel ID.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A user or bot channel account in this conversation."
+                                },
+                                "description": "Accounts in this provider response; possibly empty and not guaranteed unique across pages."
+                            },
+                            "nextCursor": {
+                                "description": "Continuation for this conversation's paged results; omitted when exhausted or in unpaged mode.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One membership response and, when available, its bound continuation cursor."
+                    },
+                    "FunctionMetadata_microsoft_teams_bot_listconversationmembers": {
+                        "type": "object",
+                        "properties": {
+                            "serviceUrl": {
+                                "description": "Trusted service URL saved from incoming bot context; omit to use the configured Teams service URL.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "uri"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain the conversation ID from incoming context or `create-conversation`. By default this returns one provider page; pass `nextCursor` as `cursor` with the same conversation and mode to continue. Members can repeat across pages. limit is a suggestion, not an exact count. Use mode=unpaged only for a known small conversation or a channel without paged support; use `get-conversation-member` for a known member."
+            },
+            "filePath": "./microsoft-teams-bot/tools/list-conversation-members.ts",
+            "version": "5efe0ab428cc45815d613d03aa88af6b6a553cb65a2c57e94f88b3fdfc68c83b",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/list-conversation-members/5efe0ab428cc45815d613d03aa88af6b6a553cb65a2c57e94f88b3fdfc68c83b.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/list-conversation-members/5efe0ab428cc45815d613d03aa88af6b6a553cb65a2c57e94f88b3fdfc68c83b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-signing-keys",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Get the public JSON Web Keys advertised by the Connector or Emulator authority, preserving cryptographic parameters and Connector endorsements.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_listsigningkeys",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_listsigningkeys",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_listsigningkeys": {
+                        "type": "object",
+                        "properties": {
+                            "authority": {
+                                "type": "string",
+                                "enum": [
+                                    "connector",
+                                    "emulator"
+                                ],
+                                "description": "Issuer path whose public signing key set to retrieve."
+                            }
+                        },
+                        "required": [
+                            "authority"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select the authority whose public signing keys to discover."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_listsigningkeys": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "e": {
+                                            "description": "RSA exponent in its original JWK base64url form.",
+                                            "type": "string"
+                                        },
+                                        "n": {
+                                            "description": "RSA modulus in its original JWK base64url form; cryptographic bytes are not ordinary text.",
+                                            "type": "string"
+                                        },
+                                        "alg": {
+                                            "description": "Standard signing algorithm identifier when present.",
+                                            "type": "string"
+                                        },
+                                        "kid": {
+                                            "description": "Standard JWK key identifier when present; intentionally retains its protocol spelling.",
+                                            "type": "string"
+                                        },
+                                        "kty": {
+                                            "description": "Standard JWK key type, such as RSA.",
+                                            "type": "string"
+                                        },
+                                        "use": {
+                                            "description": "Standard intended key use when present, such as sig.",
+                                            "type": "string"
+                                        },
+                                        "x5c": {
+                                            "description": "Original JWK X.509 certificate chain strings when present.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "An original encoded X.509 certificate in chain order."
+                                            }
+                                        },
+                                        "endorsements": {
+                                            "description": "Connector channel endorsement strings when present; absence is not an assertion of endorsement.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "A Connector channel endorsement string."
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": {},
+                                    "description": "A public JSON Web Key, including additional provider-advertised public members."
+                                },
+                                "description": "Public JSON Web Keys from the discovered key-set document, retaining standard cryptographic representation."
+                            },
+                            "authority": {
+                                "type": "string",
+                                "enum": [
+                                    "connector",
+                                    "emulator"
+                                ],
+                                "description": "Authority whose public keys were retrieved."
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "authority"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete advertised public signing key set for the selected authority."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for authentication implementation or diagnostics. Select the same authority as your validation path. This discovers the current key URL automatically and returns one complete key set, not a page. It does not verify a JWT; validation must also check issuer, audience, validity and any required channel endorsements."
+            },
+            "filePath": "./microsoft-teams-bot/tools/list-signing-keys.ts",
+            "version": "a1648486fae522a3ee1b0886e40822417d2c75629ed291a72f2b1ce6e9869182",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/list-signing-keys/a1648486fae522a3ee1b0886e40822417d2c75629ed291a72f2b1ce6e9869182.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/list-signing-keys/a1648486fae522a3ee1b0886e40822417d2c75629ed291a72f2b1ce6e9869182.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-conversation-member",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Remove a user or bot from a conversation. Removing its last member also deletes the conversation.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_removeconversationmember",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_removeconversationmember",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_removeconversationmember": {
+                        "type": "object",
+                        "properties": {
+                            "memberId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Channel account ID of the member to remove, not a directory account deletion target."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Conversation from which to remove the account."
+                            }
+                        },
+                        "required": [
+                            "memberId",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The conversation and channel account whose membership should be removed."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_removeconversationmember": {
+                        "type": "object",
+                        "properties": {
+                            "removed": {
+                                "const": true,
+                                "description": "The provider reported success; does not say whether this was the last member."
+                            },
+                            "memberId": {
+                                "type": "string",
+                                "description": "Account whose membership was removed."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "description": "Conversation addressed by the removal."
+                            }
+                        },
+                        "required": [
+                            "removed",
+                            "memberId",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The membership removal acknowledged by the provider, without a conversation deletion determination."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain member IDs with `list-conversation-members` or incoming context. This removes membership, not the user's account. Removing the last member deletes the conversation as well. No undo or re-add operation is provided here; use only when that effect is intended."
+            },
+            "filePath": "./microsoft-teams-bot/tools/remove-conversation-member.ts",
+            "version": "3815c47d4cac967d8146b8db1620690bc1915611d4c7c16ade08375b525daa1b",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/remove-conversation-member/3815c47d4cac967d8146b8db1620690bc1915611d4c7c16ade08375b525daa1b.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/remove-conversation-member/3815c47d4cac967d8146b8db1620690bc1915611d4c7c16ade08375b525daa1b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "reply-message",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Send a bot reply in the context of an existing activity, including text or rich-card attachments.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_replymessage",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_replymessage",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_microsoft_teams_bot_replymessage",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_replymessage": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "description": "Ordinary Unicode reply text; empty is allowed only with attachments."
+                            },
+                            "locale": {
+                                "description": "Optional BCP-47 content language tag.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "summary": {
+                                "description": "Optional fallback text when cards cannot be rendered.",
+                                "type": "string"
+                            },
+                            "activityId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Source activity ID being answered; not the ID of the new reply."
+                            },
+                            "importance": {
+                                "description": "Optional importance hint; absent uses channel defaults.",
+                                "type": "string",
+                                "enum": [
+                                    "low",
+                                    "normal",
+                                    "high"
+                                ]
+                            },
+                            "textFormat": {
+                                "description": "Rendering format for text, default markdown.",
+                                "default": "markdown",
+                                "type": "string",
+                                "enum": [
+                                    "plain",
+                                    "markdown",
+                                    "xml"
+                                ]
+                            },
+                            "attachments": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Optional attachment display name.",
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": true,
+                                            "description": "Structured card document, retaining its type-specific dynamic properties."
+                                        },
+                                        "contentUrl": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "description": "File or media location; omitted for embedded cards."
+                                        },
+                                        "contentType": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "File MIME type or rich-card media type."
+                                        },
+                                        "thumbnailUrl": {
+                                            "description": "Optional attachment preview image URL.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        }
+                                    },
+                                    "required": [
+                                        "contentType"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A file, media attachment, or embedded rich card.",
+                                    "anyOf": [
+                                        {
+                                            "required": [
+                                                "contentUrl"
+                                            ],
+                                            "properties": {
+                                                "contentUrl": {
+                                                    "description": "File or media location; omitted for embedded cards."
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "required": [
+                                                "content"
+                                            ],
+                                            "properties": {
+                                                "content": {
+                                                    "description": "Structured card document, retaining its type-specific dynamic properties."
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "description": "Files or rich cards to include in the reply."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Conversation containing the source activity."
+                            }
+                        },
+                        "required": [
+                            "activityId",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reply content and the existing conversation and activity to answer.",
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "text"
+                                ],
+                                "properties": {
+                                    "text": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Ordinary Unicode reply text; empty is allowed only with attachments."
+                                    }
+                                }
+                            },
+                            {
+                                "required": [
+                                    "attachments"
+                                ],
+                                "properties": {
+                                    "attachments": {
+                                        "description": "Files or rich cards to include in the reply."
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_microsoft_teams_bot_replymessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Activity ID assigned to the submitted reply, not proof of delivery."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "description": "Conversation receiving the reply."
+                            },
+                            "replyToActivityId": {
+                                "type": "string",
+                                "description": "Source activity used as reply context, even if the channel falls back to append semantics."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "conversationId",
+                            "replyToActivityId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provider acceptance identifiers for the reply and its source context."
+                    },
+                    "FunctionMetadata_microsoft_teams_bot_replymessage": {
+                        "type": "object",
+                        "properties": {
+                            "conversationReferences": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "activityId": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "serviceUrl": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string",
+                                                            "format": "uri"
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                },
+                                                "channelId": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "conversation": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                },
+                                                "bot": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                },
+                                                                "name": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                },
+                                                                "role": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "string",
+                                                                            "enum": [
+                                                                                "user",
+                                                                                "bot"
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "type": "null"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                "aadObjectId": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                },
+                                                "user": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                },
+                                                                "name": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                },
+                                                                "role": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "string",
+                                                                            "enum": [
+                                                                                "user",
+                                                                                "bot"
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            "type": "null"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                "aadObjectId": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to answer a specific message. Obtain its conversation and activity IDs from incoming bot context or a previous send result. Use `send-message` for a new message without reply context. Channels without nested replies may append the message instead. Repeating the call can post another reply."
+            },
+            "filePath": "./microsoft-teams-bot/tools/reply-message.ts",
+            "version": "fd6f22ab125137c2287a009990630c98202148ee728e572297b7603605606110",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/reply-message/fd6f22ab125137c2287a009990630c98202148ee728e572297b7603605606110.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/reply-message/fd6f22ab125137c2287a009990630c98202148ee728e572297b7603605606110.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "send-activity",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Send a non-message Bot Framework activity, such as typing, an event, invocation, lifecycle signal, or reaction, to a conversation, optionally in reply context.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_sendactivity",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_sendactivity",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_microsoft_teams_bot_sendactivity",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_sendactivity": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "Event or invocation name, when the selected type uses one.",
+                                "type": "string"
+                            },
+                            "text": {
+                                "description": "Optional human-readable detail used by the selected signal.",
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "contactRelationUpdate",
+                                    "conversationUpdate",
+                                    "typing",
+                                    "endOfConversation",
+                                    "event",
+                                    "invoke",
+                                    "deleteUserData",
+                                    "messageUpdate",
+                                    "messageDelete",
+                                    "installationUpdate",
+                                    "messageReaction",
+                                    "suggestion",
+                                    "trace",
+                                    "handoff"
+                                ],
+                                "description": "Protocol signal to send; support depends on the channel and bot scenario."
+                            },
+                            "value": {
+                                "description": "Structured event, invocation, or handoff data with type-specific dynamic properties.",
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "action": {
+                                "description": "Contact relationship action, where relevant.",
+                                "type": "string"
+                            },
+                            "endReason": {
+                                "description": "Reason code for endOfConversation; omitted for other signals.",
+                                "type": "string",
+                                "enum": [
+                                    "unknown",
+                                    "completedSuccessfully",
+                                    "userCancelled",
+                                    "botTimedOut",
+                                    "botIssuedInvalidMessage",
+                                    "channelFailed"
+                                ]
+                            },
+                            "valueType": {
+                                "description": "Semantic type of value, when applicable.",
+                                "type": "string"
+                            },
+                            "membersAdded": {
+                                "description": "Channel account IDs represented as joining in a conversation update; not an API to add real membership.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Channel account ID represented as joining the conversation."
+                                }
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Conversation receiving the non-message signal."
+                            },
+                            "membersRemoved": {
+                                "description": "Channel account IDs represented as leaving in a conversation update; not a substitute for remove-conversation-member.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Channel account ID represented as leaving the conversation."
+                                }
+                            },
+                            "reactionsAdded": {
+                                "description": "Reaction types to add in a supported messageReaction signal.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "like",
+                                        "plusOne"
+                                    ],
+                                    "description": "Reaction type to add."
+                                }
+                            },
+                            "reactionsRemoved": {
+                                "description": "Reaction types to remove in a supported messageReaction signal.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "like",
+                                        "plusOne"
+                                    ],
+                                    "description": "Reaction type to remove."
+                                }
+                            },
+                            "replyToActivityId": {
+                                "description": "Optional source activity context; absent appends/sends to the conversation without reply context.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A typed non-message Bot Framework signal and its conversation context."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_sendactivity": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Resource ID returned for the submitted activity; not proof of downstream execution."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "description": "Conversation addressed by this signal."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Connector acceptance of the submitted signal, without a downstream execution guarantee."
+                    },
+                    "FunctionMetadata_microsoft_teams_bot_sendactivity": {
+                        "type": "object",
+                        "properties": {
+                            "conversationReferences": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "bot": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "Channel account ID saved from authenticated incoming bot context."
+                                                }
+                                            },
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Connected bot account from the incoming activity recipient."
+                                        },
+                                        "user": {
+                                            "description": "Optional user account from the incoming activity sender.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "minLength": 1,
+                                                            "description": "Channel account ID saved from authenticated incoming bot context."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "conversation": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "Conversation ID from authenticated incoming bot context."
+                                                }
+                                            },
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Conversation associated with this reference."
+                                        },
+                                        "channelId": {
+                                            "type": "string",
+                                            "const": "msteams",
+                                            "description": "Teams channel identifier from incoming bot context."
+                                        },
+                                        "serviceUrl": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "description": "Trusted Connector service URL saved from authenticated incoming bot context."
+                                        }
+                                    },
+                                    "required": [
+                                        "bot",
+                                        "conversation",
+                                        "channelId",
+                                        "serviceUrl"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Trusted Bot Framework conversation references keyed by conversation ID; populated by the application receiving bot events."
+                            }
+                        },
+                        "required": [
+                            "conversationReferences"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `send-message` or `reply-message` for human-readable messages. Use this for protocol-level bot signals only when the Teams context supports that activity type. Obtain conversation and optional source activity IDs from incoming bot context. Some activity types can alter lifecycle or user data. Provider acceptance does not prove the client performed an invocation."
+            },
+            "filePath": "./microsoft-teams-bot/tools/send-activity.ts",
+            "version": "8b278be0727a7aaa02726ae1df5b4df9994b82c1dc9644965eaa2fe6c30e8ffe",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/send-activity/8b278be0727a7aaa02726ae1df5b4df9994b82c1dc9644965eaa2fe6c30e8ffe.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/send-activity/8b278be0727a7aaa02726ae1df5b4df9994b82c1dc9644965eaa2fe6c30e8ffe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "send-message",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Send a bot message to an existing conversation, with ordinary text and optional file or rich-card attachments.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_sendmessage",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_sendmessage",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_microsoft_teams_bot_sendmessage",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_sendmessage": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "description": "Ordinary Unicode message text; may be empty when attachments provide the content.",
+                                "type": "string"
+                            },
+                            "locale": {
+                                "description": "Optional BCP-47 language tag for message content.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "summary": {
+                                "description": "Fallback text for clients unable to render cards; omitted means no explicit fallback.",
+                                "type": "string"
+                            },
+                            "importance": {
+                                "description": "Message importance hint; omitted leaves the channel default.",
+                                "type": "string",
+                                "enum": [
+                                    "low",
+                                    "normal",
+                                    "high"
+                                ]
+                            },
+                            "textFormat": {
+                                "default": "markdown",
+                                "description": "How text should be rendered; defaults to markdown.",
+                                "type": "string",
+                                "enum": [
+                                    "plain",
+                                    "markdown",
+                                    "xml"
+                                ]
+                            },
+                            "attachments": {
+                                "description": "File links or rich cards included in this message.",
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Optional display filename or card name.",
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "description": "Embedded card document using the declared card type's schema. Its dynamic properties preserve card-specific content.",
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        },
+                                        "contentUrl": {
+                                            "description": "Location of the file or media, omitted for embedded card content.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "contentType": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "MIME type or card media type, such as application/vnd.microsoft.card.adaptive."
+                                        },
+                                        "thumbnailUrl": {
+                                            "description": "Optional preview image location.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        }
+                                    },
+                                    "required": [
+                                        "contentType"
+                                    ],
+                                    "additionalProperties": false,
+                                    "anyOf": [
+                                        {
+                                            "required": [
+                                                "contentUrl"
+                                            ],
+                                            "properties": {
+                                                "contentUrl": true
+                                            }
+                                        },
+                                        {
+                                            "required": [
+                                                "content"
+                                            ],
+                                            "properties": {
+                                                "content": true
+                                            }
+                                        }
+                                    ],
+                                    "description": "A file link or embedded rich-card attachment."
+                                }
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Existing conversation ID scoped to this bot."
+                            }
+                        },
+                        "required": [
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "text"
+                                ],
+                                "properties": {
+                                    "text": {
+                                        "$schema": "https://json-schema.org/draft/2020-12/schema",
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Ordinary Unicode message text; may be empty when attachments provide the content."
+                                    }
+                                }
+                            },
+                            {
+                                "required": [
+                                    "attachments"
+                                ],
+                                "properties": {
+                                    "attachments": true
+                                }
+                            }
+                        ],
+                        "description": "Send text, attachments, or both to an existing bot conversation."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_sendmessage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Provider-assigned activity ID; does not prove recipient delivery."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "description": "Conversation to which the message was submitted."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The submitted message activity ID and conversation."
+                    },
+                    "FunctionMetadata_microsoft_teams_bot_sendmessage": {
+                        "type": "object",
+                        "properties": {
+                            "conversationReferences": {
+                                "description": "Trusted conversation references keyed by conversation ID, saved by the application from authenticated bot events or conversation creation.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this for a new message in a known conversation. Use `reply-message` for a response to a specific activity and `create-conversation` when no conversation exists. Conversation IDs come from incoming bot context or creation. This posts to the conversation's participants, not a separate recipient list. Repeating the call can send duplicates."
+            },
+            "filePath": "./microsoft-teams-bot/tools/send-message.ts",
+            "version": "19f5c99429bf2ab3c4e96491db9ba3bc758ed970086c03d998b574595b6d0768",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/send-message/19f5c99429bf2ab3c4e96491db9ba3bc758ed970086c03d998b574595b6d0768.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/send-message/19f5c99429bf2ab3c4e96491db9ba3bc758ed970086c03d998b574595b6d0768.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-activity",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Replace the editable content of a bot activity in a conversation, including message text and rich cards. This is complete content replacement, not a partial patch.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_updateactivity",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_updateactivity",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_microsoft_teams_bot_updateactivity",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_updateactivity": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "Replacement event or invocation name; omitted or empty clears it.",
+                                "type": "string"
+                            },
+                            "text": {
+                                "description": "Complete replacement text; omission or empty string clears the prior text.",
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "message",
+                                    "event",
+                                    "invoke",
+                                    "typing",
+                                    "endOfConversation",
+                                    "contactRelationUpdate",
+                                    "conversationUpdate",
+                                    "deleteUserData",
+                                    "messageUpdate",
+                                    "messageDelete",
+                                    "installationUpdate",
+                                    "messageReaction",
+                                    "suggestion",
+                                    "trace",
+                                    "handoff"
+                                ],
+                                "description": "Type of the replacement activity; changing type is subject to channel restrictions."
+                            },
+                            "value": {
+                                "description": "Complete replacement structured event value; omitted or {} clears prior value content.",
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "summary": {
+                                "description": "Replacement card fallback text; omission or empty string clears it.",
+                                "type": "string"
+                            },
+                            "activityId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Existing activity whose editable content is being replaced."
+                            },
+                            "textFormat": {
+                                "description": "Replacement text rendering format; defaults to markdown.",
+                                "type": "string",
+                                "enum": [
+                                    "plain",
+                                    "markdown",
+                                    "xml"
+                                ]
+                            },
+                            "attachments": {
+                                "description": "Complete replacement attachment list; omission or [] clears existing cards and attachments.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Optional attachment display name.",
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "description": "Structured embedded card document with card-specific dynamic properties.",
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        },
+                                        "contentUrl": {
+                                            "description": "Optional file or media location.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "contentType": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "File MIME type or card media type."
+                                        },
+                                        "thumbnailUrl": {
+                                            "description": "Optional preview image URL.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        }
+                                    },
+                                    "required": [
+                                        "contentType"
+                                    ],
+                                    "additionalProperties": false,
+                                    "anyOf": [
+                                        {
+                                            "properties": {
+                                                "content": {
+                                                    "description": "Structured embedded card document with card-specific dynamic properties."
+                                                }
+                                            },
+                                            "required": [
+                                                "content"
+                                            ]
+                                        },
+                                        {
+                                            "properties": {
+                                                "contentUrl": {
+                                                    "description": "Optional file or media location."
+                                                }
+                                            },
+                                            "required": [
+                                                "contentUrl"
+                                            ]
+                                        }
+                                    ],
+                                    "description": "Replacement file, media attachment, or embedded rich card."
+                                }
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Conversation containing the activity."
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "activityId",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Activity identity and complete replacement editable content."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_updateactivity": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Activity resource ID returned after the update."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "description": "Conversation containing the updated activity."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Activity identity acknowledged by the Connector after the update."
+                    },
+                    "FunctionMetadata_microsoft_teams_bot_updateactivity": {
+                        "type": "object",
+                        "properties": {
+                            "serviceUrl": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Trusted service URL saved from authenticated incoming bot context for this conversation."
+                            },
+                            "bot": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Connected bot channel account ID saved from authenticated incoming context."
+                                    }
+                                },
+                                "required": [
+                                    "id"
+                                ],
+                                "additionalProperties": {},
+                                "description": "Connected bot identity, not the identity of the incoming message sender."
+                            }
+                        },
+                        "required": [
+                            "serviceUrl",
+                            "bot"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use the conversation and activity IDs from incoming context or a prior send. Supply the desired complete editable content, including any cards to retain. Omitted text and attachments are cleared by this contract, not preserved. Use `send-message` for a new message and `delete-activity` to remove one. Only activities the bot is allowed to edit can be updated."
+            },
+            "filePath": "./microsoft-teams-bot/tools/update-activity.ts",
+            "version": "41c578d77c772aaf7185b45e2829fc649524d752a25ddaa361f58f1b98b950fc",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/update-activity/41c578d77c772aaf7185b45e2829fc649524d752a25ddaa361f58f1b98b950fc.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/update-activity/41c578d77c772aaf7185b45e2829fc649524d752a25ddaa361f58f1b98b950fc.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "upload-attachment",
+            "integrationId": "microsoft-teams-bot",
+            "description": "Upload a file of up to 5 MiB and an optional thumbnail into the conversation's channel blob storage. Upload alone does not send a message.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_microsoft_teams_bot_uploadattachment",
+            "output_schema_ref": "#/definitions/FunctionOutput_microsoft_teams_bot_uploadattachment",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_microsoft_teams_bot_uploadattachment": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Display filename, preserving Unicode."
+                            },
+                            "contentType": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "MIME/content type of the original file."
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "maxLength": 6990508,
+                                "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+                                "description": "Exact original binary bytes as standard padded base64; no data-URI prefix. Combined decoded original and thumbnail size is at most 5 MiB.",
+                                "contentEncoding": "base64"
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Conversation whose channel storage will receive the attachment."
+                            },
+                            "thumbnailBase64": {
+                                "type": "string",
+                                "maxLength": 6990508,
+                                "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+                                "description": "Optional exact thumbnail bytes as standard padded base64; omitted means no thumbnail, while empty means explicit zero-byte thumbnail.",
+                                "contentEncoding": "base64"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "contentType",
+                            "contentBase64",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Upload an original file and optional thumbnail into an existing conversation storage."
+                    },
+                    "FunctionOutput_microsoft_teams_bot_uploadattachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Attachment ID usable with get-attachment and download-attachment."
+                            },
+                            "conversationId": {
+                                "type": "string",
+                                "description": "Conversation whose storage received the upload."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "conversationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The uploaded attachment reference and its conversation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use an existing conversation ID from bot context or `create-conversation`. Provide binary bytes as standard base64, with a filename and MIME type. The file and optional thumbnail together must not exceed 5 MiB. Use `get-attachment` for available views afterward; use `send-message` separately to post content."
+            },
+            "filePath": "./microsoft-teams-bot/tools/upload-attachment.ts",
+            "version": "5e362c30767ca9471001ae7287061953622c155fc1968448f908bce3f57d1044",
+            "location": {
+                "js": "templates-zero/microsoft-teams-bot/tools/upload-attachment/5e362c30767ca9471001ae7287061953622c155fc1968448f908bce3f57d1044.cjs",
+                "ts": "templates-zero/microsoft-teams-bot/tools/upload-attachment/5e362c30767ca9471001ae7287061953622c155fc1968448f908bce3f57d1044.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}
