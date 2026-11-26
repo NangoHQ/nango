@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -5,14 +6,12 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
 import { getFlags } from '@nangohq/feature-flags';
-import { getLogger, report } from '@nangohq/utils';
+import { report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { isTool } from '../functions/models/functions.js';
 
 import type { CatalogIndex, CatalogIndexAlias, CatalogIndexProvider, FlowsZeroJson, FlowZeroJson } from '@nangohq/types';
-
-const logger = getLogger('Catalog');
 
 /** `packages/shared`, where integration-templates writes flows.zero.json, catalog.json and catalog/. Same depth from lib/ and dist/. */
 const SHARED_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -63,14 +62,17 @@ const catalogIndexSchema = z
 /**
  * Reads the template catalog that integration-templates writes into `packages/shared`.
  *
- * - With `catalog.json` (and the `catalog-index-file` flag on), only the index is read up front. A
- *   provider's definitions (`catalog/<provider>.json`) are read when a request needs them and kept in an
- *   LRU bounded by provider count and by total file size, so memory doesn't grow with the catalog.
- * - Otherwise, the whole of `flows.zero.json` is read once and kept, as before.
+ * - With the `catalog-index-file` flag on, only `catalog.json` (the index) is read up front. A provider's
+ *   definitions (`catalog/<provider>.json`) are read when a request needs them and kept in an LRU bounded
+ *   by provider count and by total file size, so memory doesn't grow with the catalog.
+ * - With the flag off, the whole of `flows.zero.json` is read once and kept, as before.
  *
  * Both return the same entries: a provider's flows.zero.json entry, with aliases (symlinked providers)
  * under their own key and `symLinkTargetName` set. The catalog never changes while a process runs, so
  * nothing expires; the LRU only caps memory.
+ *
+ * Nothing here throws on a bad file: a catalog file that's missing, unreadable or corrupt is reported, and
+ * what it describes is left out (an empty catalog, or a provider without templates).
  */
 export class CatalogStore {
     private readonly dir: string;
@@ -78,9 +80,11 @@ export class CatalogStore {
     private readonly maxBytes: number;
     private readonly useIndexFile: () => boolean;
 
-    /** `undefined`: not read yet. `null`: there's no usable catalog.json, so flows.zero.json is used. */
-    private index: CatalogIndex | null | undefined;
+    /** `undefined`: not read yet. */
+    private index: CatalogIndex | undefined;
     private legacy: Map<string, FlowZeroJson> | undefined;
+    /** Provider files found missing, unreadable or corrupt: their providers have no templates. */
+    private readonly unusableFiles = new Set<string>();
     private readonly cache = new Map<string, { entry: FlowZeroJson; bytes: number }>();
     private cachedBytes = 0;
 
@@ -107,26 +111,28 @@ export class CatalogStore {
         }
 
         const summary = index.providers[provider];
-        if (!summary) {
+        const fileSummary = summary && this.fileSummary(index, summary);
+        if (!summary || !fileSummary) {
             return null;
         }
-        const fileProvider = isAlias(summary) ? summary.aliasOf : provider;
-        const fileSummary = index.providers[fileProvider];
-        if (!fileSummary || isAlias(fileSummary)) {
-            throw new Error(`catalog.json: '${provider}' points at '${fileProvider}', which has no file`);
+        const file = this.readProviderFile(isAlias(summary) ? summary.aliasOf : provider, fileSummary);
+        if (!file) {
+            return null;
         }
-
-        const text = fs.readFileSync(path.join(this.dir, fileSummary.file), 'utf8');
-        const parsed = JSON.parse(text) as FlowZeroJson;
-        const entry: FlowZeroJson = isAlias(summary) ? { ...parsed, providerConfigKey: provider, symLinkTargetName: summary.aliasOf } : parsed;
-        this.remember(provider, entry, text.length);
+        const entry: FlowZeroJson = isAlias(summary) ? { ...file.entry, providerConfigKey: provider, symLinkTargetName: summary.aliasOf } : file.entry;
+        this.remember(provider, entry, file.bytes);
         return entry;
     }
 
     /** Every provider with templates, aliases included. */
     listProviders(): string[] {
         const index = this.currentIndex();
-        return index ? Object.keys(index.providers) : [...this.legacyEntries().keys()];
+        if (!index) {
+            return [...this.legacyEntries().keys()];
+        }
+        return Object.entries(index.providers)
+            .filter(([, summary]) => this.fileSummary(index, summary))
+            .map(([provider]) => provider);
     }
 
     /** How many templates a provider has, without reading its definitions when catalog.json is used. */
@@ -138,8 +144,7 @@ export class CatalogStore {
         }
 
         const summary = index.providers[provider];
-        const fileSummary = summary && isAlias(summary) ? index.providers[summary.aliasOf] : summary;
-        return fileSummary && !isAlias(fileSummary) ? fileSummary.counts : null;
+        return (summary && this.fileSummary(index, summary)?.counts) ?? null;
     }
 
     /** Providers with functions, aliases included: what to read to find a function by UUID. */
@@ -157,6 +162,7 @@ export class CatalogStore {
         return summary && isAlias(summary) ? summary.aliasOf : null;
     }
 
+    /** The index when the flag is on, or null when flows.zero.json is used. */
     private currentIndex(): CatalogIndex | null {
         if (!this.useIndexFile()) {
             if (this.cache.size > 0) {
@@ -164,50 +170,79 @@ export class CatalogStore {
             }
             return null;
         }
-        if (this.index === undefined) {
-            this.index = this.readIndex();
-        }
-        if (this.index) {
-            // Switched from flows.zero.json: let it be garbage collected.
-            this.legacy = undefined;
-        }
+        this.index ??= this.readIndex();
+        // Switched from flows.zero.json: let it be garbage collected.
+        this.legacy = undefined;
         return this.index;
     }
 
-    private readIndex(): CatalogIndex | null {
+    /** catalog.json, or an empty catalog when it can't be used. Providers whose file is missing are left out. */
+    private readIndex(): CatalogIndex {
         const indexPath = path.join(this.dir, 'catalog.json');
-        if (!fs.existsSync(indexPath)) {
-            logger.warning(`${indexPath} not found, reading flows.zero.json instead`);
-            return null;
-        }
+        const empty = (reason: string, err?: unknown): CatalogIndex => {
+            report(new Error(`${indexPath} ${reason}, so the template catalog is empty`, { cause: err }));
+            return { formatVersion: 1, providers: {} };
+        };
 
         let json: unknown;
         try {
             json = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
         } catch (err) {
-            logger.error(`${indexPath} can't be read, reading flows.zero.json instead`, { err });
-            return null;
+            return empty("can't be read", err);
         }
 
-        // A format this version of Nango doesn't know yet.
         const formatVersion = (json as { formatVersion?: unknown } | null)?.formatVersion;
         if (typeof formatVersion === 'number' && formatVersion !== 1) {
-            logger.warning(`${indexPath} has formatVersion ${formatVersion}, expected 1; reading flows.zero.json instead`);
-            return null;
+            return empty(`has formatVersion ${formatVersion}, which this version of Nango can't read`);
         }
 
         const index = catalogIndexSchema.safeParse(json);
         if (!index.success) {
-            logger.error(`${indexPath} is malformed, reading flows.zero.json instead:\n${z.prettifyError(index.error)}`);
-            return null;
+            return empty(`is malformed:\n${z.prettifyError(index.error)}`);
+        }
+
+        for (const summary of Object.values(index.data.providers)) {
+            if (!isAlias(summary) && !fs.existsSync(path.join(this.dir, summary.file))) {
+                this.unusableFiles.add(summary.file);
+            }
+        }
+        if (this.unusableFiles.size > 0) {
+            report(new Error(`${indexPath} lists provider files that don't exist; those providers have no templates: ${[...this.unusableFiles].join(', ')}`));
         }
         return index.data;
     }
 
+    /** The summary of the file a provider is read from (its target's for an alias), or null when it can't be used. */
+    private fileSummary(index: CatalogIndex, summary: CatalogIndexProvider | CatalogIndexAlias): CatalogIndexProvider | null {
+        const fileSummary = isAlias(summary) ? index.providers[summary.aliasOf] : summary;
+        return fileSummary && !isAlias(fileSummary) && !this.unusableFiles.has(fileSummary.file) ? fileSummary : null;
+    }
+
+    /** A provider's file, or null (reported once) when it can't be read, isn't JSON, or doesn't match its sha256. */
+    private readProviderFile(provider: string, summary: CatalogIndexProvider): { entry: FlowZeroJson; bytes: number } | null {
+        try {
+            const text = fs.readFileSync(path.join(this.dir, summary.file), 'utf8');
+            if (createHash('sha256').update(text).digest('hex') !== summary.sha256) {
+                throw new Error("its sha256 doesn't match catalog.json");
+            }
+            return { entry: JSON.parse(text) as FlowZeroJson, bytes: text.length };
+        } catch (err) {
+            this.unusableFiles.add(summary.file);
+            report(new Error(`${summary.file} can't be used, so '${provider}' has no templates`, { cause: err }));
+            return null;
+        }
+    }
+
+    /** flows.zero.json, or no providers (reported) when it can't be read. */
     private legacyEntries(): Map<string, FlowZeroJson> {
         if (!this.legacy) {
-            const flows = JSON.parse(fs.readFileSync(path.join(this.dir, 'flows.zero.json'), 'utf8')) as FlowsZeroJson;
-            this.legacy = new Map(flows.map((entry) => [entry.providerConfigKey, entry]));
+            try {
+                const flows = JSON.parse(fs.readFileSync(path.join(this.dir, 'flows.zero.json'), 'utf8')) as FlowsZeroJson;
+                this.legacy = new Map(flows.map((entry) => [entry.providerConfigKey, entry]));
+            } catch (err) {
+                report(new Error(`${path.join(this.dir, 'flows.zero.json')} can't be read, so the template catalog is empty`, { cause: err }));
+                this.legacy = new Map();
+            }
         }
         return this.legacy;
     }
@@ -248,22 +283,31 @@ let refreshTimer: NodeJS.Timeout | undefined;
 
 async function refreshIndexFileFlag(): Promise<void> {
     try {
-        indexFileEnabled = await getFlags().isCatalogIndexFileEnabled();
+        const enabled = await getFlags().isCatalogIndexFileEnabled();
+        const changed = enabled !== indexFileEnabled;
+        indexFileEnabled = enabled;
+        if (changed && refreshTimer) {
+            // Read the other file now rather than in the next request that needs the catalog.
+            catalogStore.listProviders();
+        }
     } catch (err) {
         report(err);
     }
 }
 
 /**
- * Reads the `catalog-index-file` flag, then again every 30 seconds. Call at startup, after the feature
- * flags are initialized, so the first lookups already use the right file. Until then, and in processes
- * that never call it, the flag's default (flows.zero.json) applies.
+ * Reads the `catalog-index-file` flag and the catalog it points at, then the flag again every 30 seconds. Call
+ * at startup, after the feature flags are initialized, so the first lookups already use the right file. Until
+ * then, and in processes that never call it, the flag's default applies.
  */
 export async function startCatalogFlagRefresh(): Promise<void> {
     if (refreshTimer) {
         return;
     }
     await refreshIndexFileFlag();
+    // Read the catalog (catalog.json, or flows.zero.json with the flag off) at startup, as before, rather than
+    // in the first request that needs it.
+    catalogStore.listProviders();
     refreshTimer = setInterval(() => void refreshIndexFileFlag(), FLAG_REFRESH_INTERVAL_MS);
     refreshTimer.unref();
 }

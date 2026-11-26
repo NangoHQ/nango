@@ -5,10 +5,17 @@ import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { report } from '@nangohq/utils';
+
 import { isTool } from '../functions/models/functions.js';
-import { CatalogStore } from './store.js';
+import { CatalogStore, catalogStore, startCatalogFlagRefresh, stopCatalogFlagRefresh } from './store.js';
 
 import type { CatalogIndex, FlowZeroJson } from '@nangohq/types';
+
+vi.mock('@nangohq/utils', async (importOriginal) => ({ ...(await importOriginal<Record<string, unknown>>()), report: vi.fn() }));
+
+let indexFileFlag = false;
+vi.mock('@nangohq/feature-flags', () => ({ getFlags: () => ({ isCatalogIndexFileEnabled: () => Promise.resolve(indexFileFlag) }) }));
 
 const onEventScripts = {
     'post-connection-creation': [],
@@ -73,6 +80,7 @@ describe('CatalogStore', () => {
     beforeEach(() => {
         dir = fs.mkdtempSync(path.join(os.tmpdir(), 'catalog-store-'));
         useIndexFile = true;
+        vi.mocked(report).mockClear();
     });
 
     afterEach(() => {
@@ -147,8 +155,8 @@ describe('CatalogStore', () => {
         });
     });
 
-    describe('reading flows.zero.json instead', () => {
-        it('when the flag is off', () => {
+    describe('with the flag off', () => {
+        it('reads flows.zero.json', () => {
             writeCatalog(dir);
             useIndexFile = false;
             const readFile = vi.spyOn(fs, 'readFileSync');
@@ -164,38 +172,89 @@ describe('CatalogStore', () => {
             expect(readFile.mock.calls.map(([file]) => path.basename(String(file)))).toStrictEqual(['flows.zero.json']);
         });
 
-        it('when catalog.json is missing', () => {
-            writeCatalog(dir, { withIndex: false });
-            expect(store().getEntry('linear')).toStrictEqual({ ...linear, symLinkTargetName: null });
-        });
-
-        it('when catalog.json has another format version', () => {
-            writeCatalog(dir, { formatVersion: 2 });
-            expect(store().getEntry('linear')).toStrictEqual({ ...linear, symLinkTargetName: null });
-        });
-
-        it("when catalog.json isn't valid JSON", () => {
+        it("gives an empty catalog, reported, when flows.zero.json can't be read", () => {
             writeCatalog(dir);
-            fs.writeFileSync(path.join(dir, 'catalog.json'), '{"formatVersion": 1, "providers": {');
-            expect(store().listProviders()).toStrictEqual(['github', 'github-app', 'linear', 'notion']);
+            fs.rmSync(path.join(dir, 'flows.zero.json'));
+            useIndexFile = false;
+            const catalog = store();
+
+            expect(catalog.listProviders()).toStrictEqual([]);
+            expect(catalog.getEntry('linear')).toBeNull();
+            expect(report).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe("an empty catalog, reported, when catalog.json can't be used", () => {
+        const editIndex = (edit: (index: CatalogIndex) => unknown) => {
+            const indexPath = path.join(dir, 'catalog.json');
+            fs.writeFileSync(indexPath, JSON.stringify(edit(JSON.parse(fs.readFileSync(indexPath, 'utf8')) as CatalogIndex)));
+        };
+
+        it.each([
+            ['is missing', () => fs.rmSync(path.join(dir, 'catalog.json'))],
+            ["isn't valid JSON", () => fs.writeFileSync(path.join(dir, 'catalog.json'), '{"formatVersion": 1, "providers": {')],
+            ['has another format version', () => editIndex((index) => ({ ...index, formatVersion: 2 }))],
+            ['has no providers', () => editIndex((index) => ({ formatVersion: index.formatVersion }))],
+            ['has no format version', () => editIndex((index) => ({ providers: index.providers }))],
+            ['lists a provider without its file', () => editIndex((index) => ({ ...index, providers: { ...index.providers, linear: { sha256: 'abc' } } }))],
+            [
+                'lists an alias of a provider without a file',
+                () => editIndex((index) => ({ ...index, providers: { ...index.providers, broken: { aliasOf: 'missing' } } }))
+            ]
+        ])('when catalog.json %s', (_, breakIndex) => {
+            writeCatalog(dir);
+            breakIndex();
+            const readFile = vi.spyOn(fs, 'readFileSync');
+            const catalog = store();
+
+            expect(catalog.listProviders()).toStrictEqual([]);
+            expect(catalog.getEntry('linear')).toBeNull();
+            expect(catalog.getCounts('linear')).toBeNull();
+            expect(report).toHaveBeenCalledTimes(1);
+            expect(readFile.mock.calls.map(([file]) => path.basename(String(file)))).not.toContain('flows.zero.json');
+        });
+    });
+
+    describe("a provider whose file can't be used has no templates, reported once", () => {
+        it('when its file is missing, along with its aliases', () => {
+            writeCatalog(dir);
+            fs.rmSync(path.join(dir, 'catalog', 'github.json'));
+            const catalog = store();
+
+            expect(catalog.listProviders()).toStrictEqual(['linear', 'notion']);
+            expect(catalog.getEntry('github')).toBeNull();
+            expect(catalog.getEntry('github-app')).toBeNull();
+            expect(catalog.getCounts('github')).toBeNull();
+            expect(catalog.getEntry('linear')).toStrictEqual(linear);
+            expect(report).toHaveBeenCalledTimes(1);
         });
 
         it.each([
-            ['has no providers', (index: CatalogIndex) => ({ formatVersion: index.formatVersion })],
-            ['has no format version', (index: CatalogIndex) => ({ providers: index.providers })],
-            ['lists a provider without its file', (index: CatalogIndex) => ({ ...index, providers: { ...index.providers, linear: { sha256: 'abc' } } })],
-            [
-                'lists an alias of a provider without a file',
-                (index: CatalogIndex) => ({ ...index, providers: { ...index.providers, broken: { aliasOf: 'missing' } } })
-            ]
-        ])('when catalog.json %s', (_, edit) => {
+            ["isn't what catalog.json describes", (file: string) => fs.writeFileSync(file, JSON.stringify({ ...linear, actions: [] })), false],
+            ["isn't valid JSON", (file: string) => fs.writeFileSync(file, '{"providerConfigKey": "linear"'), true]
+        ])('when its file %s', (_, breakFile, rehash) => {
             writeCatalog(dir);
-            const indexPath = path.join(dir, 'catalog.json');
-            fs.writeFileSync(indexPath, JSON.stringify(edit(JSON.parse(fs.readFileSync(indexPath, 'utf8')) as CatalogIndex)));
-
+            const file = path.join(dir, 'catalog', 'linear.json');
+            breakFile(file);
+            if (rehash) {
+                // A file that matches its hash, so it fails on parsing
+                const indexPath = path.join(dir, 'catalog.json');
+                const index = JSON.parse(fs.readFileSync(indexPath, 'utf8')) as CatalogIndex;
+                index.providers['linear'] = {
+                    ...(index.providers['linear'] as object),
+                    sha256: createHash('sha256').update(fs.readFileSync(file)).digest('hex')
+                } as never;
+                fs.writeFileSync(indexPath, JSON.stringify(index));
+            }
             const catalog = store();
-            expect(catalog.getEntry('linear')).toStrictEqual({ ...linear, symLinkTargetName: null });
-            expect(catalog.listProviders()).toStrictEqual(['github', 'github-app', 'linear', 'notion']);
+            const readFile = vi.spyOn(fs, 'readFileSync');
+
+            expect(catalog.getEntry('linear')).toBeNull();
+            expect(catalog.getEntry('linear')).toBeNull();
+            expect(readFile.mock.calls.filter(([path]) => String(path).endsWith('linear.json'))).toHaveLength(1);
+            expect(catalog.listProviders()).toStrictEqual(['github', 'notion', 'github-app']);
+            expect(catalog.getEntry('github')).toStrictEqual(github);
+            expect(report).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -209,5 +268,29 @@ describe('CatalogStore', () => {
         expect(catalog.getEntry('linear')).toStrictEqual(linear);
         useIndexFile = false;
         expect(catalog.getEntry('linear')).toHaveProperty('symLinkTargetName', null);
+    });
+});
+
+describe('startCatalogFlagRefresh', () => {
+    afterEach(() => {
+        stopCatalogFlagRefresh();
+        vi.useRealTimers();
+        vi.restoreAllMocks();
+    });
+
+    it('reads the catalog at startup, and again when the flag changes', async () => {
+        vi.useFakeTimers();
+        const listProviders = vi.spyOn(catalogStore, 'listProviders').mockReturnValue([]);
+        indexFileFlag = false;
+
+        await startCatalogFlagRefresh();
+        expect(listProviders).toHaveBeenCalledTimes(1);
+
+        indexFileFlag = true;
+        await vi.advanceTimersByTimeAsync(30_000);
+        expect(listProviders).toHaveBeenCalledTimes(2);
+
+        await vi.advanceTimersByTimeAsync(30_000);
+        expect(listProviders).toHaveBeenCalledTimes(2);
     });
 });
