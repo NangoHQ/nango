@@ -61,7 +61,7 @@ const Property: React.FC<PropertyProps> = ({ label, children, to, copy, filter }
                             variant="ghost"
                             size="xs"
                             label={filter.label}
-                            tooltip="Filter"
+                            tooltip={`Filter by this ${label.toLowerCase()}`}
                             onClick={() => {
                                 track('logs:filter_update', { filter: filter.kind });
                                 filter.onClick();
