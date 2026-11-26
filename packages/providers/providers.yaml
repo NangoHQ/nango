@@ -36629,7 +36629,7 @@ smarfle:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://www.smarfle.com/api/v1
+        base_url: https://www.smarfle.com
         headers:
             authorization: Bearer ${apiKey}
         retry:
@@ -36638,7 +36638,7 @@ smarfle:
         verification:
             method: GET
             endpoints:
-                - /me
+                - /api/v1/me
     docs: https://nango.dev/docs/api-integrations/smarfle
     docs_connect: https://nango.dev/docs/api-integrations/smarfle/connect
     credentials:
