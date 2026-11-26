@@ -20,7 +20,7 @@ const levels: Record<LogLevel, { label: string; tone: StatusIndicatorProps['tone
 };
 
 const Level: React.FC<{ level: LogLevel }> = ({ level }) => (
-    <span className="flex type-text-regular-xs text-text-secondary">
+    <span className="flex h-5 items-center type-text-regular-xs text-text-secondary">
         <StatusIndicator tone={levels[level].tone} size="sm">
             {levels[level].label}
         </StatusIndicator>
@@ -52,7 +52,7 @@ function messagePayload(message: MessageRow): Record<string, unknown> | null {
     return pl;
 }
 
-// A callback ref, because the measured span remounts when the row turns into a button.
+// A callback ref, because the measured span only exists while the row is closed.
 function useIsTruncated(): [(node: HTMLElement | null) => void, boolean] {
     const [node, setNode] = useState<HTMLElement | null>(null);
     const [truncated, setTruncated] = useState(false);
@@ -79,18 +79,34 @@ function formatDuration(ms: number): string {
     return millisecondsToRuntime(ms - (ms % 1000));
 }
 
+function splitUrl(url: string): [head: string, lastSegment: string, query: string] {
+    const bare = url.replace(/^https?:\/\//, '');
+    const queryStart = bare.indexOf('?');
+    const path = queryStart === -1 ? bare : bare.slice(0, queryStart);
+    const query = queryStart === -1 ? '' : bare.slice(queryStart);
+    const lastSlash = path.lastIndexOf('/');
+    if (lastSlash <= 0) {
+        return [path, '', query];
+    }
+    return [path.slice(0, lastSlash), path.slice(lastSlash), query];
+}
+
+const StatusCode: React.FC<{ code: number }> = ({ code }) => <span className={code >= 400 ? 'text-text-danger' : 'text-text-success'}>{code}</span>;
+
 const HttpSummary: React.FC<{ message: MessageRow }> = ({ message }) => {
     const code = message.response?.code;
+    const [head, lastSegment, query] = splitUrl(message.request?.url ?? '');
     return (
-        <>
-            <span className="text-text-strong">{message.request?.method}</span>{' '}
-            {code !== undefined && (
-                <>
-                    <span className={code >= 400 ? 'text-text-danger' : 'text-text-success'}>{code}</span>{' '}
-                </>
-            )}
-            <span>{message.request?.url.replace(/^https?:\/\//, '')}</span>
-        </>
+        <span className="flex min-w-0 gap-[1ch] whitespace-nowrap type-code-regular-xs text-text-secondary" data-ph-mask>
+            <span className="text-text-strong">{message.request?.method}</span>
+            {code !== undefined && <StatusCode code={code} />}
+            <span className="sr-only">{`${head}${lastSegment}${query}`}</span>
+            <span aria-hidden className="flex min-w-0">
+                <span className="truncate">{head}</span>
+                {lastSegment && <span className="max-w-[60%] shrink-0 truncate">{lastSegment}</span>}
+                {query && <span className="min-w-[2ch] shrink-1000 truncate">{query}</span>}
+            </span>
+        </span>
     );
 };
 
@@ -106,57 +122,93 @@ export const LogRow: React.FC<{
     const showFullMessage = !isHttp && truncated;
     const expandable = Boolean(payload) || showFullMessage || open;
 
+    const icon = (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <span className={cn('shrink-0 text-icon-secondary [&>svg]:size-3.5', open ? 'mr-2 inline-flex indent-0 align-[-2px]' : 'flex')}>
+                    {isHttp ? <Globe aria-label="HTTP request" /> : <MessageSquare aria-label="Message" />}
+                </span>
+            </TooltipTrigger>
+            <TooltipContent>{isHttp ? 'HTTP request' : 'Message'}</TooltipContent>
+        </Tooltip>
+    );
+
     const cells = (
         <>
-            <span className="type-code-regular-xs text-text-secondary">{format(new Date(message.createdAt), 'HH:mm:ss.SSS')}</span>
+            <span className="flex h-5 items-center type-code-regular-xs text-text-secondary">{format(new Date(message.createdAt), 'HH:mm:ss.SSS')}</span>
             <Level level={message.level} />
-            <span className="flex min-w-0 items-center gap-2">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <span className="flex shrink-0 text-icon-secondary [&>svg]:size-3.5">
-                            {isHttp ? <Globe aria-label="HTTP request" /> : <MessageSquare aria-label="Message" />}
+            {open ? (
+                <span className={cn('min-w-0 select-text pl-5.5 -indent-5.5', isHttp ? 'type-code-regular-xs' : 'type-text-regular-sm', 'leading-5')}>
+                    {icon}
+                    {isHttp && message.request ? (
+                        <span className="break-all type-code-regular-xs leading-5 text-text-secondary" data-ph-mask>
+                            <span className="text-text-strong">{message.request.method}</span>{' '}
+                            {message.response?.code !== undefined && (
+                                <>
+                                    <StatusCode code={message.response.code} />{' '}
+                                </>
+                            )}
+                            {message.request.url}
                         </span>
-                    </TooltipTrigger>
-                    <TooltipContent>{isHttp ? 'HTTP request' : 'Message'}</TooltipContent>
-                </Tooltip>
-                <span
-                    ref={summaryRef}
-                    className={cn('truncate', isHttp ? 'type-code-regular-xs text-text-secondary' : 'type-text-regular-sm text-text-default')}
-                    data-ph-mask
-                >
-                    {isHttp ? <HttpSummary message={message} /> : message.message}
+                    ) : (
+                        <span className="whitespace-pre-wrap break-words type-text-regular-sm leading-5 text-text-default" data-ph-mask>
+                            {message.message}
+                        </span>
+                    )}
                 </span>
+            ) : (
+                <span className="flex min-w-0 items-center gap-2">
+                    {icon}
+                    {isHttp ? (
+                        <HttpSummary message={message} />
+                    ) : (
+                        <span ref={summaryRef} className="truncate type-text-regular-sm text-text-default" data-ph-mask>
+                            {message.message}
+                        </span>
+                    )}
+                </span>
+            )}
+            <span className="flex h-5 items-center justify-end type-code-regular-xs text-text-muted">
+                {isHttp && message.durationMs ? formatDuration(message.durationMs) : null}
             </span>
-            <span className="text-right type-code-regular-xs text-text-muted">{isHttp && message.durationMs ? formatDuration(message.durationMs) : null}</span>
         </>
     );
 
     return (
         <div className="border-b border-border-muted last:border-b-0">
             {expandable ? (
-                <button
-                    type="button"
+                // A div, because browsers don't let users select text inside a <button>.
+                <div
+                    role="button"
+                    tabIndex={0}
                     aria-expanded={open}
-                    onClick={onToggle}
+                    onClick={(event) => {
+                        const selection = window.getSelection();
+                        if (selection && !selection.isCollapsed && event.currentTarget.contains(selection.anchorNode)) {
+                            return;
+                        }
+                        onToggle();
+                    }}
+                    onKeyDown={(event) => {
+                        if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+                            event.preventDefault();
+                            onToggle();
+                        }
+                    }}
                     className={cn(
                         LOG_GRID,
                         'focus-default min-h-8 w-full cursor-pointer text-left outline-none hover:bg-state-hover',
-                        open && 'bg-state-selected hover:bg-state-selected'
+                        open && 'items-start bg-state-selected py-1.5 hover:bg-state-selected'
                     )}
                 >
                     {cells}
-                </button>
+                </div>
             ) : (
                 <div className={cn(LOG_GRID, 'min-h-8')}>{cells}</div>
             )}
-            {open && expandable && (
-                <div className="flex flex-col gap-2 px-3 pb-3 pt-2">
-                    {showFullMessage && (
-                        <p className="whitespace-pre-wrap break-words type-text-regular-sm text-text-default" data-ph-mask>
-                            {message.message}
-                        </p>
-                    )}
-                    {payload && <CodeBlock bare language="json" code={json} wrapLines data-ph-mask />}
+            {open && payload && (
+                <div className="px-3 pb-3 pt-1">
+                    <CodeBlock bare language="json" code={json} wrapLines constrainHeight={false} collapsedLines={40} data-ph-mask />
                 </div>
             )}
         </div>

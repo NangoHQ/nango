@@ -48,9 +48,9 @@ function useScrollParent(listRef: React.RefObject<HTMLDivElement | null>) {
         if (!list || !parent) {
             return;
         }
-        // Content above the list (the payload) can grow and push the list down.
         const measure = () => setOffsetTop(list.getBoundingClientRect().top - parent.getBoundingClientRect().top + parent.scrollTop);
         measure();
+        // Content above the list (the payload) can grow and push the list down.
         const observer = new ResizeObserver(measure);
         for (const child of Array.from(parent.children)) {
             observer.observe(child);
@@ -168,7 +168,39 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
         }
     }, [lineCount, order, isLive, scrollParent]);
 
-    const onToggle = useCallback((id: string) => setOpenId((current) => (current === id ? null : id)), []);
+    const revealId = useRef<string | null>(null);
+    // By default the virtualizer shifts the scroll by a resized row's growth, which would push the line just opened out of view.
+    rowVirtualizer.shouldAdjustScrollPositionOnItemSizeChange = (item, _delta, instance) =>
+        item.key !== revealId.current && item.start < (instance.scrollOffset ?? 0);
+    const onToggle = useCallback(
+        (id: string) => {
+            const next = openId === id ? null : id;
+            revealId.current = next;
+            setOpenId(next);
+            window.setTimeout(() => {
+                if (revealId.current === next) {
+                    revealId.current = null;
+                }
+            }, 500);
+        },
+        [openId]
+    );
+    const totalSize = rowVirtualizer.getTotalSize();
+    // Reruns on totalSize: the panel can't scroll to the line's end until the virtualizer measures it.
+    useLayoutEffect(() => {
+        const row = revealId.current ? listRef.current?.querySelector(`[data-log-id="${CSS.escape(revealId.current)}"]`) : null;
+        if (!row || !scrollParent) {
+            return;
+        }
+        const rowRect = row.getBoundingClientRect();
+        const viewRect = scrollParent.getBoundingClientRect();
+        // The panel's sticky header covers the top of the scroll area.
+        const visibleTop = scrollParent.querySelector('header')?.getBoundingClientRect().bottom ?? viewRect.top;
+        const overflow = rowRect.bottom - viewRect.bottom;
+        if (overflow > 0) {
+            scrollParent.scrollTop += Math.min(overflow, rowRect.top - visibleTop);
+        }
+    }, [openId, totalSize, scrollParent]);
 
     const filtered = Boolean(debouncedSearch) || level !== 'all';
 
@@ -265,6 +297,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                             <div
                                 key={item.key}
                                 data-index={item.index}
+                                data-log-id={message.id}
                                 ref={rowVirtualizer.measureElement}
                                 className="absolute left-0 top-0 w-full"
                                 style={{ transform: `translateY(${item.start - rowVirtualizer.options.scrollMargin}px)` }}
