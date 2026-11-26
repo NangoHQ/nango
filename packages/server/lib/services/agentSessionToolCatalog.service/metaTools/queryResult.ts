@@ -21,7 +21,7 @@ export const queryResultInputSchema = z
 export const queryResultToolDefinition = {
     name: 'nango_query_result',
     description:
-        'Run JavaScript over a tool result that was too large to return in full, and get back only what the code returns. Pass the result_id from that tool result. Use its shape and sample to write the code.',
+        'Run JavaScript over a tool result that was too large to return in full, and get back only what the code returns. Pass the result_id from that tool result. Use its shape and sample to write the code. An output too large to return in full comes back as a new result_id.',
     inputSchema: queryResultInputSchema,
     annotations: {
         readOnlyHint: true,

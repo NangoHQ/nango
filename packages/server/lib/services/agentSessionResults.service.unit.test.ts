@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { decodeResultId, encodeResultId, formatMegabytes, toolResultForAgent } from './agentSessionResults.service.js';
+import { decodeResultId, encodeResultId, formatMegabytes, storeLargeResult, toolResultForAgent } from './agentSessionResults.service.js';
 
 import type { AgentSession, AgentSessionResolvedConnection } from '@nangohq/types';
 
@@ -119,6 +119,31 @@ describe('toolResultForAgent', () => {
 
         await expect(resultFor(LARGE)).resolves.toBe(LARGE);
         expect(mocks.setTag).toHaveBeenCalledWith('error', error);
+    });
+});
+
+describe('storeLargeResult', () => {
+    const store = async (data: unknown) =>
+        await storeLargeResult({ environmentId: 1, plan: null, session: SESSION, connection: CONNECTION, toolName: 'nango_proxy', data });
+
+    it('leaves a small result inline', async () => {
+        await expect(store({ ok: true })).resolves.toEqual({ kind: 'inline' });
+    });
+
+    it('stores a large result under the tool that returned it', async () => {
+        await expect(store(LARGE)).resolves.toMatchObject({ kind: 'stored', result: { truncated: true } });
+        expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({ records: [expect.objectContaining({ tool: 'nango_proxy' })] }));
+    });
+
+    it('says when a result is over what can be stored, so the caller picks what to return', async () => {
+        await expect(store({ text: 'a'.repeat(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES) })).resolves.toEqual({ kind: 'over_stored_limit' });
+        expect(mocks.upsert).not.toHaveBeenCalled();
+    });
+
+    it('says when storing failed', async () => {
+        mocks.upsert.mockResolvedValue(Err(new Error('records down')));
+
+        await expect(store(LARGE)).resolves.toEqual({ kind: 'store_failed' });
     });
 });
 

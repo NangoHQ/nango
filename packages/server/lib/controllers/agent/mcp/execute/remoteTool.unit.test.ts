@@ -1,7 +1,8 @@
 import { Readable } from 'node:stream';
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { records } from '@nangohq/records';
 import { Err, Ok } from '@nangohq/utils';
 
 import { buildSessionTools } from '../../../../services/agentSessionToolCatalog.service/index.js';
@@ -11,8 +12,11 @@ import { RemoteToolResult } from '../sessionTool.js';
 
 import type { ProxyServiceRequest, ProxyServiceResponse } from '../../../../services/proxy.service.js';
 import type { AgentSessionMcpContext } from '../sessionTool.js';
+import type { CallToolResult } from '@modelcontextprotocol/server';
+import type { UpsertSummary } from '@nangohq/records';
 import type { AgentSession, AgentSessionCompiledToolset, DBEnvironment, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { MockInstance } from 'vitest';
 
 const request = vi.fn();
 vi.mock('../../../../services/proxy.service.js', async (importOriginal) => ({
@@ -20,7 +24,7 @@ vi.mock('../../../../services/proxy.service.js', async (importOriginal) => ({
     default: { request: (...args: unknown[]) => request(...args) }
 }));
 
-const { executeSessionTool } = await import('./execute.js');
+const { executeSessionTool, remoteResultData } = await import('./execute.js');
 
 const TOOLSET: AgentSessionCompiledToolset = {
     'linear-mcp': {
@@ -31,7 +35,7 @@ const TOOLSET: AgentSessionCompiledToolset = {
     }
 };
 
-function context(): AgentSessionMcpContext {
+function context(metaTools: Partial<AgentSession['metaTools']> = {}): AgentSessionMcpContext {
     const session: AgentSession = {
         id: 'session-1',
         environmentId: 1,
@@ -40,7 +44,7 @@ function context(): AgentSessionMcpContext {
             'linear-mcp': { integrationId: 'linear-mcp', provider: 'linear-mcp', connectionId: 'linear-acme', internalConnectionId: 10, configId: 20 }
         },
         compiledToolset: TOOLSET,
-        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } },
+        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} }, ...metaTools },
         expiresAt: new Date(),
         endedAt: null,
         endedReason: null,
@@ -291,5 +295,92 @@ describe('executeSessionTool on an MCP server tool', () => {
     it('rejects an input that is not an object before calling the server', async () => {
         expect(codeOf(await execute(['ENG']))).toBe('invalid_input');
         expect(request).not.toHaveBeenCalled();
+    });
+});
+
+describe('executeSessionTool on an MCP server tool with a large result', () => {
+    let upsert: MockInstance<typeof records.upsert>;
+    const ISSUES = { issues: Array.from({ length: 50 }, (_, i) => ({ id: `ENG-${i}`, description: 'x'.repeat(500) })) };
+
+    beforeEach(() => {
+        request.mockReset();
+        upsert = vi.spyOn(records, 'upsert').mockResolvedValue(Ok({} as UpsertSummary));
+    });
+
+    afterEach(() => {
+        upsert.mockRestore();
+    });
+
+    async function executeWith(result: CallToolResult, metaTools: Partial<AgentSession['metaTools']> = { nangoQueryResult: true }) {
+        mcpServer((message) => response({ body: JSON.stringify({ jsonrpc: '2.0', id: message.id, result }) }));
+        return await executeSessionTool({ integrationId: 'linear-mcp', toolName: 'list_issues', pinned: false, input: {}, context: context(metaTools) });
+    }
+
+    it('stores it and returns a reference in place of the remote result', async () => {
+        const executed = await executeWith({ content: [{ type: 'text', text: JSON.stringify(ISSUES) }], structuredContent: ISSUES });
+
+        expect(executed.unwrap()).toMatchObject({ result_id: expect.any(String), truncated: true, shape: expect.stringContaining('issues: {') });
+        expect(upsert).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 10, model: '_nango_agent_session_session-1' }));
+    });
+
+    it('passes it through when nango_query_result is off', async () => {
+        const result: CallToolResult = { content: [{ type: 'text', text: JSON.stringify(ISSUES) }] };
+
+        const executed = await executeWith(result, {});
+
+        expect(executed.unwrap()).toEqual(new RemoteToolResult(result));
+        expect(upsert).not.toHaveBeenCalled();
+    });
+
+    it('passes a failed call through in full', async () => {
+        const result: CallToolResult = { content: [{ type: 'text', text: 'x'.repeat(20_000) }], isError: true };
+
+        const executed = await executeWith(result);
+
+        expect(executed.unwrap()).toEqual(new RemoteToolResult(result));
+        expect(upsert).not.toHaveBeenCalled();
+    });
+
+    it('passes through a result that holds more than text', async () => {
+        const result: CallToolResult = {
+            content: [
+                { type: 'text', text: 'x'.repeat(20_000) },
+                { type: 'image', data: 'aGVsbG8=', mimeType: 'image/png' }
+            ]
+        };
+
+        const executed = await executeWith(result);
+
+        expect(executed.unwrap()).toEqual(new RemoteToolResult(result));
+        expect(upsert).not.toHaveBeenCalled();
+    });
+});
+
+describe('remoteResultData', () => {
+    it('prefers the structured content', () => {
+        expect(remoteResultData({ content: [{ type: 'text', text: 'ignored' }], structuredContent: { a: 1 } })).toEqual({ a: 1 });
+    });
+
+    it('parses a JSON text block', () => {
+        expect(remoteResultData({ content: [{ type: 'text', text: '[1,2]' }] })).toEqual([1, 2]);
+    });
+
+    it('keeps text that is not JSON as a string', () => {
+        expect(remoteResultData({ content: [{ type: 'text', text: 'plain' }] })).toBe('plain');
+    });
+
+    it('returns several text blocks as a list', () => {
+        expect(
+            remoteResultData({
+                content: [
+                    { type: 'text', text: '{"a":1}' },
+                    { type: 'text', text: 'note' }
+                ]
+            })
+        ).toEqual([{ a: 1 }, 'note']);
+    });
+
+    it('returns nothing for content code could not read', () => {
+        expect(remoteResultData({ content: [{ type: 'image', data: 'aGVsbG8=', mimeType: 'image/png' }] })).toBeUndefined();
     });
 });

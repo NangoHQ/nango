@@ -8,7 +8,7 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { resolveSessionConnection } from '../../../../services/agentSessionConnections.service.js';
-import { decodeResultId } from '../../../../services/agentSessionResults.service.js';
+import { decodeResultId, formatMegabytes, storeLargeResult } from '../../../../services/agentSessionResults.service.js';
 import { queryResultToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { InternalMcpError, PublicMcpError } from '../../../mcp/utils.js';
@@ -28,7 +28,7 @@ export const queryResultTool = makeAgentSessionMcpTool({
     onInvalidArguments: ({ session }, { error }) => {
         trackAgentSessionToolCall({ metaTool: 'nango_query_result', session, errorCode: 'invalid_input', invalidArguments: invalidArgumentsOf(error) });
     },
-    async handler({ args, account, environment, session }) {
+    async handler({ args, account, environment, plan, session }) {
         const track = (properties: { integrationId?: string; logOperationId?: string | undefined; errorCode?: string | undefined }) => {
             trackAgentSessionToolCall({ metaTool: 'nango_query_result', session, goal: args.goal, intent: args.intent, ...properties });
         };
@@ -115,10 +115,13 @@ export const queryResultTool = makeAgentSessionMcpTool({
                 return Err(error);
             }
             const output = 'data' in run.value ? run.value.data : null;
-            const outputBytes = Buffer.byteLength(JSON.stringify(output ?? null), 'utf8');
-            if (outputBytes > envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES) {
-                const limit = `${Math.round(envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES / 1024)} KB`;
-                void logCtx.error(`The code returned ${outputBytes} bytes, over the ${limit} limit`);
+
+            // A large output is stored as a result of its own, so the agent can run code over it in turn. The code
+            // already ran, so an output that cannot be stored is returned in full, as nango_execute does.
+            const large = await storeLargeResult({ environmentId: environment.id, plan, session, connection, toolName: 'nango_query_result', data: output });
+            if (large.kind === 'over_stored_limit') {
+                const limit = formatMegabytes(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES);
+                void logCtx.error(`The code returned more than the ${limit} that can be stored`);
                 void logCtx.failed();
                 track({ integrationId, logOperationId: logCtx.id, errorCode: 'output_too_large' });
                 return Err(outputTooLargeError(limit));
@@ -126,7 +129,7 @@ export const queryResultTool = makeAgentSessionMcpTool({
 
             void logCtx.success();
             track({ integrationId, logOperationId: logCtx.id });
-            return Ok(output);
+            return Ok(large.kind === 'stored' ? large.result : output);
         });
     }
 });

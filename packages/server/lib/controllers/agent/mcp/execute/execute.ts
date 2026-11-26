@@ -7,7 +7,7 @@ import { executeAction } from '../../../../services/action.service.js';
 import * as agentGettingStartedService from '../../../../services/agentGettingStarted.service.js';
 import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { resolveSessionConnection } from '../../../../services/agentSessionConnections.service.js';
-import { toolResultForAgent } from '../../../../services/agentSessionResults.service.js';
+import { storeLargeResult, toolResultForAgent } from '../../../../services/agentSessionResults.service.js';
 import { executeToolDefinition } from '../../../../services/agentSessionToolCatalog.service/index.js';
 import { callRemoteTool, withRemoteMcpSession } from '../../../../services/remoteMcp.service.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
@@ -17,6 +17,7 @@ import { invalidArgumentsOf, makeAgentSessionMcpTool, RemoteToolResult } from '.
 import { actionExecutionErrorToMcp, functionInvokeErrorToMcp, remoteMcpErrorToMcp, toolUnavailableError } from './errors.js';
 
 import type { AgentSessionMcpContext } from '../sessionTool.js';
+import type { CallToolResult } from '@modelcontextprotocol/server';
 import type { AgentSession, AgentSessionMetaTool, AgentSessionResolvedConnection, FunctionSource } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
@@ -302,8 +303,46 @@ async function executeRemoteTool({
         }
 
         track({ logOperationId, ...(result.value.isError ? { errorCode: 'tool_failed' } : {}) });
-        return Ok(new RemoteToolResult(result.value));
+
+        // A failed call is returned in full, since the agent has to read it to recover.
+        const data = result.value.isError ? undefined : remoteResultData(result.value);
+        if (data === undefined) {
+            return Ok(new RemoteToolResult(result.value));
+        }
+
+        const large = await storeLargeResult({ environmentId: environment.id, plan, session, connection, toolName, data });
+        return Ok(large.kind === 'stored' ? large.result : new RemoteToolResult(result.value));
     });
+}
+
+/**
+ * What code over a stored MCP tool result reads: the structured content when the server sent it,
+ * otherwise the text, parsed when it is JSON. Undefined when the result holds an image or anything
+ * else code could not read, so it is never stored.
+ */
+export function remoteResultData(result: CallToolResult): unknown {
+    if (result.structuredContent) {
+        return result.structuredContent;
+    }
+
+    const texts: string[] = [];
+    for (const block of result.content) {
+        if (block.type !== 'text') {
+            return undefined;
+        }
+        texts.push(block.text);
+    }
+
+    const values = texts.map(parseJsonOrText);
+    return values.length === 1 ? values[0] : values;
+}
+
+function parseJsonOrText(text: string): unknown {
+    try {
+        return JSON.parse(text) as unknown;
+    } catch {
+        return text;
+    }
 }
 
 function isEmptyObject(input: unknown): boolean {

@@ -36,37 +36,47 @@ export interface UnstoredToolResult {
     notice: string;
 }
 
-/**
- * What the agent gets back for a tool result. Small results are returned unchanged. A large one is
- * stored under the session's model and replaced with a reference the agent can run code over. The
- * tool already ran, so a result that cannot be stored is still returned in full rather than as an
- * error the agent would read as "retry the tool".
- */
-export async function toolResultForAgent({
-    environmentId,
-    plan,
-    session,
-    connection,
-    toolName,
-    data
-}: {
+export type LargeResult = { kind: 'inline' } | { kind: 'stored'; result: StoredToolResult } | { kind: 'over_stored_limit' } | { kind: 'store_failed' };
+
+export interface ResultToStore {
     environmentId: number;
     plan: DBPlan | null;
     session: AgentSession;
     connection: AgentSessionResolvedConnection;
     toolName: string;
     data: unknown;
-}): Promise<unknown> {
+}
+
+/**
+ * What the agent gets back for a tool result. Small results are returned unchanged. A large one is
+ * stored under the session's model and replaced with a reference the agent can run code over. The
+ * tool already ran, so a result that cannot be stored is still returned in full rather than as an
+ * error the agent would read as "retry the tool".
+ */
+export async function toolResultForAgent(params: ResultToStore): Promise<unknown> {
+    const large = await storeLargeResult(params);
+    switch (large.kind) {
+        case 'stored':
+            return large.result;
+        case 'over_stored_limit':
+            return {
+                data: params.data,
+                notice: `This result is over the ${formatMegabytes(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES)} that can be stored, so it is returned in full.`
+            } satisfies UnstoredToolResult;
+        default:
+            return params.data;
+    }
+}
+
+/** Stores a result over the inline size and describes it. Each caller decides what to return when it is not stored. */
+export async function storeLargeResult({ environmentId, plan, session, connection, toolName, data }: ResultToStore): Promise<LargeResult> {
     const bytes = Buffer.byteLength(JSON.stringify(data ?? null), 'utf8');
     if (!session.metaTools.nangoQueryResult || bytes <= envs.AGENT_SESSION_RESULT_INLINE_MAX_BYTES) {
-        return data;
+        return { kind: 'inline' };
     }
 
     if (bytes > envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES) {
-        return {
-            data,
-            notice: `This result is over the ${formatMegabytes(envs.AGENT_SESSION_RESULT_STORED_MAX_BYTES)} that can be stored, so it is returned in full.`
-        } satisfies UnstoredToolResult;
+        return { kind: 'over_stored_limit' };
     }
 
     const stored = await tracer.trace<Promise<Result<string>>>('server.agentSession.storeResult', async (span: Span) => {
@@ -78,11 +88,11 @@ export async function toolResultForAgent({
         return result;
     });
     if (stored.isErr()) {
-        return data;
+        return { kind: 'store_failed' };
     }
 
     const { shape, sample } = describeResult(data);
-    return { result_id: stored.value, truncated: true, bytes, shape, sample, hint: STORED_RESULT_HINT } satisfies StoredToolResult;
+    return { kind: 'stored', result: { result_id: stored.value, truncated: true, bytes, shape, sample, hint: STORED_RESULT_HINT } };
 }
 
 /** Opaque to the agent. The connection is resolved through the calling session, so an id from another session finds nothing. */
