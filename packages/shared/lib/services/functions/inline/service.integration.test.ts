@@ -60,7 +60,9 @@ describe('inline functions', () => {
             enabled: true,
             code: 'return 1;',
             description: 'One',
-            definition: { uuid: created.uuid, version: '0.0.0', trigger: { kind: 'http' }, input_schema_ref: null, json_schema: {}, limits: {} }
+            definition: { uuid: created.uuid, version: '0.0.0', trigger: { kind: 'http' }, input_schema_ref: null, json_schema: {}, limits: {} },
+            agentSessionId,
+            resultRecordId: created.resultRecordId
         });
     });
 
