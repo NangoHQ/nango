@@ -157,7 +157,7 @@ export const ShowOperation: React.FC<{ operationId: string; actions: React.React
         }
         if (operation.error) {
             pl.error = { message: operation.error.message };
-            if (operation.error.payload) {
+            if (operation.error.payload !== undefined) {
                 pl.error.payload = operation.error.payload;
             }
         }
