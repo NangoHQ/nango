@@ -27,7 +27,15 @@ export {
     ICON_BUTTON_VARIANTS,
     buttonVariants
 } from './components/ui/button';
-export { COPY_BUTTON_RESET_MS, COPY_BUTTON_SIZES, CopyButton, type CopyButtonProps, type CopyButtonSize } from './components/ui/copy-button';
+export {
+    COPY_BUTTON_ICONS,
+    COPY_BUTTON_RESET_MS,
+    COPY_BUTTON_SIZES,
+    CopyButton,
+    type CopyButtonIcon,
+    type CopyButtonProps,
+    type CopyButtonSize
+} from './components/ui/copy-button';
 export {
     SplitButton,
     SplitButtonAction,
