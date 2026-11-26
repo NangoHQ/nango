@@ -62,5 +62,6 @@ describe('navigationDirection', () => {
         const row = document.createElement('button');
         logList.appendChild(row);
         expect(navigationDirection(event('ArrowDown', row))).toBeNull();
+        expect(navigationDirection(event('j', row))).toBe('next');
     });
 });

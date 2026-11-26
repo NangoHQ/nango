@@ -28,7 +28,7 @@ const Level: React.FC<{ level: LogLevel }> = ({ level }) => (
 );
 
 function messagePayload(message: MessageRow): Record<string, unknown> | null {
-    if (!message.meta && !message.error && !message.request && !message.response) {
+    if (!message.meta && !message.error && !message.request && !message.response && !message.retry && !message.persistResults) {
         return null;
     }
 
@@ -169,7 +169,7 @@ export const LogRow: React.FC<{
                 </span>
             )}
             <span className="flex h-5 items-center justify-end type-code-regular-xs text-text-muted">
-                {isHttp && message.durationMs ? formatDuration(message.durationMs) : null}
+                {isHttp && message.durationMs !== undefined ? formatDuration(message.durationMs) : null}
             </span>
         </>
     );

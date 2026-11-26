@@ -119,7 +119,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             return;
         }
         for (const line of codeRef.current.querySelectorAll<HTMLElement>('.codeblock-line')) {
-            const hang = wrapLines ? `${(line.textContent?.match(/^ */)?.[0].length ?? 0) + 2}ch` : '';
+            const leading = line.textContent?.match(/^[ \t]*/)?.[0] ?? '';
+            const indent = [...leading].reduce((width, char) => width + (char === '\t' ? 8 : 1), 0);
+            const hang = wrapLines ? `${indent + 2}ch` : '';
             line.style.paddingLeft = hang;
             line.style.textIndent = hang && `-${hang}`;
         }
