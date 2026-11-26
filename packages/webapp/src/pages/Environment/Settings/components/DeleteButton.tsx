@@ -8,7 +8,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 
 interface DeleteButtonProps {
     environmentName: string;
-    onDelete: () => void;
+    onDelete: () => Promise<unknown>;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     disabled?: boolean | string;

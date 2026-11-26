@@ -1,0 +1,124 @@
+{
+    "providerConfigKey": "sage-intacct-oauth",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of all accounts from your sage intacct account.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/accounts",
+                    "group": "Accounts"
+                }
+            ],
+            "input": "SyncMetadata_sage_intacct_oauth_accounts",
+            "name": "accounts",
+            "output": [
+                "Account"
+            ],
+            "runs": "every 6 hours",
+            "scopes": [
+                "offline_access",
+                "openid",
+                "sage/ai-agents",
+                "token-exchange"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Account",
+                "SyncMetadata_sage_intacct_oauth_accounts"
+            ],
+            "version": "1.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Account": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "account_type": {
+                                "type": "string"
+                            },
+                            "normal_balance": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "disallow_direct_posting": {
+                                "type": "boolean"
+                            },
+                            "closing_type": {
+                                "type": "string"
+                            },
+                            "alternative_GLAccount": {
+                                "type": "string"
+                            },
+                            "audit": {
+                                "type": "object",
+                                "properties": {
+                                    "created_date_time": {
+                                        "type": "string"
+                                    },
+                                    "modified_date_time": {
+                                        "type": "string"
+                                    },
+                                    "created_by": {
+                                        "type": "string"
+                                    },
+                                    "modified_by": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "created_date_time",
+                                    "modified_date_time",
+                                    "created_by",
+                                    "modified_by"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "key",
+                            "name",
+                            "account_type",
+                            "normal_balance",
+                            "status",
+                            "disallow_direct_posting",
+                            "closing_type",
+                            "alternative_GLAccount",
+                            "audit"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_sage_intacct_oauth_accounts": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

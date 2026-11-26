@@ -4,7 +4,8 @@ import { nanoid } from '@nangohq/utils';
 
 import { defaultSchedulerConfig } from './config.js';
 import { getTestDbClient } from './db/helpers.test.js';
-import { isDuplicateTaskNameError, isScheduleLockedError, isScheduleTaskAlreadyRunningError } from './errors.js';
+import { isDuplicateTaskNameError, isScheduleLockedError, isScheduleTaskAlreadyRunningError, isTaskCapExceededError } from './errors.js';
+import * as groupOverrides from './models/groupOverrides.js';
 import * as schedules from './models/schedules.js';
 import { Scheduler } from './scheduler.js';
 
@@ -392,6 +393,40 @@ describe('Scheduler', () => {
             const res = (await scheduler.immediateBatch([])).unwrap();
             expect(res).toEqual({ created: [], discarded: [] });
         });
+    });
+
+    it.each([undefined, 2])('should return a cap error with the effective cap (override: %s)', async (override) => {
+        const onEvent = vi.fn();
+        const localScheduler = new Scheduler({
+            db: dbClient.db,
+            on: callbacks,
+            onError: () => {},
+            onEvent,
+            config: { ...defaultSchedulerConfig, limits: { ...defaultSchedulerConfig.limits, groupTaskCap: 1 } }
+        });
+        try {
+            const groupKey = nanoid();
+            if (override !== undefined) {
+                (await groupOverrides.upsert(dbClient.db, { groupKey, taskCap: override })).unwrap();
+            }
+            const cap = override ?? 1;
+            for (let i = 0; i < cap; i++) {
+                (await localScheduler.immediate(batchProps({ groupKey }))).unwrap();
+            }
+            callbacks.CREATED.mockClear();
+
+            const result = await localScheduler.immediate(batchProps({ groupKey }));
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(isTaskCapExceededError(result.error)).toBe(true);
+                expect(result.error).toMatchObject({ groupKey, cap });
+            }
+            expect(callbacks.CREATED).not.toHaveBeenCalled();
+            expect(onEvent).toHaveBeenCalledWith({ type: 'task_dropped', groupKey, count: 1, reason: 'task_cap' });
+        } finally {
+            await localScheduler.stop();
+        }
     });
 
     it('should not propagate errors thrown by the onEvent handler', async () => {

@@ -1,0 +1,3610 @@
+{
+    "providerConfigKey": "dynatrace-oauth",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add a user to one or more groups, leaving their existing group memberships untouched.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_addusertogroups",
+            "name": "add-user-to-groups",
+            "output": [
+                "ActionOutput_dynatrace_oauth_addusertogroups"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_addusertogroups",
+                "ActionOutput_dynatrace_oauth_addusertogroups"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_addusertogroups": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "User email address, in plain (non-URL-encoded) form. Example: \"user@example.com\""
+                            },
+                            "group_uuids": {
+                                "maxItems": 200,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Array of group UUIDs to add the user to. Max 200. Example: [\"0bb8915e-fe63-4e37-a1ba-102e7daa375a\"]"
+                            }
+                        },
+                        "required": [
+                            "email",
+                            "group_uuids"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_addusertogroups": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add one or more direct permissions to a group, without affecting existing ones.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_assigngrouppermissions",
+            "name": "assign-group-permissions",
+            "output": [
+                "ActionOutput_dynatrace_oauth_assigngrouppermissions"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_assigngrouppermissions",
+                "ActionOutput_dynatrace_oauth_assigngrouppermissions"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_assigngrouppermissions": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string",
+                                "description": "Group UUID to assign permissions to. Example: \"0bb8915e-fe63-4e37-a1ba-102e7daa375a\""
+                            },
+                            "permissions": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "permissionName": {
+                                            "type": "string",
+                                            "description": "Permission name. Example: \"account-viewer\""
+                                        },
+                                        "scope": {
+                                            "type": "string",
+                                            "description": "Scope value. For scopeType \"account\" this is the account UUID; for \"tenant\" an environment ID; for \"management-zone\" the format \"{environmentId}:{managementZoneId}\"."
+                                        },
+                                        "scopeType": {
+                                            "type": "string",
+                                            "enum": [
+                                                "account",
+                                                "tenant",
+                                                "management-zone"
+                                            ],
+                                            "description": "Scope type for the permission."
+                                        }
+                                    },
+                                    "required": [
+                                        "permissionName",
+                                        "scope",
+                                        "scopeType"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "One or more permissions to assign to the group."
+                            }
+                        },
+                        "required": [
+                            "groupUuid",
+                            "permissions"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_assigngrouppermissions": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Grant a policy's access to one or more groups.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_bindpolicytogroups",
+            "name": "bind-policy-to-groups",
+            "output": [
+                "ActionOutput_dynatrace_oauth_bindpolicytogroups"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_bindpolicytogroups",
+                "ActionOutput_dynatrace_oauth_bindpolicytogroups"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_bindpolicytogroups": {
+                        "type": "object",
+                        "properties": {
+                            "policyUuid": {
+                                "type": "string",
+                                "description": "The UUID of the policy to bind to groups. Example: \"6e6edf99-3ef3-40f5-adc5-635401719672\""
+                            },
+                            "groupUuids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Array of group UUIDs to bind the policy to. Example: [\"0bb8915e-fe63-4e37-a1ba-102e7daa375a\"]"
+                            },
+                            "boundaries": {
+                                "description": "Optional array of boundary UUIDs for the binding.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "policyUuid",
+                            "groupUuids"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_bindpolicytogroups": {
+                        "type": "null"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create one or more new user groups",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_creategroup",
+            "name": "create-group",
+            "output": [
+                "ActionOutput_dynatrace_oauth_creategroup"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_creategroup",
+                "ActionOutput_dynatrace_oauth_creategroup"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "groups"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "hidden": {
+                                            "type": "boolean"
+                                        },
+                                        "createdAt": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "updatedAt": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "uuid",
+                                        "name",
+                                        "owner",
+                                        "description",
+                                        "hidden"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "groups"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new platform token scoped to a specific environment, for use against Dynatrace's environment-level Platform APIs.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_createplatformtoken",
+            "name": "create-platform-token",
+            "output": [
+                "ActionOutput_dynatrace_oauth_createplatformtoken"
+            ],
+            "scopes": [
+                "platform-token:tokens:manage",
+                "account-env-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_createplatformtoken",
+                "ActionOutput_dynatrace_oauth_createplatformtoken"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_createplatformtoken": {
+                        "type": "object",
+                        "properties": {
+                            "accountUuid": {
+                                "description": "Dynatrace account UUID. If omitted, it will be read from the connection configuration. Example: \"9610a717-798c-423b-a80f-97cfebe72f89\"",
+                                "type": "string"
+                            },
+                            "environmentId": {
+                                "description": "Environment ID the token is scoped to. If omitted, the account's first environment is used. Example: \"nsf52867\"",
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the platform token. Example: \"Nango Test Token\""
+                            },
+                            "scope": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "OAuth scopes for the token. Example: [\"storage:logs:read\"]"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "expirationDate": {
+                                "description": "ISO 8601 expiration date. Example: \"2027-01-01T00:00:00Z\"",
+                                "type": "string"
+                            },
+                            "userUuid": {
+                                "description": "User UUID to associate with the token.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "scope"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_createplatformtoken": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "tokenId": {
+                                "type": "string"
+                            },
+                            "token": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "tokenId",
+                            "token"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new custom access policy at the account level.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_createpolicy",
+            "name": "create-policy",
+            "output": [
+                "ActionOutput_dynatrace_oauth_createpolicy"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_createpolicy",
+                "ActionOutput_dynatrace_oauth_createpolicy"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_createpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Policy name. Example: \"Nango Registry Test Policy\""
+                            },
+                            "description": {
+                                "description": "Policy description.",
+                                "type": "string"
+                            },
+                            "tags": {
+                                "description": "Policy tags.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "statementQuery": {
+                                "type": "string",
+                                "description": "Policy statement query. Must be in the form \"ALLOW service:resource-type:action;\". Example: \"ALLOW iam:groups:read;\""
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "statementQuery"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_createpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "statements": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "effect": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "permissions": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "resources": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "uuid",
+                            "name"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new service user (API-only identity, no login/human access).",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_createserviceuser",
+            "name": "create-service-user",
+            "output": [
+                "ActionOutput_dynatrace_oauth_createserviceuser"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_createserviceuser",
+                "ActionOutput_dynatrace_oauth_createserviceuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_createserviceuser": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the service user. Example: \"Nango Registry Test SU 3\""
+                            },
+                            "description": {
+                                "description": "Description of the service user. Example: \"Test service user for Nango registry\"",
+                                "type": "string"
+                            },
+                            "accountUuid": {
+                                "description": "Dynatrace account UUID. Falls back to connection_config.accountUuid if omitted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_createserviceuser": {
+                        "type": "object",
+                        "properties": {
+                            "uid": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "groupUuid": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "uid",
+                            "email",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Invite/create a new user in this account by email",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_createuser",
+            "name": "create-user",
+            "output": [
+                "ActionOutput_dynatrace_oauth_createuser"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_createuser",
+                "ActionOutput_dynatrace_oauth_createuser"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Email address of the user to invite. Example: \"user@example.com\""
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "userUuid": {
+                                "type": "string",
+                                "description": "UUID of the newly created user"
+                            }
+                        },
+                        "required": [
+                            "userUuid"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a user group.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_deletegroup",
+            "name": "delete-group",
+            "output": [
+                "ActionOutput_dynatrace_oauth_deletegroup"
+            ],
+            "scopes": [
+                "account-idm-read",
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_deletegroup",
+                "ActionOutput_dynatrace_oauth_deletegroup"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string",
+                                "description": "The UUID of the group to delete. Example: \"a74aebb2-50ae-427f-a404-1b15c60edb61\""
+                            }
+                        },
+                        "required": [
+                            "groupUuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string"
+                            },
+                            "deletedCount": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "groupUuid",
+                            "deletedCount"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Revoke/delete a platform token.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_deleteplatformtoken",
+            "name": "delete-platform-token",
+            "output": [
+                "ActionOutput_dynatrace_oauth_deleteplatformtoken"
+            ],
+            "scopes": [
+                "platform-token:tokens:manage"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_deleteplatformtoken",
+                "ActionOutput_dynatrace_oauth_deleteplatformtoken"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_deleteplatformtoken": {
+                        "type": "object",
+                        "properties": {
+                            "tokenId": {
+                                "type": "string",
+                                "description": "Platform token ID. Example: \"dt0s16.XXXXXXXX\""
+                            }
+                        },
+                        "required": [
+                            "tokenId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_deleteplatformtoken": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a custom account-level policy.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_deletepolicy",
+            "name": "delete-policy",
+            "output": [
+                "ActionOutput_dynatrace_oauth_deletepolicy"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_deletepolicy",
+                "ActionOutput_dynatrace_oauth_deletepolicy"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_deletepolicy": {
+                        "type": "object",
+                        "properties": {
+                            "policyUuid": {
+                                "type": "string",
+                                "description": "The UUID of the account-level policy to delete. Example: \"d0759a08-face-4a88-a520-13e892becccf\""
+                            }
+                        },
+                        "required": [
+                            "policyUuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_deletepolicy": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "policyUuid": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "policyUuid"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a service user.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_deleteserviceuser",
+            "name": "delete-service-user",
+            "output": [
+                "ActionOutput_dynatrace_oauth_deleteserviceuser"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_deleteserviceuser",
+                "ActionOutput_dynatrace_oauth_deleteserviceuser"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_deleteserviceuser": {
+                        "type": "object",
+                        "properties": {
+                            "uid": {
+                                "type": "string",
+                                "description": "The unique identifier of the service user. Example: \"4cd1f263-743b-449c-9465-784bf1156c02\""
+                            }
+                        },
+                        "required": [
+                            "uid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_deleteserviceuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a user from this account.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_deleteuser",
+            "name": "delete-user",
+            "output": [
+                "ActionOutput_dynatrace_oauth_deleteuser"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_deleteuser",
+                "ActionOutput_dynatrace_oauth_deleteuser"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "Email of the user to delete. Example: \"user@example.com\""
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the directly-assigned permissions on a group",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_getgrouppermissions",
+            "name": "get-group-permissions",
+            "output": [
+                "ActionOutput_dynatrace_oauth_getgrouppermissions"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getgrouppermissions",
+                "ActionOutput_dynatrace_oauth_getgrouppermissions"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_getgrouppermissions": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string",
+                                "description": "Group UUID. Example: \"0bb8915e-fe63-4e37-a1ba-102e7daa375a\""
+                            },
+                            "accountUuid": {
+                                "description": "Dynatrace account UUID. If omitted, it will be read from the connection config.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "groupUuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_getgrouppermissions": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "permissionName": {
+                                            "type": "string"
+                                        },
+                                        "scope": {
+                                            "type": "string"
+                                        },
+                                        "scopeType": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "permissionName",
+                                        "scope",
+                                        "scopeType"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "uuid",
+                            "name",
+                            "permissions"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List just the policy uuids bound to one specific group.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_getgrouppolicybindings",
+            "name": "get-group-policy-bindings",
+            "output": [
+                "ActionOutput_dynatrace_oauth_getgrouppolicybindings"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getgrouppolicybindings",
+                "ActionOutput_dynatrace_oauth_getgrouppolicybindings"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_getgrouppolicybindings": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string",
+                                "description": "Group UUID. Example: \"0bb8915e-fe63-4e37-a1ba-102e7daa375a\""
+                            }
+                        },
+                        "required": [
+                            "groupUuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_getgrouppolicybindings": {
+                        "type": "object",
+                        "properties": {
+                            "policyUuids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "policyUuids"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List which groups a specific policy is bound to.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_getpolicygroups",
+            "name": "get-policy-groups",
+            "output": [
+                "ActionOutput_dynatrace_oauth_getpolicygroups"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getpolicygroups",
+                "ActionOutput_dynatrace_oauth_getpolicygroups"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_getpolicygroups": {
+                        "type": "object",
+                        "properties": {
+                            "policyUuid": {
+                                "type": "string",
+                                "description": "Policy UUID. Example: \"6e6edf99-3ef3-40f5-adc5-635401719672\""
+                            },
+                            "accountUuid": {
+                                "description": "Account UUID. If omitted, it will be fetched from the connection configuration.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "policyUuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_getpolicygroups": {
+                        "type": "object",
+                        "properties": {
+                            "levelType": {
+                                "type": "string"
+                            },
+                            "levelId": {
+                                "type": "string"
+                            },
+                            "policyBindings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "policyUuid": {
+                                            "type": "string"
+                                        },
+                                        "groups": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "policyUuid",
+                                        "groups"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "levelType",
+                            "levelId",
+                            "policyBindings"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single policy's full definition (statementQuery) by uuid, at either account or global level.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_getpolicy",
+            "name": "get-policy",
+            "output": [
+                "ActionOutput_dynatrace_oauth_getpolicy"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getpolicy",
+                "ActionOutput_dynatrace_oauth_getpolicy"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_getpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "policyUuid": {
+                                "type": "string",
+                                "description": "Policy UUID. Example: \"6e6edf99-3ef3-40f5-adc5-635401719672\""
+                            },
+                            "levelType": {
+                                "description": "Policy level type. Either \"account\" or \"global\". Defaults to \"account\" if omitted.",
+                                "type": "string",
+                                "enum": [
+                                    "account",
+                                    "global"
+                                ]
+                            },
+                            "levelId": {
+                                "description": "Level ID. For account level, the account UUID. For global level, the literal string \"global\". Defaults to metadata.accountUuid (the canonical source; falls back to connection_config.accountUuid) for account level, or \"global\" for global level.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "policyUuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_getpolicy": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "statementQuery": {
+                                "type": "string"
+                            },
+                            "statements": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "effect": {
+                                            "type": "string"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "conditions": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "operator": {
+                                                                "type": "string"
+                                                            },
+                                                            "values": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "name",
+                                                            "operator",
+                                                            "values"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "effect",
+                                        "permissions",
+                                        "conditions"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "category": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "uuid",
+                            "name",
+                            "tags",
+                            "statementQuery",
+                            "statements",
+                            "category"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single service user by uid.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_getserviceuser",
+            "name": "get-service-user",
+            "output": [
+                "ActionOutput_dynatrace_oauth_getserviceuser"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getserviceuser",
+                "ActionOutput_dynatrace_oauth_getserviceuser"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_getserviceuser": {
+                        "type": "object",
+                        "properties": {
+                            "uid": {
+                                "type": "string",
+                                "description": "Service user uid. Example: \"4cd1f263-743b-449c-9465-784bf1156c02\""
+                            }
+                        },
+                        "required": [
+                            "uid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_getserviceuser": {
+                        "type": "object",
+                        "properties": {
+                            "uid": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "uid"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single user's full details including their group memberships.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_getuser",
+            "name": "get-user",
+            "output": [
+                "ActionOutput_dynatrace_oauth_getuser"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getuser",
+                "ActionOutput_dynatrace_oauth_getuser"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "User email address. Example: \"user@example.com\""
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "uid": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "userLoginMetadata": {
+                                "type": "object",
+                                "properties": {
+                                    "successfulLoginCounter": {
+                                        "type": "number"
+                                    },
+                                    "failedLoginCounter": {
+                                        "type": "number"
+                                    },
+                                    "lastSuccessfulLogin": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "lastFailedLogin": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "resetPasswordTokenSentAt": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "lastSuccessfulBasicAuthentication": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "createdAt": {
+                                        "type": "string"
+                                    },
+                                    "updatedAt": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "userStatus": {
+                                "type": "string"
+                            },
+                            "emergencyContact": {
+                                "type": "boolean"
+                            },
+                            "groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "hidden": {
+                                            "type": "boolean"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "accountName": {
+                                            "type": "string"
+                                        },
+                                        "accountUUID": {
+                                            "type": "string"
+                                        },
+                                        "groupName": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "uuid",
+                                        "owner",
+                                        "groupName"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "uid",
+                            "email",
+                            "groups"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Query the account-level audit log (IAM changes: user/group/policy/permission create-update-delete events).",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listaccountauditlogs",
+            "name": "list-account-audit-logs",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listaccountauditlogs"
+            ],
+            "scopes": [
+                "account-audit-logs-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listaccountauditlogs",
+                "ActionOutput_dynatrace_oauth_listaccountauditlogs"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listaccountauditlogs": {
+                        "type": "object",
+                        "properties": {
+                            "startTime": {
+                                "description": "Start time in ISO 8601 format. Example: \"2024-01-01T00:00:00Z\"",
+                                "type": "string"
+                            },
+                            "endTime": {
+                                "description": "End time in ISO 8601 format. Example: \"2024-01-02T00:00:00Z\"",
+                                "type": "string"
+                            },
+                            "addFields": {
+                                "description": "Comma-separated list of additional fields to include. Example: \"eventOutcome,accountUuid\"",
+                                "type": "string"
+                            },
+                            "filter": {
+                                "description": "Query filter expression.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of audit entries to return.",
+                                "type": "number"
+                            },
+                            "scanLimitGigabyte": {
+                                "description": "Scan limit in gigabytes.",
+                                "type": "number"
+                            },
+                            "resultSizeLimitMegabyte": {
+                                "description": "Result size limit in megabytes.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_listaccountauditlogs": {
+                        "type": "object",
+                        "properties": {
+                            "audits": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "eventId": {
+                                            "type": "string"
+                                        },
+                                        "timestamp": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "string"
+                                        },
+                                        "resource": {
+                                            "type": "string"
+                                        },
+                                        "resourceName": {
+                                            "type": "string"
+                                        },
+                                        "eventProvider": {
+                                            "type": "string"
+                                        },
+                                        "eventType": {
+                                            "type": "string"
+                                        },
+                                        "accountUuid": {
+                                            "type": "string"
+                                        },
+                                        "eventOutcome": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "eventId",
+                                        "timestamp",
+                                        "user",
+                                        "resource",
+                                        "resourceName",
+                                        "eventProvider",
+                                        "eventType"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "warnings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "totalCount": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "audits"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the account's assigned resource limits (users, groups, permissions, platform tokens) and current usage against each.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listaccountlimits",
+            "name": "list-account-limits",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listaccountlimits"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listaccountlimits",
+                "ActionOutput_dynatrace_oauth_listaccountlimits"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listaccountlimits": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_listaccountlimits": {
+                        "type": "object",
+                        "properties": {
+                            "pageSize": {
+                                "type": "number"
+                            },
+                            "pageNumber": {
+                                "type": "number"
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "limitType": {
+                                            "type": "string"
+                                        },
+                                        "limitValue": {
+                                            "type": "number"
+                                        },
+                                        "currentValue": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "limitType",
+                                        "limitValue",
+                                        "currentValue"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "pageSize",
+                            "pageNumber",
+                            "total",
+                            "results"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List custom access policies defined directly at this account level (excludes Dynatrace built-in/global policies).",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listaccountpolicies",
+            "name": "list-account-policies",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listaccountpolicies"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listaccountpolicies",
+                "ActionOutput_dynatrace_oauth_listaccountpolicies"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listaccountpolicies": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_listaccountpolicies": {
+                        "type": "object",
+                        "properties": {
+                            "policies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "category": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "uuid",
+                                        "name",
+                                        "description",
+                                        "tags",
+                                        "category"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "policies"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Dynatrace Managed clusters associated with this account (empty for SaaS-only accounts).",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listclusters",
+            "name": "list-clusters",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listclusters"
+            ],
+            "scopes": [
+                "account-env-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listclusters",
+                "ActionOutput_dynatrace_oauth_listclusters"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listclusters": {
+                        "type": "object",
+                        "properties": {
+                            "accountUuid": {
+                                "description": "Dynatrace account UUID. If omitted, the action reads it from the connection configuration. Example: \"9610a717-798c-423b-a80f-97cfebe72f89\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_listclusters": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "clusterId": {
+                                            "type": "string",
+                                            "description": "The UUID of the cluster. Example: \"12345678-1234-1234-1234-123456789abc\""
+                                        }
+                                    },
+                                    "required": [
+                                        "clusterId"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "data"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the monitoring environments (tenants) that belong to this account.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listenvironments",
+            "name": "list-environments",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listenvironments"
+            ],
+            "scopes": [
+                "account-env-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listenvironments",
+                "ActionOutput_dynatrace_oauth_listenvironments"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listenvironments": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_listenvironments": {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "active": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "url",
+                                        "active"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "data"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Dynatrace's built-in, platform-wide policies (e.g. 'Admin User', 'AppEngine - Admin') available to bind at any account or environment.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listglobalpolicies",
+            "name": "list-global-policies",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listglobalpolicies"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listglobalpolicies",
+                "ActionOutput_dynatrace_oauth_listglobalpolicies"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listglobalpolicies": {
+                        "type": "null"
+                    },
+                    "ActionOutput_dynatrace_oauth_listglobalpolicies": {
+                        "type": "object",
+                        "properties": {
+                            "policies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "category": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "uuid",
+                                        "name",
+                                        "description",
+                                        "tags",
+                                        "category"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "policies"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the users belonging to a specific group.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listgroupmembers",
+            "name": "list-group-members",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listgroupmembers"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listgroupmembers",
+                "ActionOutput_dynatrace_oauth_listgroupmembers"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listgroupmembers": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string",
+                                "description": "The UUID of the Dynatrace group. Example: \"3ff4aa6a-df19-44a7-9f5b-4d924dc2b283\""
+                            }
+                        },
+                        "required": [
+                            "groupUuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_listgroupmembers": {
+                        "type": "object",
+                        "properties": {
+                            "count": {
+                                "type": "number"
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uid": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "surname": {
+                                            "type": "string"
+                                        },
+                                        "emergencyContact": {
+                                            "type": "boolean"
+                                        },
+                                        "userStatus": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "uid",
+                                        "email"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "count",
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List user groups in this account.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listgroups",
+            "name": "list-groups",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listgroups"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listgroups",
+                "ActionOutput_dynatrace_oauth_listgroups"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listgroups": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "count": {
+                                "type": "number"
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string",
+                                            "description": "Group owner type. Known values: LOCAL, SCIM, SAML, DCS, ALL_USERS"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "hidden": {
+                                            "type": "boolean"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "uuid",
+                                        "name",
+                                        "owner"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "count",
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List platform (OAuth-adjacent) tokens issued in this account, used to authenticate against environment-level Dynatrace Platform APIs.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listplatformtokens",
+            "name": "list-platform-tokens",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listplatformtokens"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listplatformtokens",
+                "ActionOutput_dynatrace_oauth_listplatformtokens"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listplatformtokens": {
+                        "type": "object",
+                        "properties": {
+                            "searchTerm": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "page": {
+                                "type": "number"
+                            },
+                            "size": {
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_listplatformtokens": {
+                        "type": "object",
+                        "properties": {
+                            "pageSize": {
+                                "type": "number"
+                            },
+                            "pageNumber": {
+                                "type": "number"
+                            },
+                            "total": {
+                                "type": "number"
+                            },
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tokenId": {
+                                            "type": "string"
+                                        },
+                                        "accountUuid": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "scope": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "resource": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "expirationDate": {
+                                            "type": "string"
+                                        },
+                                        "userUuid": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "createdBy": {
+                                            "type": "string"
+                                        },
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                "lastUsedAt": {
+                                                    "type": "string"
+                                                },
+                                                "lastClientIp": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "tokenId",
+                                        "accountUuid",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List every policy-to-group binding at this account level in one call.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listpolicybindings",
+            "name": "list-policy-bindings",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listpolicybindings"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listpolicybindings",
+                "ActionOutput_dynatrace_oauth_listpolicybindings"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listpolicybindings": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_listpolicybindings": {
+                        "type": "object",
+                        "properties": {
+                            "levelType": {
+                                "type": "string"
+                            },
+                            "levelId": {
+                                "type": "string"
+                            },
+                            "policyBindings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "policyUuid": {
+                                            "type": "string"
+                                        },
+                                        "groups": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "policyUuid",
+                                        "groups"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "levelType",
+                            "levelId",
+                            "policyBindings"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List service (non-human, API-only) users in this account.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listserviceusers",
+            "name": "list-service-users",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listserviceusers"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listserviceusers",
+                "ActionOutput_dynatrace_oauth_listserviceusers"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listserviceusers": {
+                        "type": "object",
+                        "properties": {
+                            "accountUuid": {
+                                "description": "Dynatrace account UUID. If omitted, the value is read from the connection configuration.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_listserviceusers": {
+                        "type": "object",
+                        "properties": {
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uid": {
+                                            "type": "string"
+                                        },
+                                        "login": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "surname": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "SERVICE_EXTERNAL"
+                                        },
+                                        "userStatus": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "createdAt": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "uid",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "totalCount": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "results",
+                            "totalCount"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List users in this Dynatrace account.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_listusers",
+            "name": "list-users",
+            "output": [
+                "ActionOutput_dynatrace_oauth_listusers"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listusers",
+                "ActionOutput_dynatrace_oauth_listusers"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_listusers": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "count": {
+                                "type": "number"
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uid": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "surname": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "userStatus": {
+                                            "type": "string"
+                                        },
+                                        "emergencyContact": {
+                                            "type": "boolean"
+                                        },
+                                        "userLoginMetadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                "successfulLoginCounter": {
+                                                    "type": "number"
+                                                },
+                                                "failedLoginCounter": {
+                                                    "type": "number"
+                                                },
+                                                "lastSuccessfulLogin": {
+                                                    "type": "string"
+                                                },
+                                                "lastFailedLogin": {
+                                                    "type": "string"
+                                                },
+                                                "createdAt": {
+                                                    "type": "string"
+                                                },
+                                                "updatedAt": {
+                                                    "type": "string"
+                                                },
+                                                "resetPasswordTokenSentAt": {
+                                                    "type": "string"
+                                                },
+                                                "lastSuccessfulBasicAuthentication": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "uid",
+                                        "email"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "count",
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove one specific direct permission from a group.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_removegrouppermission",
+            "name": "remove-group-permission",
+            "output": [
+                "ActionOutput_dynatrace_oauth_removegrouppermission"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_removegrouppermission",
+                "ActionOutput_dynatrace_oauth_removegrouppermission"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_removegrouppermission": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string",
+                                "description": "The UUID of the user group. Example: \"0bb8915e-fe63-4e37-a1ba-102e7daa375a\""
+                            },
+                            "scopeType": {
+                                "type": "string",
+                                "enum": [
+                                    "account",
+                                    "tenant",
+                                    "management-zone"
+                                ],
+                                "description": "The type of the permission scope."
+                            },
+                            "scope": {
+                                "type": "string",
+                                "description": "The scope of the permission. Example: \"9610a717-798c-423b-a80f-97cfebe72f89\""
+                            },
+                            "permissionName": {
+                                "type": "string",
+                                "description": "The name of the permission. Example: \"account-viewer\""
+                            }
+                        },
+                        "required": [
+                            "groupUuid",
+                            "scopeType",
+                            "scope",
+                            "permissionName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_removegrouppermission": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a user from one or more specific groups without affecting other memberships.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_removeuserfromgroups",
+            "name": "remove-user-from-groups",
+            "output": [
+                "ActionOutput_dynatrace_oauth_removeuserfromgroups"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_removeuserfromgroups",
+                "ActionOutput_dynatrace_oauth_removeuserfromgroups"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_removeuserfromgroups": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "User email address, in plain (non-URL-encoded) form. Example: \"user@example.com\""
+                            },
+                            "groupUuids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Array of group UUIDs to remove the user from. Example: [\"0bb8915e-fe63-4e37-a1ba-102e7daa375a\"]"
+                            }
+                        },
+                        "required": [
+                            "email",
+                            "groupUuids"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_removeuserfromgroups": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Replace a group's entire direct-permission list in one call.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_setgrouppermissions",
+            "name": "set-group-permissions",
+            "output": [
+                "ActionOutput_dynatrace_oauth_setgrouppermissions"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_setgrouppermissions",
+                "ActionOutput_dynatrace_oauth_setgrouppermissions"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_setgrouppermissions": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string",
+                                "description": "Group UUID. Example: \"0bb8915e-fe63-4e37-a1ba-102e7daa375a\""
+                            },
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "permissionName": {
+                                            "type": "string",
+                                            "description": "Permission name. Example: \"account-company-info\""
+                                        },
+                                        "scope": {
+                                            "type": "string",
+                                            "description": "Scope identifier: an account UUID, environment ID, or \"{environmentId}:{managementZoneId}\" for a management zone."
+                                        },
+                                        "scopeType": {
+                                            "type": "string",
+                                            "enum": [
+                                                "account",
+                                                "tenant",
+                                                "management-zone"
+                                            ],
+                                            "description": "Scope type."
+                                        }
+                                    },
+                                    "required": [
+                                        "permissionName",
+                                        "scope",
+                                        "scopeType"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Full list of direct permissions to set on the group. Replaces existing direct permissions."
+                            }
+                        },
+                        "required": [
+                            "groupUuid",
+                            "permissions"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_setgrouppermissions": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Replace a group's entire set of bound policies in one call.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_setgrouppolicies",
+            "name": "set-group-policies",
+            "output": [
+                "ActionOutput_dynatrace_oauth_setgrouppolicies"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_setgrouppolicies",
+                "ActionOutput_dynatrace_oauth_setgrouppolicies"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_setgrouppolicies": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string",
+                                "description": "The UUID of the user group. Example: \"541802b0-623c-4193-8728-036ed01d4eb4\""
+                            },
+                            "policyUuids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of policy UUIDs to bind to the group. Replaces any existing bindings."
+                            }
+                        },
+                        "required": [
+                            "groupUuid",
+                            "policyUuids"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_setgrouppolicies": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string"
+                            },
+                            "policyUuids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "groupUuid",
+                            "policyUuids"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Replace a user's entire group membership list in one call (removes them from any group not included).",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_setusergroups",
+            "name": "set-user-groups",
+            "output": [
+                "ActionOutput_dynatrace_oauth_setusergroups"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_setusergroups",
+                "ActionOutput_dynatrace_oauth_setusergroups"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_setusergroups": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "description": "The email address of the user. Example: \"user@example.com\""
+                            },
+                            "groupUuids": {
+                                "maxItems": 200,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of group UUIDs to assign to the user. Max 200."
+                            }
+                        },
+                        "required": [
+                            "email",
+                            "groupUuids"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_setusergroups": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove one group's binding to a specific policy.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_unbindpolicyfromgroup",
+            "name": "unbind-policy-from-group",
+            "output": [
+                "ActionOutput_dynatrace_oauth_unbindpolicyfromgroup"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_unbindpolicyfromgroup",
+                "ActionOutput_dynatrace_oauth_unbindpolicyfromgroup"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_unbindpolicyfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "accountUuid": {
+                                "type": "string",
+                                "description": "Dynatrace account UUID. Example: \"9610a717-798c-423b-a80f-97cfebe72f89\""
+                            },
+                            "policyUuid": {
+                                "type": "string",
+                                "description": "Policy UUID to unbind. Example: \"6e6edf99-3ef3-40f5-adc5-635401719672\""
+                            },
+                            "groupUuid": {
+                                "type": "string",
+                                "description": "Group UUID to remove the binding from. Example: \"0bb8915e-fe63-4e37-a1ba-102e7daa375a\""
+                            }
+                        },
+                        "required": [
+                            "accountUuid",
+                            "policyUuid",
+                            "groupUuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_unbindpolicyfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a group's name/description.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_updategroup",
+            "name": "update-group",
+            "output": [
+                "ActionOutput_dynatrace_oauth_updategroup"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_updategroup",
+                "ActionOutput_dynatrace_oauth_updategroup"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string",
+                                "description": "The UUID of the group to update. Example: \"0bb8915e-fe63-4e37-a1ba-102e7daa375a\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The new name for the group."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "The new description for the group."
+                            },
+                            "accountUuid": {
+                                "description": "The account UUID. If omitted, read from connection_config.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "groupUuid",
+                            "name",
+                            "description"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupUuid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "groupUuid",
+                            "name",
+                            "description"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Change a platform token's expiration date.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_updateplatformtokenexpiration",
+            "name": "update-platform-token-expiration",
+            "output": [
+                "ActionOutput_dynatrace_oauth_updateplatformtokenexpiration"
+            ],
+            "scopes": [
+                "platform-token:tokens:manage"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_updateplatformtokenexpiration",
+                "ActionOutput_dynatrace_oauth_updateplatformtokenexpiration"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_updateplatformtokenexpiration": {
+                        "type": "object",
+                        "properties": {
+                            "tokenId": {
+                                "type": "string",
+                                "description": "Platform token ID. Example: \"dt0s16.JJEM45HZ\""
+                            },
+                            "expirationDate": {
+                                "type": "string",
+                                "description": "New expiration date as an ISO-8601 timestamp string. Example: \"2027-12-31T23:59:59Z\""
+                            }
+                        },
+                        "required": [
+                            "tokenId",
+                            "expirationDate"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_updateplatformtokenexpiration": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Activate or deactivate a platform token without deleting it.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_updateplatformtokenstatus",
+            "name": "update-platform-token-status",
+            "output": [
+                "ActionOutput_dynatrace_oauth_updateplatformtokenstatus"
+            ],
+            "scopes": [
+                "platform-token:tokens:manage"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_updateplatformtokenstatus",
+                "ActionOutput_dynatrace_oauth_updateplatformtokenstatus"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_updateplatformtokenstatus": {
+                        "type": "object",
+                        "properties": {
+                            "accountUuid": {
+                                "type": "string",
+                                "description": "The Dynatrace account UUID. Example: \"9610a717-798c-423b-a80f-97cfebe72f89\""
+                            },
+                            "tokenId": {
+                                "type": "string",
+                                "description": "The platform token ID. Example: \"dt0s16.2ZNXNVFQ\""
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "ACTIVE",
+                                    "INACTIVE"
+                                ],
+                                "description": "The desired status of the platform token."
+                            }
+                        },
+                        "required": [
+                            "accountUuid",
+                            "tokenId",
+                            "status"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_updateplatformtokenstatus": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an existing account-level policy's name/description/statementQuery",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_updatepolicy",
+            "name": "update-policy",
+            "output": [
+                "ActionOutput_dynatrace_oauth_updatepolicy"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_updatepolicy",
+                "ActionOutput_dynatrace_oauth_updatepolicy"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_updatepolicy": {
+                        "type": "object",
+                        "properties": {
+                            "policyUuid": {
+                                "type": "string",
+                                "description": "Policy UUID. Example: \"6e6edf99-3ef3-40f5-adc5-635401719672\""
+                            },
+                            "name": {
+                                "description": "Policy name",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Policy description",
+                                "type": "string"
+                            },
+                            "statementQuery": {
+                                "description": "Policy statement query. Example: \"ALLOW iam:groups:read, iam:users:read;\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "policyUuid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_updatepolicy": {
+                        "type": "object",
+                        "properties": {
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "statementQuery": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "uuid",
+                            "name",
+                            "statementQuery"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a service user's name/description.",
+            "endpoint": null,
+            "input": "ActionInput_dynatrace_oauth_updateserviceuser",
+            "name": "update-service-user",
+            "output": [
+                "ActionOutput_dynatrace_oauth_updateserviceuser"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_updateserviceuser",
+                "ActionOutput_dynatrace_oauth_updateserviceuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_dynatrace_oauth_updateserviceuser": {
+                        "type": "object",
+                        "properties": {
+                            "uid": {
+                                "type": "string",
+                                "description": "Service user ID. Example: \"4cd1f263-743b-449c-9465-784bf1156c02\""
+                            },
+                            "name": {
+                                "description": "New name for the service user.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "New description for the service user.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "uid"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_dynatrace_oauth_updateserviceuser": {
+                        "type": "object",
+                        "properties": {
+                            "uid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "uid"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync custom access policies defined at this account level (excludes Dynatrace built-in/global policies).",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_dynatrace_oauth_accountpolicies",
+            "name": "account-policies",
+            "output": [
+                "AccountPolicy"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "AccountPolicy",
+                "SyncMetadata_dynatrace_oauth_accountpolicies"
+            ],
+            "version": "1.1.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "AccountPolicy": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "category": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uuid",
+                            "name",
+                            "tags",
+                            "category"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_dynatrace_oauth_accountpolicies": {
+                        "type": "object",
+                        "properties": {
+                            "accountUuid": {
+                                "description": "Dynatrace account UUID. Only needed when the connection configuration has no accountUuid.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync the monitoring environments (tenants) belonging to this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "environments",
+            "output": [
+                "Environment"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "account-env-read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Environment"
+            ],
+            "version": "1.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Environment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync user groups in this account.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": null,
+            "name": "groups",
+            "output": [
+                "Group"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "account-idm-read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Group"
+            ],
+            "version": "1.1.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Group": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "hidden": {
+                                "type": "boolean"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "owner",
+                            "hidden",
+                            "createdAt",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync platform token metadata (never the plaintext secret, which is only ever returned once at creation) issued in this account.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_dynatrace_oauth_platformtokens",
+            "name": "platform-tokens",
+            "output": [
+                "PlatformToken"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "account-idm-read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "PlatformToken",
+                "SyncMetadata_dynatrace_oauth_platformtokens"
+            ],
+            "version": "1.1.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "PlatformToken": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "tokenId": {
+                                "type": "string"
+                            },
+                            "accountUuid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "scope": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "resource": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "expirationDate": {
+                                "type": "string"
+                            },
+                            "userUuid": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "createdBy": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "metadata_lastUsedAt": {
+                                "type": "string"
+                            },
+                            "metadata_lastClientIp": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "tokenId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_dynatrace_oauth_platformtokens": {
+                        "type": "object",
+                        "properties": {
+                            "accountUuid": {
+                                "description": "Dynatrace account UUID. Only needed when the connection configuration has no accountUuid.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync service (API-only) users in this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "service-users",
+            "output": [
+                "ServiceUser"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "account-idm-read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ServiceUser"
+            ],
+            "version": "1.2.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ServiceUser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "uid": {
+                                "type": "string"
+                            },
+                            "login": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "userStatus": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uid"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync users in this Dynatrace account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "users",
+            "output": [
+                "User"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "account-idm-read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User"
+            ],
+            "version": "1.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "surname": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "userStatus": {
+                                "type": "string"
+                            },
+                            "emergencyContact": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

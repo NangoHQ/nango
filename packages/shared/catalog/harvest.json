@@ -1,0 +1,269 @@
+{
+    "providerConfigKey": "harvest",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates a user in Harvest",
+            "endpoint": null,
+            "input": "ActionInput_harvest_createuser",
+            "name": "create-user",
+            "output": [
+                "ActionOutput_harvest_createuser"
+            ],
+            "scopes": [
+                "administrator",
+                "manager"
+            ],
+            "usedModels": [
+                "ActionInput_harvest_createuser",
+                "ActionOutput_harvest_createuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_harvest_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "has_access_to_all_future_projects": {
+                                "type": "boolean"
+                            },
+                            "is_contractor": {
+                                "type": "boolean"
+                            },
+                            "is_active": {
+                                "type": "boolean"
+                            },
+                            "weekly_capacity": {
+                                "type": "number"
+                            },
+                            "default_hourly_rate": {
+                                "type": "string",
+                                "const": "decimal"
+                            },
+                            "cost_rate": {
+                                "type": "string",
+                                "const": "decimal"
+                            },
+                            "roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "access_roles": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "administrator"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "manager"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "member"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "project_creator"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "billable_rates_manager"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "managed_projects_invoice_drafter"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "managed_projects_invoice_manager"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "client_and_task_manager"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "time_and_expenses_manager"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "estimates_manager"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "first_name",
+                            "last_name",
+                            "email",
+                            "roles"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_harvest_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Deletes a user in Harvest",
+            "endpoint": null,
+            "input": "ActionInput_harvest_deleteuser",
+            "name": "delete-user",
+            "output": [
+                "ActionOutput_harvest_deleteuser"
+            ],
+            "scopes": [
+                "administrator"
+            ],
+            "usedModels": [
+                "ActionInput_harvest_deleteuser",
+                "ActionOutput_harvest_deleteuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_harvest_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_harvest_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches the list of users in Harvest",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_harvest_users",
+            "name": "users",
+            "output": [
+                "User"
+            ],
+            "runs": "every day",
+            "scopes": [
+                "administrator",
+                "manager"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User",
+                "SyncMetadata_harvest_users"
+            ],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_harvest_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

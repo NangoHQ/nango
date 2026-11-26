@@ -1,0 +1,383 @@
+{
+    "providerConfigKey": "metabase",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates a user in Metabase.",
+            "endpoint": null,
+            "input": "ActionInput_metabase_createuser",
+            "name": "create-user",
+            "output": [
+                "ActionOutput_metabase_createuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_metabase_createuser",
+                "ActionOutput_metabase_createuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_metabase_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_metabase_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Disables a user in Metabase by id.",
+            "endpoint": null,
+            "input": "ActionInput_metabase_disableuser",
+            "name": "disable-user",
+            "output": [
+                "ActionOutput_metabase_disableuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_metabase_disableuser",
+                "ActionOutput_metabase_disableuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_metabase_disableuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_metabase_disableuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Enables a disabled user.",
+            "endpoint": null,
+            "input": "ActionInput_metabase_enableuser",
+            "name": "enable-user",
+            "output": [
+                "ActionOutput_metabase_enableuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_metabase_enableuser",
+                "ActionOutput_metabase_enableuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_metabase_enableuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_metabase_enableuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetches details of a specific user by ID.",
+            "endpoint": null,
+            "input": "ActionInput_metabase_fetchuser",
+            "name": "fetch-user",
+            "output": [
+                "ActionOutput_metabase_fetchuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_metabase_fetchuser",
+                "ActionOutput_metabase_fetchuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_metabase_fetchuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_metabase_fetchuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Updates an existing, active user in Metabase.",
+            "endpoint": null,
+            "input": "ActionInput_metabase_updateuser",
+            "name": "update-user",
+            "output": [
+                "ActionOutput_metabase_updateuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_metabase_updateuser",
+                "ActionOutput_metabase_updateuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_metabase_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "email": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "first_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "last_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "is_group_manager": {
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
+                            },
+                            "locale": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "is_superuser": {
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "first_name",
+                            "last_name",
+                            "is_group_manager",
+                            "locale",
+                            "is_superuser"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_metabase_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from Metabase, including active and inactive users.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_metabase_users",
+            "name": "users",
+            "output": [
+                "User"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User",
+                "SyncMetadata_metabase_users"
+            ],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "active": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_metabase_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,708 @@
+{
+    "providerConfigKey": "odoo-cc",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create an Odoo model record.",
+            "endpoint": null,
+            "input": "ActionInput_odoo_cc_createrecord",
+            "name": "create-record",
+            "output": [
+                "ActionOutput_odoo_cc_createrecord"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_odoo_cc_createrecord",
+                "ActionOutput_odoo_cc_createrecord"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_odoo_cc_createrecord": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "type": "string",
+                                "description": "Odoo model name. Example: \"res.partner\""
+                            },
+                            "values": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Field values for the new record"
+                            }
+                        },
+                        "required": [
+                            "model",
+                            "values"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_odoo_cc_createrecord": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an Odoo model record.",
+            "endpoint": null,
+            "input": "ActionInput_odoo_cc_deleterecord",
+            "name": "delete-record",
+            "output": [
+                "ActionOutput_odoo_cc_deleterecord"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_odoo_cc_deleterecord",
+                "ActionOutput_odoo_cc_deleterecord"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_odoo_cc_deleterecord": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "type": "string",
+                                "description": "Odoo model name. Example: \"res.partner\""
+                            },
+                            "id": {
+                                "type": "number",
+                                "description": "Record ID to delete. Example: 10"
+                            }
+                        },
+                        "required": [
+                            "model",
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_odoo_cc_deleterecord": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "model": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "model",
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Call an Odoo model method through execute_kw",
+            "endpoint": null,
+            "input": "ActionInput_odoo_cc_executekw",
+            "name": "execute-kw",
+            "output": [
+                "ActionOutput_odoo_cc_executekw"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_odoo_cc_executekw",
+                "ActionOutput_odoo_cc_executekw"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_odoo_cc_executekw": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "type": "string",
+                                "description": "Odoo model name. Example: \"res.partner\""
+                            },
+                            "method": {
+                                "type": "string",
+                                "description": "Method name to execute. Example: \"search_count\""
+                            },
+                            "args": {
+                                "description": "Positional arguments as a JSON array.",
+                                "type": "array",
+                                "items": {}
+                            },
+                            "kwargs": {
+                                "description": "Keyword arguments as a JSON object.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "model",
+                            "method"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_odoo_cc_executekw": {
+                        "type": "object",
+                        "properties": {
+                            "result": {
+                                "description": "The raw result returned by the Odoo method."
+                            }
+                        },
+                        "required": [
+                            "result"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetch Odoo fields metadata for a model",
+            "endpoint": null,
+            "input": "ActionInput_odoo_cc_getrecordfields",
+            "name": "get-record-fields",
+            "output": [
+                "ActionOutput_odoo_cc_getrecordfields"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_odoo_cc_getrecordfields",
+                "ActionOutput_odoo_cc_getrecordfields"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_odoo_cc_getrecordfields": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "type": "string",
+                                "description": "Odoo model name. Example: \"res.partner\""
+                            }
+                        },
+                        "required": [
+                            "model"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_odoo_cc_getrecordfields": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "string": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "required": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "model",
+                            "fields"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search and read records from any Odoo model",
+            "endpoint": null,
+            "input": "ActionInput_odoo_cc_searchreadrecords",
+            "name": "search-read-records",
+            "output": [
+                "ActionOutput_odoo_cc_searchreadrecords"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_odoo_cc_searchreadrecords",
+                "ActionOutput_odoo_cc_searchreadrecords"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_odoo_cc_searchreadrecords": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "type": "string",
+                                "description": "Odoo model name. Example: \"res.partner\""
+                            },
+                            "domain": {
+                                "description": "Odoo domain filter as a Python list string. Example: \"[['is_company','=',true]]\"",
+                                "type": "string"
+                            },
+                            "fields": {
+                                "description": "Field names to return. Example: [\"id\",\"name\",\"email\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "limit": {
+                                "description": "Maximum number of records to return. Default: 100",
+                                "type": "number"
+                            },
+                            "offset": {
+                                "description": "Number of records to skip",
+                                "type": "number"
+                            },
+                            "order": {
+                                "description": "Sort order. Example: \"write_date desc\"",
+                                "type": "string"
+                            },
+                            "write_date": {
+                                "description": "ISO datetime string; if provided adds a write_date filter to the domain",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "model"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_odoo_cc_searchreadrecords": {
+                        "type": "object",
+                        "properties": {
+                            "count": {
+                                "type": "number"
+                            },
+                            "records": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "count",
+                            "records"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an Odoo model record.",
+            "endpoint": null,
+            "input": "ActionInput_odoo_cc_updaterecord",
+            "name": "update-record",
+            "output": [
+                "ActionOutput_odoo_cc_updaterecord"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_odoo_cc_updaterecord",
+                "ActionOutput_odoo_cc_updaterecord"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_odoo_cc_updaterecord": {
+                        "type": "object",
+                        "properties": {
+                            "model": {
+                                "type": "string",
+                                "description": "Odoo model name. Example: \"res.partner\""
+                            },
+                            "id": {
+                                "type": "number",
+                                "description": "Record ID to update. Example: 10"
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {},
+                                "description": "Fields to update. Example: { \"phone\": \"123-456-7890\" }"
+                            }
+                        },
+                        "required": [
+                            "model",
+                            "id",
+                            "fields"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_odoo_cc_updaterecord": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync Odoo CRM leads and opportunities.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/crm-leads"
+                }
+            ],
+            "input": null,
+            "name": "crm-leads",
+            "output": [
+                "CrmLead"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "CrmLead"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CrmLead": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "partner_name": {
+                                "type": "string"
+                            },
+                            "email_from": {
+                                "type": "string"
+                            },
+                            "stage_id": {
+                                "type": "string"
+                            },
+                            "stage_name": {
+                                "type": "string"
+                            },
+                            "write_date": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Odoo invoices and bills.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/invoices"
+                }
+            ],
+            "input": null,
+            "name": "invoices",
+            "output": [
+                "Invoice"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Invoice"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Invoice": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "move_type": {
+                                "type": "string"
+                            },
+                            "amount_total": {
+                                "type": "number"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "write_date": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Odoo products",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/products"
+                }
+            ],
+            "input": null,
+            "name": "products",
+            "output": [
+                "Product"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Product"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Product": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "list_price": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "write_date": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Odoo project tasks",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/project-tasks",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "project-tasks",
+            "output": [
+                "Task"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Task"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Task": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "project_id": {
+                                "type": "number"
+                            },
+                            "project_name": {
+                                "type": "string"
+                            },
+                            "stage_id": {
+                                "type": "number"
+                            },
+                            "stage_name": {
+                                "type": "string"
+                            },
+                            "write_date": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "write_date"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync Odoo sale orders",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/sale-orders"
+                }
+            ],
+            "input": null,
+            "name": "sale-orders",
+            "output": [
+                "SaleOrder"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "SaleOrder"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SaleOrder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "partner_id": {
+                                "type": "string"
+                            },
+                            "partner_name": {
+                                "type": "string"
+                            },
+                            "amount_total": {
+                                "type": "number"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "write_date": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

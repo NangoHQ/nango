@@ -1,0 +1,2314 @@
+{
+    "providerConfigKey": "google-analytics",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Archive a GA4 conversion event.",
+            "endpoint": null,
+            "input": "ActionInput_google_analytics_archiveconversionevent",
+            "name": "archive-conversion-event",
+            "output": [
+                "ActionOutput_google_analytics_archiveconversionevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_archiveconversionevent",
+                "ActionOutput_google_analytics_archiveconversionevent"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_analytics_archiveconversionevent": {
+                        "type": "object",
+                        "properties": {
+                            "property_id": {
+                                "type": "string",
+                                "description": "GA4 property numeric ID. Example: \"12345\""
+                            },
+                            "conversion_event_id": {
+                                "type": "string",
+                                "description": "Conversion event numeric ID. Example: \"67890\""
+                            }
+                        },
+                        "required": [
+                            "property_id",
+                            "conversion_event_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_analytics_archiveconversionevent": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Resource name of the archived conversion event."
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Run multiple GA4 reports in one request.",
+            "endpoint": null,
+            "input": "ActionInput_google_analytics_batchrunreports",
+            "name": "batch-run-reports",
+            "output": [
+                "ActionOutput_google_analytics_batchrunreports"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_batchrunreports",
+                "ActionOutput_google_analytics_batchrunreports"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_analytics_batchrunreports": {
+                        "type": "object",
+                        "properties": {
+                            "property": {
+                                "type": "string",
+                                "description": "Google Analytics property ID. Example: \"properties/123456789\""
+                            },
+                            "requests": {
+                                "minItems": 1,
+                                "maxItems": 5,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimensions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "metrics": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "dateRanges": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "startDate": {
+                                                        "type": "string"
+                                                    },
+                                                    "endDate": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "startDate",
+                                                    "endDate"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "offset": {
+                                            "type": "string"
+                                        },
+                                        "limit": {
+                                            "type": "string"
+                                        },
+                                        "keepEmptyRows": {
+                                            "type": "boolean"
+                                        },
+                                        "returnPropertyQuota": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "property",
+                            "requests"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_analytics_batchrunreports": {
+                        "type": "object",
+                        "properties": {
+                            "reports": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimensionHeaders": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "metricHeaders": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "rows": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "dimensionValues": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "value": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    "metricValues": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "value": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "totals": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "dimensionValues": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "value": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    "metricValues": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "value": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "maximums": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "dimensionValues": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "value": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    "metricValues": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "value": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "minimums": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "dimensionValues": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "value": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    },
+                                                    "metricValues": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "value": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "rowCount": {
+                                            "type": "number"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "propertyQuota": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "kind": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "kind": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "reports"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a conversion event for a GA4 property.",
+            "endpoint": null,
+            "input": "ActionInput_google_analytics_createconversionevent",
+            "name": "create-conversion-event",
+            "output": [
+                "ActionOutput_google_analytics_createconversionevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_createconversionevent",
+                "ActionOutput_google_analytics_createconversionevent"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_analytics_createconversionevent": {
+                        "type": "object",
+                        "properties": {
+                            "propertyId": {
+                                "type": "string",
+                                "description": "GA4 property ID. Example: \"123456789\""
+                            },
+                            "eventName": {
+                                "type": "string",
+                                "description": "The event name for this conversion event. Example: \"click\""
+                            },
+                            "countingMethod": {
+                                "description": "Optional. The method by which conversions will be counted. Example: \"ONCE_PER_EVENT\"",
+                                "type": "string"
+                            },
+                            "defaultConversionValue": {
+                                "description": "Optional. Defines a default value/currency for a conversion event.",
+                                "type": "object",
+                                "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
+                                    "currencyCode": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "value",
+                                    "currencyCode"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "propertyId",
+                            "eventName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_analytics_createconversionevent": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "eventName": {
+                                "type": "string"
+                            },
+                            "createTime": {
+                                "type": "string"
+                            },
+                            "deletable": {
+                                "type": "boolean"
+                            },
+                            "custom": {
+                                "type": "boolean"
+                            },
+                            "countingMethod": {
+                                "type": "string"
+                            },
+                            "defaultConversionValue": {
+                                "type": "object",
+                                "properties": {
+                                    "value": {
+                                        "type": "number"
+                                    },
+                                    "currencyCode": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "value",
+                                    "currencyCode"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "eventName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a data stream for a GA4 property.",
+            "endpoint": null,
+            "input": "ActionInput_google_analytics_createdatastream",
+            "name": "create-data-stream",
+            "output": [
+                "ActionOutput_google_analytics_createdatastream"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_createdatastream",
+                "ActionOutput_google_analytics_createdatastream"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_analytics_createdatastream": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "property_id": {
+                                        "type": "string",
+                                        "description": "GA4 property numeric ID. Example: \"1234\""
+                                    },
+                                    "display_name": {
+                                        "type": "string",
+                                        "description": "Human-readable display name for the Data Stream."
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "WEB_DATA_STREAM"
+                                    },
+                                    "web_stream_data": {
+                                        "type": "object",
+                                        "properties": {
+                                            "default_uri": {
+                                                "type": "string",
+                                                "description": "Domain name of the web app being measured. Example: \"https://www.example.com\""
+                                            }
+                                        },
+                                        "required": [
+                                            "default_uri"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Data specific to web streams. Required when type is WEB_DATA_STREAM."
+                                    }
+                                },
+                                "required": [
+                                    "property_id",
+                                    "display_name",
+                                    "type",
+                                    "web_stream_data"
+                                ],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "property_id": {
+                                        "type": "string",
+                                        "description": "GA4 property numeric ID. Example: \"1234\""
+                                    },
+                                    "display_name": {
+                                        "type": "string",
+                                        "description": "Human-readable display name for the Data Stream."
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "ANDROID_APP_DATA_STREAM"
+                                    },
+                                    "android_app_stream_data": {
+                                        "type": "object",
+                                        "properties": {
+                                            "package_name": {
+                                                "type": "string",
+                                                "description": "The package name for the app being measured. Example: \"com.example.myandroidapp\""
+                                            }
+                                        },
+                                        "required": [
+                                            "package_name"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Data specific to Android app streams. Required when type is ANDROID_APP_DATA_STREAM."
+                                    }
+                                },
+                                "required": [
+                                    "property_id",
+                                    "display_name",
+                                    "type",
+                                    "android_app_stream_data"
+                                ],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "property_id": {
+                                        "type": "string",
+                                        "description": "GA4 property numeric ID. Example: \"1234\""
+                                    },
+                                    "display_name": {
+                                        "type": "string",
+                                        "description": "Human-readable display name for the Data Stream."
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "IOS_APP_DATA_STREAM"
+                                    },
+                                    "ios_app_stream_data": {
+                                        "type": "object",
+                                        "properties": {
+                                            "bundle_id": {
+                                                "type": "string",
+                                                "description": "The Apple App Store Bundle ID for the app. Example: \"com.example.myiosapp\""
+                                            }
+                                        },
+                                        "required": [
+                                            "bundle_id"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "Data specific to iOS app streams. Required when type is IOS_APP_DATA_STREAM."
+                                    }
+                                },
+                                "required": [
+                                    "property_id",
+                                    "display_name",
+                                    "type",
+                                    "ios_app_stream_data"
+                                ],
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "property_id": {
+                                        "type": "string",
+                                        "description": "GA4 property numeric ID. Example: \"1234\""
+                                    },
+                                    "display_name": {
+                                        "type": "string",
+                                        "description": "Human-readable display name for the Data Stream."
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "DATA_STREAM_TYPE_UNSPECIFIED"
+                                    }
+                                },
+                                "required": [
+                                    "property_id",
+                                    "display_name",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            }
+                        ]
+                    },
+                    "ActionOutput_google_analytics_createdatastream": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "DATA_STREAM_TYPE_UNSPECIFIED",
+                                    "WEB_DATA_STREAM",
+                                    "ANDROID_APP_DATA_STREAM",
+                                    "IOS_APP_DATA_STREAM"
+                                ]
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "createTime": {
+                                "type": "string"
+                            },
+                            "updateTime": {
+                                "type": "string"
+                            },
+                            "webStreamData": {
+                                "type": "object",
+                                "properties": {
+                                    "measurementId": {
+                                        "type": "string"
+                                    },
+                                    "firebaseAppId": {
+                                        "type": "string"
+                                    },
+                                    "defaultUri": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "androidAppStreamData": {
+                                "type": "object",
+                                "properties": {
+                                    "firebaseAppId": {
+                                        "type": "string"
+                                    },
+                                    "packageName": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "iosAppStreamData": {
+                                "type": "object",
+                                "properties": {
+                                    "firebaseAppId": {
+                                        "type": "string"
+                                    },
+                                    "bundleId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a GA4 property under an account.",
+            "endpoint": null,
+            "input": "ActionInput_google_analytics_createproperty",
+            "name": "create-property",
+            "output": [
+                "ActionOutput_google_analytics_createproperty"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_createproperty",
+                "ActionOutput_google_analytics_createproperty"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_analytics_createproperty": {
+                        "type": "object",
+                        "properties": {
+                            "parent": {
+                                "type": "string",
+                                "description": "The resource name of the account under which to create the property. Example: \"accounts/12345\""
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "description": "Human-readable display name for the property. Max 100 UTF-16 code units."
+                            },
+                            "timeZone": {
+                                "type": "string",
+                                "description": "Reporting time zone for the property. Example: \"America/Los_Angeles\""
+                            },
+                            "currencyCode": {
+                                "description": "Currency type used in reports. Example: \"USD\"",
+                                "type": "string"
+                            },
+                            "industryCategory": {
+                                "description": "Industry category for benchmarking. Example: \"TECHNOLOGY\"",
+                                "type": "string"
+                            },
+                            "serviceLevel": {
+                                "description": "Service level. Example: \"STANDARD\" or \"GOOGLE_ANALYTICS_360\"",
+                                "type": "string"
+                            },
+                            "propertyType": {
+                                "description": "Property type. Example: \"ORDINARY_PROPERTY\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "parent",
+                            "displayName",
+                            "timeZone"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_analytics_createproperty": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Resource name of the created property. Example: \"properties/12345\""
+                            },
+                            "parent": {
+                                "type": "string",
+                                "description": "Parent account name. Example: \"accounts/12345\""
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "createTime": {
+                                "type": "string"
+                            },
+                            "updateTime": {
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "industryCategory": {
+                                "type": "string"
+                            },
+                            "serviceLevel": {
+                                "type": "string"
+                            },
+                            "propertyType": {
+                                "type": "string"
+                            },
+                            "account": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "parent",
+                            "displayName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve GA4 dimensions and metrics metadata.",
+            "endpoint": null,
+            "input": "ActionInput_google_analytics_getmetadata",
+            "name": "get-metadata",
+            "output": [
+                "ActionOutput_google_analytics_getmetadata"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_getmetadata",
+                "ActionOutput_google_analytics_getmetadata"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_analytics_getmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "propertyId": {
+                                "type": "string",
+                                "description": "GA4 property ID. Use \"0\" for universal metadata. Example: \"123456789\""
+                            }
+                        },
+                        "required": [
+                            "propertyId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_analytics_getmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "dimensions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "apiName": {
+                                            "type": "string"
+                                        },
+                                        "uiName": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "category": {
+                                            "type": "string"
+                                        },
+                                        "deprecatedApiNames": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "apiName",
+                                        "uiName",
+                                        "description",
+                                        "category"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "metrics": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "apiName": {
+                                            "type": "string"
+                                        },
+                                        "uiName": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "category": {
+                                            "type": "string"
+                                        },
+                                        "deprecatedApiNames": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "apiName",
+                                        "uiName",
+                                        "description",
+                                        "type",
+                                        "category"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "dimensions",
+                            "metrics"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Run a GA4 pivot report.",
+            "endpoint": null,
+            "input": "ActionInput_google_analytics_runpivotreport",
+            "name": "run-pivot-report",
+            "output": [
+                "ActionOutput_google_analytics_runpivotreport"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_runpivotreport",
+                "ActionOutput_google_analytics_runpivotreport"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_analytics_runpivotreport": {
+                        "type": "object",
+                        "properties": {
+                            "property": {
+                                "type": "string",
+                                "description": "Google Analytics property numeric ID. Example: 535258304"
+                            },
+                            "dimensions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "metrics": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "dateRanges": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "pivots": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "dimensionFilter": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "metricFilter": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "cohortSpec": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "keepEmptyRows": {
+                                "type": "boolean"
+                            },
+                            "returnPropertyQuota": {
+                                "type": "boolean"
+                            },
+                            "comparisons": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "property"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_analytics_runpivotreport": {
+                        "type": "object",
+                        "properties": {
+                            "pivotHeaders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "dimensionHeaders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "metricHeaders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "aggregates": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "propertyQuota": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "kind": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Run a realtime GA4 report.",
+            "endpoint": null,
+            "input": "ActionInput_google_analytics_runrealtimereport",
+            "name": "run-realtime-report",
+            "output": [
+                "ActionOutput_google_analytics_runrealtimereport"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_runrealtimereport",
+                "ActionOutput_google_analytics_runrealtimereport"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_analytics_runrealtimereport": {
+                        "type": "object",
+                        "properties": {
+                            "property": {
+                                "type": "string",
+                                "description": "A Google Analytics property identifier. Example: \"properties/1234\""
+                            },
+                            "dimensions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "metrics": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "expression": {
+                                            "type": "string"
+                                        },
+                                        "invisible": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "dimensionFilter": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "metricFilter": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "limit": {
+                                "description": "The number of rows to return. If unspecified, 10,000 rows are returned.",
+                                "type": "string"
+                            },
+                            "metricAggregations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "orderBys": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "returnPropertyQuota": {
+                                "type": "boolean"
+                            },
+                            "minuteRanges": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "startMinutesAgo": {
+                                            "type": "number"
+                                        },
+                                        "endMinutesAgo": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "property"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_analytics_runrealtimereport": {
+                        "type": "object",
+                        "properties": {
+                            "dimensionHeaders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "metricHeaders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimensionValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    },
+                                                    "oneValue": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "metricValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "totals": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimensionValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    },
+                                                    "oneValue": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "metricValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "maximums": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimensionValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    },
+                                                    "oneValue": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "metricValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "minimums": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimensionValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    },
+                                                    "oneValue": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "metricValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "rowCount": {
+                                "type": "number"
+                            },
+                            "propertyQuota": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "kind": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Run a GA4 report for a property",
+            "endpoint": null,
+            "input": "ActionInput_google_analytics_runreport",
+            "name": "run-report",
+            "output": [
+                "ActionOutput_google_analytics_runreport"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_runreport",
+                "ActionOutput_google_analytics_runreport"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_analytics_runreport": {
+                        "type": "object",
+                        "properties": {
+                            "property": {
+                                "type": "string",
+                                "description": "GA4 property ID. Example: \"properties/123456789\" or \"123456789\""
+                            },
+                            "dimensions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "metrics": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "dateRanges": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "startDate": {
+                                            "type": "string"
+                                        },
+                                        "endDate": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "startDate",
+                                        "endDate"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "dimensionFilter": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "metricFilter": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "ordering": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimension": {
+                                            "type": "object",
+                                            "properties": {
+                                                "dimensionName": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "dimensionName"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "metric": {
+                                            "type": "object",
+                                            "properties": {
+                                                "metricName": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "metricName"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "desc": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "limit": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "property"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_analytics_runreport": {
+                        "type": "object",
+                        "properties": {
+                            "dimensionHeaders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "metricHeaders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimensionValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "metricValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "rowCount": {
+                                "type": "number"
+                            },
+                            "totals": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimensionValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "metricValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "maximums": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimensionValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "metricValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "minimums": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dimensionValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "metricValues": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "value": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a GA4 data stream.",
+            "endpoint": null,
+            "input": "ActionInput_google_analytics_updatedatastream",
+            "name": "update-data-stream",
+            "output": [
+                "ActionOutput_google_analytics_updatedatastream"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_updatedatastream",
+                "ActionOutput_google_analytics_updatedatastream"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_analytics_updatedatastream": {
+                        "type": "object",
+                        "properties": {
+                            "propertyId": {
+                                "type": "string",
+                                "description": "GA4 property ID."
+                            },
+                            "dataStreamId": {
+                                "type": "string",
+                                "description": "Data stream ID to update."
+                            },
+                            "displayName": {
+                                "description": "Human-readable display name for the Data Stream.",
+                                "type": "string"
+                            },
+                            "webStreamData": {
+                                "description": "Data specific to web streams.",
+                                "type": "object",
+                                "properties": {
+                                    "defaultUri": {
+                                        "description": "Domain name of the web app being measured.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "updateMask": {
+                                "description": "The list of fields to be updated. If omitted, it will be computed from provided fields.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "propertyId",
+                            "dataStreamId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_analytics_updatedatastream": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "createTime": {
+                                "type": "string"
+                            },
+                            "updateTime": {
+                                "type": "string"
+                            },
+                            "webStreamData": {
+                                "type": "object",
+                                "properties": {
+                                    "defaultUri": {
+                                        "type": "string"
+                                    },
+                                    "measurementId": {
+                                        "type": "string"
+                                    },
+                                    "firebaseAppId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "androidAppStreamData": {
+                                "type": "object",
+                                "properties": {
+                                    "packageName": {
+                                        "type": "string"
+                                    },
+                                    "firebaseAppId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "iosAppStreamData": {
+                                "type": "object",
+                                "properties": {
+                                    "bundleId": {
+                                        "type": "string"
+                                    },
+                                    "firebaseAppId": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a GA4 property.",
+            "endpoint": null,
+            "input": "ActionInput_google_analytics_updateproperty",
+            "name": "update-property",
+            "output": [
+                "ActionOutput_google_analytics_updateproperty"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_updateproperty",
+                "ActionOutput_google_analytics_updateproperty"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_analytics_updateproperty": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Property resource name. Example: \"properties/123456789\""
+                            },
+                            "displayName": {
+                                "description": "Human-readable display name for the property.",
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "description": "The reporting time zone for the property. Example: \"America/Los_Angeles\".",
+                                "type": "string"
+                            },
+                            "currencyCode": {
+                                "description": "The currency type used in reports. Example: \"USD\".",
+                                "type": "string"
+                            },
+                            "industryCategory": {
+                                "description": "Industry category. Example: \"TECHNOLOGY\".",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_analytics_updateproperty": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "industryCategory": {
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "serviceLevel": {
+                                "type": "string"
+                            },
+                            "account": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync accessible Google Analytics accounts.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/accounts"
+                }
+            ],
+            "input": null,
+            "name": "accounts",
+            "output": [
+                "Account"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Account"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Account": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "createTime": {
+                                "type": "string"
+                            },
+                            "updateTime": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "regionCode": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "gmpOrganization": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync GA4 audiences for properties.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/audiences",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "audiences",
+            "output": [
+                "Audience"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Audience"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Audience": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "membershipDurationDays": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "adsPersonalizationEnabled": {
+                                "type": "boolean"
+                            },
+                            "eventTrigger": {},
+                            "exclusionDurationMode": {
+                                "type": "string"
+                            },
+                            "filterClauses": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "createTime": {
+                                "type": "string"
+                            },
+                            "propertyId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync configured GA4 key events (formerly conversion events)",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/conversion-events"
+                }
+            ],
+            "input": null,
+            "name": "conversion-events",
+            "output": [
+                "KeyEvent"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "KeyEvent"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "KeyEvent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "eventName": {
+                                "type": "string"
+                            },
+                            "createTime": {
+                                "type": "string"
+                            },
+                            "deletable": {
+                                "type": "boolean"
+                            },
+                            "custom": {
+                                "type": "boolean"
+                            },
+                            "countingMethod": {
+                                "type": "string"
+                            },
+                            "defaultValue": {
+                                "type": "object",
+                                "properties": {
+                                    "numericValue": {
+                                        "type": "number"
+                                    },
+                                    "currencyCode": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync web, iOS, and Android data streams for GA4 properties.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/data-streams"
+                }
+            ],
+            "input": null,
+            "name": "data-streams",
+            "output": [
+                "DataStream"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "DataStream"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "DataStream": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "propertyId": {
+                                "type": "string"
+                            },
+                            "measurementId": {
+                                "type": "string"
+                            },
+                            "defaultUri": {
+                                "type": "string"
+                            },
+                            "firebaseAppId": {
+                                "type": "string"
+                            },
+                            "packageName": {
+                                "type": "string"
+                            },
+                            "bundleId": {
+                                "type": "string"
+                            },
+                            "createTime": {
+                                "type": "string"
+                            },
+                            "updateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "propertyId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync GA4 properties across accessible accounts.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/properties"
+                }
+            ],
+            "input": null,
+            "name": "properties",
+            "output": [
+                "Property"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Property"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Property": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "propertyType": {
+                                "type": "string"
+                            },
+                            "parent": {
+                                "type": "string"
+                            },
+                            "createTime": {
+                                "type": "string"
+                            },
+                            "updateTime": {
+                                "type": "string"
+                            },
+                            "timeZone": {
+                                "type": "string"
+                            },
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "industryCategory": {
+                                "type": "string"
+                            },
+                            "serviceLevel": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

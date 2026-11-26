@@ -8,6 +8,7 @@ import { Helmet } from 'react-helmet';
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
+import { SearchField } from '@/components/patterns/SearchField';
 import { CountBadge } from '@/components/ui/CountBadge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -24,7 +25,6 @@ import { countIntegrationsByProvider, filterProviders, getCategoryLabel, listCat
 import { CatalogCard } from './components/CatalogCard';
 import { CategoryRail } from './components/CategoryRail';
 import { NoMatchesState } from './components/NoMatchesState';
-import { SearchField } from './components/SearchField';
 import { useCatalogPlace } from './useCatalogPlace';
 
 import type { CatalogFilter } from './analytics';

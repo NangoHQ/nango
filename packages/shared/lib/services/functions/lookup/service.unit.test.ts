@@ -24,7 +24,10 @@ vi.mock('../../config.service.js', () => ({
     default: { getIdByProviderConfigKey: mockGetIdByProviderConfigKey }
 }));
 
-vi.mock('../models/functions.js', () => ({ search: mockSearchFunctions }));
+vi.mock('../models/functions.js', async (importOriginal) => ({
+    ...(await importOriginal<Record<string, unknown>>()),
+    search: mockSearchFunctions
+}));
 
 vi.mock('./models/functions.js', () => ({
     findActiveByEnvironment: mockFindActiveByEnvironment,

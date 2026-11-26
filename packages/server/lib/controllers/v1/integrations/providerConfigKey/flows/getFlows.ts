@@ -31,12 +31,11 @@ export const getIntegrationFlows = asyncWrapperWithEnvironment<GetIntegrationFlo
         return;
     }
 
-    const availablePublicFlows = flowService.getAllAvailableFlowsAsStandardConfig();
-    const [template] = availablePublicFlows.filter((flow) => flow.providerConfigKey === integration.provider);
+    const templates = flowService.getProviderTemplates(integration.provider);
     const allFlows = await getSyncConfigsAsStandardConfig(environment.id, params.providerConfigKey);
 
     const dbFlows: NangoSyncConfig[] = [...(allFlows?.actions || []), ...(allFlows?.syncs || [])];
-    const templateFlows: NangoSyncConfig[] = [...(template?.actions || []), ...(template?.syncs || [])];
+    const templateFlows: NangoSyncConfig[] = [...(templates?.actions || []), ...(templates?.syncs || [])];
     const finalFlows: NangoSyncConfig[] = [...dbFlows];
 
     // Find flows that could conflict with the templates

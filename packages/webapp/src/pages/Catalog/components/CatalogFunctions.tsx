@@ -4,10 +4,11 @@ import { useState } from 'react';
 
 import { LinkButton } from '@nangohq/design-system';
 
-import { cn } from '@/utils/utils';
-import { SlidingPanelLayout } from '../../Integrations/providerConfigKey/Functions/SlidingPanelLayout';
+import { SearchField } from '@/components/patterns/SearchField';
+import { FunctionList, FunctionListNoMatches, FunctionListRow } from '@/features/Functions/FunctionList';
+import { FunctionTypeTabs } from '@/features/Functions/FunctionTypeTabs';
+import { SlidingPanelLayout } from '@/features/Functions/SlidingPanelLayout';
 import { CatalogFunctionPanel } from './CatalogFunctionPanel';
-import { SearchField } from './SearchField';
 
 import type { ProviderTemplatesSuccess } from '@nangohq/types';
 
@@ -24,12 +25,13 @@ const TAB_LABELS: Record<FunctionTypeTab, { singular: string; plural: string }> 
 
 interface CatalogFunctionsProps {
     templates: ProviderTemplatesSuccess['data'];
+    provider: string;
     displayName: string;
     isMcp: boolean;
     renderSetupButton: () => React.ReactNode;
 }
 
-export const CatalogFunctions: React.FC<CatalogFunctionsProps> = ({ templates, displayName, isMcp, renderSetupButton }) => {
+export const CatalogFunctions: React.FC<CatalogFunctionsProps> = ({ templates, provider, displayName, isMcp, renderSetupButton }) => {
     const [rawType, setType] = useQueryState('type', parseAsStringLiteral(FUNCTION_TYPES));
     const [selectedName, setSelectedName] = useQueryState('function', parseAsString);
     const [search, setSearch] = useState('');
@@ -37,8 +39,8 @@ export const CatalogFunctions: React.FC<CatalogFunctionsProps> = ({ templates, d
     const tabs = FUNCTION_TYPES.map((type) => ({
         type,
         items: templates.filter((fn) => (type === 'action' ? fn.type === 'action' || fn.type === 'tool' : fn.type === type))
-    })).filter((tab) => tab.items.length > 0);
-    const activeTab = tabs.find((tab) => tab.type === rawType) ?? tabs[0];
+    }));
+    const activeTab = tabs.find((tab) => tab.type === rawType && tab.items.length > 0) ?? tabs.find((tab) => tab.items.length > 0);
 
     if (!activeTab) {
         return isMcp ? <McpToolsState /> : <NoFunctionsState displayName={displayName} />;
@@ -51,99 +53,46 @@ export const CatalogFunctions: React.FC<CatalogFunctionsProps> = ({ templates, d
 
     return (
         <div className="flex flex-col gap-3">
-            <div role="tablist" className="flex items-center gap-1">
-                {tabs.map((tab) => (
-                    <button
-                        key={tab.type}
-                        type="button"
-                        role="tab"
-                        aria-selected={tab.type === activeTab.type}
-                        onClick={() => {
-                            void setType(tab.type);
-                            void setSelectedName(null);
-                        }}
-                        className={cn(
-                            'flex h-6 cursor-pointer items-center gap-1.5 rounded-ds-sm px-2 type-text-medium-sm transition-colors focus-default',
-                            tab.type === activeTab.type ? 'bg-status-info-bg text-status-info-text' : 'text-text-default hover:bg-state-hover'
-                        )}
-                    >
-                        {TAB_LABELS[tab.type].plural}
-                        <span className="type-code-regular-xs">{tab.items.length}</span>
-                    </button>
-                ))}
-            </div>
+            <FunctionTypeTabs
+                tabs={tabs.map((tab) => ({ value: tab.type, label: TAB_LABELS[tab.type].plural, count: tab.items.length }))}
+                value={activeTab.type}
+                onChange={(type) => {
+                    void setType(type);
+                    void setSelectedName(null);
+                }}
+            />
 
             <SearchField value={search} placeholder={`Search ${labels.plural.toLowerCase()}`} onChange={setSearch} />
 
             <SlidingPanelLayout
                 selected={selected}
                 getKey={(fn) => `${fn.type}:${fn.name}`}
-                renderPanel={(fn) => <CatalogFunctionPanel fn={fn} setupButton={renderSetupButton()} onClose={() => void setSelectedName(null)} />}
+                renderPanel={(fn) => (
+                    <CatalogFunctionPanel fn={fn} provider={provider} setupButton={renderSetupButton()} onClose={() => void setSelectedName(null)} />
+                )}
                 onClose={() => void setSelectedName(null)}
             >
-                <div className="overflow-hidden rounded-ds-md border-ds-hairline border-border-default bg-surface-panel">
-                    <div className="border-b-ds-hairline border-border-default bg-surface-canvas px-3 py-2 type-label-xs uppercase text-text-muted">
-                        {labels.plural}
-                    </div>
-                    {shown.length === 0 ? (
-                        <NoResultsState
-                            query={search.trim()}
-                            noun={labels.plural.toLowerCase()}
-                            displayName={displayName}
-                            onClear={() => {
-                                setSearch('');
-                            }}
+                <FunctionList
+                    title={labels.plural}
+                    footer={`Showing ${shown.length} of ${activeTab.items.length} ${activeTab.items.length === 1 ? labels.singular : labels.plural.toLowerCase()}`}
+                    empty={
+                        shown.length === 0 && <FunctionListNoMatches query={search.trim()} noun={labels.plural.toLowerCase()} onClear={() => setSearch('')} />
+                    }
+                >
+                    {shown.map((fn) => (
+                        <FunctionListRow
+                            key={fn.name}
+                            name={fn.name}
+                            description={fn.description}
+                            selected={fn.name === selected?.name}
+                            onSelect={() => void setSelectedName(fn.name === selectedName ? null : fn.name)}
                         />
-                    ) : (
-                        <ul>
-                            {shown.map((fn) => (
-                                <li key={fn.name} className="border-b-ds-hairline border-border-default last:border-b-0">
-                                    <button
-                                        type="button"
-                                        onClick={() => void setSelectedName(fn.name === selectedName ? null : fn.name)}
-                                        className={cn(
-                                            'flex w-full cursor-pointer flex-col gap-0.5 py-2 pr-3 text-left transition-colors focus-inset',
-                                            fn.name === selected?.name
-                                                ? 'border-l-ds-2 border-l-interactive-selected-fill bg-surface-canvas pl-2.5'
-                                                : 'pl-3 hover:bg-state-hover'
-                                        )}
-                                    >
-                                        <span className="truncate type-code-medium-md text-text-strong">{fn.name}</span>
-                                        {fn.description && <span className="truncate type-text-regular-xs text-text-secondary">{fn.description}</span>}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                    <div className="border-t-ds-hairline border-border-default px-3 py-2 type-text-regular-xs text-text-muted">
-                        Showing {shown.length} of {activeTab.items.length} {activeTab.items.length === 1 ? labels.singular : labels.plural.toLowerCase()}
-                    </div>
-                </div>
+                    ))}
+                </FunctionList>
             </SlidingPanelLayout>
         </div>
     );
 };
-
-const NoResultsState: React.FC<{ query: string; noun: string; displayName: string; onClear: () => void }> = ({ query, noun, displayName, onClear }) => (
-    <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
-        <span className="type-text-medium-sm text-text-strong">
-            No {noun} match “{query}”
-        </span>
-        <span className="type-text-regular-xs text-text-secondary">
-            Try another word. Need something {displayName} doesn&apos;t have here? You can build your own.
-        </span>
-        <div className="flex items-center gap-4 pt-1">
-            <LinkButton size="lg" onClick={onClear}>
-                Clear search
-            </LinkButton>
-            <LinkButton asChild size="lg">
-                <a href={FUNCTIONS_GUIDE_URL} target="_blank" rel="noreferrer">
-                    Build your own <ArrowUpRight />
-                </a>
-            </LinkButton>
-        </div>
-    </div>
-);
 
 const EmptyStateCard: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> = ({ icon, children }) => (
     <div className="flex flex-col items-center gap-2 rounded-ds-md border-ds-hairline border-border-default bg-surface-panel px-6 py-12 text-center">

@@ -1,0 +1,3578 @@
+{
+    "providerConfigKey": "typeform",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a form.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_createform",
+            "name": "create-form",
+            "output": [
+                "ActionOutput_typeform_createform"
+            ],
+            "scopes": [
+                "forms:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_createform",
+                "ActionOutput_typeform_createform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_createform": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "description": "Title to use for the form. Example: \"My new form\""
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "ref": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "ref",
+                                        "title",
+                                        "type"
+                                    ],
+                                    "additionalProperties": {}
+                                },
+                                "description": "Array of field objects to use in the form. Each field must include type, title, and ref."
+                            },
+                            "workspace": {
+                                "description": "Workspace to place the form in. Pass the full https://api.typeform.com/workspaces/{id} URL in href.",
+                                "type": "object",
+                                "properties": {
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "href"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "theme": {
+                                "description": "Theme to use for the form. Pass the full https://api.typeform.com/themes/{id} URL in href.",
+                                "type": "object",
+                                "properties": {
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "href"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "settings": {
+                                "description": "Form settings and metadata.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "thankyou_screens": {
+                                "description": "Array of thank you screen objects.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "welcome_screens": {
+                                "description": "Array of welcome screen objects.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "title",
+                            "fields"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_createform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "hidden": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "welcome_screens": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "thankyou_screens": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "settings": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "theme": {
+                                "type": "object",
+                                "properties": {
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "href"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "workspace": {
+                                "type": "object",
+                                "properties": {
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "href"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "_links": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "logic": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "variables": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Register an image from a URL or base64 payload.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_createimage",
+            "name": "create-image",
+            "output": [
+                "ActionOutput_typeform_createimage"
+            ],
+            "scopes": [
+                "images:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_createimage",
+                "ActionOutput_typeform_createimage"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_createimage": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "description": "URL of the image to import. Example: \"https://example.com/image.png\"",
+                                "type": "string"
+                            },
+                            "image": {
+                                "description": "Base64-encoded image data without data URI prefix. Example: \"iVBORw0KGgoAAAANSUhEUg...\"",
+                                "type": "string"
+                            },
+                            "file_name": {
+                                "description": "File name for the image. Example: \"newimage.gif\"",
+                                "type": "string"
+                            },
+                            "upload_source": {
+                                "description": "Source of the image upload.",
+                                "type": "string",
+                                "enum": [
+                                    "user_upload",
+                                    "stock_image",
+                                    "stock_icon",
+                                    "unknown"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_createimage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "src": {
+                                "type": "string"
+                            },
+                            "file_name": {
+                                "type": "string"
+                            },
+                            "width": {
+                                "type": "number"
+                            },
+                            "height": {
+                                "type": "number"
+                            },
+                            "media_type": {
+                                "type": "string"
+                            },
+                            "has_alpha": {
+                                "type": "boolean"
+                            },
+                            "avg_color": {
+                                "type": "string"
+                            },
+                            "upload_source": {
+                                "type": "string",
+                                "enum": [
+                                    "user_upload",
+                                    "stock_image",
+                                    "stock_icon",
+                                    "unknown"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "src"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a theme.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_createtheme",
+            "name": "create-theme",
+            "output": [
+                "ActionOutput_typeform_createtheme"
+            ],
+            "scopes": [
+                "themes:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_createtheme",
+                "ActionOutput_typeform_createtheme"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_createtheme": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Name for the theme. Example: \"My new theme\""
+                            },
+                            "font": {
+                                "type": "string",
+                                "description": "Font for the theme. Example: \"Karla\""
+                            },
+                            "colors": {
+                                "type": "object",
+                                "properties": {
+                                    "question": {
+                                        "type": "string",
+                                        "description": "Color the theme will apply to questions. Example: \"#FFFFFF\""
+                                    },
+                                    "answer": {
+                                        "type": "string",
+                                        "description": "Color the theme will apply to answers. Example: \"#4FB0AE\""
+                                    },
+                                    "button": {
+                                        "type": "string",
+                                        "description": "Color the theme will apply to buttons. Example: \"#4FB0AE\""
+                                    },
+                                    "background": {
+                                        "type": "string",
+                                        "description": "Color the theme will apply to the background. Example: \"#000000\""
+                                    }
+                                },
+                                "required": [
+                                    "question",
+                                    "answer",
+                                    "button",
+                                    "background"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "fields": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string",
+                                        "description": "Fields alignment. Example: \"left\""
+                                    },
+                                    "font_size": {
+                                        "type": "string",
+                                        "description": "Fields font size. Example: \"medium\""
+                                    }
+                                },
+                                "required": [
+                                    "alignment",
+                                    "font_size"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "screens": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string",
+                                        "description": "Screens alignment. Example: \"center\""
+                                    },
+                                    "font_size": {
+                                        "type": "string",
+                                        "description": "Screens font size. Example: \"small\""
+                                    }
+                                },
+                                "required": [
+                                    "alignment",
+                                    "font_size"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "background": {
+                                "type": "object",
+                                "properties": {
+                                    "brightness": {
+                                        "type": "number"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "image_id": {},
+                                    "layout": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "has_transparent_button": {
+                                "type": "boolean"
+                            },
+                            "rounded_corners": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "font",
+                            "colors",
+                            "fields",
+                            "screens"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_createtheme": {
+                        "type": "object",
+                        "properties": {
+                            "id": {},
+                            "name": {
+                                "type": "string"
+                            },
+                            "font": {
+                                "type": "string"
+                            },
+                            "colors": {
+                                "type": "object",
+                                "properties": {
+                                    "question": {
+                                        "type": "string",
+                                        "description": "Color the theme will apply to questions. Example: \"#FFFFFF\""
+                                    },
+                                    "answer": {
+                                        "type": "string",
+                                        "description": "Color the theme will apply to answers. Example: \"#4FB0AE\""
+                                    },
+                                    "button": {
+                                        "type": "string",
+                                        "description": "Color the theme will apply to buttons. Example: \"#4FB0AE\""
+                                    },
+                                    "background": {
+                                        "type": "string",
+                                        "description": "Color the theme will apply to the background. Example: \"#000000\""
+                                    }
+                                },
+                                "required": [
+                                    "question",
+                                    "answer",
+                                    "button",
+                                    "background"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "fields": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string",
+                                        "description": "Fields alignment. Example: \"left\""
+                                    },
+                                    "font_size": {
+                                        "type": "string",
+                                        "description": "Fields font size. Example: \"medium\""
+                                    }
+                                },
+                                "required": [
+                                    "alignment",
+                                    "font_size"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "screens": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string",
+                                        "description": "Screens alignment. Example: \"center\""
+                                    },
+                                    "font_size": {
+                                        "type": "string",
+                                        "description": "Screens font size. Example: \"small\""
+                                    }
+                                },
+                                "required": [
+                                    "alignment",
+                                    "font_size"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "visibility": {
+                                "type": "string"
+                            },
+                            "background": {
+                                "type": "object",
+                                "properties": {
+                                    "brightness": {
+                                        "type": "number"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "image_id": {},
+                                    "layout": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "has_transparent_button": {
+                                "type": "boolean"
+                            },
+                            "origin": {
+                                "type": "string"
+                            },
+                            "rounded_corners": {
+                                "type": "string"
+                            },
+                            "source_theme_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "font",
+                            "colors",
+                            "fields",
+                            "screens",
+                            "visibility"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create or update a webhook.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_createwebhook",
+            "name": "create-webhook",
+            "output": [
+                "ActionOutput_typeform_createwebhook"
+            ],
+            "scopes": [
+                "webhooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_createwebhook",
+                "ActionOutput_typeform_createwebhook"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_createwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "Unique ID for the form. Example: \"WMpBq4vc\""
+                            },
+                            "tag": {
+                                "type": "string",
+                                "description": "Unique name you want to use for the webhook. Example: \"my-webhook\""
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Webhook URL. Example: \"https://example.com/webhook\""
+                            },
+                            "enabled": {
+                                "type": "boolean",
+                                "description": "True if you want to send responses to the webhook immediately. Otherwise, false."
+                            },
+                            "event_types": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "boolean"
+                                },
+                                "description": "Object specifying the event types to which this webhook is subscribed. Example: {\"form_response\": true}"
+                            },
+                            "secret": {
+                                "description": "If specified, will be used to sign the webhook payload with HMAC SHA256, so that you can verify that it came from Typeform.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "tag",
+                            "url",
+                            "enabled",
+                            "event_types"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_createwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "event_types": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "form_id": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "secret": {
+                                "type": "string"
+                            },
+                            "tag": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "verify_ssl": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "created_at",
+                            "enabled",
+                            "event_types",
+                            "form_id",
+                            "id",
+                            "tag",
+                            "updated_at",
+                            "url"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a workspace.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_createworkspace",
+            "name": "create-workspace",
+            "output": [
+                "ActionOutput_typeform_createworkspace"
+            ],
+            "scopes": [
+                "workspaces:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_createworkspace",
+                "ActionOutput_typeform_createworkspace"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_createworkspace": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Workspace name. Example: \"My Workspace\""
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_createworkspace": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "account_id": {
+                                "type": "string"
+                            },
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "email",
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "account_member_id": {
+                                            "type": "string"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "forms": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "count": {
+                                                "type": "number"
+                                            },
+                                            "href": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "count": {
+                                                    "type": "number"
+                                                },
+                                                "href": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                ]
+                            },
+                            "self": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "href": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "href": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                ]
+                            },
+                            "shared": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a form.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_deleteform",
+            "name": "delete-form",
+            "output": [
+                "ActionOutput_typeform_deleteform"
+            ],
+            "scopes": [
+                "forms:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deleteform",
+                "ActionOutput_typeform_deleteform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_deleteform": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "Form ID to delete. Example: \"tlGO1VrX\""
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_deleteform": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "const": true
+                            },
+                            "form_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "form_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an image.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_deleteimage",
+            "name": "delete-image",
+            "output": [
+                "ActionOutput_typeform_deleteimage"
+            ],
+            "scopes": [
+                "images:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deleteimage",
+                "ActionOutput_typeform_deleteimage"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_deleteimage": {
+                        "type": "object",
+                        "properties": {
+                            "image_id": {
+                                "type": "string",
+                                "description": "The image ID to delete. Example: \"pshDCOusAapn\""
+                            }
+                        },
+                        "required": [
+                            "image_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_deleteimage": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Bulk-delete one or more form responses.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_deleteresponses",
+            "name": "delete-responses",
+            "output": [
+                "ActionOutput_typeform_deleteresponses"
+            ],
+            "scopes": [
+                "responses:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deleteresponses",
+                "ActionOutput_typeform_deleteresponses"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_deleteresponses": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "Form ID. Example: \"WMpBq4vc\""
+                            },
+                            "response_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Array of response IDs to delete. Up to 1000 IDs per call."
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "response_ids"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_deleteresponses": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a theme.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_deletetheme",
+            "name": "delete-theme",
+            "output": [
+                "ActionOutput_typeform_deletetheme"
+            ],
+            "scopes": [
+                "themes:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deletetheme",
+                "ActionOutput_typeform_deletetheme"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_deletetheme": {
+                        "type": "object",
+                        "properties": {
+                            "theme_id": {
+                                "type": "string",
+                                "description": "Theme ID. Example: \"I3NkUFrI\""
+                            }
+                        },
+                        "required": [
+                            "theme_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_deletetheme": {
+                        "type": "object",
+                        "properties": {
+                            "theme_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "theme_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a webhook.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_deletewebhook",
+            "name": "delete-webhook",
+            "output": [
+                "ActionOutput_typeform_deletewebhook"
+            ],
+            "scopes": [
+                "webhooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deletewebhook",
+                "ActionOutput_typeform_deletewebhook"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_deletewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "formId": {
+                                "type": "string",
+                                "description": "Unique ID for the form. Example: \"u6nXL7\""
+                            },
+                            "tag": {
+                                "type": "string",
+                                "description": "Unique name for the webhook. Example: \"my-webhook\""
+                            }
+                        },
+                        "required": [
+                            "formId",
+                            "tag"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_deletewebhook": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a workspace.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_deleteworkspace",
+            "name": "delete-workspace",
+            "output": [
+                "ActionOutput_typeform_deleteworkspace"
+            ],
+            "scopes": [
+                "workspaces:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deleteworkspace",
+                "ActionOutput_typeform_deleteworkspace"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_deleteworkspace": {
+                        "type": "object",
+                        "properties": {
+                            "workspace_id": {
+                                "type": "string",
+                                "description": "Workspace ID to delete. Example: \"BFvknD\""
+                            }
+                        },
+                        "required": [
+                            "workspace_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_deleteworkspace": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "workspace_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "workspace_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a form.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_getform",
+            "name": "get-form",
+            "output": [
+                "ActionOutput_typeform_getform"
+            ],
+            "scopes": [
+                "forms:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_getform",
+                "ActionOutput_typeform_getform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_getform": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "The unique ID of the form. Example: \"WMpBq4vc\""
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_getform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "workspace": {
+                                "type": "object",
+                                "properties": {
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "href"
+                                ],
+                                "additionalProperties": {}
+                            },
+                            "theme": {
+                                "type": "object",
+                                "properties": {
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "href"
+                                ],
+                                "additionalProperties": {}
+                            },
+                            "_links": {
+                                "type": "object",
+                                "properties": {
+                                    "display": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "welcome_screens": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "thankyou_screens": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "logic": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "variables": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "settings": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "hidden": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve image metadata",
+            "endpoint": null,
+            "input": "ActionInput_typeform_getimage",
+            "name": "get-image",
+            "output": [
+                "ActionOutput_typeform_getimage"
+            ],
+            "scopes": [
+                "images:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_getimage",
+                "ActionOutput_typeform_getimage"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_getimage": {
+                        "type": "object",
+                        "properties": {
+                            "image_id": {
+                                "type": "string",
+                                "description": "Unique ID for the image to retrieve. Example: \"pshDCOusAapn\""
+                            }
+                        },
+                        "required": [
+                            "image_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_getimage": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "src": {
+                                "type": "string"
+                            },
+                            "file_name": {
+                                "type": "string"
+                            },
+                            "width": {
+                                "type": "number"
+                            },
+                            "height": {
+                                "type": "number"
+                            },
+                            "media_type": {
+                                "type": "string"
+                            },
+                            "has_alpha": {
+                                "type": "boolean"
+                            },
+                            "avg_color": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "src",
+                            "file_name",
+                            "width",
+                            "height",
+                            "media_type",
+                            "has_alpha",
+                            "avg_color"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a theme.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_gettheme",
+            "name": "get-theme",
+            "output": [
+                "ActionOutput_typeform_gettheme"
+            ],
+            "scopes": [
+                "themes:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_gettheme",
+                "ActionOutput_typeform_gettheme"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_gettheme": {
+                        "type": "object",
+                        "properties": {
+                            "theme_id": {
+                                "type": "string",
+                                "description": "Unique ID for the theme. Example: \"I3NkUFrI\""
+                            }
+                        },
+                        "required": [
+                            "theme_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_gettheme": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Unique ID of the theme."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the theme."
+                            },
+                            "font": {
+                                "type": "string"
+                            },
+                            "colors": {
+                                "type": "object",
+                                "properties": {
+                                    "answer": {
+                                        "type": "string"
+                                    },
+                                    "background": {
+                                        "type": "string"
+                                    },
+                                    "button": {
+                                        "type": "string"
+                                    },
+                                    "question": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "background": {
+                                "type": "object",
+                                "properties": {
+                                    "brightness": {
+                                        "type": "number"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "image_id": {},
+                                    "layout": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "fields": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string"
+                                    },
+                                    "font_size": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "screens": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string"
+                                    },
+                                    "font_size": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "has_transparent_button": {
+                                "type": "boolean"
+                            },
+                            "rounded_corners": {
+                                "type": "string"
+                            },
+                            "visibility": {
+                                "type": "string"
+                            },
+                            "origin": {
+                                "type": "string"
+                            },
+                            "source_theme_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single webhook by tag for a Typeform form.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_getwebhook",
+            "name": "get-webhook",
+            "output": [
+                "ActionOutput_typeform_getwebhook"
+            ],
+            "scopes": [
+                "webhooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_getwebhook",
+                "ActionOutput_typeform_getwebhook"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_getwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "Unique ID for the form. Example: \"abc123\""
+                            },
+                            "tag": {
+                                "type": "string",
+                                "description": "Unique name for the webhook. Example: \"phoenix\""
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "tag"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_getwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "event_types": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "form_id": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "secret": {
+                                "type": "string"
+                            },
+                            "tag": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "verify_ssl": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "created_at",
+                            "enabled",
+                            "event_types",
+                            "form_id",
+                            "id",
+                            "tag",
+                            "updated_at",
+                            "url",
+                            "verify_ssl"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a workspace.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_getworkspace",
+            "name": "get-workspace",
+            "output": [
+                "ActionOutput_typeform_getworkspace"
+            ],
+            "scopes": [
+                "workspaces:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_getworkspace",
+                "ActionOutput_typeform_getworkspace"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_getworkspace": {
+                        "type": "object",
+                        "properties": {
+                            "workspace_id": {
+                                "type": "string",
+                                "description": "Workspace ID. Example: \"wCjDgv\""
+                            }
+                        },
+                        "required": [
+                            "workspace_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_getworkspace": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "account_id": {
+                                "type": "string"
+                            },
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List forms.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_listforms",
+            "name": "list-forms",
+            "output": [
+                "ActionOutput_typeform_listforms"
+            ],
+            "scopes": [
+                "forms:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listforms",
+                "ActionOutput_typeform_listforms"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_listforms": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "page_size": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            },
+                            "search": {
+                                "type": "string"
+                            },
+                            "workspace_id": {
+                                "type": "string"
+                            },
+                            "sort_by": {
+                                "type": "string",
+                                "enum": [
+                                    "created_at",
+                                    "last_updated_at"
+                                ]
+                            },
+                            "order_by": {
+                                "type": "string",
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
+                            },
+                            "is_public": {
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_listforms": {
+                        "type": "object",
+                        "properties": {
+                            "total_items": {
+                                "type": "number"
+                            },
+                            "page_count": {
+                                "type": "number"
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "last_updated_at": {
+                                            "type": "string"
+                                        },
+                                        "settings": {
+                                            "type": "object",
+                                            "properties": {
+                                                "is_public": {
+                                                    "type": "boolean"
+                                                },
+                                                "is_trial": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "theme": {
+                                            "type": "object",
+                                            "properties": {
+                                                "href": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "workspace": {
+                                            "type": "object",
+                                            "properties": {
+                                                "href": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "self": {
+                                            "type": "object",
+                                            "properties": {
+                                                "href": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "_links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "display": {
+                                                    "type": "string"
+                                                },
+                                                "responses": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "total_items",
+                            "page_count",
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List images.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_listimages",
+            "name": "list-images",
+            "output": [
+                "ActionOutput_typeform_listimages"
+            ],
+            "scopes": [
+                "images:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listimages",
+                "ActionOutput_typeform_listimages"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_listimages": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_listimages": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "file_name": {
+                                            "type": "string"
+                                        },
+                                        "src": {
+                                            "type": "string"
+                                        },
+                                        "width": {
+                                            "type": "number"
+                                        },
+                                        "height": {
+                                            "type": "number"
+                                        },
+                                        "media_type": {
+                                            "type": "string"
+                                        },
+                                        "avg_color": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "file_name",
+                                        "src"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List form responses.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_listresponses",
+            "name": "list-responses",
+            "output": [
+                "ActionOutput_typeform_listresponses"
+            ],
+            "scopes": [
+                "responses:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listresponses",
+                "ActionOutput_typeform_listresponses"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_listresponses": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "Form ID. Example: \"WMpBq4vc\""
+                            },
+                            "page_size": {
+                                "description": "Number of responses per page. Default 25, max 1000.",
+                                "type": "number",
+                                "maximum": 1000
+                            },
+                            "since": {
+                                "description": "Include responses submitted on or after this timestamp (ISO 8601 or unix).",
+                                "type": "string"
+                            },
+                            "until": {
+                                "description": "Include responses submitted on or before this timestamp (ISO 8601 or unix).",
+                                "type": "string"
+                            },
+                            "after": {
+                                "description": "Include responses submitted after this response token (exclusive). Cannot be combined with sort.",
+                                "type": "string"
+                            },
+                            "included_response_ids": {
+                                "description": "Comma-separated response IDs to include.",
+                                "type": "string"
+                            },
+                            "excluded_response_ids": {
+                                "description": "Comma-separated response IDs to exclude.",
+                                "type": "string"
+                            },
+                            "response_type": {
+                                "description": "Types to include: started, partial, completed. Defaults to completed only.",
+                                "type": "string"
+                            },
+                            "sort": {
+                                "description": "Sort order: {field_id},{asc|desc}. Cannot be combined with after/before/cursor.",
+                                "type": "string"
+                            },
+                            "query": {
+                                "description": "Free-text search across answers.",
+                                "type": "string"
+                            },
+                            "fields": {
+                                "description": "Comma-separated field IDs to include in answers.",
+                                "type": "string"
+                            },
+                            "answered_fields": {
+                                "description": "Comma-separated field IDs that must have answers.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from a previous response. Maps to the before parameter. Cannot be combined with sort.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_listresponses": {
+                        "type": "object",
+                        "properties": {
+                            "total_items": {
+                                "type": "number"
+                            },
+                            "page_count": {
+                                "type": "number"
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "landing_id": {
+                                            "type": "string"
+                                        },
+                                        "token": {
+                                            "type": "string"
+                                        },
+                                        "response_id": {
+                                            "type": "string"
+                                        },
+                                        "landed_at": {
+                                            "type": "string"
+                                        },
+                                        "submitted_at": {
+                                            "type": "string"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "answers": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "field": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "ref": {
+                                                                "type": "string"
+                                                            },
+                                                            "type": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "type"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "field",
+                                                    "type"
+                                                ],
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "hidden": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "calculated": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "variables": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "key": {
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "key",
+                                                    "type"
+                                                ],
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "landing_id",
+                                        "token",
+                                        "landed_at"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "total_items",
+                            "page_count",
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List themes.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_listthemes",
+            "name": "list-themes",
+            "output": [
+                "ActionOutput_typeform_listthemes"
+            ],
+            "scopes": [
+                "themes:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listthemes",
+                "ActionOutput_typeform_listthemes"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_listthemes": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "Number of results per page. Default 10, max 200.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_listthemes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "background": {
+                                            "type": "object",
+                                            "properties": {
+                                                "brightness": {
+                                                    "type": "number"
+                                                },
+                                                "href": {
+                                                    "type": "string"
+                                                },
+                                                "image_id": {},
+                                                "layout": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "colors": {
+                                            "type": "object",
+                                            "properties": {
+                                                "answer": {
+                                                    "type": "string"
+                                                },
+                                                "background": {
+                                                    "type": "string"
+                                                },
+                                                "button": {
+                                                    "type": "string"
+                                                },
+                                                "question": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "properties": {
+                                                "alignment": {
+                                                    "type": "string"
+                                                },
+                                                "font_size": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "font": {
+                                            "type": "string"
+                                        },
+                                        "has_transparent_button": {
+                                            "type": "boolean"
+                                        },
+                                        "id": {},
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "origin": {
+                                            "type": "string"
+                                        },
+                                        "rounded_corners": {
+                                            "type": "string"
+                                        },
+                                        "screens": {
+                                            "type": "object",
+                                            "properties": {
+                                                "alignment": {
+                                                    "type": "string"
+                                                },
+                                                "font_size": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "source_theme_id": {
+                                            "type": "string"
+                                        },
+                                        "visibility": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            },
+                            "page_count": {
+                                "type": "number"
+                            },
+                            "total_items": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "page_count",
+                            "total_items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List webhooks",
+            "endpoint": null,
+            "input": "ActionInput_typeform_listwebhooks",
+            "name": "list-webhooks",
+            "output": [
+                "ActionOutput_typeform_listwebhooks"
+            ],
+            "scopes": [
+                "webhooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listwebhooks",
+                "ActionOutput_typeform_listwebhooks"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_listwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "Unique ID for the form. Example: \"WMpBq4vc\""
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_listwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
+                                        },
+                                        "event_types": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "form_id": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "secret": {
+                                            "type": "string"
+                                        },
+                                        "tag": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "verify_ssl": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "created_at",
+                                        "enabled",
+                                        "event_types",
+                                        "form_id",
+                                        "id",
+                                        "tag",
+                                        "updated_at",
+                                        "url",
+                                        "verify_ssl"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List workspaces.",
+            "endpoint": null,
+            "input": "ActionInput_typeform_listworkspaces",
+            "name": "list-workspaces",
+            "output": [
+                "ActionOutput_typeform_listworkspaces"
+            ],
+            "scopes": [
+                "workspaces:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listworkspaces",
+                "ActionOutput_typeform_listworkspaces"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_listworkspaces": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "page_size": {
+                                "description": "Number of results to retrieve per page. Default is 10, maximum is 200.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            },
+                            "search": {
+                                "description": "Returns items that contain the specified string.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_listworkspaces": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "account_id": {
+                                            "type": "string"
+                                        },
+                                        "forms": {
+                                            "anyOf": [
+                                                {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "count": {
+                                                                    "type": "number"
+                                                                },
+                                                                "href": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "count": {
+                                                                        "type": "number"
+                                                                    },
+                                                                    "href": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "additionalProperties": false
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "self": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "href": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "href": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "shared": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "account_id",
+                                        "id",
+                                        "name",
+                                        "shared"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total_items": {
+                                "type": "number"
+                            },
+                            "page_count": {
+                                "type": "number"
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "total_items",
+                            "page_count"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Partially update a form using JSON Patch operations",
+            "endpoint": null,
+            "input": "ActionInput_typeform_patchform",
+            "name": "patch-form",
+            "output": [
+                "ActionOutput_typeform_patchform"
+            ],
+            "scopes": [
+                "forms:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_patchform",
+                "ActionOutput_typeform_patchform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_patchform": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "Form ID. Example: \"WMpBq4vc\""
+                            },
+                            "operations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "op": {
+                                            "type": "string",
+                                            "const": "replace",
+                                            "description": "Operation type. Typeform only supports \"replace\"."
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "description": "JSON Pointer path. Example: \"/title\""
+                                        },
+                                        "value": {
+                                            "description": "New value for the operation"
+                                        }
+                                    },
+                                    "required": [
+                                        "op",
+                                        "path"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "JSON Patch operations array per RFC 6902"
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "operations"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_patchform": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "form_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "form_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fully replace a form (whole-definition update).",
+            "endpoint": null,
+            "input": "ActionInput_typeform_updateform",
+            "name": "update-form",
+            "output": [
+                "ActionOutput_typeform_updateform"
+            ],
+            "scopes": [
+                "forms:read",
+                "forms:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_updateform",
+                "ActionOutput_typeform_updateform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_updateform": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "Form ID. Example: \"WMpBq4vc\""
+                            },
+                            "title": {
+                                "description": "New form title.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_updateform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "workspace": {
+                                "type": "object",
+                                "properties": {
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "settings": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "fields": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "thankyou_screens": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "theme": {
+                                "type": "object",
+                                "properties": {
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "logic": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "variables": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "links": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "self": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "_links": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Partially update a theme",
+            "endpoint": null,
+            "input": "ActionInput_typeform_updatetheme",
+            "name": "update-theme",
+            "output": [
+                "ActionOutput_typeform_updatetheme"
+            ],
+            "scopes": [
+                "themes:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_updatetheme",
+                "ActionOutput_typeform_updatetheme"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_updatetheme": {
+                        "type": "object",
+                        "properties": {
+                            "theme_id": {
+                                "type": "string",
+                                "description": "Unique ID for the theme. Example: \"I3NkUFrI\""
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "font": {
+                                "type": "string"
+                            },
+                            "has_transparent_button": {
+                                "type": "boolean"
+                            },
+                            "rounded_corners": {
+                                "type": "string"
+                            },
+                            "colors": {
+                                "type": "object",
+                                "properties": {
+                                    "answer": {
+                                        "type": "string"
+                                    },
+                                    "background": {
+                                        "type": "string"
+                                    },
+                                    "button": {
+                                        "type": "string"
+                                    },
+                                    "question": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "background": {
+                                "type": "object",
+                                "properties": {
+                                    "brightness": {
+                                        "type": "number"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "image_id": {},
+                                    "layout": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "fields": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string"
+                                    },
+                                    "font_size": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "screens": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string"
+                                    },
+                                    "font_size": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "origin": {
+                                "type": "string"
+                            },
+                            "source_theme_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "theme_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_updatetheme": {
+                        "type": "object",
+                        "properties": {
+                            "background": {
+                                "type": "object",
+                                "properties": {
+                                    "brightness": {
+                                        "type": "number"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "image_id": {},
+                                    "layout": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "colors": {
+                                "type": "object",
+                                "properties": {
+                                    "answer": {
+                                        "type": "string"
+                                    },
+                                    "background": {
+                                        "type": "string"
+                                    },
+                                    "button": {
+                                        "type": "string"
+                                    },
+                                    "question": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "fields": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string"
+                                    },
+                                    "font_size": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "font": {
+                                "type": "string"
+                            },
+                            "has_transparent_button": {
+                                "type": "boolean"
+                            },
+                            "id": {},
+                            "name": {
+                                "type": "string"
+                            },
+                            "origin": {
+                                "type": "string"
+                            },
+                            "rounded_corners": {
+                                "type": "string"
+                            },
+                            "screens": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string"
+                                    },
+                                    "font_size": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "source_theme_id": {
+                                "type": "string"
+                            },
+                            "visibility": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Partially update a workspace using JSON Patch operations",
+            "endpoint": null,
+            "input": "ActionInput_typeform_updateworkspace",
+            "name": "update-workspace",
+            "output": [
+                "ActionOutput_typeform_updateworkspace"
+            ],
+            "scopes": [
+                "workspaces:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_updateworkspace",
+                "ActionOutput_typeform_updateworkspace"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_typeform_updateworkspace": {
+                        "type": "object",
+                        "properties": {
+                            "workspace_id": {
+                                "type": "string",
+                                "description": "The workspace ID to update. Example: \"wCjDgv\""
+                            },
+                            "operations": {
+                                "type": "array",
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "op": {
+                                                    "type": "string",
+                                                    "const": "replace"
+                                                },
+                                                "path": {
+                                                    "type": "string",
+                                                    "const": "/name"
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "description": "New workspace name. Example: \"Marketing workspace\""
+                                                }
+                                            },
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "op": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "add",
+                                                        "remove"
+                                                    ]
+                                                },
+                                                "path": {
+                                                    "type": "string",
+                                                    "const": "/members"
+                                                },
+                                                "value": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "email": {
+                                                            "type": "string",
+                                                            "description": "Email of the member to add or remove. Example: \"jane@example.com\""
+                                                        },
+                                                        "role": {
+                                                            "description": "Member role. Required when adding a member. Example: \"owner\"",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "email"
+                                                    ],
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                },
+                                "description": "JSON Patch operations Typeform supports for workspaces. Example: [{ op: \"replace\", path: \"/name\", value: \"New name\" }] or [{ op: \"add\", path: \"/members\", value: { email: \"jane@example.com\", role: \"owner\" } }]"
+                            }
+                        },
+                        "required": [
+                            "workspace_id",
+                            "operations"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_typeform_updateworkspace": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync forms.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "forms",
+            "output": [
+                "Form"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "forms:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Form"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Form": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "last_updated_at": {
+                                "type": "string"
+                            },
+                            "settings": {
+                                "type": "object",
+                                "properties": {
+                                    "is_public": {
+                                        "type": "boolean"
+                                    },
+                                    "is_trial": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "_links": {
+                                "type": "object",
+                                "properties": {
+                                    "display": {
+                                        "type": "string"
+                                    },
+                                    "responses": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "self": {
+                                "type": "object",
+                                "properties": {
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "theme": {
+                                "type": "object",
+                                "properties": {
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "workspace": {
+                                "type": "object",
+                                "properties": {
+                                    "href": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "created_at",
+                            "last_updated_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync image metadata.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "images",
+            "output": [
+                "Image"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "images:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Image"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Image": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "file_name": {
+                                "type": "string"
+                            },
+                            "src": {
+                                "type": "string"
+                            },
+                            "dimensions": {
+                                "type": "object",
+                                "properties": {
+                                    "width": {
+                                        "type": "number"
+                                    },
+                                    "height": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync responses.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "responses",
+            "output": [
+                "Response"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "responses:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Response"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Response": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "form_id": {
+                                "type": "string"
+                            },
+                            "token": {
+                                "type": "string"
+                            },
+                            "landing_id": {
+                                "type": "string"
+                            },
+                            "landed_at": {
+                                "type": "string"
+                            },
+                            "submitted_at": {
+                                "type": "string"
+                            },
+                            "answers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "calculated": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "hidden": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "variables": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "token",
+                            "landing_id"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync themes.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "themes",
+            "output": [
+                "Theme"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "themes:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Theme"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Theme": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "font": {
+                                "type": "string"
+                            },
+                            "has_transparent_button": {
+                                "type": "boolean"
+                            },
+                            "origin": {
+                                "type": "string"
+                            },
+                            "rounded_corners": {
+                                "type": "string"
+                            },
+                            "source_theme_id": {
+                                "type": "string"
+                            },
+                            "visibility": {
+                                "type": "string"
+                            },
+                            "background": {
+                                "type": "object",
+                                "properties": {
+                                    "brightness": {
+                                        "type": "number"
+                                    },
+                                    "href": {
+                                        "type": "string"
+                                    },
+                                    "layout": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "colors": {
+                                "type": "object",
+                                "properties": {
+                                    "answer": {
+                                        "type": "string"
+                                    },
+                                    "background": {
+                                        "type": "string"
+                                    },
+                                    "button": {
+                                        "type": "string"
+                                    },
+                                    "question": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "fields": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string"
+                                    },
+                                    "font_size": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "screens": {
+                                "type": "object",
+                                "properties": {
+                                    "alignment": {
+                                        "type": "string"
+                                    },
+                                    "font_size": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync webhooks.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "webhooks",
+            "output": [
+                "Webhook"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "forms:read",
+                "webhooks:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Webhook"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Webhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "form_id": {
+                                "type": "string"
+                            },
+                            "tag": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "verify_ssl": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "secret": {
+                                "type": "string"
+                            },
+                            "event_types": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "boolean"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "tag",
+                            "url",
+                            "enabled"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync workspaces.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "workspaces",
+            "output": [
+                "Workspace"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "workspaces:read"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Workspace"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Workspace": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "account_id": {
+                                "type": "string"
+                            },
+                            "shared": {
+                                "type": "boolean"
+                            },
+                            "forms_count": {
+                                "type": "number"
+                            },
+                            "forms_href": {
+                                "type": "string"
+                            },
+                            "self_href": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

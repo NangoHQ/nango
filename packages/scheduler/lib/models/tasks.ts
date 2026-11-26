@@ -3,7 +3,7 @@ import { uuidv4, uuidv7 } from 'uuidv7';
 import { Err, Ok, stringifyError, stringToHash } from '@nangohq/utils';
 
 import { defaultSchedulerConfig } from '../config.js';
-import { DuplicateTaskNameError } from '../errors.js';
+import { DuplicateTaskNameError, ScheduleTaskAlreadyRunningError, TaskCapExceededError } from '../errors.js';
 import { taskStates } from '../types.js';
 import * as groupOverrides from './groupOverrides.js';
 import { SCHEDULES_TABLE } from './schedules.js';
@@ -130,10 +130,10 @@ export interface CreateOpts {
 }
 
 export type DiscardReason = 'capped' | 'duplicate' | 'conflict';
-export interface DiscardedTask {
-    props: TaskProps;
-    reason: DiscardReason;
-}
+export type DiscardedTask =
+    | { props: TaskProps; reason: 'capped'; error: TaskCapExceededError }
+    | { props: TaskProps; reason: 'duplicate'; error: DuplicateTaskNameError }
+    | { props: TaskProps; reason: 'conflict'; error: ScheduleTaskAlreadyRunningError };
 
 export async function create(db: knex.Knex, taskProps: TaskProps[], opts: CreateOpts = {}): Promise<Result<{ created: Task[]; discarded: DiscardedTask[] }>> {
     const groupTaskCap = opts.groupTaskCap ?? defaultSchedulerConfig.limits.groupTaskCap;
@@ -183,7 +183,7 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
                     }
                 });
             } else {
-                discarded.push({ props, reason: 'capped' });
+                discarded.push({ props, reason: 'capped', error: new TaskCapExceededError({ groupKey: props.groupKey, cap: taskCap }) });
             }
         }
         const candidates = Array.from(candidatesPerGroup.values()).flat();
@@ -213,14 +213,14 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
                 if (remaining > 0) {
                     insertedNameCounts.set(props.name, remaining - 1);
                 } else {
-                    discarded.push({ props, reason: 'duplicate' });
+                    discarded.push({ props, reason: 'duplicate', error: new DuplicateTaskNameError() });
                 }
             }
         }
         if (onConflict === 'throw') {
             for (const { props, task } of candidates) {
                 if (!insertedTaskIds.has(task.id)) {
-                    discarded.push({ props, reason: 'conflict' });
+                    discarded.push({ props, reason: 'conflict', error: new ScheduleTaskAlreadyRunningError() });
                 }
             }
         }

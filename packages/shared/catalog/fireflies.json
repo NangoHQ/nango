@@ -1,0 +1,3836 @@
+{
+    "providerConfigKey": "fireflies",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add Fireflies bot to a live meeting by URL.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_addtolive",
+            "name": "add-to-live",
+            "output": [
+                "ActionOutput_fireflies_addtolive"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_addtolive",
+                "ActionOutput_fireflies_addtolive"
+            ],
+            "version": "3.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_addtolive": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "description": "A valid HTTP URL for the meeting link, e.g. Google Meet, Zoom, etc."
+                            },
+                            "title": {
+                                "description": "Title or name of the meeting. Maximum length is 256 characters.",
+                                "type": "string",
+                                "maxLength": 256
+                            },
+                            "attendees": {
+                                "description": "Array of expected meeting participants.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "displayName": {
+                                            "description": "Display name of the attendee as it appears in meeting platforms.",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Email address of the attendee.",
+                                            "type": "string"
+                                        },
+                                        "phoneNumber": {
+                                            "description": "Phone number of the attendee.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "url"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_addtolive": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Continue an existing AskFred conversation thread.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_continueaskfredthread",
+            "name": "continue-askfred-thread",
+            "output": [
+                "ActionOutput_fireflies_continueaskfredthread"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_continueaskfredthread",
+                "ActionOutput_fireflies_continueaskfredthread"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_continueaskfredthread": {
+                        "type": "object",
+                        "properties": {
+                            "thread_id": {
+                                "type": "string",
+                                "description": "The ID of the existing AskFred thread to continue. Example: \"thread_abc123\""
+                            },
+                            "query": {
+                                "type": "string",
+                                "maxLength": 2000,
+                                "description": "Follow-up question or query. Maximum 2000 characters."
+                            },
+                            "format_mode": {
+                                "description": "Response format: markdown or plaintext",
+                                "type": "string",
+                                "enum": [
+                                    "markdown",
+                                    "plaintext"
+                                ]
+                            },
+                            "response_language": {
+                                "description": "Language code for the response (e.g., \"en\" for English).",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "thread_id",
+                            "query"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_continueaskfredthread": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "thread_id": {
+                                        "type": "string"
+                                    },
+                                    "query": {
+                                        "type": "string"
+                                    },
+                                    "answer": {
+                                        "type": "string"
+                                    },
+                                    "suggested_queries": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "created_at": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "thread_id",
+                                    "query",
+                                    "answer",
+                                    "status"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Start a new AskFred AI conversation thread",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_createaskfredthread",
+            "name": "create-askfred-thread",
+            "output": [
+                "ActionOutput_fireflies_createaskfredthread"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_createaskfredthread",
+                "ActionOutput_fireflies_createaskfredthread"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_createaskfredthread": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "maxLength": 2000,
+                                "description": "Question or query about the meeting(s). Maximum 2000 characters. Example: \"What were the main action items?\""
+                            },
+                            "transcript_id": {
+                                "description": "Specific transcript ID to query. If provided, filters are ignored.",
+                                "type": "string"
+                            },
+                            "filters": {
+                                "description": "Filters to search across multiple meetings. Only used when transcript_id is not provided.",
+                                "type": "object",
+                                "properties": {
+                                    "start_time": {
+                                        "description": "ISO 8601 datetime. Example: \"2024-03-01T00:00:00Z\"",
+                                        "type": "string"
+                                    },
+                                    "end_time": {
+                                        "description": "ISO 8601 datetime. Example: \"2024-03-31T23:59:59Z\"",
+                                        "type": "string"
+                                    },
+                                    "channel_ids": {
+                                        "description": "Channel/integration IDs to filter by",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "organizers": {
+                                        "description": "Organizer email addresses to filter by",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "participants": {
+                                        "description": "Participant email addresses to filter by",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "transcript_ids": {
+                                        "description": "Specific transcript IDs to filter by",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "response_language": {
+                                "description": "Language code for the response (e.g., \"en\", \"es\").",
+                                "type": "string"
+                            },
+                            "format_mode": {
+                                "description": "Response format: \"markdown\" or \"plaintext\".",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "query"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_createaskfredthread": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "thread_id": {
+                                "type": "string"
+                            },
+                            "query": {
+                                "type": "string"
+                            },
+                            "answer": {
+                                "type": "string"
+                            },
+                            "suggested_queries": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "thread_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a soundbite clip from a transcript segment",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_createbite",
+            "name": "create-bite",
+            "output": [
+                "ActionOutput_fireflies_createbite"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_createbite",
+                "ActionOutput_fireflies_createbite"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_createbite": {
+                        "type": "object",
+                        "properties": {
+                            "transcript_id": {
+                                "type": "string",
+                                "description": "ID of the transcript. Example: \"abc123\""
+                            },
+                            "start_time": {
+                                "type": "number",
+                                "description": "Start time of the bite in seconds. Example: 0"
+                            },
+                            "end_time": {
+                                "type": "number",
+                                "description": "End time of the bite in seconds. Example: 5"
+                            },
+                            "name": {
+                                "description": "Name of the bite. Maximum length is 256 characters.",
+                                "type": "string",
+                                "maxLength": 256
+                            },
+                            "media_type": {
+                                "description": "Type of the bite, either \"video\" or \"audio\"",
+                                "type": "string",
+                                "enum": [
+                                    "video",
+                                    "audio"
+                                ]
+                            },
+                            "privacies": {
+                                "description": "Array specifying the visibility of the Soundbite.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "public",
+                                        "team",
+                                        "participants"
+                                    ]
+                                }
+                            },
+                            "summary": {
+                                "description": "Summary for the bite. Maximum length is 500 characters.",
+                                "type": "string",
+                                "maxLength": 500
+                            }
+                        },
+                        "required": [
+                            "transcript_id",
+                            "start_time",
+                            "end_time"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_createbite": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "transcript_id": {
+                                "type": "string"
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "end_time": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "thumbnail": {
+                                "type": "string"
+                            },
+                            "preview": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "summary_status": {
+                                "type": "string"
+                            },
+                            "media_type": {
+                                "type": "string"
+                            },
+                            "privacies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "created_at": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a live action item during an active meeting.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_createliveactionitem",
+            "name": "create-live-action-item",
+            "output": [
+                "ActionOutput_fireflies_createliveactionitem"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_createliveactionitem",
+                "ActionOutput_fireflies_createliveactionitem"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_createliveactionitem": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "string",
+                                "description": "The ID of the live meeting to create the action item for. Example: \"abc123\""
+                            },
+                            "prompt": {
+                                "type": "string",
+                                "description": "Natural language description of the action item to create. Example: \"Follow up with the client about the proposal\""
+                            }
+                        },
+                        "required": [
+                            "meeting_id",
+                            "prompt"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_createliveactionitem": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a soundbite/clip during an active live meeting",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_createlivesoundbite",
+            "name": "create-live-soundbite",
+            "output": [
+                "ActionOutput_fireflies_createlivesoundbite"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_createlivesoundbite",
+                "ActionOutput_fireflies_createlivesoundbite"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_createlivesoundbite": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "string",
+                                "description": "The ID of the live meeting to create the soundbite for. Example: \"abc123\""
+                            },
+                            "prompt": {
+                                "type": "string",
+                                "minLength": 5,
+                                "maxLength": 255,
+                                "description": "Natural language description of the soundbite to create. Min 5, max 255 characters. Example: \"Create a soundbite from the last 2 minutes\""
+                            }
+                        },
+                        "required": [
+                            "meeting_id",
+                            "prompt"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_createlivesoundbite": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an AskFred conversation thread and all its messages.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_deleteaskfredthread",
+            "name": "delete-askfred-thread",
+            "output": [
+                "ActionOutput_fireflies_deleteaskfredthread"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_deleteaskfredthread",
+                "ActionOutput_fireflies_deleteaskfredthread"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_deleteaskfredthread": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the AskFred thread to delete. Example: \"thread_abc123\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_deleteaskfredthread": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "transcript_id": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "user_id",
+                            "created_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete a transcript by ID.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_deletetranscript",
+            "name": "delete-transcript",
+            "output": [
+                "ActionOutput_fireflies_deletetranscript"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_deletetranscript",
+                "ActionOutput_fireflies_deletetranscript"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_deletetranscript": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Transcript ID to delete. Example: \"abc123\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_deletetranscript": {
+                        "type": "object",
+                        "properties": {
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "deleted"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get conversation analytics for a date range.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_getanalytics",
+            "name": "get-analytics",
+            "output": [
+                "ActionOutput_fireflies_getanalytics"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_getanalytics",
+                "ActionOutput_fireflies_getanalytics"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_getanalytics": {
+                        "type": "object",
+                        "properties": {
+                            "start_time": {
+                                "type": "string",
+                                "description": "Start date in ISO 8601 format. Example: \"2024-01-01T00:00:00Z\""
+                            },
+                            "end_time": {
+                                "type": "string",
+                                "description": "End date in ISO 8601 format. Example: \"2024-01-31T23:59:59Z\""
+                            }
+                        },
+                        "required": [
+                            "start_time",
+                            "end_time"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_getanalytics": {
+                        "type": "object",
+                        "properties": {
+                            "team": {
+                                "type": "object",
+                                "properties": {
+                                    "conversation": {
+                                        "type": "object",
+                                        "properties": {
+                                            "average_filler_words": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_filler_words_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_monologues_count": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_monologues_count_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_questions": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_questions_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_sentiments": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "negative_pct": {
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "neutral_pct": {
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "positive_pct": {
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "additionalProperties": false
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            },
+                                            "average_silence_duration": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_silence_duration_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_talk_listen_ratio": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_words_per_minute": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "longest_monologue_duration_sec": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "longest_monologue_duration_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "total_filler_words": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "total_filler_words_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "total_meeting_notes_count": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "total_meetings_count": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "total_monologues_count": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "total_monologues_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "teammates_count": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "total_questions": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "total_questions_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "total_silence_duration": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "total_silence_duration_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "meeting": {
+                                        "type": "object",
+                                        "properties": {
+                                            "count": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "count_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "duration": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "duration_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_count": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_count_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_duration": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            },
+                                            "average_duration_diff_pct": {
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "user_name": {
+                                            "type": "string"
+                                        },
+                                        "user_email": {
+                                            "type": "string"
+                                        },
+                                        "conversation": {
+                                            "type": "object",
+                                            "properties": {
+                                                "talk_listen_pct": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "talk_listen_ratio": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "total_silence_duration": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "total_silence_duration_compare_to": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "total_silence_pct": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "total_silence_ratio": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "total_speak_duration": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "total_speak_duration_with_user": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "total_word_count": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_filler_words": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_filler_words_compare_to": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_filler_words_diff_pct": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_longest_monologue_sec": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_longest_monologue_compare_to": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_longest_monologue_diff_pct": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_monologues_count": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_monologues_count_compare_to": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_monologues_count_diff_pct": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_questions": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_questions_compare_to": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_questions_diff_pct": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_speak_duration": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_word_count": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_words_per_minute": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_words_per_minute_compare_to": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "user_words_per_minute_diff_pct": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "meeting": {
+                                            "type": "object",
+                                            "properties": {
+                                                "count": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "count_diff": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "count_diff_compared_to": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "count_diff_pct": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "duration": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "duration_diff": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "duration_diff_compared_to": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "duration_diff_pct": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve an AskFred conversation thread with all messages.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_getaskfredthread",
+            "name": "get-askfred-thread",
+            "output": [
+                "ActionOutput_fireflies_getaskfredthread"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_fireflies_getaskfredthread",
+                "ActionOutput_fireflies_getaskfredthread"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_getaskfredthread": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the AskFred thread to retrieve. Example: \"thread_abc123\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_getaskfredthread": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "transcript_id": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "messages": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "thread_id": {
+                                            "type": "string"
+                                        },
+                                        "query": {
+                                            "type": "string"
+                                        },
+                                        "answer": {
+                                            "type": "string"
+                                        },
+                                        "suggested_queries": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a specific bite/soundbite by ID.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_getbite",
+            "name": "get-bite",
+            "output": [
+                "ActionOutput_fireflies_getbite"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_getbite",
+                "ActionOutput_fireflies_getbite"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_getbite": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Bite ID. Example: \"bite_abc123\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_getbite": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "transcript_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "thumbnail": {
+                                "type": "string"
+                            },
+                            "preview": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "start_time": {
+                                "type": "number"
+                            },
+                            "end_time": {
+                                "type": "number"
+                            },
+                            "summary_status": {
+                                "type": "string"
+                            },
+                            "media_type": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a specific channel by ID.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_getchannel",
+            "name": "get-channel",
+            "output": [
+                "ActionOutput_fireflies_getchannel"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_getchannel",
+                "ActionOutput_fireflies_getchannel"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_getchannel": {
+                        "type": "object",
+                        "properties": {
+                            "channel_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the channel to fetch. Example: \"channel-id-1\""
+                            }
+                        },
+                        "required": [
+                            "channel_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_getchannel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "is_private": {
+                                "type": "boolean"
+                            },
+                            "created_by": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single transcript by ID including sentences, summary, speakers, and metadata.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_gettranscript",
+            "name": "get-transcript",
+            "output": [
+                "ActionOutput_fireflies_gettranscript"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_gettranscript",
+                "ActionOutput_fireflies_gettranscript"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_gettranscript": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Transcript ID. Example: \"abc123\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_gettranscript": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "sentences": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "index": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "speaker_name": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "speaker_id": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "raw_text": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "start_time": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "end_time": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "text": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "summary": {
+                                "type": "object",
+                                "properties": {
+                                    "overview": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "action_items": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "keywords": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "outline": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "shorthand_bullet": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "bullet_gist": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "notes": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "gist": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "short_summary": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "topics_discussed": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "transcript_chapters": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "extended_sections": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "title": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "content": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "speakers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "name": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "meeting_info": {
+                                "type": "object",
+                                "properties": {
+                                    "fred_joined": {
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
+                                    },
+                                    "silent_meeting": {
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
+                                    },
+                                    "summary_status": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "meeting_attendees": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "displayName": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "email": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "phoneNumber": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "name": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "location": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "analytics": {
+                                "type": "object",
+                                "properties": {
+                                    "sentiments": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "negative_pct": {
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "neutral_pct": {
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "positive_pct": {
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "categories": {
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "questions": {
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "date_times": {
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "metrics": {
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "tasks": {
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "speakers": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "speaker_id": {
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "name": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "duration": {
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "word_count": {
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "longest_monologue": {
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "monologues_count": {
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "filler_words": {
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "questions": {
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "duration_pct": {
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "words_per_minute": {
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a specific user by ID.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_getuser",
+            "name": "get-user",
+            "output": [
+                "ActionOutput_fireflies_getuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_getuser",
+                "ActionOutput_fireflies_getuser"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "User ID. Omit to return the authenticated user.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "num_transcripts": {
+                                "type": "number"
+                            },
+                            "recent_transcript": {
+                                "type": "string"
+                            },
+                            "recent_meeting": {
+                                "type": "string"
+                            },
+                            "minutes_consumed": {
+                                "type": "number"
+                            },
+                            "is_admin": {
+                                "type": "boolean"
+                            },
+                            "integrations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "is_calendar_in_sync": {
+                                "type": "boolean"
+                            },
+                            "user_groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "handle": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "members": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "user_id": {
+                                                                "type": "string"
+                                                            },
+                                                            "first_name": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "last_name": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "email": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "user_id"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "user_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List currently active/live meetings",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_listactivemeetings",
+            "name": "list-active-meetings",
+            "output": [
+                "ActionOutput_fireflies_listactivemeetings"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_listactivemeetings",
+                "ActionOutput_fireflies_listactivemeetings"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_listactivemeetings": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "description": "Filter active meetings by a specific user email address. Example: \"user@example.com\"",
+                                "type": "string"
+                            },
+                            "states": {
+                                "description": "Filter active meetings by their state. Possible values: \"active\", \"paused\". If omitted, both states are returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "active",
+                                        "paused"
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_listactivemeetings": {
+                        "type": "object",
+                        "properties": {
+                            "meetings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Unique identifier for the active meeting. Example: \"meeting-id-1\""
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Title of the active meeting. Example: \"Team Standup\""
+                                        },
+                                        "organizer_email": {
+                                            "description": "Email address of the meeting organizer. Example: \"user@example.com\"",
+                                            "type": "string"
+                                        },
+                                        "meeting_link": {
+                                            "description": "The URL link to join the meeting. Example: \"https://zoom.us/j/123456789\"",
+                                            "type": "string"
+                                        },
+                                        "start_time": {
+                                            "description": "ISO 8601 formatted timestamp indicating when the meeting started. Example: \"2024-01-15T10:00:00.000Z\"",
+                                            "type": "string"
+                                        },
+                                        "end_time": {
+                                            "description": "ISO 8601 formatted timestamp indicating when the meeting is scheduled to end. Example: \"2024-01-15T11:00:00.000Z\"",
+                                            "type": "string"
+                                        },
+                                        "privacy": {
+                                            "description": "Privacy setting for the meeting. Possible values: \"link\", \"owner\", \"participants\", \"teammates_and_participants\", \"participating_teammates\", \"teammates\"",
+                                            "type": "string",
+                                            "enum": [
+                                                "link",
+                                                "owner",
+                                                "participants",
+                                                "teammates_and_participants",
+                                                "participating_teammates",
+                                                "teammates"
+                                            ]
+                                        },
+                                        "state": {
+                                            "description": "Current state of the meeting. Possible values: \"active\", \"paused\"",
+                                            "type": "string",
+                                            "enum": [
+                                                "active",
+                                                "paused"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "List of currently active/live meetings"
+                            }
+                        },
+                        "required": [
+                            "meetings"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List AskFred AI conversation threads, optionally filtered by transcript.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_listaskfredthreads",
+            "name": "list-askfred-threads",
+            "output": [
+                "ActionOutput_fireflies_listaskfredthreads"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_listaskfredthreads",
+                "ActionOutput_fireflies_listaskfredthreads"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_listaskfredthreads": {
+                        "type": "object",
+                        "properties": {
+                            "transcript_id": {
+                                "description": "Filter threads to only those associated with a specific transcript ID. Example: \"transcript_xyz789\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_listaskfredthreads": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "created_at": {
+                                    "type": "string"
+                                },
+                                "transcript_id": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "user_id": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "title"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List soundbite clips with optional filters.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_listbites",
+            "name": "list-bites",
+            "output": [
+                "ActionOutput_fireflies_listbites"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_listbites",
+                "ActionOutput_fireflies_listbites"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_listbites": {
+                        "type": "object",
+                        "properties": {
+                            "mine": {
+                                "description": "Fetch bites owned by the API key owner.",
+                                "type": "boolean"
+                            },
+                            "transcript_id": {
+                                "description": "Filter bites by a specific transcript ID.",
+                                "type": "string"
+                            },
+                            "my_team": {
+                                "description": "Fetch bites for the API key owner's team.",
+                                "type": "boolean"
+                            },
+                            "limit": {
+                                "description": "Maximum number of bites to fetch. Max 50.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "skip": {
+                                "description": "Number of records to skip for pagination.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5000
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_listbites": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "transcript_id": {
+                                    "type": "string"
+                                },
+                                "start_time": {
+                                    "type": "string"
+                                },
+                                "end_time": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string"
+                                },
+                                "summary": {
+                                    "type": "string"
+                                },
+                                "user_id": {
+                                    "type": "string"
+                                },
+                                "user": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "first_name": {
+                                            "type": "string"
+                                        },
+                                        "last_name": {
+                                            "type": "string"
+                                        },
+                                        "picture": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "created_at": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "id"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all channels in the workspace.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_listchannels",
+            "name": "list-channels",
+            "output": [
+                "ActionOutput_fireflies_listchannels"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_listchannels",
+                "ActionOutput_fireflies_listchannels"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_listchannels": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_listchannels": {
+                        "type": "object",
+                        "properties": {
+                            "channels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Channel ID. Example: \"channel-id-1\""
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Channel title. Example: \"Engineering\""
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "description": "Creation timestamp. Example: \"2024-01-01T00:00:00Z\""
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "description": "Last update timestamp. Example: \"2024-01-01T00:00:00Z\""
+                                        },
+                                        "created_by": {
+                                            "type": "string",
+                                            "description": "User ID of the creator. Example: \"user-id-1\""
+                                        },
+                                        "is_private": {
+                                            "type": "boolean",
+                                            "description": "Whether the channel is private"
+                                        },
+                                        "members": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "user_id": {
+                                                        "type": "string",
+                                                        "description": "User ID. Example: \"user-id-1\""
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "description": "Email address. Example: \"john@example.com\""
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "User name. Example: \"John Doe\""
+                                                    }
+                                                },
+                                                "required": [
+                                                    "user_id",
+                                                    "email",
+                                                    "name"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "created_at",
+                                        "updated_at",
+                                        "created_by",
+                                        "is_private",
+                                        "members"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "channels"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all contacts in the workspace.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_listcontacts",
+            "name": "list-contacts",
+            "output": [
+                "ActionOutput_fireflies_listcontacts"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_listcontacts",
+                "ActionOutput_fireflies_listcontacts"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_listcontacts": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_listcontacts": {
+                        "type": "object",
+                        "properties": {
+                            "contacts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "picture": {
+                                            "type": "string"
+                                        },
+                                        "last_meeting_date": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "email"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "contacts"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List transcripts with optional filters.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_listtranscripts",
+            "name": "list-transcripts",
+            "output": [
+                "ActionOutput_fireflies_listtranscripts"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_listtranscripts",
+                "ActionOutput_fireflies_listtranscripts"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_listtranscripts": {
+                        "type": "object",
+                        "properties": {
+                            "fromDate": {
+                                "description": "Return all transcripts created after this date. ISO 8601 format. Example: \"2024-07-08T22:13:46.660Z\"",
+                                "type": "string"
+                            },
+                            "toDate": {
+                                "description": "Return all transcripts created before this date. ISO 8601 format. Example: \"2024-07-08T22:13:46.660Z\"",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Number of transcripts to return. Maximum 50 in one query.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "skip": {
+                                "description": "Number of transcripts to skip.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "title": {
+                                "description": "Deprecated. Use keyword instead. Title of the transcript. Mutually exclusive with keyword.",
+                                "type": "string",
+                                "maxLength": 256
+                            },
+                            "keyword": {
+                                "description": "Allows searching for keywords in meeting title and/or words spoken during the meeting. Mutually exclusive with title.",
+                                "type": "string",
+                                "maxLength": 255
+                            },
+                            "scope": {
+                                "description": "Specify the scope for keyword search. If scope is provided, keyword becomes a required field. Defaults to TITLE if no value is provided.",
+                                "type": "string",
+                                "enum": [
+                                    "title",
+                                    "sentences",
+                                    "all"
+                                ]
+                            },
+                            "user_id": {
+                                "description": "User id. Filter all meetings that have this user ID as the organizer or participant.",
+                                "type": "string"
+                            },
+                            "mine": {
+                                "description": "Filter all meetings that have the API key owner as the organizer.",
+                                "type": "boolean"
+                            },
+                            "organizers": {
+                                "description": "Filter meetings that have any of these emails as organizers. Accepts an array of email addresses.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "maxLength": 256
+                                }
+                            },
+                            "participants": {
+                                "description": "Filter meetings that contain any of these emails as attendees. Accepts an array of email addresses.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "maxLength": 256
+                                }
+                            },
+                            "channel_id": {
+                                "description": "Filter meetings that belong to a specific channel. Accepts a single channel ID.",
+                                "type": "string",
+                                "maxLength": 256
+                            },
+                            "host_email": {
+                                "description": "Filter all meetings accordingly to meetings that have this email as the host.",
+                                "type": "string"
+                            },
+                            "organizer_email": {
+                                "description": "Deprecated. Use organizers instead. Filter meetings that have this email as the organizer.",
+                                "type": "string"
+                            },
+                            "participant_email": {
+                                "description": "Deprecated. Use participants instead. Filter meetings that contain this email as an attendee.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_listtranscripts": {
+                        "type": "object",
+                        "properties": {
+                            "transcripts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "date": {
+                                            "type": "string"
+                                        },
+                                        "duration": {
+                                            "type": "number"
+                                        },
+                                        "organizer_email": {
+                                            "type": "string"
+                                        },
+                                        "host_email": {
+                                            "type": "string"
+                                        },
+                                        "participants": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "fireflies_users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "transcript_url": {
+                                            "type": "string"
+                                        },
+                                        "audio_url": {
+                                            "type": "string"
+                                        },
+                                        "video_url": {
+                                            "type": "string"
+                                        },
+                                        "meeting_link": {
+                                            "type": "string"
+                                        },
+                                        "is_live": {
+                                            "type": "boolean"
+                                        },
+                                        "privacy": {
+                                            "type": "string"
+                                        },
+                                        "calendar_id": {
+                                            "type": "string"
+                                        },
+                                        "cal_id": {
+                                            "type": "string"
+                                        },
+                                        "calendar_type": {
+                                            "type": "string"
+                                        },
+                                        "channels": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "meeting_info": {
+                                            "type": "object",
+                                            "properties": {
+                                                "fred_joined": {
+                                                    "type": "boolean"
+                                                },
+                                                "silent_meeting": {
+                                                    "type": "boolean"
+                                                },
+                                                "summary_status": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "summary": {
+                                            "type": "object",
+                                            "properties": {
+                                                "keywords": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "action_items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "short_summary": {
+                                                    "type": "string"
+                                                },
+                                                "meeting_type": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_skip": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "transcripts"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List user groups, optionally filtered to mine.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_listusergroups",
+            "name": "list-user-groups",
+            "output": [
+                "ActionOutput_fireflies_listusergroups"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_listusergroups",
+                "ActionOutput_fireflies_listusergroups"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_listusergroups": {
+                        "type": "object",
+                        "properties": {
+                            "mine": {
+                                "description": "If true, returns only user groups the current user belongs to.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_listusergroups": {
+                        "type": "object",
+                        "properties": {
+                            "user_groups": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "handle": {
+                                            "type": "string"
+                                        },
+                                        "members": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "user_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "first_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "last_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "email": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "user_id"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "user_groups"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List all users in the workspace.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_listusers",
+            "name": "list-users",
+            "output": [
+                "ActionOutput_fireflies_listusers"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_listusers",
+                "ActionOutput_fireflies_listusers"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_listusers": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user_id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "is_admin": {
+                                            "type": "boolean"
+                                        },
+                                        "num_transcripts": {
+                                            "type": "number"
+                                        },
+                                        "recent_meeting": {
+                                            "type": "string"
+                                        },
+                                        "recent_transcript": {
+                                            "type": "string"
+                                        },
+                                        "minutes_consumed": {
+                                            "type": "number"
+                                        },
+                                        "is_calendar_in_sync": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "user_id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "users"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Revoke a previously shared meeting access.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_revokesharedmeetingaccess",
+            "name": "revoke-shared-meeting-access",
+            "output": [
+                "ActionOutput_fireflies_revokesharedmeetingaccess"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_revokesharedmeetingaccess",
+                "ActionOutput_fireflies_revokesharedmeetingaccess"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_revokesharedmeetingaccess": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the meeting / transcript."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "The email address of the user whose shared access should be revoked."
+                            }
+                        },
+                        "required": [
+                            "meeting_id",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_revokesharedmeetingaccess": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Share a meeting transcript via email with optional expiry",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_sharemeeting",
+            "name": "share-meeting",
+            "output": [
+                "ActionOutput_fireflies_sharemeeting"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_sharemeeting",
+                "ActionOutput_fireflies_sharemeeting"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_sharemeeting": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "string",
+                                "description": "Meeting ID to share. Example: \"abc123\""
+                            },
+                            "emails": {
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                },
+                                "description": "Email addresses to share with. Up to 50 emails per request."
+                            },
+                            "expiry_days": {
+                                "description": "Optional expiry period in days. Allowed values: 7, 14, or 30.",
+                                "anyOf": [
+                                    {
+                                        "type": "number",
+                                        "const": 7
+                                    },
+                                    {
+                                        "type": "number",
+                                        "const": 14
+                                    },
+                                    {
+                                        "type": "number",
+                                        "const": 30
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "meeting_id",
+                            "emails"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_sharemeeting": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Assign transcripts to a channel",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_updatemeetingchannel",
+            "name": "update-meeting-channel",
+            "output": [
+                "ActionOutput_fireflies_updatemeetingchannel"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_updatemeetingchannel",
+                "ActionOutput_fireflies_updatemeetingchannel"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_updatemeetingchannel": {
+                        "type": "object",
+                        "properties": {
+                            "transcript_ids": {
+                                "minItems": 1,
+                                "maxItems": 5,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "description": "Array of Transcript IDs to update. Must contain 1–5 items. Example: [\"transcript_id_1\"]"
+                            },
+                            "channel_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The target Channel ID. Example: \"channel_id\""
+                            }
+                        },
+                        "required": [
+                            "transcript_ids",
+                            "channel_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_updatemeetingchannel": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update the privacy setting of a meeting transcript.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_updatemeetingprivacy",
+            "name": "update-meeting-privacy",
+            "output": [
+                "ActionOutput_fireflies_updatemeetingprivacy"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_updatemeetingprivacy",
+                "ActionOutput_fireflies_updatemeetingprivacy"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_updatemeetingprivacy": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Transcript ID. Example: \"abc123\""
+                            },
+                            "privacy": {
+                                "type": "string",
+                                "enum": [
+                                    "link",
+                                    "owner",
+                                    "participants",
+                                    "participatingteammates",
+                                    "teammatesandparticipants",
+                                    "teammates"
+                                ],
+                                "description": "Privacy setting. Example: \"teammates\""
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "privacy"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_updatemeetingprivacy": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Pause or resume a live meeting recording.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_updatemeetingstate",
+            "name": "update-meeting-state",
+            "output": [
+                "ActionOutput_fireflies_updatemeetingstate"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_updatemeetingstate",
+                "ActionOutput_fireflies_updatemeetingstate"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_updatemeetingstate": {
+                        "type": "object",
+                        "properties": {
+                            "meeting_id": {
+                                "type": "string",
+                                "description": "Meeting ID. Example: \"abc123\""
+                            },
+                            "action": {
+                                "type": "string",
+                                "enum": [
+                                    "pause_recording",
+                                    "resume_recording"
+                                ],
+                                "description": "Action to perform. Example: \"pause_recording\""
+                            }
+                        },
+                        "required": [
+                            "meeting_id",
+                            "action"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_updatemeetingstate": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "action": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "action"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update the title of a meeting transcript.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_updatemeetingtitle",
+            "name": "update-meeting-title",
+            "output": [
+                "ActionOutput_fireflies_updatemeetingtitle"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_updatemeetingtitle",
+                "ActionOutput_fireflies_updatemeetingtitle"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_updatemeetingtitle": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Transcript ID. Example: \"abc123\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "New meeting title. Example: \"Weekly Sync\""
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_updatemeetingtitle": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Submit an audio file URL for transcription.",
+            "endpoint": null,
+            "input": "ActionInput_fireflies_uploadaudio",
+            "name": "upload-audio",
+            "output": [
+                "ActionOutput_fireflies_uploadaudio"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_fireflies_uploadaudio",
+                "ActionOutput_fireflies_uploadaudio"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_fireflies_uploadaudio": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "description": "The URL of the media file to be transcribed. Example: \"https://example.com/audio.mp3\""
+                            },
+                            "title": {
+                                "description": "Title or name of the meeting. Example: \"Weekly sync\"",
+                                "type": "string"
+                            },
+                            "attendees": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "phoneNumber": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "displayName",
+                                        "email",
+                                        "phoneNumber"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "webhook": {
+                                "type": "string"
+                            },
+                            "custom_language": {
+                                "type": "string"
+                            },
+                            "client_reference_id": {
+                                "type": "string"
+                            },
+                            "save_video": {
+                                "type": "boolean"
+                            },
+                            "bypass_size_check": {
+                                "type": "boolean"
+                            },
+                            "download_auth": {
+                                "oneOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "const": "bearer_token"
+                                            },
+                                            "bearer": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "token": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "token"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "type",
+                                            "bearer"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "const": "basic_auth"
+                                            },
+                                            "basic": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "username": {
+                                                        "type": "string"
+                                                    },
+                                                    "password": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "password"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "required": [
+                                            "type",
+                                            "basic"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "url"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_fireflies_uploadaudio": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync conversation analytics for rolling date windows",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/analytics"
+                }
+            ],
+            "input": null,
+            "name": "analytics",
+            "output": [
+                "Analytics"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Analytics"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Analytics": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "end_time": {
+                                "type": "string"
+                            },
+                            "team": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "start_time",
+                            "end_time"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Full-refresh sync of soundbite clips.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/bites"
+                }
+            ],
+            "input": null,
+            "name": "bites",
+            "output": [
+                "Bite"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Bite"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Bite": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "transcript_id": {
+                                "type": "string"
+                            },
+                            "start_time": {
+                                "type": "string"
+                            },
+                            "end_time": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "media_type": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Full-refresh sync of workspace channels",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/channels",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "channels",
+            "output": [
+                "Channel"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Channel"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Channel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "created_by": {
+                                "type": "string"
+                            },
+                            "is_private": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Full-refresh sync of contacts derived from meeting participants.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/contacts"
+                }
+            ],
+            "input": null,
+            "name": "contacts",
+            "output": [
+                "Contact"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Contact"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Contact": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "picture": {
+                                "type": "string"
+                            },
+                            "last_meeting_date": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Full-refresh sync of all transcript sentences, fetched per transcript.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "transcript-sentences",
+            "output": [
+                "Sentence"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Sentence"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Sentence": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "transcript_id": {
+                                "type": "string"
+                            },
+                            "index": {
+                                "type": "number"
+                            },
+                            "speaker_name": {
+                                "type": "string"
+                            },
+                            "speaker_id": {
+                                "type": "string"
+                            },
+                            "raw_text": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "start_time": {
+                                "type": "number"
+                            },
+                            "end_time": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "transcript_id",
+                            "index"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Incrementally sync transcript metadata and structured notes using fromDate checkpoint",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "transcripts",
+            "output": [
+                "Transcript"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Transcript"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Transcript": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "duration": {
+                                "type": "number"
+                            },
+                            "organizer_email": {
+                                "type": "string"
+                            },
+                            "host_email": {
+                                "type": "string"
+                            },
+                            "participants": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "privacy": {
+                                "type": "string"
+                            },
+                            "transcript_url": {
+                                "type": "string"
+                            },
+                            "audio_url": {
+                                "type": "string"
+                            },
+                            "video_url": {
+                                "type": "string"
+                            },
+                            "meeting_link": {
+                                "type": "string"
+                            },
+                            "calendar_id": {
+                                "type": "string"
+                            },
+                            "is_live": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Full-refresh sync of user groups.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "user-groups",
+            "output": [
+                "UserGroup"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "UserGroup"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "UserGroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Full-refresh sync of workspace users.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "users",
+            "output": [
+                "User"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "user_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "is_admin": {
+                                "type": "boolean"
+                            },
+                            "num_transcripts": {
+                                "type": "number"
+                            },
+                            "recent_meeting": {
+                                "type": "string"
+                            },
+                            "recent_transcript": {
+                                "type": "string"
+                            },
+                            "minutes_consumed": {
+                                "type": "number"
+                            },
+                            "is_calendar_in_sync": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "user_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

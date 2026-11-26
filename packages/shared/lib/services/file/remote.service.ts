@@ -1,7 +1,7 @@
 import archiver from 'archiver';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { isCloud, isEnterprise, isLocal, isTest, report, useRemoteStorage } from '@nangohq/utils';
+import { env, isCloud, isEnterprise, isLocal, isTest, report, useRemoteStorage } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { NangoError } from '../../utils/error.js';
@@ -134,13 +134,30 @@ class RemoteFileService {
         }
     }
 
+    private async withFallback<T>(fileName: string, get: (key: string) => Promise<T>): Promise<T> {
+        const fallbackKey = fileName.replace(/^[^/]+/, env);
+        if (!/^[^/]+\/account\//.test(fileName) || !fileName.includes('/functions/') || fallbackKey === fileName) {
+            return get(fileName);
+        }
+
+        try {
+            const result = await get(fileName);
+            if (result !== null) {
+                return result;
+            }
+        } catch {
+            // Bundle artifacts may have moved from the customer prefix to the infrastructure prefix.
+        }
+        return get(fallbackKey);
+    }
+
     getFile(fileName: string): Promise<string> {
-        return this.getStoreFor(fileName).get(fileName);
+        return this.withFallback(fileName, (key) => this.getStoreFor(key).get(key));
     }
 
     async getStream(fileName: string): Promise<ServiceResponse<Readable | null>> {
         try {
-            const body = await this.getStoreFor(fileName).getStream(fileName);
+            const body = await this.withFallback(fileName, (key) => this.getStoreFor(key).getStream(key));
 
             if (body) {
                 return { success: true, error: null, response: body };

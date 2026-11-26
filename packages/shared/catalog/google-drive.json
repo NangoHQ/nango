@@ -1,0 +1,3034 @@
+{
+    "providerConfigKey": "google-drive",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Copy a file to a destination",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_copyfile",
+            "name": "copy-file",
+            "output": [
+                "ActionOutput_google_drive_copyfile"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_copyfile",
+                "ActionOutput_google_drive_copyfile"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_copyfile": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file to copy. Example: \"123abc\""
+                            },
+                            "name": {
+                                "description": "The new name for the copied file. If not provided, the original name is used.",
+                                "type": "string"
+                            },
+                            "destinationFolderId": {
+                                "description": "The ID of the folder where the copy should be placed. If not provided, the copy is placed in the same folder as the original.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "fileId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_copyfile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the copied file"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the copied file"
+                            },
+                            "mimeType": {
+                                "type": "string",
+                                "description": "The MIME type of the copied file"
+                            },
+                            "createdTime": {
+                                "description": "The creation time of the copied file (RFC 3339)",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "mimeType"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add a comment to a file",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_createcomment",
+            "name": "create-comment",
+            "output": [
+                "ActionOutput_google_drive_createcomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_createcomment",
+                "ActionOutput_google_drive_createcomment"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file to comment on. Example: \"1zpWYuzY5S65OUGNBZQXmJf4FZnIWLJHBkC2xBamBzvw\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The plain text content of the comment. Example: \"This is a test comment.\""
+                            },
+                            "anchor": {
+                                "description": "A region of the document represented as a JSON string for anchored comments. Example: \"{\\\"r\\\":\\\"revision_id\\\",\\\"a\\\":[{\\\"line\\\":{\\\"end\\\":\\\"1\\\"}}]}\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "fileId",
+                            "content"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the comment."
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The plain text content of the comment."
+                            },
+                            "createdTime": {
+                                "type": "string",
+                                "description": "The time when the comment was created (RFC 3339 date-time)."
+                            },
+                            "modifiedTime": {
+                                "type": "string",
+                                "description": "The time when the comment was last modified (RFC 3339 date-time)."
+                            },
+                            "author": {
+                                "description": "The author of the comment.",
+                                "type": "object",
+                                "properties": {
+                                    "displayName": {
+                                        "description": "The display name of the author.",
+                                        "type": "string"
+                                    },
+                                    "emailAddress": {
+                                        "description": "The email address of the author.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "resolved": {
+                                "type": "boolean",
+                                "description": "Whether the comment has been resolved."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "description": "Whether the comment has been deleted."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "content",
+                            "createdTime",
+                            "modifiedTime",
+                            "resolved",
+                            "deleted"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new folder in Google Drive",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_createfolder",
+            "name": "create-folder",
+            "output": [
+                "ActionOutput_google_drive_createfolder"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_createfolder",
+                "ActionOutput_google_drive_createfolder"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_createfolder": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the new folder. Example: \"My New Folder\""
+                            },
+                            "parentId": {
+                                "description": "The ID of the parent folder where the new folder will be created. If omitted, the folder is created in the root of the drive. Example: \"1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_createfolder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the created folder."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the created folder."
+                            },
+                            "mimeType": {
+                                "type": "string",
+                                "description": "The MIME type of the folder (always application/vnd.google-apps.folder)."
+                            },
+                            "createdTime": {
+                                "type": "string",
+                                "description": "The timestamp when the folder was created."
+                            },
+                            "parentIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Array of parent folder IDs."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "mimeType",
+                            "createdTime",
+                            "parentIds"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a shared drive",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_createshareddrive",
+            "name": "create-shared-drive",
+            "output": [
+                "ActionOutput_google_drive_createshareddrive"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_createshareddrive",
+                "ActionOutput_google_drive_createshareddrive"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_createshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the shared drive. Example: \"Project Resources\""
+                            },
+                            "requestId": {
+                                "type": "string",
+                                "description": "A unique ID (such as a random UUID) that uniquely identifies this request for idempotent creation. A repeated request with the same request ID will not create duplicates."
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "requestId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_createshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "kind": {
+                                "type": "string"
+                            },
+                            "colorRgb": {
+                                "type": "string"
+                            },
+                            "backgroundImageLink": {
+                                "type": "string"
+                            },
+                            "capabilities": {},
+                            "themeId": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "hidden": {
+                                "type": "boolean"
+                            },
+                            "restrictions": {},
+                            "orgUnitId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a comment from a file",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_deletecomment",
+            "name": "delete-comment",
+            "output": [
+                "ActionOutput_google_drive_deletecomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_deletecomment",
+                "ActionOutput_google_drive_deletecomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file containing the comment. Example: \"1oD5i7NbLYQ6_mzEjNIXSqFvKXvvRNETwkfLrlDooFV0\""
+                            },
+                            "commentId": {
+                                "type": "string",
+                                "description": "The ID of the comment to delete. Example: \"AAAB1rDkxSA\""
+                            }
+                        },
+                        "required": [
+                            "fileId",
+                            "commentId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the deletion was successful"
+                            },
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file from which the comment was deleted"
+                            },
+                            "commentId": {
+                                "type": "string",
+                                "description": "The ID of the deleted comment"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "fileId",
+                            "commentId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a file or folder from Google Drive",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_deletefile",
+            "name": "delete-file",
+            "output": [
+                "ActionOutput_google_drive_deletefile"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_deletefile",
+                "ActionOutput_google_drive_deletefile"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_deletefile": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file or folder to delete. Example: \"1aBcDeFgHiJkLmNoPqRsTuVwXyZ123456\""
+                            }
+                        },
+                        "required": [
+                            "fileId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_deletefile": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the file was successfully deleted"
+                            },
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the deleted file"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "fileId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a permission from a file",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_deletepermission",
+            "name": "delete-permission",
+            "output": [
+                "ActionOutput_google_drive_deletepermission"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_deletepermission",
+                "ActionOutput_google_drive_deletepermission"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_deletepermission": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file to delete the permission from. Example: \"1xJTXyJ1Pm1rK3Y9J1Y9J1Y9J1Y9J1Y9J\""
+                            },
+                            "permissionId": {
+                                "type": "string",
+                                "description": "The ID of the permission to delete. Example: \"12345678901234567890\""
+                            }
+                        },
+                        "required": [
+                            "fileId",
+                            "permissionId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_deletepermission": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "fileId": {
+                                "type": "string"
+                            },
+                            "permissionId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "fileId",
+                            "permissionId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a shared drive",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_deleteshareddrive",
+            "name": "delete-shared-drive",
+            "output": [
+                "ActionOutput_google_drive_deleteshareddrive"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_deleteshareddrive",
+                "ActionOutput_google_drive_deleteshareddrive"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_deleteshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the shared drive to delete. Example: \"0AP4r1ZoX57FvUk9PVA\""
+                            }
+                        },
+                        "required": [
+                            "driveId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_deleteshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "driveId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "driveId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete all trashed files",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_emptytrash",
+            "name": "empty-trash",
+            "output": [
+                "ActionOutput_google_drive_emptytrash"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_emptytrash",
+                "ActionOutput_google_drive_emptytrash"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_emptytrash": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_emptytrash": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search for files by name or query in Google Drive",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_findfile",
+            "name": "find-file",
+            "output": [
+                "ActionOutput_google_drive_findfile"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_findfile",
+                "ActionOutput_google_drive_findfile"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_findfile": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "description": "Search query string. Uses Google Drive search query syntax. Example: \"name contains 'report'\" or \"mimeType = 'application/pdf'\". If not provided, returns all files.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (nextPageToken) from previous response. Omit for first page.",
+                                "type": "string"
+                            },
+                            "pageSize": {
+                                "description": "Maximum number of files to return per page. Default is 100.",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_findfile": {
+                        "type": "object",
+                        "properties": {
+                            "files": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "mimeType": {
+                                            "type": "string"
+                                        },
+                                        "modifiedTime": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "string"
+                                        },
+                                        "webViewLink": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "mimeType"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "description": "Pagination cursor for the next page. Omitted if no more results.",
+                                "type": "string"
+                            },
+                            "totalResults": {
+                                "description": "Total number of files returned in this page",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "files"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search for a folder by name or query",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_findfolder",
+            "name": "find-folder",
+            "output": [
+                "ActionOutput_google_drive_findfolder"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_findfolder",
+                "ActionOutput_google_drive_findfolder"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_findfolder": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Folder name or search query to find folders by name. Example: \"Test Folder Alpha\""
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_findfolder": {
+                        "type": "object",
+                        "properties": {
+                            "folders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "totalCount": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "folders",
+                            "totalCount"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the user's drive info and storage quota",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_getabout",
+            "name": "get-about",
+            "output": [
+                "ActionOutput_google_drive_getabout"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.metadata.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_getabout",
+                "ActionOutput_google_drive_getabout"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_getabout": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_getabout": {
+                        "type": "object",
+                        "properties": {
+                            "kind": {
+                                "type": "string"
+                            },
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "kind": {
+                                        "type": "string"
+                                    },
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "photoLink": {
+                                        "type": "string"
+                                    },
+                                    "me": {
+                                        "type": "boolean"
+                                    },
+                                    "permissionId": {
+                                        "type": "string"
+                                    },
+                                    "emailAddress": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "kind"
+                                ],
+                                "additionalProperties": {}
+                            },
+                            "storageQuota": {
+                                "type": "object",
+                                "properties": {
+                                    "limit": {
+                                        "type": "string"
+                                    },
+                                    "usage": {
+                                        "type": "string"
+                                    },
+                                    "usageInDrive": {
+                                        "type": "string"
+                                    },
+                                    "usageInDriveTrash": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "importFormats": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "exportFormats": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "maxImportSizes": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            },
+                            "maxUploadSize": {
+                                "type": "string"
+                            },
+                            "appInstalled": {
+                                "type": "boolean"
+                            },
+                            "folderColorPalette": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "teamDriveThemes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "backgroundImageLink": {
+                                            "type": "string"
+                                        },
+                                        "colorRgb": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "backgroundImageLink",
+                                        "colorRgb"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "driveThemes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "backgroundImageLink": {
+                                            "type": "string"
+                                        },
+                                        "colorRgb": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "backgroundImageLink",
+                                        "colorRgb"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "canCreateTeamDrives": {
+                                "type": "boolean"
+                            },
+                            "canCreateDrives": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "kind",
+                            "user"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the starting token for listing future changes",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_getchangesstartpagetoken",
+            "name": "get-changes-start-page-token",
+            "output": [
+                "ActionOutput_google_drive_getchangesstartpagetoken"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.metadata.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_getchangesstartpagetoken",
+                "ActionOutput_google_drive_getchangesstartpagetoken"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_getchangesstartpagetoken": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_getchangesstartpagetoken": {
+                        "type": "object",
+                        "properties": {
+                            "startPageToken": {
+                                "type": "string",
+                                "description": "The starting page token for listing future changes"
+                            }
+                        },
+                        "required": [
+                            "startPageToken"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a comment by ID",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_getcomment",
+            "name": "get-comment",
+            "output": [
+                "ActionOutput_google_drive_getcomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_getcomment",
+                "ActionOutput_google_drive_getcomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_getcomment": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file containing the comment. Example: \"1abc123xyz\""
+                            },
+                            "commentId": {
+                                "type": "string",
+                                "description": "The ID of the comment to retrieve. Example: \"AAAB1p01B9w\""
+                            }
+                        },
+                        "required": [
+                            "fileId",
+                            "commentId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_getcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "htmlContent": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "resolved": {
+                                "type": "boolean"
+                            },
+                            "author": {
+                                "type": "object",
+                                "properties": {
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "photoLink": {
+                                        "type": "string"
+                                    },
+                                    "me": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": [
+                                    "displayName",
+                                    "me"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "replies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "author": {
+                                            "type": "object",
+                                            "properties": {
+                                                "displayName": {
+                                                    "type": "string"
+                                                },
+                                                "me": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "displayName",
+                                                "me"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "content",
+                                        "author",
+                                        "createdTime"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "content",
+                            "htmlContent",
+                            "createdTime",
+                            "modifiedTime",
+                            "deleted",
+                            "author",
+                            "replies"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a permission by ID",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_getpermission",
+            "name": "get-permission",
+            "output": [
+                "ActionOutput_google_drive_getpermission"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_getpermission",
+                "ActionOutput_google_drive_getpermission"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_getpermission": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file. Example: \"1xABCDEF123456\""
+                            },
+                            "permissionId": {
+                                "type": "string",
+                                "description": "The ID of the permission. Example: \"12345678901234567890\""
+                            }
+                        },
+                        "required": [
+                            "fileId",
+                            "permissionId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_getpermission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "description": "The type of the grantee. Valid values are user, group, domain, or anyone."
+                            },
+                            "role": {
+                                "type": "string",
+                                "description": "The role granted by this permission. Valid values are owner, organizer, fileOrganizer, writer, commenter, or reader."
+                            },
+                            "emailAddress": {
+                                "description": "The email address of the user or group this permission refers to.",
+                                "type": "string"
+                            },
+                            "domain": {
+                                "description": "The domain to which this permission refers.",
+                                "type": "string"
+                            },
+                            "allowFileDiscovery": {
+                                "description": "Whether the permission allows the file to be discovered through search.",
+                                "type": "boolean"
+                            },
+                            "displayName": {
+                                "description": "A displayable name for users, groups or domains.",
+                                "type": "string"
+                            },
+                            "photoLink": {
+                                "description": "A link to the profile photo, if available.",
+                                "type": "string"
+                            },
+                            "expirationTime": {
+                                "description": "The time at which this permission will expire (RFC 3339 date-time).",
+                                "type": "string"
+                            },
+                            "permissionDetails": {
+                                "description": "Details of the permission, including specific permissions and whether they inherited from a parent.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "deleted": {
+                                "description": "Whether this permission has been deleted.",
+                                "type": "boolean"
+                            },
+                            "pendingOwner": {
+                                "description": "Whether the account associated with this permission has been deleted.",
+                                "type": "boolean"
+                            },
+                            "view": {
+                                "description": "Indicates the view for this permission.",
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "description": "The time at which this permission was created (RFC 3339 date-time).",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type",
+                            "role"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a file revision by ID",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_getrevision",
+            "name": "get-revision",
+            "output": [
+                "ActionOutput_google_drive_getrevision"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_getrevision",
+                "ActionOutput_google_drive_getrevision"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_getrevision": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file. Example: \"1abc123xyz\""
+                            },
+                            "revisionId": {
+                                "type": "string",
+                                "description": "The ID of the revision. Example: \"1\""
+                            }
+                        },
+                        "required": [
+                            "fileId",
+                            "revisionId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_getrevision": {
+                        "type": "object",
+                        "properties": {
+                            "kind": {
+                                "type": "string",
+                                "description": "The type of resource. Always \"drive#revision\"."
+                            },
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the revision."
+                            },
+                            "mimeType": {
+                                "type": "string",
+                                "description": "The MIME type of the revision."
+                            },
+                            "modifiedTime": {
+                                "type": "string",
+                                "description": "The last time the revision was modified in RFC 3339 format."
+                            },
+                            "keepForever": {
+                                "description": "Whether this revision is marked as keep forever.",
+                                "type": "boolean"
+                            },
+                            "published": {
+                                "description": "Whether this revision is published.",
+                                "type": "boolean"
+                            },
+                            "publishedLink": {
+                                "description": "A link to the published revision.",
+                                "type": "string"
+                            },
+                            "publishedOutsideDomain": {
+                                "description": "Whether this revision is published outside the domain.",
+                                "type": "boolean"
+                            },
+                            "size": {
+                                "description": "The size of the revision in bytes.",
+                                "type": "string"
+                            },
+                            "originalFilename": {
+                                "description": "The original filename of the revision.",
+                                "type": "string"
+                            },
+                            "md5Checksum": {
+                                "description": "The MD5 checksum of the revision.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "kind",
+                            "id",
+                            "mimeType",
+                            "modifiedTime"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a shared drive by ID",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_getshareddrive",
+            "name": "get-shared-drive",
+            "output": [
+                "ActionOutput_google_drive_getshareddrive"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_getshareddrive",
+                "ActionOutput_google_drive_getshareddrive"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_getshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the shared drive to retrieve. Example: \"0ACo-2dj5Ql07Uk9PVA\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_getshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "kind": {
+                                "type": "string"
+                            },
+                            "themeId": {
+                                "type": "string"
+                            },
+                            "colorRgb": {
+                                "type": "string"
+                            },
+                            "backgroundImageFile": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "capabilities": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "restrictions": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "hidden": {
+                                "type": "boolean"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "orgUnitId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Hide a shared drive from the default view",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_hideshareddrive",
+            "name": "hide-shared-drive",
+            "output": [
+                "ActionOutput_google_drive_hideshareddrive"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_hideshareddrive",
+                "ActionOutput_google_drive_hideshareddrive"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_hideshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the shared drive to hide. Example: \"0ABC123xyz\""
+                            }
+                        },
+                        "required": [
+                            "driveId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_hideshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "hidden": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "hidden"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List changes to files and shared drives",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_listchanges",
+            "name": "list-changes",
+            "output": [
+                "ActionOutput_google_drive_listchanges"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.metadata.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_listchanges",
+                "ActionOutput_google_drive_listchanges"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_listchanges": {
+                        "type": "object",
+                        "properties": {
+                            "pageToken": {
+                                "description": "The token for continuing a previous list request. Omit for first request, in which case the action will get a start page token automatically.",
+                                "type": "string"
+                            },
+                            "driveId": {
+                                "description": "The shared drive ID. If specified, changes will be limited to this drive.",
+                                "type": "string"
+                            },
+                            "includeItemsFromAllDrives": {
+                                "description": "Whether to include changes from all shared drives. Default: false",
+                                "type": "boolean"
+                            },
+                            "includeRemoved": {
+                                "description": "Whether to include changes indicating items have been removed. Default: true",
+                                "type": "boolean"
+                            },
+                            "pageSize": {
+                                "description": "Maximum number of changes to return per page. Default: 100",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 1000
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_listchanges": {
+                        "type": "object",
+                        "properties": {
+                            "changes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "changeType": {
+                                            "type": "string"
+                                        },
+                                        "file": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "mimeType": {
+                                                    "type": "string"
+                                                },
+                                                "modifiedTime": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "fileId": {
+                                            "type": "string"
+                                        },
+                                        "removed": {
+                                            "type": "boolean"
+                                        },
+                                        "time": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "fileId"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            },
+                            "newStartPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "changes"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List comments on a file",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_listcomments",
+            "name": "list-comments",
+            "output": [
+                "ActionOutput_google_drive_listcomments"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_listcomments",
+                "ActionOutput_google_drive_listcomments"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_listcomments": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file to list comments for. Example: \"1wwU5Dhr-6_3SHgtSQnXJ7HBPkgW-shalzdc0pfRL-Yk\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from previous response. Omit for first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "fileId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_listcomments": {
+                        "type": "object",
+                        "properties": {
+                            "comments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "htmlContent": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "modifiedTime": {
+                                            "type": "string"
+                                        },
+                                        "resolved": {
+                                            "type": "boolean"
+                                        },
+                                        "deleted": {
+                                            "type": "boolean"
+                                        },
+                                        "author": {
+                                            "type": "object",
+                                            "properties": {
+                                                "displayName": {
+                                                    "type": "string"
+                                                },
+                                                "kind": {
+                                                    "type": "string"
+                                                },
+                                                "me": {
+                                                    "type": "boolean"
+                                                },
+                                                "photoLink": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "description": "The cursor for the next page of comments. Omitted if there are no more pages.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "comments"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List immediate files and folders for a folder ID, or root when omitted, with cursor pagination and shared-drive support.",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_listfilesnonunified",
+            "name": "list-files-non-unified",
+            "output": [
+                "ActionOutput_google_drive_listfilesnonunified"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_listfilesnonunified",
+                "ActionOutput_google_drive_listfilesnonunified"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_listfilesnonunified": {
+                        "type": "object",
+                        "properties": {
+                            "folderId": {
+                                "description": "Folder ID to list contents. Omit for root folder.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (pageToken) from previous response. Omit for first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of files to return. Default: 100.",
+                                "type": "number"
+                            },
+                            "includeSharedDrives": {
+                                "description": "Include items from shared drives. Default: false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_listfilesnonunified": {
+                        "type": "object",
+                        "properties": {
+                            "files": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "mimeType": {
+                                            "type": "string"
+                                        },
+                                        "isFolder": {
+                                            "type": "boolean"
+                                        },
+                                        "parentId": {
+                                            "type": "string"
+                                        },
+                                        "createdTime": {
+                                            "type": "string"
+                                        },
+                                        "modifiedTime": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "number"
+                                        },
+                                        "webViewLink": {
+                                            "type": "string"
+                                        },
+                                        "thumbnailLink": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "mimeType",
+                                        "isFolder"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "description": "Cursor for next page. Omitted if no more pages.",
+                                "type": "string"
+                            },
+                            "totalCount": {
+                                "type": "number",
+                                "description": "Total number of files in this page."
+                            }
+                        },
+                        "required": [
+                            "files",
+                            "totalCount"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List permissions on a file",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_listpermissions",
+            "name": "list-permissions",
+            "output": [
+                "ActionOutput_google_drive_listpermissions"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_listpermissions",
+                "ActionOutput_google_drive_listpermissions"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_listpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file to list permissions for. Example: \"1AoQyTafvg1p_cqzJTTGmdbMTQ6jolnJ7J_mQBlPcFec\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from previous response. Omit for first page.",
+                                "type": "string"
+                            },
+                            "pageSize": {
+                                "description": "Maximum number of permissions to return per page (1-100). Default: 100",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        "required": [
+                            "fileId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_listpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "emailAddress": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "domain": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "role"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "permissions"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List shared drives the user can access, with cursor pagination and drive metadata like hidden, capabilities, and restrictions.",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_listdrives",
+            "name": "list-drives",
+            "output": [
+                "ActionOutput_google_drive_listdrives"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_listdrives",
+                "ActionOutput_google_drive_listdrives"
+            ],
+            "version": "3.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_listdrives": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor from previous response. Omit for first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of shared drives to return. Default is 10, maximum is 100.",
+                                "type": "number"
+                            },
+                            "query": {
+                                "description": "Query string for searching shared drives. Example: \"hidden = false\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_listdrives": {
+                        "type": "object",
+                        "properties": {
+                            "drives": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "colorRgb": {
+                                            "type": "string"
+                                        },
+                                        "backgroundImageLink": {
+                                            "type": "string"
+                                        },
+                                        "kind": {
+                                            "type": "string"
+                                        },
+                                        "hidden": {
+                                            "type": "boolean"
+                                        },
+                                        "capabilities": {
+                                            "type": "object",
+                                            "properties": {
+                                                "canAddChildren": {
+                                                    "type": "boolean"
+                                                },
+                                                "canChangeCopyRequiresWriterPermissionRestriction": {
+                                                    "type": "boolean"
+                                                },
+                                                "canChangeDomainUsersOnlyRestriction": {
+                                                    "type": "boolean"
+                                                },
+                                                "canChangeDriveBackground": {
+                                                    "type": "boolean"
+                                                },
+                                                "canChangeDriveMembersOnlyRestriction": {
+                                                    "type": "boolean"
+                                                },
+                                                "canComment": {
+                                                    "type": "boolean"
+                                                },
+                                                "canCopy": {
+                                                    "type": "boolean"
+                                                },
+                                                "canDeleteChildren": {
+                                                    "type": "boolean"
+                                                },
+                                                "canDeleteDrive": {
+                                                    "type": "boolean"
+                                                },
+                                                "canDownload": {
+                                                    "type": "boolean"
+                                                },
+                                                "canEdit": {
+                                                    "type": "boolean"
+                                                },
+                                                "canListChildren": {
+                                                    "type": "boolean"
+                                                },
+                                                "canManageMembers": {
+                                                    "type": "boolean"
+                                                },
+                                                "canReadRevisions": {
+                                                    "type": "boolean"
+                                                },
+                                                "canRename": {
+                                                    "type": "boolean"
+                                                },
+                                                "canRenameDrive": {
+                                                    "type": "boolean"
+                                                },
+                                                "canResetDriveRestrictions": {
+                                                    "type": "boolean"
+                                                },
+                                                "canShare": {
+                                                    "type": "boolean"
+                                                },
+                                                "canTrashChildren": {
+                                                    "type": "boolean"
+                                                },
+                                                "canUntrashChildren": {
+                                                    "type": "boolean"
+                                                },
+                                                "canViewItemCounts": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "restrictions": {
+                                            "type": "object",
+                                            "properties": {
+                                                "adminManagedRestrictions": {
+                                                    "type": "boolean"
+                                                },
+                                                "copyRequiresWriterPermission": {
+                                                    "type": "boolean"
+                                                },
+                                                "domainUsersOnly": {
+                                                    "type": "boolean"
+                                                },
+                                                "driveMembersOnly": {
+                                                    "type": "boolean"
+                                                },
+                                                "sharingFoldersRequiresOrganizerPermission": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPageToken": {
+                                "description": "Pagination cursor for the next page of results. Omitted if this is the last page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "drives"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move a file to a different folder",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_movefile",
+            "name": "move-file",
+            "output": [
+                "ActionOutput_google_drive_movefile"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_movefile",
+                "ActionOutput_google_drive_movefile"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_movefile": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file to move. Example: \"1mD3ukEAmRqo8u0RF_Cr6IJl9f_uWTYH03vesDhB5Svw\""
+                            },
+                            "fromFolderId": {
+                                "type": "string",
+                                "description": "The ID of the current parent folder. Example: \"1SpnQKJHqNDh-qhbj_zGD2aIm-G-RKC_k\""
+                            },
+                            "toFolderId": {
+                                "type": "string",
+                                "description": "The ID of the destination folder. Example: \"1Bl1rB7hkBbdzmKUka3zSj0bhAK3pGypD\""
+                            }
+                        },
+                        "required": [
+                            "fileId",
+                            "fromFolderId",
+                            "toFolderId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_movefile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "parents": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "parents"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Restore a hidden shared drive to default view",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_unhideshareddrive",
+            "name": "unhide-shared-drive",
+            "output": [
+                "ActionOutput_google_drive_unhideshareddrive"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_unhideshareddrive",
+                "ActionOutput_google_drive_unhideshareddrive"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_unhideshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the shared drive to unhide. Example: \"0ABC123xyz\""
+                            }
+                        },
+                        "required": [
+                            "driveId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_unhideshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "hidden": {
+                                "type": "boolean"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "kind": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a comment on a file",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_updatecomment",
+            "name": "update-comment",
+            "output": [
+                "ActionOutput_google_drive_updatecomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_updatecomment",
+                "ActionOutput_google_drive_updatecomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file containing the comment. Example: \"1mlzflxHXQkoCj-3p1T_O762TNAfGGr_iIb5C9uwnIwk\""
+                            },
+                            "commentId": {
+                                "type": "string",
+                                "description": "The ID of the comment to update. Example: \"AAAB1pvq854\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The new plain text content of the comment. Example: \"Updated comment text\""
+                            },
+                            "resolved": {
+                                "description": "Whether the comment is resolved. Optional.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "fileId",
+                            "commentId",
+                            "content"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "content": {
+                                "type": "string"
+                            },
+                            "htmlContent": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "author": {
+                                "type": "object",
+                                "properties": {
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "kind": {
+                                        "type": "string"
+                                    },
+                                    "me": {
+                                        "type": "boolean"
+                                    },
+                                    "photoLink": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "displayName",
+                                    "kind",
+                                    "me"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "resolved": {
+                                "type": "boolean"
+                            },
+                            "replies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "content",
+                            "htmlContent",
+                            "createdTime",
+                            "modifiedTime",
+                            "author",
+                            "deleted"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a file's metadata",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_updatefile",
+            "name": "update-file",
+            "output": [
+                "ActionOutput_google_drive_updatefile"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_updatefile",
+                "ActionOutput_google_drive_updatefile"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_updatefile": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "starred": {
+                                "type": "boolean"
+                            },
+                            "trashed": {
+                                "type": "boolean"
+                            },
+                            "parents": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "appProperties": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            },
+                            "properties": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "fileId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_updatefile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "starred": {
+                                "type": "boolean"
+                            },
+                            "trashed": {
+                                "type": "boolean"
+                            },
+                            "parents": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "string"
+                            },
+                            "webViewLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "mimeType",
+                            "starred",
+                            "trashed",
+                            "parents",
+                            "createdTime",
+                            "modifiedTime"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a permission on a file",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_updatepermission",
+            "name": "update-permission",
+            "output": [
+                "ActionOutput_google_drive_updatepermission"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_updatepermission",
+                "ActionOutput_google_drive_updatepermission"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_updatepermission": {
+                        "type": "object",
+                        "properties": {
+                            "fileId": {
+                                "type": "string",
+                                "description": "The ID of the file or shared drive."
+                            },
+                            "permissionId": {
+                                "type": "string",
+                                "description": "The ID of the permission."
+                            },
+                            "role": {
+                                "type": "string",
+                                "enum": [
+                                    "owner",
+                                    "organizer",
+                                    "fileOrganizer",
+                                    "writer",
+                                    "commenter",
+                                    "reader"
+                                ],
+                                "description": "The new role for the permission."
+                            }
+                        },
+                        "required": [
+                            "fileId",
+                            "permissionId",
+                            "role"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_updatepermission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "emailAddress": {
+                                "type": "string"
+                            },
+                            "domain": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "allowFileDiscovery": {
+                                "type": "boolean"
+                            },
+                            "kind": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "role"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a shared drive's metadata",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_updateshareddrive",
+            "name": "update-shared-drive",
+            "output": [
+                "ActionOutput_google_drive_updateshareddrive"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_updateshareddrive",
+                "ActionOutput_google_drive_updateshareddrive"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_updateshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the shared drive to update. Example: \"0AN1234567890XYZ\""
+                            },
+                            "name": {
+                                "description": "The new name for the shared drive. Example: \"Updated Shared Drive\"",
+                                "type": "string"
+                            },
+                            "colorRgb": {
+                                "description": "The color of the shared drive as an RGB hex string. Example: \"#0000FF\"",
+                                "type": "string"
+                            },
+                            "restrictions": {
+                                "description": "Restrictions to apply to the shared drive",
+                                "type": "object",
+                                "properties": {
+                                    "adminManagedRestrictions": {
+                                        "description": "Whether the restrictions are managed by an admin",
+                                        "type": "boolean"
+                                    },
+                                    "copyRequiresWriterPermission": {
+                                        "description": "Whether the copy operation requires writer permission",
+                                        "type": "boolean"
+                                    },
+                                    "domainUsersOnly": {
+                                        "description": "Whether only domain users can access the shared drive",
+                                        "type": "boolean"
+                                    },
+                                    "driveMembersOnly": {
+                                        "description": "Whether only drive members can access the shared drive",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "driveId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_updateshareddrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "colorRgb": {
+                                "type": "string"
+                            },
+                            "kind": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "restrictions": {
+                                "type": "object",
+                                "properties": {
+                                    "adminManagedRestrictions": {
+                                        "type": "boolean"
+                                    },
+                                    "copyRequiresWriterPermission": {
+                                        "type": "boolean"
+                                    },
+                                    "domainUsersOnly": {
+                                        "type": "boolean"
+                                    },
+                                    "driveMembersOnly": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "kind"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload plain text or base64 file content up to 5 MB, optionally into a folder with a description; defaults to root",
+            "endpoint": null,
+            "input": "ActionInput_google_drive_uploaddocument",
+            "name": "upload-document",
+            "output": [
+                "ActionOutput_google_drive_uploaddocument"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.file"
+            ],
+            "usedModels": [
+                "ActionInput_google_drive_uploaddocument",
+                "ActionOutput_google_drive_uploaddocument"
+            ],
+            "version": "2.0.3",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_google_drive_uploaddocument": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the file to create. Example: \"document.txt\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The file content as plain text or base64 encoded string"
+                            },
+                            "mimeType": {
+                                "type": "string",
+                                "description": "The MIME type of the file. Example: \"text/plain\", \"application/pdf\""
+                            },
+                            "isBase64": {
+                                "description": "Whether the content is base64 encoded. Defaults to false",
+                                "type": "boolean"
+                            },
+                            "folderId": {
+                                "description": "The ID of the folder to upload the file into. If not provided, defaults to root. Example: \"1a2b3c4d5e6f7g8h\"",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "A description of the file",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "content",
+                            "mimeType"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_google_drive_uploaddocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the created file"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the created file"
+                            },
+                            "mimeType": {
+                                "type": "string",
+                                "description": "The MIME type of the file"
+                            },
+                            "webViewLink": {
+                                "description": "A link for opening the file in a relevant Google editor or viewer",
+                                "type": "string"
+                            },
+                            "webContentLink": {
+                                "description": "A link for downloading the content of the file in a browser",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "mimeType"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync file metadata for IDs in connection metadata files, or recursively for all files under folder IDs in folders. Supports shared drives.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/documents",
+                    "group": "Documents"
+                }
+            ],
+            "input": "SyncMetadata_google_drive_documents",
+            "name": "documents",
+            "output": [
+                "File"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "File",
+                "SyncMetadata_google_drive_documents"
+            ],
+            "version": "5.1.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "File": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "parents": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "driveId": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "string"
+                            },
+                            "webViewLink": {
+                                "type": "string"
+                            },
+                            "trashed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "mimeType",
+                            "createdTime",
+                            "modifiedTime"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_google_drive_documents": {
+                        "type": "object",
+                        "properties": {
+                            "files": {
+                                "description": "Array of file IDs to sync directly",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "folders": {
+                                "description": "Array of folder IDs to sync recursively",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync root-level Google Drive folders from My Drive and shared drives",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/folders",
+                    "group": "Folders"
+                }
+            ],
+            "input": null,
+            "name": "folders",
+            "output": [
+                "Folder"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Folder"
+            ],
+            "version": "3.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Folder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "modifiedTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync file permissions from Google Drive",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/permissions",
+                    "group": "Permissions"
+                }
+            ],
+            "input": null,
+            "name": "permissions",
+            "output": [
+                "Permission"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Permission"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Permission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "fileId": {
+                                "type": "string"
+                            },
+                            "permissionId": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "emailAddress": {
+                                "type": "string"
+                            },
+                            "domain": {
+                                "type": "string"
+                            },
+                            "allowFileDiscovery": {
+                                "type": "boolean"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "fileId",
+                            "permissionId",
+                            "type",
+                            "role"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync shared drives from Google Drive",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/shared-drives",
+                    "group": "Shared Drives"
+                }
+            ],
+            "input": null,
+            "name": "shared-drives",
+            "output": [
+                "SharedDrive"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "SharedDrive"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SharedDrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "colorRgb": {
+                                "type": "string"
+                            },
+                            "kind": {
+                                "type": "string"
+                            },
+                            "backgroundImageLink": {
+                                "type": "string"
+                            },
+                            "themeId": {
+                                "type": "string"
+                            },
+                            "createdTime": {
+                                "type": "string"
+                            },
+                            "hidden": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

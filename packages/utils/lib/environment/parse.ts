@@ -682,6 +682,16 @@ const ENVS_SHAPE = z.object({
     AWS_TEMPLATES_BUCKET_NAME: z.string().trim().min(1).optional(),
     AWS_TEMPLATES_REGION: z.string().trim().min(1).optional(),
 
+    // Catalog (packages/shared/catalog.json): how many providers' definitions stay in memory, by count and by total
+    // size of their (pretty-printed) files. Parsed, a provider takes ~0.8x its file size, so 150 MiB ≈ 115 MiB of heap.
+    NANGO_CATALOG_CACHE_MAX_PROVIDERS: z.coerce.number().int().positive().optional().default(200),
+    NANGO_CATALOG_CACHE_MAX_BYTES: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(150 * 1024 * 1024),
+
     GCS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
 
     AZURE_INTEGRATIONS_ACCOUNT_NAME: z.string().optional(),
